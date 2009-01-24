@@ -1,0 +1,25 @@
+############################################################
+# key-value config file
+#
+
+# integer: the base is determined by the leading characters: 
+#          0x => std::hex, 0 => std::oct, std::dec otherwise 
+#
+
+unsigned_int = 69
+
+integers = 10     
+integers = 0x10     
+integers = 010     
+
+# strings: use quotation " to include spaces, use \" to include
+#          quotation
+
+strings =  hello
+strings = "hello world" 
+strings = "\"quoted string\"" 
+
+booleans = false  
+booleans = 1  
+
+# unknown = true
