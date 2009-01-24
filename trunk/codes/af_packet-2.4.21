@@ -1,0 +1,175 @@
+>
+>  $Id: af_packet-2.4.21,v 1.6 2003/06/26 08:06:35 awgn Exp $
+>
+>  This patch add PACKET_MACSTAT and PACKET_DUP options to af_packet interface for manipulating the SOL_PACKET level.
+>  When PACKET_MACSTAT is set (via setsockopt), the mac header of PF_PACKET,SOCK_RAW socket is replaced
+>  with the following structure:
+>
+>  struct tpacket_macstat {
+>       struct timeval  tstamp;
+>       unsigned short  len;
+>       unsigned short  ip_id;
+>       unsigned char   tos;
+>       unsigned char   pkttype;
+>  }
+>
+>  One can make userland statistics by reading only the first 14 bytes
+>  of each frame, also saving the syscall ioctl(fd, SIOCGSTAMP, &tstamp), therefore
+>  dequeuing packets as much faster as possible.
+>
+>  PACKET_DUP, instead, clones outgoing frames in order to achive better performance
+>  with traffic generator over fiber optic link.
+>
+>  http://awgn.antifork.org/codes/lindump.c is an example of userland packet sniffer,
+>  written for statistical purposes, which exploits this patch.
+>
+>  http://awgn.antifork.org/codes/brute.c is a traffic generator which exploits PACKET_DUP.
+>
+>  Bonelli Nicola <bonelli@antifork.org>
+>
+--- linux-2.4.21-orig/include/linux/if_packet.h	2001-04-12 21:11:39.000000000 +0200
++++ linux/include/linux/if_packet.h	2003-06-25 20:52:11.000000000 +0200
+@@ -39,6 +39,9 @@
+ #define PACKET_RX_RING			5
+ #define PACKET_STATISTICS		6
+ #define PACKET_COPY_THRESH		7
++/* XXX: added sockopt */
++#define PACKET_MACSTAT			8
++#define PACKET_DUP			9
+ 
+ struct tpacket_stats
+ {
+@@ -62,6 +65,16 @@
+ 	unsigned int	tp_usec;
+ };
+ 
++/* XXX: added macstat structure */
++#include <linux/time.h>
++struct tpacket_macstat  {
++        struct timeval  tstamp;
++        unsigned short  len;
++        unsigned short  ip_id;
++	unsigned char   tos;
++	unsigned char   pkttype;
++} __attribute__((packed));
++
+ #define TPACKET_ALIGNMENT	16
+ #define TPACKET_ALIGN(x)	(((x)+TPACKET_ALIGNMENT-1)&~(TPACKET_ALIGNMENT-1))
+ #define TPACKET_HDRLEN		(TPACKET_ALIGN(sizeof(struct tpacket_hdr)) + sizeof(struct sockaddr_ll))
+--- linux-2.4.21-orig/net/packet/af_packet.c	2002-08-03 02:39:46.000000000 +0200
++++ linux/net/packet/af_packet.c	2003-06-26 08:07:28.000000000 +0200
+@@ -153,6 +153,8 @@
+ static rwlock_t packet_sklist_lock = RW_LOCK_UNLOCKED;
+ 
+ atomic_t packet_socks_nr;
++/* XXX: eth_p_ip network byte order */
++#define eth_p_ip       __constant_htons(ETH_P_IP)
+ 
+ 
+ /* Private packet socket structures. */
+@@ -197,6 +199,8 @@
+ 	unsigned int		head;
+ 	int			copy_thresh;
+ #endif
++	int			macstat;
++	int			packdup;
+ };
+ 
+ void packet_sock_destruct(struct sock *sk)
+@@ -667,11 +671,11 @@
+ {
+ 	struct sock *sk = sock->sk;
+ 	struct sockaddr_ll *saddr=(struct sockaddr_ll *)msg->msg_name;
+-	struct sk_buff *skb;
++	struct sk_buff *skb, *clone;
+ 	struct net_device *dev;
+ 	unsigned short proto;
+ 	unsigned char *addr;
+-	int ifindex, err, reserve = 0;
++	int dup, ifindex, err, reserve = 0;
+ 
+ 	/*
+ 	 *	Get and verify the address. 
+@@ -738,6 +742,13 @@
+ 	 *	Now send it
+ 	 */
+ 
++	if ( sk->protinfo.af_packet->packdup > 1 ) {
++		for (dup=1; dup < sk->protinfo.af_packet->packdup; dup++) {
++			clone = skb_clone(skb, GFP_ATOMIC);
++			dev_queue_xmit(clone);	// don't care whether this clone has been sent properly	
++		}
++	}
++	
+ 	err = dev_queue_xmit(skb);
+ 	if (err > 0 && (err = net_xmit_errno(err)) != 0)
+ 		goto out_unlock;
+@@ -1015,6 +1026,7 @@
+ static int packet_recvmsg(struct socket *sock, struct msghdr *msg, int len,
+ 			  int flags, struct scm_cookie *scm)
+ {
++	struct tpacket_macstat *pm;
+ 	struct sock *sk = sock->sk;
+ 	struct sk_buff *skb;
+ 	int copied, err;
+@@ -1071,6 +1083,29 @@
+ 		msg->msg_flags|=MSG_TRUNC;
+ 	}
+ 
++        /*      XXX: We copy tstamp, packlen, ip_id, tos and pkttype onto mac header, 
++         *      in order to save the ioclt(fd ,SIOCGSTAMP, &..) for timestamp recovery, 
++	 *      and move to user less bytes as possible.
++         */
++
++        if ( sk->protinfo.af_packet->macstat != 0 ) {
++		pm = (struct tpacket_macstat *)skb->data;
++
++                memcpy(&pm->tstamp,&skb->stamp, sizeof(struct timeval));
++                memcpy(&pm->len,&skb->len, sizeof(short));
++
++                /* In case of ip packet ... */
++                if ( skb->mac.ethernet->h_proto == eth_p_ip ) {
++                        memcpy(&pm->ip_id, &skb->nh.iph->id, sizeof(short));
++			pm->tos = skb->nh.iph->tos;
++		} else  {
++                        memset(&pm->ip_id,0xff, sizeof(short));
++			pm->tos = 0xff; 
++		}
++
++		pm->pkttype = skb->pkt_type;
++        }
++
+ 	err = skb_copy_datagram_iovec(skb, 0, msg->msg_iov, copied);
+ 	if (err)
+ 		goto out_free;
+@@ -1320,6 +1355,30 @@
+ 		return 0;
+ 	}
+ #endif
++/* XXX: PACKET_MACSTAT */
++	case PACKET_MACSTAT:
++	{
++		int val;
++		if (optlen!=sizeof(val))
++			return -EINVAL;
++		if (copy_from_user(&val,optval,sizeof(val)))
++			return -EFAULT;
++		sk->protinfo.af_packet->macstat = val;
++		return 0;
++	}
++
++/* XXX: PACKET_DUP */
++        case PACKET_DUP:
++        {
++                int val;
++                if (optlen!=sizeof(val))
++                        return -EINVAL;
++                if (copy_from_user(&val,optval,sizeof(val)))
++                        return -EFAULT;
++                sk->protinfo.af_packet->packdup = val;
++                return 0;
++        }
++
+ 	default:
+ 		return -ENOPROTOOPT;
+ 	}

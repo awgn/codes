@@ -1,0 +1,37 @@
+##
+##    This config file is deprecated. The brute project is currently hosted at:
+##    http://netgroup-serv.iet.unipi.it/brute
+##
+##    Nicola
+##
+## $Id: brute.data,v 1.9 2003/12/05 12:56:28 awgn Exp $
+##
+## brute script syntax:
+##
+## flow  msec [uf]:len rate xn src_host:src_port dst_host:dst_port <0xtos> <ttl>
+## touch msec [uf]:len rate xn
+##
+## u:udp data len
+## f:ethernet frame len, including the eth_crc.
+## rate = frame/sec
+## xn -> numer of duplicate per frame. x1 == no dup. (required af_patch-2.4.21)
+##
+## <values> are optional.
+## Bonelli Nicola <bonelli@antifork.org>
+##
+
+flow  1000 u:64 10000 x1 10.10.10.1:1000 127.0.0.1:7 0x10 
+touch 1000 u:64 20000 x1
+touch 1000 u:64 30000 x1
+touch 1000 u:64 40000 x1
+touch 1000 f:64 50000 x1
+touch 1000 f:64 60000 x1
+touch 1000 f:64 70000 x1
+touch 1000 f:64 80000 x1
+touch 1000 f:64 90000 x1
+touch 1000 f:64 100000 x1
+touch 1000 f:64 110000 x1
+touch 1000 f:64 120000 x1
+touch 1000 f:64 130000 x1
+touch 1000 f:64 140000 x1
+touch 1000 f:64 150000 x1

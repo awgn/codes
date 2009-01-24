@@ -1,0 +1,7 @@
+# $Id: syncro-script,v 1.3 2005/10/08 14:13:11 awgn Exp $
+# pratical scripting language for syncro client
+
+HOST 127.0.0.1 PORT 31337 DELAY 10 SYS socketcall RT 3 -- /bin/ping 127.0.0.1 -c 2 
+HOST 127.0.0.1 PORT 31338 DELAY 10 SYS write           -- /bin/ps aux 
+#HOST 127.0.0.1 PORT 31339 DELAY 10 ADDR 0x080495d8     -- /bin/ls -la
+
