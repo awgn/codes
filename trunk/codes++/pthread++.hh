@@ -126,15 +126,15 @@ namespace posix
         static void *start_routine(void *arg)
         {
             thread *that = reinterpret_cast<thread *>(arg);
-           
+            void *ret;
+
             pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL); 
 
             pthread_cleanup_push(thread_terminated,arg);
-
-                that->operator()();
-
+            ret = that->operator()();
             pthread_cleanup_pop(1);
-            return NULL;
+
+            return ret;
         }
 
         bool start() 
