@@ -1,5 +1,5 @@
 /*
- *  $Id: proc.c,v 1.2 2005/10/07 00:43:51 awgn Exp $
+ *  $Id$
  * 
  *  Copyright (c) 2005 Bonelli Nicola <bonelli@antifork.org>
  *

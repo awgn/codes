@@ -45,7 +45,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-static char cvsid[] = "$Id: pcap2ixp.c,v 1.5 2003/10/25 13:56:01 awgn Exp $";
+static char cvsid[] = "$Id$";
 
 /* 
  * typedef 

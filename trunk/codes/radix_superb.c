@@ -46,7 +46,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define CVSID   	"$Id: radix_superb.c,v 1.3 2003/10/25 13:56:01 awgn Exp $"
+#define CVSID   	"$Id$"
 #define VERSION		"0.1"
 
 #define RAD_LONG 	0

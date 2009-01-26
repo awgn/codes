@@ -35,7 +35,7 @@
 
 #include "fgets_th.h"
 
-static const char cvsid[] = "$Id: fgets_th.c,v 1.11 2003/05/06 22:20:40 awgn Exp $";
+static const char cvsid[] = "$Id$";
 
 /* gloabals */
 

@@ -46,12 +46,12 @@
 #include <errno.h>
 #include <err.h>
 
-static const char cvsid[] = "$Id: usr8550.c,v 1.4 2004/08/18 22:46:25 awgn Exp $";
+static const char cvsid[] = "$Id$";
 static const char copyright[] = "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>";
 
 #define AUTHOR        	"Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>"
 #define VERSION       	"0.24"
-#define CVSID         	"$Id: usr8550.c,v 1.4 2004/08/18 22:46:25 awgn Exp $"
+#define CVSID         	"$Id$"
 #define PASSWORD	"12345"
 #define CLOSECOMM	"@close"
 #define HOME            "home"

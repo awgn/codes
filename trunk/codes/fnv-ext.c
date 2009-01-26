@@ -58,7 +58,7 @@
 #include <fnv.h>
 
 static
-const char cvsid[] = "$Id: fnv-ext.c,v 1.2 2004/09/17 17:05:26 awgn Exp $";
+const char cvsid[] = "$Id$";
 
 #define FNV_32_PRIME ((Fnv32_t)0x01000193)
 #define FNV_64_PRIME ((Fnv64_t)0x100000001b3ULL)

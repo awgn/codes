@@ -1,5 +1,5 @@
 >
->  $Id: af_packet-2.4.21,v 1.6 2003/06/26 08:06:35 awgn Exp $
+>  $Id$
 >
 >  This patch add PACKET_MACSTAT and PACKET_DUP options to af_packet interface for manipulating the SOL_PACKET level.
 >  When PACKET_MACSTAT is set (via setsockopt), the mac header of PF_PACKET,SOCK_RAW socket is replaced

@@ -45,7 +45,7 @@
 #undef  __USE_GNU
 #endif
 
-#define CVS		"$Id: sensor.h,v 1.13 2003/05/09 00:52:22 awgn Exp $"
+#define CVS		"$Id$"
 #define COPYRIGHT       "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>"
 #define VERSION         "0.51"
 

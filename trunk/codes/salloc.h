@@ -1,5 +1,5 @@
 /*
- * $Id: salloc.h,v 1.1 2003/10/03 14:48:57 awgn Exp $
+ * $Id$
  *
  * Copyright (c) 2003 Bonelli Nicola <bonelli@antifork.org>
  *

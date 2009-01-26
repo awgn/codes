@@ -76,7 +76,7 @@
 #define CONFIG_X86_CMPXCHG
 #include <asm/system.h>
 
-static char cvsid[] = "$Id: lindump.c,v 1.54 2003/06/25 21:49:05 awgn Exp $";
+static char cvsid[] = "$Id$";
 
 /* Macro */
 

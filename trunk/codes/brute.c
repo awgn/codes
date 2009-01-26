@@ -91,7 +91,7 @@
 #include <sched.h>
 #include <errno.h>
 
-static char cvsid[] = "$Id: brute.c,v 1.42 2003/12/05 12:56:27 awgn Exp $";
+static char cvsid[] = "$Id$";
 
 /* usage string */
 

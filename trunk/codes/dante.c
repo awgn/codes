@@ -39,7 +39,7 @@
 #include <errno.h>
 #include <err.h>
 
-static const char cvsid[] = "$Id: dante.c,v 1.15 2004/08/18 22:34:25 awgn Exp $";
+static const char cvsid[] = "$Id$";
 static const char copyright[] = "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>";
 static const char usage_str[]=
         "Usage: %s [OPTIONS]\n"

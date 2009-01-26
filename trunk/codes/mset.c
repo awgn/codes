@@ -42,7 +42,7 @@
 #include <errno.h>
 #include <assert.h>
 
-static const char cvsid[] = "$Id: mset.c,v 1.21 2003/05/01 20:06:57 awgn Exp $";
+static const char cvsid[] = "$Id$";
 
 /*
  *

@@ -1,5 +1,5 @@
 /*
- * $Id: ei.c,v 1.3 2003/10/25 13:56:01 awgn Exp $
+ * $Id$
  *
  * Copyright (c) 2003 Bonelli Nicola <bonelli@antifork.org>
  *

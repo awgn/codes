@@ -58,7 +58,7 @@
 #include <sysexits.h>
 #include <err.h>
 
-static const char cvsid[]= "$Id: proxed.c,v 1.66 2005/01/21 23:41:11 awgn Exp $";
+static const char cvsid[]= "$Id$";
 static const char copyright[] = "Copyright (c) 2004 Bonelli Nicola <bonelli@antifork.org>\n" 
 				"Solaris port Copyright (c) 2003 vjt <vjt@users.sf.net>";
 /*

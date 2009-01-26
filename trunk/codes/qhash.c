@@ -47,7 +47,7 @@
 #include <dlfcn.h>
 #include <math.h>
 
-static const char cvsid[] = "$Id: qhash.c,v 1.18 2004/01/06 17:04:28 awgn Exp $";
+static const char cvsid[] = "$Id$";
 static const char copyright[] = "Copyright (c) 2003 Bonelli Nicola <bonelli@antifork.org>";
 
 typedef struct {

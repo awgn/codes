@@ -1,5 +1,5 @@
 /*
- * $Id: nanolist.h,v 1.5 2005/07/19 16:09:33 awgn Exp $
+ * $Id$
  * nanolist- add/replace headers to local-delivery mails.
  *
  * Copyright (c) 2003 Nicola Bonelli <bonelli@antifork.org>

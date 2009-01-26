@@ -1,5 +1,5 @@
 /*
- *  $Id: daemon.c,v 1.7 2003/04/29 16:45:57 awgn Exp $
+ *  $Id$
  *  daemon stub-- 
  *
  *  Copyright (c) 2003 Nicola Bonelli <bonelli@antifork.org>
@@ -62,7 +62,7 @@ fflush (stderr);                                                        \
 
 /* global vars */
 
-static const char cvsid[] = "$Id: daemon.c,v 1.7 2003/04/29 16:45:57 awgn Exp $";
+static const char cvsid[] = "$Id$";
 
 int sock;			/* local socket */
 int scli;			/* socket client */

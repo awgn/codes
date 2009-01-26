@@ -42,7 +42,7 @@
 #include <limits.h>
 #include <errno.h>
 
-static char cvsid[] = "$Id: dump2stat.c,v 1.36 2004/04/15 10:59:46 awgn Exp $";
+static char cvsid[] = "$Id$";
 
 /* unit util */
 #define bit(x)         ((x)>>3 )

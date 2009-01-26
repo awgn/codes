@@ -1,4 +1,4 @@
-/* $Id: neo_getopt.c,v 1.19 2004/08/18 23:04:09 awgn Exp $
+/* $Id$
 */
 /*
  * neo_getopt(): an advanced version derived by original libc getopt.
@@ -37,7 +37,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-static const char cvsid[] = "$Id: neo_getopt.c,v 1.19 2004/08/18 23:04:09 awgn Exp $";
+static const char cvsid[] = "$Id$";
 static const char copyright[] = "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>";
 
 extern char *__progname;

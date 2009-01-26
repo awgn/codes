@@ -33,7 +33,7 @@
  * a novel circular stack: a LIFO/FIFO queues implementation.
  */
 
-static const char cvsid[]= "$Id: mstack.h,v 1.8 2005/11/21 23:21:09 awgn Exp $";
+static const char cvsid[]= "$Id$";
 
 
 #define __mstack_init(name,type,depth) { 							\

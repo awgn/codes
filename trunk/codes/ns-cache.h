@@ -1,5 +1,5 @@
 /*
- * $Id: ns-cache.h,v 1.2 2003/01/30 10:46:49 awgn Exp $
+ * $Id$
  *
  * Copyright (c) 2002 Nicola Bonelli <bonelli@antifork.org>
  *

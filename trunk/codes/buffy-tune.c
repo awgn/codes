@@ -41,7 +41,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-static char cvsid[] = "$Id: buffy-tune.c,v 1.10 2004/07/10 13:04:28 awgn Exp $";
+static char cvsid[] = "$Id$";
 
 #define bit         >>3
 #define kbit        <<7

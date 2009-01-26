@@ -1,5 +1,5 @@
 /*
- *  $Id: gethostbyif.c,v 1.3 2003/05/01 16:52:17 awgn Exp $
+ *  $Id$
  *  <ifbrowser>
  *
  *  Copyright (c) 1999 Bonelli Nicola <bonelli@antifork.org>

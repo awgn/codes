@@ -1,5 +1,5 @@
 /*
- * $Id: syncro.c,v 1.25 2005/10/10 11:00:41 awgn Exp $
+ * $Id$
  *
  * Copyright (c) 2005 Nicola Bonelli <bonelli@antifork.org>
  *
@@ -261,7 +261,7 @@ struct instance {
 /*
  * cvsid
  */
-__unused const char cvsid[] = "$Id: syncro.c,v 1.25 2005/10/10 11:00:41 awgn Exp $";
+__unused const char cvsid[] = "$Id$";
 
 
 /* syscall names for i386 from <asm/unistd.h> */

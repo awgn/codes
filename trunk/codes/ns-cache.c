@@ -48,7 +48,7 @@
 
 #include "ns-cache.h"
 
-static const char cvsid[] = "$Id: ns-cache.c,v 1.11 2003/10/25 13:56:01 awgn Exp $";
+static const char cvsid[] = "$Id$";
 static const char copyright[] = "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>";
 
 int allow_reverse;

@@ -1,5 +1,5 @@
 /*
- * $Id: neo_getopt.h,v 1.10 2003/05/06 01:24:12 awgn Exp $
+ * $Id$
  * neo_options
  * 
  * Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>

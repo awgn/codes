@@ -28,7 +28,7 @@
  *
  */
 
-static const char cvsid[]= "$Id: ring.c,v 1.1 2005/02/10 13:09:33 awgn Exp $";
+static const char cvsid[]= "$Id$";
 
 #include "ring.h"
 

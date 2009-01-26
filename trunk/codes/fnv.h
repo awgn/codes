@@ -1,8 +1,8 @@
 /*
  * fnv - Fowler/Noll/Vo- hash code
  *
- * @(#) $Revision: 1.3 $
- * @(#) $Id: fnv.h,v 1.3 2004/09/17 17:05:26 awgn Exp $
+ * @(#) $Revision$
+ * @(#) $Id$
  * @(#) $Source: /CVS/awgn.public_html/codes/fnv.h,v $
  *
  ***

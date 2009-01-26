@@ -1,5 +1,5 @@
 /*
- * $Id: dbksym.c,v 1.7 2004/08/20 14:23:53 awgn Exp $
+ * $Id$
  * dbksym --
  *
  * Copyright (c) 2003 Nicola Bonelli <bonelli@antifork.org>
@@ -123,7 +123,7 @@ fprintf (stderr, format, ## __VA_ARGS__); \
 /*
  * cvsid
  */
-__unused const char cvsid[] = "$Id: dbksym.c,v 1.7 2004/08/20 14:23:53 awgn Exp $";
+__unused const char cvsid[] = "$Id$";
 
 
 /*

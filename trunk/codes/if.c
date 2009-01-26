@@ -1,5 +1,5 @@
 /*
- *  $Id: if.c,v 1.5 2004/07/10 13:04:29 awgn Exp $
+ *  $Id$
  *  <ifbrowser>
  *
  *  Copyright (c) 1999 Bonelli Nicola <awgn@antifork.org>

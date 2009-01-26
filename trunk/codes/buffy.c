@@ -37,7 +37,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-static char cvsid[] __attribute__((unused)) = "$Id: buffy.c,v 1.15 2004/07/10 13:04:29 awgn Exp $";
+static char cvsid[] __attribute__((unused)) = "$Id$";
 
 #define BUFFY_LIB_C
 #include "buffy.h"

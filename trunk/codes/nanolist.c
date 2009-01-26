@@ -1,5 +1,5 @@
 /*
- * $Id: nanolist.c,v 1.7 2005/07/19 17:56:05 awgn Exp $
+ * $Id$
  * nanolist- add/replace headers to local-delivery mails.
  *
  * Copyright (c) 2003 Nicola Bonelli <bonelli@antifork.org>
@@ -49,7 +49,7 @@
 
 #include "nanolist.h"
 
-static const char cvsid[] = "$Id: nanolist.c,v 1.7 2005/07/19 17:56:05 awgn Exp $";
+static const char cvsid[] = "$Id$";
 
 #define BUFFLEN		1024
 
