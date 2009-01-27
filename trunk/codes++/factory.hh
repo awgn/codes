@@ -27,12 +27,30 @@ namespace more {
     };
 
     template <typename T, typename B>   // B must be the base class of T and T must be default constructible 
-    struct factory_alloc : public factory_base_allocator<B>
+    struct factory_allocator : public factory_base_allocator<B>
     {
         virtual T * alloc() {
             return new T;
         }
     };
+
+    /////////////////////////////////////////////////////////////////////
+    // utility: auto-register the allocator of E element (derived from B)
+    //                to the F factory
+
+    template <typename E  /* element */,  
+              typename B  /* base element */>
+    struct factory_register
+    {
+        template <typename F /* factory */>
+        factory_register(F &f, const std::string &k)
+        {
+            f.regist(k, new typename more::factory_allocator<E, B>);    
+        }
+    };
+
+    /////////////////////////////////////////
+    // factory class: K:key -> T:base_element
 
     template <typename K, typename T>
     class factory

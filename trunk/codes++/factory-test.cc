@@ -31,13 +31,18 @@ struct der2 : public base
     virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 };
 
+
+more::factory<std::string, base> factory;
+
+namespace {
+    more::factory_register<der1, base> _void_(factory,"der1");
+}
+
 int
 main(int argc, char *argv[])
 {
-    more::factory<std::string, base> factory;
-
-    factory.regist("der1", new more::factory_alloc<der1, base> );
-    factory.regist("der2", new more::factory_alloc<der2, base> );
+    // factory.regist("der1", new more::factory_allocator<der1, base> );
+    factory.regist("der2", new more::factory_allocator<der2, base> );
 
     std::tr1::shared_ptr<base> p1 = factory("der1");
     std::tr1::shared_ptr<base> p2 = factory("der2");
