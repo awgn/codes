@@ -24,8 +24,7 @@ namespace more {
     public:
         format(const std::string &f)
         : _M_format(f),
-          _M_args(),
-          _M_p(0)
+          _M_args()
         {}
 
         ~format()
@@ -74,8 +73,6 @@ namespace more {
     private:
         std::string _M_format;
         std::vector<std::string> _M_args;
-
-        int _M_p;
 
         // non-copyable idiom
         format(const format &);
