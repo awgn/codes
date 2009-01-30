@@ -31,7 +31,8 @@ namespace more {
     {
         bool _M_value;
 
-        sockaddress_base() : _M_value(false)
+        sockaddress_base() 
+        : _M_value(false)
         {}
 
         operator bool()
