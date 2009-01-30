@@ -39,7 +39,8 @@ namespace more {
     { 
        return (in >> elem);
     }
-    static bool kv_parse_elem(std::istream &in, bool &elem)
+    template <>
+    static bool kv_parse_elem<bool>(std::istream &in, bool &elem)
     {
         in >> std::noboolalpha;
         if (!(in >> elem)) {
@@ -48,7 +49,8 @@ namespace more {
         }
         return true;
     }
-    static bool kv_parse_elem(std::istream &in, std::string &elem)
+    template <>
+    static bool kv_parse_elem<std::string>(std::istream &in, std::string &elem)
     {
         char c;
 
