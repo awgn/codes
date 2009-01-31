@@ -17,14 +17,59 @@
 #include <vector>
 #include <cassert>
 
+#include <tr1/memory>
+#include <typecode.hh>
+
 namespace more { 
+
+    struct format_arg 
+    {
+        struct base
+        {
+            virtual void * get() = 0;
+            virtual int type() = 0;
+            virtual ~base() {}
+        };
+
+        template <typename T>
+        struct wrapper : public base
+        {
+            std::pair<int, T> _M_elem;
+
+            wrapper(int type, T value)
+            : _M_elem(std::make_pair(type,value))
+            {}
+
+            void *get()
+            { return reinterpret_cast<void *>(&_M_elem.second); }
+
+            int type() 
+            { return _M_elem.first; }
+
+        };
+
+        template <typename T>
+        format_arg(int type, T value)
+        : _M_ptr(new wrapper<T>(type,value))
+        {}
+
+        void *
+        get()
+        { return  _M_ptr->get(); }
+
+        int
+        type() const
+        { return _M_ptr->type(); }
+
+        std::tr1::shared_ptr<base> _M_ptr;
+    };
 
     class format
     { 
     public:
         format(const std::string &f)
         : _M_format(f),
-          _M_args()
+        _M_args()
         {}
 
         ~format()
@@ -32,10 +77,9 @@ namespace more {
 
         template <typename T>
         format &
-        operator%(const T & rhs)
+        operator % (const T rhs)
         {
-            std::stringstream tmp;
-            tmp << rhs; _M_args.push_back(tmp.str());
+            _M_args.push_back(format_arg(type_handling::type2code<T>::value, rhs));
             return *this;
         }   
 
@@ -43,7 +87,7 @@ namespace more {
         operator<<(std::ostream &out, const format &obj)
         {
             for(unsigned int i=0; i < obj._M_format.size();) {
-                
+
                 if ( obj._M_format[i] == '%' ) {
 
                     if (obj._M_format[++i] == '%') {
@@ -60,10 +104,36 @@ namespace more {
                     }
 
                     assert ( n <= obj._M_args.size() );
-                    out << obj._M_args[n-1];
+
+                    format_arg & e = const_cast<format_arg &>(obj._M_args[n-1]);
+
+                    switch(e.type()) {
+#define typecode(x) type_handling::x:  \
+                        out << *reinterpret_cast<type_handling::code2type<type_handling::x>::type *>(e.get()); \
+                        break
+                        case typecode(_char);
+                        case typecode(u_char);
+                        case typecode(short_int);
+                        case typecode(u_short_int);
+                        case typecode(_int);
+                        case typecode(u_int);
+                        case typecode(long_int);
+                        case typecode(u_long_int);
+                        case typecode(long_long_int);
+                        case typecode(u_long_long_int);
+                        case typecode(_float);
+                        case typecode(_double);
+                        case typecode(long_double);
+                        case typecode(char_p);
+                        case typecode(const_char_p);
+                        case typecode(std_string);
+                    default:
+                        out << "[unknown type]";
+                    }            
+
                     continue;
                 }
-                
+
                 out << obj._M_format[i++]; 
             }
 
@@ -72,7 +142,7 @@ namespace more {
 
     private:
         std::string _M_format;
-        std::vector<std::string> _M_args;
+        std::vector<format_arg> _M_args;
 
         // non-copyable idiom
         format(const format &);

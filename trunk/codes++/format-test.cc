@@ -14,7 +14,10 @@
 int
 main(int argc, char *argv[])
 {
-    std::cout << more::format("%1 %2 %3... %4 world!") % 1 % 2 % 3 % "hello" << std::endl;
+    std::string hello("hello");
+
+    std::cout << more::format("%1 %2 %3... %4 %5!") % 1 % 2 % 3 % hello % "world" << std::endl;
+
     return 0;
 }
     
