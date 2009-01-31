@@ -77,14 +77,14 @@ namespace more {
 
         template <typename T>
         format &
-        operator % (const T rhs)
+        operator % (T rhs)
         {
             _M_args.push_back(format_arg(type_handling::type2code<T>::value, rhs));
             return *this;
         }   
 
         friend std::ostream & 
-        operator<<(std::ostream &out, const format &obj)
+        operator<<(std::ostream &out, format &obj)
         {
             for(unsigned int i=0; i < obj._M_format.size();) {
 
@@ -105,9 +105,10 @@ namespace more {
 
                     assert ( n <= obj._M_args.size() );
 
-                    format_arg & e = const_cast<format_arg &>(obj._M_args[n-1]);
+                    format_arg & e = obj._M_args[n-1];
 
-                    switch(e.type()) {
+                    switch(e.type()) 
+                    {
 #define typecode(x) type_handling::x:  \
                         out << *reinterpret_cast<type_handling::code2type<type_handling::x>::type *>(e.get()); \
                         break
@@ -127,8 +128,6 @@ namespace more {
                         case typecode(char_p);
                         case typecode(const_char_p);
                         case typecode(std_string);
-                    default:
-                        out << "[unknown type]";
                     }            
 
                     continue;
