@@ -17,52 +17,9 @@
 #include <vector>
 #include <cassert>
 
-#include <tr1/memory>
 #include <typecode.hh>
 
 namespace more { 
-
-    struct format_arg 
-    {
-        struct base
-        {
-            virtual void * get() = 0;
-            virtual int type() = 0;
-            virtual ~base() {}
-        };
-
-        template <typename T>
-        struct wrapper : public base
-        {
-            std::pair<int, T> _M_elem;
-
-            wrapper(int type, T value)
-            : _M_elem(std::make_pair(type,value))
-            {}
-
-            void *get()
-            { return reinterpret_cast<void *>(&_M_elem.second); }
-
-            int type() 
-            { return _M_elem.first; }
-
-        };
-
-        template <typename T>
-        format_arg(int type, T value)
-        : _M_ptr(new wrapper<T>(type,value))
-        {}
-
-        void *
-        get()
-        { return  _M_ptr->get(); }
-
-        int
-        type() const
-        { return _M_ptr->type(); }
-
-        std::tr1::shared_ptr<base> _M_ptr;
-    };
 
     class format
     { 
@@ -79,61 +36,67 @@ namespace more {
         format &
         operator % (T rhs)
         {
-            _M_args.push_back(format_arg(type_handling::type2code<T>::value, rhs));
+            _M_args.push_back(gt::type(rhs));
             return *this;
         }   
+
+        operator std::string()
+        {
+            std::stringstream s;
+            s << *this;
+            return s.str();
+        }
 
         friend std::ostream & 
         operator<<(std::ostream &out, format &obj)
         {
             for(unsigned int i=0; i < obj._M_format.size();) {
 
-                if ( obj._M_format[i] == '%' ) {
-
-                    if (obj._M_format[++i] == '%') {
-                        out << obj._M_format[i++];
-                        continue;
-                    }
-                    assert( isdigit(obj._M_format[i]) );
-
-                    unsigned int n = 0; 
-                    for (; isdigit(obj._M_format[i]); i++)
-                    {
-                        n *= 10;
-                        n += (obj._M_format[i]-'0');
-                    }
-
-                    assert ( n <= obj._M_args.size() );
-
-                    format_arg & e = obj._M_args[n-1];
-
-                    switch(e.type()) 
-                    {
-#define typecode(x) type_handling::x:  \
-                        out << *reinterpret_cast<type_handling::code2type<type_handling::x>::type *>(e.get()); \
-                        break
-                        case typecode(_char);
-                        case typecode(u_char);
-                        case typecode(short_int);
-                        case typecode(u_short_int);
-                        case typecode(_int);
-                        case typecode(u_int);
-                        case typecode(long_int);
-                        case typecode(u_long_int);
-                        case typecode(long_long_int);
-                        case typecode(u_long_long_int);
-                        case typecode(_float);
-                        case typecode(_double);
-                        case typecode(long_double);
-                        case typecode(char_p);
-                        case typecode(const_char_p);
-                        case typecode(std_string);
-                    }            
-
+                if ( obj._M_format[i] != '%' ) {
+                    out << obj._M_format[i++]; 
                     continue;
                 }
 
-                out << obj._M_format[i++]; 
+                if (obj._M_format[++i] == '%') {
+                    out << obj._M_format[i++];
+                    continue;
+                }
+
+                assert( isdigit(obj._M_format[i]) );
+
+                unsigned int n = 0; 
+                for (; isdigit(obj._M_format[i]); i++)
+                {
+                    n *= 10;
+                    n += (obj._M_format[i]-'0');
+                }
+
+                assert ( n <= obj._M_args.size() );
+                gt::type & e = obj._M_args[n-1];
+
+                switch(e.code()) 
+                {
+#define typecode(xxx, e) gt::xxx:  \
+                    out <<  e.get<gt::xxx>(); \
+                    break
+                    case typecode(_char,e);
+                    case typecode(u_char,e);
+                    case typecode(short_int,e);
+                    case typecode(u_short_int,e);
+                    case typecode(_int,e);
+                    case typecode(u_int,e);
+                    case typecode(long_int,e);
+                    case typecode(u_long_int,e);
+                    case typecode(long_long_int,e);
+                    case typecode(u_long_long_int,e);
+                    case typecode(_float,e);
+                    case typecode(_double,e);
+                    case typecode(long_double,e);
+                    case typecode(char_p,e);
+                    case typecode(const_char_p,e);
+                    case typecode(std_string,e);
+                }            
+
             }
 
             return out;
@@ -141,12 +104,11 @@ namespace more {
 
     private:
         std::string _M_format;
-        std::vector<format_arg> _M_args;
+        std::vector<gt::type> _M_args;
 
         // non-copyable idiom
         format(const format &);
         format & operator=(const format &);
-
     };
 
 } // namespace more
