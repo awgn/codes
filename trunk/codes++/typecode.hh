@@ -12,10 +12,11 @@
 #define _TYPECODE_HH_ 
 
 #include <string>
+#include <cassert>
 
 namespace more {
 
-    namespace type_handling {
+    namespace gt {  // generic type
 
         enum code  
         {
@@ -81,6 +82,55 @@ namespace more {
         template <> struct code2type<const_char_p> { typedef const char * type; };
         template <> struct code2type<std_string> { typedef std::string type; };
 
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        template <int a, int b> struct max
+        {
+            enum { value = a > b ? a : b };
+        };
+
+        class type
+        {
+            int     _M_type;
+            char    _M_storage[ max < sizeof(char), 
+                                  max < sizeof(short int),
+                                    max < sizeof(int),
+                                      max < sizeof(long int),
+                                        max < sizeof(long long int),
+                                          max < sizeof(float),
+                                            max < sizeof(double),
+                                              max < sizeof(long double),
+                                                max < sizeof(char *), sizeof(std::string)
+                                                >::value 
+                                              >::value 
+                                            >::value 
+                                          >::value 
+                                        >::value 
+                                      >::value 
+                                    >::value 
+                                  >::value 
+                                >::value
+                                ];
+
+        public:
+            template <typename T>
+            type(T value)
+            : _M_type(type2code<T>::value), 
+              _M_storage()
+            { assert( sizeof(T) <= sizeof(_M_storage));
+                new (static_cast<void *>(_M_storage)) T(value); 
+            }
+
+            int code() const
+            { return _M_type; }
+            
+            template <int n>
+            typename code2type<n>::type &
+            get() 
+            { assert(n == _M_type);
+                return * reinterpret_cast< typename code2type<n>::type *>(_M_storage); }
+
+        };
     }
 }
 
