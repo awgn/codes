@@ -16,8 +16,7 @@
 
 #if   __GNUC__ >= 4
 #include <tr1/memory>
-#elif (__GNUC__ == 3) && (__GNUC_MINOR__ == 4)
-#include <bits/atomicity.h>
+#include <tr1/type_traits>
 #else
 #error "this compiler is not supported"
 #endif
@@ -41,11 +40,22 @@ namespace more {
     void wmb() { asm volatile("lock; addl $0,0(%%esp)" ::: "memory"); }
 #endif
 
-    template <typename T = _Atomic_word>
-    class atomic_word
+    namespace atomic_help {
+
+        template <bool> struct ct_assert;
+        template <>
+        struct ct_assert<true>
+        { enum { value = true }; };
+    }
+
+    template <typename T>
+    class atomic
     {
+        enum { enabled = atomic_help::ct_assert< std::tr1::is_integral<T>::value || 
+                                                 std::tr1::is_pointer<T>::value >::value };
+
     public:
-        explicit atomic_word(T v=T()) 
+        explicit atomic(T v=T()) 
         : _M_value(v)
         {}
 
@@ -56,7 +66,6 @@ namespace more {
         operator T() const volatile 
         { return _M_value; }
 
-#ifdef USE_GCC_BUILTIN
 #define __SYNC(builtin) const T builtin(T val) volatile { return __sync ## builtin(&_M_value, val); }
 
         const T 
@@ -104,20 +113,11 @@ namespace more {
         static void memory_barrier()
         { __sync_synchronize(); }
 
-#undef __SYNC
-#else // USE__GNU_CXX
-        _Atomic_word operator++(int) volatile
-        { return __gnu_cxx::__exchange_and_add(&_M_value,1); }
-
-        _Atomic_word operator--(int) volatile
-        { return __gnu_cxx::__exchange_and_add(&_M_value,-1); } 
-#endif
-
     private: 
         volatile T _M_value;
     };
 
-    // the following volatile_ptr is based on an idea of Alexandrescu, 
+    // the following atomic_ptr is based on an idea of Alexandrescu, 
     // see http://www.ddj.com/cpp/184403766 for further details.
 
     template <typename Atomicity = atomicity::GNU_CXX>
@@ -134,20 +134,20 @@ namespace more {
     };
 
     template <typename T, class Atomicity = atomicity::GNU_CXX>
-    class volatile_ptr {
+    class atomic_ptr {
 
     public:
-        explicit volatile_ptr(volatile T& obj)
+        explicit atomic_ptr(volatile T& obj)
         : _M_ptr (const_cast<T*>(&obj)), 
           _M_lock(const_cast<T*>(&obj)->_M_mutex) 
         {}
 
-        volatile_ptr(volatile T& obj, typename Atomicity::mutex& _m)
+        atomic_ptr(volatile T& obj, typename Atomicity::mutex& _m)
         : _M_ptr(const_cast<T*>(&obj)), 
           _M_lock(_m) 
         { }
  
-        ~volatile_ptr() 
+        ~atomic_ptr() 
         {}
 
         T& 
@@ -160,15 +160,12 @@ namespace more {
 
     private:
 
-        volatile_ptr(const volatile_ptr&);              // uncopyable
-        volatile_ptr& operator=(const volatile_ptr&);   // uncopyable
+        atomic_ptr(const atomic_ptr&);              // uncopyable
+        atomic_ptr& operator=(const atomic_ptr&);   // uncopyable
 
         T* _M_ptr;
         typename Atomicity::scoped_lock _M_lock;
     };
-
-    template <typename Atomicity>
-    class volatile_ptr<_Atomic_word,Atomicity>;       // use atomic_word class directly. 
 
 } // namespace more
 
