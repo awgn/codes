@@ -8,14 +8,27 @@
 // enumap: pure macro/meta/c++ programming trickology.
 //
 
-#ifndef PASTE
-#define PASTE(a,b) a ## b
-#define XPASTE(a,b) PASTE(a,b)
-#endif 
-#ifndef enumap_init_
-#define enumap_init_(ctor, n) \
+#if __GNUC__ == 4 && __GNUC_MINOR__ >= 3
+
+#define enumap_init(ctor, n) \
     ctor() \
-    { more::enumap_line<__LINE__+1, __LINE__+n>::init(this); }
+    { more::enumap_line<__COUNTER__+2, __COUNTER__+ n>::init(this); }
+
+#define enumap_entry(s,v) \
+    enum { s = v }; \
+    \
+    static inline const char *\
+    _get(more::enumap_tag<v>) \
+    { return #s; }; \
+    \
+    void _set(more::enumap_tag<__COUNTER__>) \
+    { direct[ #s ] = v; reverse[v ] = #s; }
+
+#else
+    #warning "with this compiler enumap_init() and enumap_entries() macros must be used in contiguous lines"
+#define enumap_init(ctor, n) \
+    ctor() \
+    { more::enumap_line<__LINE__+1, __LINE__+ n>::init(this); }
 
 #define enumap_entry(s,v) \
     enum { s = v }; \

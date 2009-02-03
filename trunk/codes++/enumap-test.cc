@@ -13,7 +13,7 @@
 
 struct table : more::enumap<table>
 {
-    enumap_init_(table,2);
+    enumap_init(table,2);
     enumap_entry(hello, 0);
     enumap_entry(world, 1);
 };
