@@ -1,9 +1,5 @@
-############################################################
-# key-value config file
 #
-
-# integer: the base is determined by the leading characters: 
-#          0x => std::hex, 0 => std::oct, std::dec otherwise 
+# kv-file example
 #
 
 unsigned_int = 69
@@ -11,6 +7,8 @@ unsigned_int = 69
 integers = 10     
 integers = 0x10     
 integers = 010     
+
+ empty =        # is ignored in non-strict mode 
 
 # strings: use quotation " to include spaces, use \" to include
 #          quotation
@@ -22,4 +20,25 @@ strings = "\"quoted string\""
 booleans = false  
 booleans = 1  
 
-# unknown = true
+block = {  
+          one:   1
+          two:   2 
+          # hello:  abc       
+        } 
+
+blocks = {  
+          one:   1 
+          two:   1 
+          three: 1 
+        } 
+
+blocks = {  
+          one:   2 
+          two:   2 
+          three: 2
+        } 
+
+
+ unknown = key  # ignored in non-strict mode 
+
+
