@@ -146,7 +146,7 @@ namespace sys
             if (_M_cursor < SIZE) {
                 _M_buffer[_M_cursor] = '\0';
                 _M_cursor = 0;
-                ::syslog(priority(), _M_buffer);
+                ::syslog(priority(), "%s", _M_buffer);
             }
             else {
                  _M_cursor = 0;
