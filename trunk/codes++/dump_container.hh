@@ -14,7 +14,6 @@
 #include <iostream>
 #include <string>
 #include <mtp.hh>
-#include <gcc_version.h>
 
 namespace more {
 
@@ -60,9 +59,6 @@ namespace more {
     { return t; }
 
     template <>
-    #if GCC_VERSION < 40300
-    static 
-    #endif
     inline
     std::tr1::add_const<dump_mangling_traits<char>::type>::type 
     dump_type_mangling<char>(const char &c)
@@ -72,9 +68,6 @@ namespace more {
         return buf;
     }
     template <>
-    #if GCC_VERSION < 40300
-    static 
-    #endif
     inline
     std::tr1::add_const<dump_mangling_traits<unsigned char>::type>::type
     dump_type_mangling<unsigned char>(const unsigned char &c)

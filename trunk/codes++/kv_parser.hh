@@ -23,12 +23,6 @@
 //////////////////////////////////
 //  key-value config file parser 
 
-#ifndef GCC_VERSION
-#define GCC_VERSION (__GNUC__ * 10000 \
-                     + __GNUC_MINOR__ * 100 \
-                     + __GNUC_PATCHLEVEL__)
-#endif
-
 namespace more {
 
     namespace kv {
@@ -106,9 +100,6 @@ namespace more {
         }
 
         template <>
-        #if GCC_VERSION < 40300
-        static 
-        #endif
         inline bool lex_parse<bool>(std::istream &in, bool &elem)
         {
             in >> std::noboolalpha;
@@ -119,9 +110,6 @@ namespace more {
             return true;
         }
         template <>
-        #if GCC_VERSION < 40300
-        static
-        #endif 
         inline bool lex_parse<std::string>(std::istream &in, std::string &elem)
         {
             char c;
