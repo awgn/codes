@@ -23,6 +23,12 @@
 //////////////////////////////////
 //  key-value config file parser 
 
+#ifndef GCC_VERSION
+#define GCC_VERSION (__GNUC__ * 10000 \
+                     + __GNUC_MINOR__ * 100 \
+                     + __GNUC_PATCHLEVEL__)
+#endif
+
 namespace more {
 
     namespace kv {
@@ -88,19 +94,22 @@ namespace more {
         //      note: specializations do not partecipate to overloading
 
         template <typename E>
-        static bool lex_parse(std::istream &in, E &elem)
+        static inline bool lex_parse(std::istream &in, E &elem)
         { 
             return (in >> elem);
         }        
 
         template <typename T, bool S>
-        static bool lex_parse(std::istream &in, block<T,S> &b)
+        static inline bool lex_parse(std::istream &in, block<T,S> &b)
         { 
             return b.parse(in, "block");
         }
 
         template <>
-        bool lex_parse<bool>(std::istream &in, bool &elem)
+        #if GCC_VERSION < 40300
+        static 
+        #endif
+        inline bool lex_parse<bool>(std::istream &in, bool &elem)
         {
             in >> std::noboolalpha;
             if (!(in >> elem)) {
@@ -110,7 +119,10 @@ namespace more {
             return true;
         }
         template <>
-        bool lex_parse<std::string>(std::istream &in, std::string &elem)
+        #if GCC_VERSION < 40300
+        static
+        #endif 
+        inline bool lex_parse<std::string>(std::istream &in, std::string &elem)
         {
             char c;
 
@@ -147,7 +159,7 @@ namespace more {
             return true;
         }
         template <typename E>
-        static bool lex_parse(std::istream &in, std::vector<E> &elems)
+        static inline bool lex_parse(std::istream &in, std::vector<E> &elems)
         {
             E tmp;
             if ( lex_parse(in,tmp) ) {
