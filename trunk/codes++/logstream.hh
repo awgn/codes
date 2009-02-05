@@ -33,18 +33,28 @@ namespace more {
         enum { EMERG, ALERT, CRIT, ERR, 
                WARNING, NOTICE, INFO, DEBUG };
 
+        friend std::ostream &priority(std::ostream &out, int n = EMERG)
+        {
+            logstreambuf * lb = dynamic_cast<logstreambuf *>(out.rdbuf());
+            if(lb) 
+                lb->priority(n);
+            return out;
+        }
+
+        friend std::ostream &default_priority(std::ostream &out, int n = EMERG)
+        {
+            logstreambuf * lb = dynamic_cast<logstreambuf *>(out.rdbuf());
+            if(lb) 
+                lb->default_priority(n);
+            return out;
+        }
+
         logstreambuf(std::streambuf *out)
-        : _M_priority(EMERG), _M_leveldefault(EMERG), _M_level(-1),  _M_out(out)
+        : _M_priority(-1), _M_default_priority(EMERG), _M_loglevel(-1),  _M_out(out)
         {}
 
-        void priority(int n)
-        { _M_priority = n; }
-
-        void loglevel_default(int n)
-        { _M_leveldefault = n; }
-
         void loglevel(int n)
-        { _M_level = n; }
+        { _M_loglevel = n; }
 
         static int iword_index()
         { static int index = std::ios_base::xalloc();
@@ -55,7 +65,7 @@ namespace more {
         virtual std::streamsize
         xsputn (const char *s, std::streamsize n)
         {
-            if ( currentLevel() <= _M_priority) {
+            if ( prio() <= _M_loglevel) {
                 return _M_out->sputn(s,n);
             }
             return n; 
@@ -64,49 +74,44 @@ namespace more {
         virtual int_type
         overflow (int_type c)
         {
-            if (currentLevel() <= _M_priority) {
-                if (c == '\n')
-                    _M_level = -1;
-                return _M_out->sputc(c);
-            }
+            int p = prio();
+            if (c == '\n')
+                _M_priority = -1;
+
+            if ( p <= _M_loglevel)  
+               return _M_out->sputc(c);
+             
             return c;
         }
 
         int sync()
         {
-            if (currentLevel() <= _M_priority)
+            if (prio() <= _M_loglevel)
                 return  _M_out->pubsync();
             return 0;
         }
 
+        void priority(int n)
+        { _M_priority = n; }
+
+        void default_priority(int n)
+        { _M_default_priority = n; }
+
     private:        
         
-        int currentLevel() const 
-        { return _M_level != -1 ? _M_level : _M_leveldefault; }
+        int prio() const 
+        { return _M_priority != -1 ? _M_priority : _M_default_priority; }
 
         int _M_priority;
+        int _M_default_priority;
 
-        int _M_leveldefault;
-        int _M_level;
+        int _M_loglevel;
 
         std::streambuf *_M_out;
     };
 
-    static inline std::ostream &loglevel(std::ostream &out, int n = logstreambuf::EMERG)
-    {
-        logstreambuf * lb = dynamic_cast<logstreambuf *>(out.rdbuf());
-        if(lb) 
-            lb->loglevel(n);
-        return out;
-    }
-    static inline std::ostream &loglevel_default(std::ostream &out, int n = logstreambuf::EMERG)
-    {
-        logstreambuf * lb = dynamic_cast<logstreambuf *>(out.rdbuf());
-        if(lb) 
-            lb->loglevel_default(n);
-        return out;
-    }
-
+    std::ostream &priority(std::ostream &out, int n);
+    std::ostream &default_priority(std::ostream &out, int n);
 
 } // namespace more
 
