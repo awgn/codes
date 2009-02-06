@@ -257,7 +257,7 @@ namespace posix
 
     };
 
-    //////////// __base_lock ////////////
+    ////////////////////////////// base_lock  //////////////////////////////
 
     template <int n>
     class __base_lock
@@ -298,7 +298,6 @@ namespace posix
           _M_mutex(m)
         {   
             if ( !base_lock::_M_lock_cnt++ ) {
-                // std::cout << __PRETTY_FUNCTION__ << ": set cancelstate to PTHREAD_CANCEL_DISABLE" << std::endl; 
                 ::pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&_M_cs_old);
             }
             
@@ -311,7 +310,6 @@ namespace posix
         {
             _M_mutex.unlock();
             if (!--base_lock::_M_lock_cnt) {
-                // std::cout << __PRETTY_FUNCTION__ << ": restore calcelstate" << std::endl; 
                 ::pthread_setcancelstate(_M_cs_old,NULL);
             }
         }
