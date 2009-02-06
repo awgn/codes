@@ -19,14 +19,23 @@
 //
 
 #define SINGLETON_CTOR(x, ...)  \
-using generic::singleton<x>::instance; \
-x(const tag &abc,  ## __VA_ARGS__) : generic::singleton<x>(abc)
+using more::singleton<x>::instance; \
+x(const tag &abc,  ## __VA_ARGS__) : more::singleton<x>(abc)
+
+#define TEMPLATE_SINGLETON_CTOR(x, ...)  \
+using more::singleton<x>::instance; \
+x(const typename more::singleton<x>::tag &abc,  ## __VA_ARGS__) : more::singleton<x>(abc)
 
 #define VOLATILE_SINGLETON_CTOR(x, ...)  \
-using generic::singleton<x,true>::instance; \
-x(const tag &abc,  ## __VA_ARGS__) : generic::singleton<x,true>(abc)
+using more::singleton<x,true>::instance; \
+x(const tag &abc,  ## __VA_ARGS__) : more::singleton<x,true>(abc)
 
-namespace generic
+#define TEMPLATE_VOLATILE_SINGLETON_CTOR(x, ...)  \
+using more::singleton<x,true>::instance; \
+x(const typename more::singleton<x,true>::tag &abc,  ## __VA_ARGS__) : more::singleton<x,true>(abc)
+
+
+namespace more 
 {
     template <typename T, bool VOL = false>
     struct singleton
