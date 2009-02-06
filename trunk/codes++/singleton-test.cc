@@ -11,13 +11,13 @@
 #include <iostream>
 #include <singleton.hh>
 
-struct hello1: protected generic::singleton<hello1> 
+struct hello1: protected more::singleton<hello1> 
 {
     SINGLETON_CTOR(hello1) {}
 };
 
 
-class hello2 : protected generic::singleton<hello2> 
+class hello2 : protected more::singleton<hello2> 
 {
     int __par1;
     int __par2;
@@ -33,7 +33,7 @@ public:
     { return __par2; }
 };
 
-class hello3 : protected generic::singleton<hello3, true /* volatile singleton */ > {
+class hello3 : protected more::singleton<hello3, true /* volatile singleton */ > {
 
     int __par1;
     int __par2;
