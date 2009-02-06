@@ -44,7 +44,7 @@ public:
 
     ~Hello()
     {
-        this->cancel();        
+        this->cancel();
     }
 };
 
@@ -70,6 +70,7 @@ public:
     {
         this->cancel();
     }
+
 };
 
 
@@ -81,7 +82,7 @@ public:
         {
             scoped_lock<rw_mutex, base_lock::reader> lock(global_mutex_rw);
 
-            for(int i=0;i<3;i++) {
+            for(int i=0;i<5;i++) {
                 std::cout << "    [" << std::hex << self() << "] reader!\n"; sleep(1);
             }
         }
@@ -218,8 +219,10 @@ int main(int argc, char *argv[])
     {
         Reader *one = new Reader;
         one->start();
+        sleep(1);
         delete one;
     }
+
     std::cout << "\n[*] "RED"stopping a detached thread in a critical section..."RESET"\n";
     {
         Reader *one = new Reader;
