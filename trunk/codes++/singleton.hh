@@ -22,35 +22,71 @@
 using more::singleton<x>::instance; \
 x(const tag &abc,  ## __VA_ARGS__) : more::singleton<x>(abc)
 
+#define CONST_SINGLETON_CTOR(x, ...)  \
+using more::singleton<x, const more::singleton_type>::instance; \
+x(const tag &abc,  ## __VA_ARGS__) : more::singleton<x, const more::singleton_type>(abc)
+
+#define VOLATILE_SINGLETON_CTOR(x, ...)  \
+using more::singleton<x, volatile more::singleton_type>::instance; \
+x(const tag &abc,  ## __VA_ARGS__) : more::singleton<x, volatile more::singleton_type>(abc)
+
+#define CONST_VOLATILE_SINGLETON_CTOR(x, ...)  \
+using more::singleton<x, const volatile more::singleton_type>::instance; \
+x(const tag &abc,  ## __VA_ARGS__) : more::singleton<x, const volatile more::singleton_type>(abc)
+
 #define TEMPLATE_SINGLETON_CTOR(x, ...)  \
 using more::singleton<x>::instance; \
 x(const typename more::singleton<x>::tag &abc,  ## __VA_ARGS__) : more::singleton<x>(abc)
 
-#define VOLATILE_SINGLETON_CTOR(x, ...)  \
-using more::singleton<x,true>::instance; \
-x(const tag &abc,  ## __VA_ARGS__) : more::singleton<x,true>(abc)
+#define CONST_TEMPLATE_SINGLETON_CTOR(x, ...)  \
+using more::singleton<x, const more::singleton_type>::instance; \
+x(const typename more::singleton<x, const more::singleton_type>::tag &abc,  ## __VA_ARGS__) : more::singleton<x, const more::singleton_type>(abc)
 
-#define TEMPLATE_VOLATILE_SINGLETON_CTOR(x, ...)  \
-using more::singleton<x,true>::instance; \
-x(const typename more::singleton<x,true>::tag &abc,  ## __VA_ARGS__) : more::singleton<x,true>(abc)
+#define VOLATILE_TEMPLATE_SINGLETON_CTOR(x, ...)  \
+using more::singleton<x, volatile more::singleton_type>::instance; \
+x(const typename more::singleton<x, volatile more::singleton_type>::tag &abc,  ## __VA_ARGS__) : more::singleton<x, volatile more::singleton_type>(abc)
+
+#define CONST_VOLATILE_TEMPLATE_SINGLETON_CTOR(x, ...)  \
+using more::singleton<x, const volatile more::singleton_type>::instance; \
+x(const typename more::singleton<x, const volatile more::singleton_type>::tag &abc,  ## __VA_ARGS__) : more::singleton<x, const volatile more::singleton_type>(abc)
 
 
 namespace more 
 {
-    template <typename T, bool VOL = false>
+
+    struct singleton_type {};
+
+    template <typename T, typename CV = singleton_type >
     struct singleton
-    {    
-        template <bool, typename> struct enable_volatile_if; 
-        template <typename U> 
-        struct enable_volatile_if<true,U> 
+    {   
+        template <typename U, bool c, bool v> struct __add_cv;
+
+        template <typename U>
+        struct __add_cv<U, true, false>
+        {
+            typedef typename std::tr1::add_const<U>::type type;
+        };
+        template <typename U>
+        struct __add_cv<U, false, true>
         {
             typedef typename std::tr1::add_volatile<U>::type type;
         };
-        template <typename U> 
-        struct enable_volatile_if<false,U> 
+        template <typename U>
+        struct __add_cv<U, true, true>
+        {
+            typedef typename std::tr1::add_cv<U>::type type;
+        };
+        template <typename U>
+        struct __add_cv<U, false, false>
         {
             typedef U type;
         };
+       
+        template <typename U, typename V>
+        struct add_cv_qualifier
+        {
+            typedef typename __add_cv<U, std::tr1::is_const<V>::value, std::tr1::is_volatile<V>::value>::type type;
+        }; 
 
     private:
         singleton();
@@ -62,7 +98,7 @@ namespace more
         {}
 
         struct tag {
-            friend class singleton<T, VOL>;
+            friend class singleton<T, CV>;
         private:
             tag()  {}
             ~tag() {}
@@ -75,51 +111,51 @@ namespace more
 
         // singleton instance...
         //
-        static typename enable_volatile_if<VOL,T>::type & instance()
-        {
-            static typename enable_volatile_if<VOL,T>::type _one_((tag()));
+        static typename add_cv_qualifier<T,CV>::type & instance()
+       {
+            static typename add_cv_qualifier<T,CV>::type _one_((tag()));
             return _one_;
         }
 
         // multitons...
         //
         template <typename U>
-        static typename enable_volatile_if<VOL,T>::type & instance(const U &u = U())
+        static typename add_cv_qualifier<T,CV>::type & instance(const U &u = U())
         {
-            static typename enable_volatile_if<VOL,T>::type _n_((tag()), u);
+            static typename add_cv_qualifier<T,CV>::type _n_((tag()), u);
             return _n_;
         }
         template <typename U, typename V>
-        static typename enable_volatile_if<VOL,T>::type & instance(const U &u = U(), const V &v = V())
+        static typename add_cv_qualifier<T,CV>::type & instance(const U &u = U(), const V &v = V())
         {
-            static typename enable_volatile_if<VOL,T>::type _n_((tag()), u, v);
+            static typename add_cv_qualifier<T,CV>::type  _n_((tag()), u, v);
             return _n_;
         }
         template <typename U, typename V, typename W>
-        static typename enable_volatile_if<VOL,T>::type & instance(const U &u = U(), const V &v = V(), const W &w = W())
+        static typename add_cv_qualifier<T,CV>::type & instance(const U &u = U(), const V &v = V(), const W &w = W())
         {
-            static typename enable_volatile_if<VOL,T>::type _n_((tag()), u, v, w);
+            static typename add_cv_qualifier<T,CV>::type _n_((tag()), u, v, w);
             return _n_;
         }
         template <typename U, typename V, typename W, typename X>
-        static typename enable_volatile_if<VOL,T>::type & instance(const U &u = U(), const V &v = V(), const W &w = W(), 
+        static typename add_cv_qualifier<T,CV>::type & instance(const U &u = U(), const V &v = V(), const W &w = W(), 
                                                                    const X &x = X())
         {
-            static typename enable_volatile_if<VOL,T>::type _n_((tag()), u, v, w, x);
+            static typename add_cv_qualifier<T,CV>::type _n_((tag()), u, v, w, x);
             return _n_;
         }
         template <typename U, typename V, typename W, typename X, typename Y>
-        static typename enable_volatile_if<VOL,T>::type & instance(const U &u = U(), const V &v = V(), const W &w = W(), 
+        static typename add_cv_qualifier<T,CV>::type & instance(const U &u = U(), const V &v = V(), const W &w = W(), 
                                                                    const X &x = X(), const Y &y = Y())
         {
-            static typename enable_volatile_if<VOL,T>::type _n_((tag()), u, v, w, x, y);
+            static typename add_cv_qualifier<T,CV>::type _n_((tag()), u, v, w, x, y);
             return _n_;
         }
         template <typename U, typename V, typename W, typename X, typename Y, typename Z>
-        static typename enable_volatile_if<VOL,T>::type & instance(const U &u = U(), const V &v = V(), const W &w = W(), 
+        static typename add_cv_qualifier<T,CV>::type & instance(const U &u = U(), const V &v = V(), const W &w = W(), 
                                                                    const X &x = X(), const Y &y = Y(), const Z &z = Z())
         {
-            static typename enable_volatile_if<VOL,T>::type _n_((tag()), u, v, w, x, y, z);
+            static typename add_cv_qualifier<T,CV>::type _n_((tag()), u, v, w, x, y, z);
             return _n_;
         }
 
