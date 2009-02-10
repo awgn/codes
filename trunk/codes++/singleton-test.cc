@@ -11,58 +11,48 @@
 #include <iostream>
 #include <singleton.hh>
 
-struct singleton1: protected more::singleton<singleton1> 
+struct s0: public more::singleton<s0, more::singleton_type> 
 {
-    SINGLETON_CTOR(singleton1) {}
+    s0( singleton_tag tag )
+    : more::singleton<s0, more::singleton_type>(tag)
+    {}
 };
 
-
-class singleton2 : protected more::singleton<singleton2> 
+struct s1: public more::singleton<s1, volatile more::singleton_type, TYPELIST(int)> 
 {
-    int __par1;
-    int __par2;
+    int _M_value;
 
-public:
-    SINGLETON_CTOR(singleton2), __par1(0), __par2(1) {}
-
-    const int par1() const 
-    { return __par1; }
-
-    const int par2() const 
-    { return __par2; }
+    s1( singleton_tag tag, int value)
+    : more::singleton<s1, volatile more::singleton_type, TYPELIST(int) >(tag),
+      _M_value(value)
+    {}
 };
 
-class singleton3 : protected more::singleton<singleton3, volatile more::singleton_type > {
+struct s2: public more::singleton<s2, const more::singleton_type, TYPELIST(std::string, std::string) > {
 
-    int __par1;
-    int __par2;
+    std::string _M_par1;
+    std::string _M_par2;
 
-public:
-    VOLATILE_SINGLETON_CTOR(singleton3, int _par1, int _par2 = 0 ), __par1(_par1), __par2(_par2) {}
-
-    const int par1() const volatile 
-    { return __par1; }
-
-    const int par2() const volatile 
-    { return __par2; }
+    s2( singleton_tag tag, const std::string &p1, const std::string &p2)
+    : more::singleton<s2, const more::singleton_type, TYPELIST(std::string, std::string) > (tag),
+      _M_par1(p1),
+      _M_par2(p2)
+      {}
 };
 
 
 template <typename T>
-class singleton4 : protected more::singleton<singleton4<T>, const more::singleton_type > {
+struct s3: public more::singleton< s3<T>, more::singleton_type, TYPELIST(T) > 
+{
+    T _M_value;
 
-    T __par1;
-    T __par2;
-
-public:
-    CONST_TEMPLATE_SINGLETON_CTOR(singleton4, T _par1, T _par2 = T() ), __par1(_par1), __par2(_par2) {}
-
-    const T par1() const 
-    { return __par1; }
-
-    const T par2() const 
-    { return __par2; }
+    s3( typename more::singleton< s3<T>, more::singleton_type, TYPELIST(T) >::singleton_tag tag, T value )
+    : more::singleton< s3<T>, more::singleton_type, TYPELIST(T)>(tag),
+      _M_value(value)
+    {}
 };
+
+
 
 
 int 
@@ -72,49 +62,38 @@ main(int argc, char *argv[])
 #define RED     "\E[0;31;1m"
 #define RESET   "\E[0m"
 
-    singleton1 &ref1 = singleton1::instance();
-    singleton2 &ref2 = singleton2::instance();
-    volatile singleton3 &ref3 = singleton3::instance<int,int>(0,1);           // singleton: slot signature <int,int> 
+    s0 & r0 = s0::instance();
+    volatile s1 & r1 = s1::instance(97);
+    const s2 & r2 = s2::instance("hello","world");   // initialize the singleton
 
-    std::cout << RED << "\nsingleton instance..." << RESET << std::endl;
+    std::cout << RED << "\nsingleton instance (constructor on first-use):" << RESET << std::endl;
 
-    std::cout << "ref1 -> singleton instance @" << std::hex << &ref1  << '\n';
-    std::cout << "ref2 -> singleton instance @" << std::hex << &ref2  << '\n';
-    std::cout << "ref3 -> singleton instance @" << std::hex << &ref3  << '\n';
+    std::cout << "r0 -> singleton instance @" << std::hex << &r0  << '\n';
+    std::cout << "r1 -> singleton instance @" << std::hex << &r1  << '\n';
+    std::cout << "r2 -> singleton instance @" << std::hex << &r2  << '\n';
 
-    volatile singleton3 &ref4 = singleton3::instance<int>(1);               // singleton: slot <int> 
+    volatile s1 & q1 = s1::instance();
+    const s2 & q2 = s2::instance();
 
-    std::cout << RED << "\nsingleton instances: slot <int,int>,  slot <int>" << RESET << std::endl;
+    std::cout << RED << "\nsingleton instances (access): " << RESET << std::endl;
 
-    std::cout << "ref3: slot @" << std::hex << &ref3 << " par:" << std::dec << ref3.par1() << ',' << ref3.par2() << '\n';
-
-    std::cout << RED << "\ncv-qualified singleton instances: " << RESET << std::endl;
-
-    std::cout << "ref4: slot @" << std::hex << &ref4 << " par:" << std::dec << ref4.par1() << ',' << ref4.par2() << '\n';
-
-    volatile singleton3 & ref5 = singleton3::instance<int,int>();
-    volatile singleton3 & ref6 = singleton3::instance<int>();
-
-    std::cout << "ref5: slot @" << std::hex << &ref5 << " par:" << std::dec << ref5.par1() << ',' << ref5.par2() << '\n';
-    std::cout << "ref6: slot @" << std::hex << &ref6 << " par:" << std::dec << ref6.par1() << ',' << ref6.par2() << '\n';
+    std::cout << "q1: slot @" << std::hex << &q1 << " value:" << std::dec << q1._M_value << '\n';
+    std::cout << "q2: slot @" << std::hex << &q2 << " value:" << q2._M_par1 << ' ' << q2._M_par2 << '\n';
 
     std::cout << RED << "\ntemplate singleton<T> instance:" << RESET << std::endl;
 
-    const singleton4<double> & ref7 = singleton4<double>::instance<double,double>(1.1,1.2);
+    s3<double> & t3 = s3<double>::instance(11.2);
 
-    
-    std::cout << "ref7: slot @" << std::hex << &ref7 << " par:" << std::dec << ref7.par1() << ',' << ref7.par2() << '\n';
+    std::cout << "t3: slot @" << std::hex << &t3 << " value:" << std::dec << t3._M_value << '\n';
 
 #ifdef ERR_0
-    singleton1 a;  // <- instances of singleton are not allowed 
+    s1 a;  // <- instances of singleton are not allowed 
 #endif
 #ifdef ERR_1
-    singleton1 b ( const_cast<const singleton1 &>(singleton1::instance()) ); // <- instances are not copyable
+    s1 b ( const_cast<const s1 &>(s1::instance()) ); // <- instances are not copyable
 #endif
 #ifdef ERR_2
-    singleton1 b;
-    b = const_cast<const singleton1 &>(singleton1::instance()); // <- instances are not copyable
+    s1 & r1 = s1::instance(97); // cv-correctness
 #endif
-
     return 0;
 }
