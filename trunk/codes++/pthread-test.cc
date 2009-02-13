@@ -83,7 +83,8 @@ public:
             scoped_lock<rw_mutex, base_lock::reader> lock(global_mutex_rw);
 
             for(int i=0;i<5;i++) {
-                std::cout << "    [" << std::hex << self() << "] reader!\n"; sleep(1);
+                std::cout << "    [" << std::hex << self() << "] reader!\n"; 
+                usleep(500000);
             }
         }
 
@@ -104,7 +105,8 @@ public:
         scoped_lock<rw_mutex, base_lock::writer> lock(global_mutex_rw);
 
         for(int i=0;i<3;i++) {
-            std::cout << "    [" << std::hex << self() << "] writer!\n"; sleep(1);
+            std::cout << "    [" << std::hex << self() << "] writer!\n"; 
+            usleep(500000);
         }
         return NULL;
     }
@@ -126,9 +128,10 @@ struct WaitCond : public posix::thread {
         std::cout << "    [" << std::hex << self() << "] waiting on cond... (" << 
         std::boolalpha << (bool)global_cond << ")\n"; 
 
-        global_cond.wait(global_mutex);
+        global_cond.wait(lock);
 
-        std::cout << "    [" << std::hex << self() << "] signaled...\n"; sleep(1);
+        std::cout << "    [" << std::hex << self() << "] signaled...\n"; 
+        usleep(500000);
         return NULL;
     } 
 
@@ -254,6 +257,19 @@ int main(int argc, char *argv[])
         wc->join();
         delete wc;
     }
+
+    std::cout << "\n[*] "RED "terminate on cond thread..."RESET"\n";
+    {   
+        WaitCond * wc = new WaitCond;
+        wc->start();
+
+        std::cout << "    -> waiting for the thread to wait for conditions to be signaled...\n";
+        sleep(1);
+
+        wc->detach();
+        delete wc;
+    }
+
 
     return 0;
 }
