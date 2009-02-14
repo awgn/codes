@@ -11,6 +11,7 @@
 #ifndef _EXEC_HH_
 #define _EXEC_HH_
 
+#include <tr1/functional>
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -29,36 +30,16 @@ namespace more {
 
     class exec
     {
-        std::vector<std::string> _M_arg;
-
-        int     _M_status;
-        int     _M_pipe[2];
-        bool    _M_wait;
-        pid_t   _M_pid;
-
-        void run()
-        {
-            int n = _M_arg.size();
-            const char *argv[n+1];
-
-            for(int i=0; i < n;i++) 
-                argv[i]=_M_arg[i].c_str();
-            argv[n] = 0;
-
-            if ( execve(argv[0], const_cast<char * const *>(argv), NULL) == -1 ) {
-                std::clog << "execve: " << strerror(errno) << std::endl;
-                raise(SIGABRT);            
-            }
-        }
-
     public:
+        typedef std::tr1::function<int(const char *, char * const[])> exec_type;
 
-        exec(const std::string &arg0)
+        exec(const std::string &arg0, exec_type ex = ::execv)
         : _M_arg(),
           _M_status(-1),
           _M_pipe(),
           _M_wait(false),
-          _M_pid(-1)
+          _M_pid(-1),
+          _M_exec(ex)
         { _M_arg.push_back(arg0); }
 
         ~exec()
@@ -196,6 +177,32 @@ namespace more {
         pid_t
         pid() const 
         { return _M_pid; }
+
+    private:
+
+        std::vector<std::string> _M_arg;
+
+        int     _M_status;
+        int     _M_pipe[2];
+        bool    _M_wait;
+        pid_t   _M_pid;
+
+        exec_type _M_exec;
+
+        void run()
+        {
+            int n = _M_arg.size();
+            const char *argv[n+1];
+
+            for(int i=0; i < n;i++) 
+                argv[i]=_M_arg[i].c_str();
+            argv[n] = 0;
+
+            if ( _M_exec(argv[0], const_cast<char * const *>(argv)) == -1 ) {
+                std::clog << "exec: " << strerror(errno) << std::endl;
+                raise(SIGABRT);            
+            }
+        }
 
     };
 
