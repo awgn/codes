@@ -33,7 +33,7 @@ namespace more {
 
         int     _M_status;
         int     _M_pipe[2];
-        bool    _M_waited;
+        bool    _M_wait;
         pid_t   _M_pid;
 
         void run()
@@ -57,7 +57,7 @@ namespace more {
         : _M_arg(),
           _M_status(-1),
           _M_pipe(),
-          _M_waited(false),
+          _M_wait(false),
           _M_pid(-1)
         { _M_arg.push_back(arg0); }
 
@@ -66,7 +66,7 @@ namespace more {
             if (_M_pipe[0] > fileno(stderr)) {
                 close(_M_pipe[0]);
             }
-            if (!_M_waited)
+            if (_M_wait)
                 this->wait();
         }
 
@@ -105,6 +105,7 @@ namespace more {
 
         bool operator()()
         {
+            _M_wait = true;
             _M_pid = fork();
             if (_M_pid == -1) {
                 std::clog << "fork: " << strerror(errno) << std::endl;
@@ -121,6 +122,7 @@ namespace more {
         template <int fd>
         bool operator()( redirect_fd<fd> nf )
         {            
+            _M_wait = true;
             if ( pipe(_M_pipe) < 0 ) {
                 std::clog << "pipe: " << strerror(errno) << std::endl;
                 return false;
@@ -153,7 +155,7 @@ namespace more {
 
         bool wait()
         {
-            _M_waited = true;
+            _M_wait = false;
             if ( waitpid(_M_pid,&_M_status,0) < 0 ) {
                 std::clog << "waitpid: " << strerror(errno) << std::endl;
                 return false;
