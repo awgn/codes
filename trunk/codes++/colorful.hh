@@ -59,10 +59,12 @@ namespace more {
         return out;
     }
 
+    static inline 
     void ecma_parameter(std::ostream &out, mtp::TL::null)
     {}
 
     template <typename T>
+    static inline 
     void ecma_parameter(std::ostream &out, T)
     {
         out << ";" << T::head::attribute_value; 
