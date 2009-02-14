@@ -16,7 +16,7 @@
 #include <map>
 #include <set>
 
-namespace generic
+namespace more
 {
     template <typename T, typename U >
     class collector
@@ -105,6 +105,6 @@ namespace generic
     template <typename T, typename U>
     std::map<void *, T> collector<T,U>::_M_rmap __attribute((init_priority(101)));
 
-} // namespace generic
+} // namespace more
 
 #endif /* COLLECTOR_HH */

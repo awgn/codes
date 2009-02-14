@@ -19,7 +19,7 @@
 #include <string>
 #include <map>
 
-namespace generic 
+namespace more 
 {
     template <class KEY, class VALUE>
     class cache {
@@ -200,6 +200,6 @@ namespace generic
         cache_type _M_db;
     };
 
-} // namespace generic
+} // namespace more
 
 #endif /* CACHE_HH */

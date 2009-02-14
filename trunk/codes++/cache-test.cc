@@ -18,7 +18,7 @@ struct my_entry {
     int val;
 };
 
-generic::cache<std::string,my_entry> cc;
+more::cache<std::string,my_entry> cc;
 
 my_entry *cc_find(const std::string &key) 
 {
@@ -27,7 +27,7 @@ my_entry *cc_find(const std::string &key)
     try {
         f = cc.find(key);
     }
-    catch(generic::cache<std::string,my_entry>::expired &e) {
+    catch(more::cache<std::string,my_entry>::expired &e) {
         std::cout << "   entry expired@" << e.pimp << ": {" << e.pimp->val << "} (cache<>::expired has been thrown)" << std::endl;
         return e.pimp;
     }
@@ -79,7 +79,7 @@ main(int argc, char *argv[])
     sleep(2);
 
     std::cout << std::boolalpha << "dump the content of the cache...\n";
-    generic::cache<std::string, my_entry>::iterator it = cc.begin();
+    more::cache<std::string, my_entry>::iterator it = cc.begin();
     for(; it != cc.end(); ++it) 
     {
         std::cout << "   key:" << (*it).first <<  

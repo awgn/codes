@@ -10,7 +10,7 @@
 
 #include "probe.hh"
 
-using namespace generic;
+using namespace more;
 
 int main()
 {

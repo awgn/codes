@@ -12,7 +12,7 @@
 
 #include <iostream>
 
-namespace generic 
+namespace more 
 {
 
 #define probe_dump(x) std::cout << x << " :" << this << ": " << __PRETTY_FUNCTION__ << '\n'
@@ -84,7 +84,7 @@ namespace generic
 
     };
 
-} // namespace generic
+} // namespace more
 
 #endif /* PROBE_HH */
 

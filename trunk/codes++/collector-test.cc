@@ -13,10 +13,10 @@
 #include <string>
 #include <iostream>
 
-struct test : public generic::collector<std::string, test>
+struct test : public more::collector<std::string, test>
 {
     test(const std::string &x)
-    : generic::collector<std::string, test>(x),
+    : more::collector<std::string, test>(x),
       id(x)
     {
         std::cout << __PRETTY_FUNCTION__ << ": " << id << std::endl;
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     test * x = new test("heap3");
     delete x;
 
-    test * y = generic::collector<std::string, test>::get("heap1");
+    test * y = more::collector<std::string, test>::get("heap1");
     delete y;
 
     std::cout << "main: epilog ------------------ \n";

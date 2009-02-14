@@ -11,7 +11,7 @@
 #ifndef FUNCTOR_HH
 #define FUNCTOR_HH
 
-// this (generic) functor implementation bases on automatic-type-erasure
+// this generic functor implementation bases on automatic-type-erasure
 // mechanism [ 9.7.4 C++ Template Metaprogramming: Abrahams/Gurtovoy ]
 //
 
@@ -21,7 +21,7 @@
 #error "g++ compiler not supported"
 #endif
 
-namespace generic {
+namespace more {
 
     template <class R, class P>
     class functor
