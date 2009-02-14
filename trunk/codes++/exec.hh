@@ -74,6 +74,19 @@ namespace more {
         arg(const std::string &arg)
         { _M_arg.push_back(arg); return *this; }
 
+        std::string
+        cmd() const 
+        {
+            std::string ret;
+            std::vector<std::string>::const_iterator it = _M_arg.begin();
+            for(; it != _M_arg.end(); ++it)
+            {
+                ret.append(*it).append(" ");
+            }
+
+            return ret;
+        }
+
         template <int fd>
         struct redirect_fd 
         {

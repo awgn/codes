@@ -17,6 +17,8 @@ main(int argc, char *argv[])
 
     abc.arg("/").arg("-la");
 
+    std::cout << "running: " << abc.cmd() << std::endl;
+
     int n;
     if ( !abc(more::exec::redirect_fd<1>(n)) ) {
         std::cout << "exec error!" << std::endl;
