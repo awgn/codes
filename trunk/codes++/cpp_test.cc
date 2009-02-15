@@ -507,7 +507,7 @@ int run_cpptests()
 int
 main(int argc, char *argv[])
 {
-    std::string default_rc( getenv("HOME") ); default_rc.append("/.testcpprc");
+    std::string default_rc( getenv("HOME") ); default_rc.append("/.cpp_testrc");
     std::string target;
 
     const char * rcfile = default_rc.c_str(); 
