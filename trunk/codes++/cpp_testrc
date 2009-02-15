@@ -1,0 +1,21 @@
+#################################
+#     cpp_test config file      # 
+#################################
+
+# compilers:
+
+compiler = /usr/bin/g++-4.1
+compiler = /usr/bin/g++-4.3
+compiler = /usr/bin/llvm-g++
+
+# warning options:
+
+warning_opt = -Wall
+warning_opt = -Wextra
+# warning_opt = -Weffc++
+
+# optimization options:
+
+optimization_opt = "-O0 -g2"
+optimization_opt = "-O3 -g0 -fomit-frame-pointer"
+optimization_opt = "-O3 -g0 -fomit-frame-pointer -fno-exceptions"
