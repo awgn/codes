@@ -53,14 +53,14 @@ namespace more {
     };
 
     template <typename T>
-    std::ostream & operator<<(std::ostream & out, colorful<T> tag)
+    std::ostream & operator<<(std::ostream & out, colorful<T>)
     {
         out << "\E["; ecma_parameter(out,typename colorful<T>::type_value()); out << "m";
         return out;
     }
 
     static inline 
-    void ecma_parameter(std::ostream &out, mtp::TL::null)
+    void ecma_parameter(std::ostream &, mtp::TL::null)
     {}
 
     template <typename T>
