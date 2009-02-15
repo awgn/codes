@@ -12,7 +12,6 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
-#include <list>
 #include <iterator>
 
 #include <cstring>
@@ -54,7 +53,7 @@
 
 extern char *__progname;
 const char usage[]=
-     "%s [options] source.cpp:\n"
+     "%s [options] src.cpp src2.cpp... -- @ runtime args...\n"
       "   -t target           cpp test file\n"
       "   -l library          link library\n"
       "     -pthread          link pthread library\n"
@@ -77,23 +76,25 @@ typedef more::colorful< TYPELIST(more::ecma::bold)> BOLD;
 
 class testcpp
 {   
-    std::string             _M_compiler;
-    std::list<std::string>  _M_opt;
-    std::list<std::string>  _M_macro;
-    std::list<std::string>  _M_source;
-    std::list<std::string>  _M_library;
-    std::list<std::string>  _M_include;
+    std::string _M_compiler;
 
-    int                     _M_run_status;
-    int                     _M_run_expect_status;
-	int						_M_compile_status;
-    int                     _M_compile_expect_status;
+    std::vector<std::string>  _M_opt;
+    std::vector<std::string>  _M_macro;
+    std::vector<std::string>  _M_source;
+    std::vector<std::string>  _M_library;
+    std::vector<std::string>  _M_include;
+    std::vector<std::string>  _M_rt_option;
 
-    bool                    _M_verbose_compile;
-    bool                    _M_verbose_run;
+    int         _M_run_status;
+    int         _M_run_expect_status;
+	int			_M_compile_status;
+    int         _M_compile_expect_status;
 
-    int				        _M_id;
-    static int				_S_id;
+    bool        _M_verbose_compile;
+    bool        _M_verbose_run;
+
+    int			_M_id;
+    static int	_S_id;
 
 	std::string bin() const
 	{ return more::format("testbin_%1") % _M_id; }
@@ -105,6 +106,8 @@ public:
       _M_macro(),
       _M_source(),
       _M_library(),
+      _M_include(),
+      _M_rt_option(),
       _M_run_status(-1),
       _M_run_expect_status(0),
 	  _M_compile_status(-1),
@@ -122,20 +125,23 @@ public:
     member_reader(std::string,compiler);
     member_writer(testcpp, std::string,compiler);
 
-    member_reader(std::list<std::string>,opt);
+    member_reader(std::vector<std::string>,opt);
     member_push_back(testcpp, std::string,opt);
 
-    member_reader(std::list<std::string>,macro);
+    member_reader(std::vector<std::string>,macro);
     member_push_back(testcpp, std::string,macro);
 
-    member_reader(std::list<std::string>,source);
-    member_push_back(testcpp, std::string,source);
+    member_reader(std::vector<std::string>,source);
+    member_push_back(testcpp, std::string, source);
 
-    member_reader(std::list<std::string>,library);
+    member_reader(std::vector<std::string>,library);
     member_push_back(testcpp, std::string, library);
 
-    member_reader(std::list<std::string>,include);
+    member_reader(std::vector<std::string>,include);
     member_push_back(testcpp, std::string, include);
+
+    member_reader(std::vector<std::string>,rt_option);
+    member_push_back(testcpp, std::string, rt_option);
 
     member_reader(bool, verbose_compile);
     member_writer(testcpp, bool, verbose_compile);
@@ -186,20 +192,16 @@ public:
         }
 
         if ( _M_verbose_compile ) {
-
             if ( ! cc() ) {
                 std::cout << __FUNCTION__ << ": compile error: " << strerror(errno) << std::endl;
                 return;
             }
-
         } else {
-
             int n;
             if ( ! cc( more::exec::redirect_fd<2>(n) ) ) {
                 std::cout << __FUNCTION__ << ": compile error: " << strerror(errno) << std::endl;
                 return;
             }
-
         }
 
         cc.wait();
@@ -219,7 +221,11 @@ public:
             return false;
 
         more::exec target("./" + this->bin(), ::execvp );
-        std::cout << BOLD() << "running " << RESET() << "./" << this->bin();
+
+        std::for_each(_M_rt_option.begin(), _M_rt_option.end(), std::tr1::bind(&more::exec::arg, std::tr1::ref(target), _1 ));
+
+        std::cout << BOLD() << "running: " << RESET() << target.cmd() << " -> ";
+        std::cout.flush();
 
         timeval a, b;
 
@@ -231,6 +237,23 @@ public:
         target.wait();
         gettimeofday(&b, NULL);
 
+        std::pair<int,int> ret = tv_sub(a,b);
+        std::cout << "time: { sec=" << ret.first << " usec=" << ret.second << " } ";
+
+        if ( target.is_exited() ) { 
+		    _M_run_status = target.exit_status();
+            std::cout << " exit_value: " << _M_run_status;
+        }
+        
+        std::cout << std::endl;
+        return true;    
+	}
+
+    /////////////////////////////////////////////// timeval diff
+
+    std::pair<int,int>
+    tv_sub(const timeval &a, const timeval &b)
+    {
         int usec = b.tv_usec - a.tv_usec;
         int sec = b.tv_sec - a.tv_sec;
 
@@ -238,15 +261,10 @@ public:
             sec  -= 1;
             usec += 1000000;
         }
+       
+       return std::make_pair(sec,usec); 
+    }
 
-        std::cout << " time: { sec=" << sec << " usec=" << usec << " } " << std::endl;
-
-        if ( target.is_exited() ) 
-		    _M_run_status = target.exit_status();
-
-        return true;    
-	}
-	
     /////////////////////////////////////////////// posteriori checks 
 
     bool compile_succeeded() const
@@ -282,14 +300,15 @@ std::vector<testcpp>     cpptests;
 std::vector<std::string> libraries;
 std::vector<std::string> includes;
 std::vector<std::string> macros;
+std::vector<std::string> sources;
+
+std::vector<std::string> runtime_opts;
 
 ///////////////////////// free functions
 
 bool
 parse_ifdef(const std::string &source, std::vector<std::string> &ret, const std::string &match = std::string())
 {
-    std::vector<std::string> commit;
-
     std::ifstream src(source.c_str());
     std::string line;
 
@@ -304,15 +323,14 @@ parse_ifdef(const std::string &source, std::vector<std::string> &ret, const std:
             if (!match.empty() && key.compare(0,match.size(),match) )
                 continue;
 
-            commit.push_back(key);
+            ret.push_back(key);
         }
     }
 
-    std::swap(commit,ret);
     return true;
 }
 
-bool load_cpptests(const std::string &target)
+bool load_cpptests()
 {
     std::vector<std::string>::const_iterator comp = config.get<compiler>().begin();
     std::vector<std::string>::const_iterator warn = config.get<warning_opt>().begin();
@@ -334,8 +352,12 @@ bool load_cpptests(const std::string &target)
         for(; warn != config.get<warning_opt>().end(); ++warn)
         {
             testcpp x;
-            x.compiler(*comp).source(target);
-           
+            x.compiler(*comp);
+            
+            // load sources
+            std::for_each(sources.begin(), sources.end(),
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::source), std::tr1::ref(x), _1));
+
             std::vector<std::string> copt;
             std::vector<std::string>::const_iterator it = config.get<warning_opt>().begin();
             do {
@@ -343,20 +365,23 @@ bool load_cpptests(const std::string &target)
             } while ( it++ != warn);
 
             std::for_each(copt.begin(), copt.end(), 
-                          std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::opt), std::tr1::ref(x), _1));  
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::opt), std::tr1::ref(x), _1));  
 
             // load libraries
             std::for_each(libraries.begin(), libraries.end(),
-                          std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::tr1::ref(x), _1));  
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::tr1::ref(x), _1));  
 
             // load includes
             std::for_each(includes.begin(), includes.end(),
-                          std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::tr1::ref(x), _1));  
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::tr1::ref(x), _1));  
 
             // load macros 
             std::for_each(macros.begin(), macros.end(),
-                          std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::tr1::ref(x), _1));  
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::tr1::ref(x), _1));  
 
+            // load runtime options 
+            std::for_each(runtime_opts.begin(), runtime_opts.end(),
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::rt_option), std::tr1::ref(x), _1));  
 
             x.compile_expectation( testcpp::success() );
             x.run_expectation( testcpp::success() );
@@ -377,8 +402,10 @@ bool load_cpptests(const std::string &target)
     std::cout << "loading compile errors tests: ";
 
     std::vector<std::string> ifdef;
-    parse_ifdef(target, ifdef, COMPILE_ERROR);
-   
+
+    std::for_each(sources.begin(), sources.end(),
+                  std::tr1::bind( parse_ifdef, _1, std::tr1::ref(ifdef), COMPILE_ERROR ));              
+
     // for each compiler
 
     for( ; comp != config.get<compiler>().end(); ++comp)
@@ -391,8 +418,12 @@ bool load_cpptests(const std::string &target)
         for(; it != ifdef.end(); ++it) 
         {
             testcpp x;
-            x.compiler(*comp).source(target);
-         
+            x.compiler(*comp);
+ 
+            // load sources
+            std::for_each(sources.begin(), sources.end(),
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::source), std::tr1::ref(x), _1));
+
             std::string errmacro("-D");
             errmacro.append(*it);
 
@@ -401,15 +432,15 @@ bool load_cpptests(const std::string &target)
 
             // load libraries
             std::for_each(libraries.begin(), libraries.end(),
-                          std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::tr1::ref(x), _1));  
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::tr1::ref(x), _1));  
 
             // load includes
             std::for_each(includes.begin(), includes.end(),
-                          std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::tr1::ref(x), _1));  
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::tr1::ref(x), _1));  
 
             // load macros 
             std::for_each(macros.begin(), macros.end(),
-                          std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::tr1::ref(x), _1));  
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::tr1::ref(x), _1));  
 
             x.compile_expectation( testcpp::failure() );
             x.verbose_compile(false);
@@ -440,21 +471,29 @@ bool load_cpptests(const std::string &target)
         for(; opt != config.get<optimization_opt>().end(); ++opt)
         {
             testcpp x;
-            x.compiler(*comp).source(target);
+            x.compiler(*comp);
+
+            // load sources
+            std::for_each(sources.begin(), sources.end(),
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::source), std::tr1::ref(x), _1));
 
             x.opt(*opt);
 
             // load libraries
             std::for_each(libraries.begin(), libraries.end(),
-                          std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::tr1::ref(x), _1));  
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::tr1::ref(x), _1));  
 
             // load includes
             std::for_each(includes.begin(), includes.end(),
-                          std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::tr1::ref(x), _1));  
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::tr1::ref(x), _1));  
 
             // load macros 
             std::for_each(macros.begin(), macros.end(),
-                          std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::tr1::ref(x), _1));  
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::tr1::ref(x), _1));  
+
+            // load runtime options 
+            std::for_each(runtime_opts.begin(), runtime_opts.end(),
+            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::rt_option), std::tr1::ref(x), _1));  
 
             x.compile_expectation( testcpp::success() );
             x.run_expectation( testcpp::success() );
@@ -478,9 +517,8 @@ int run_cpptests()
         it->compile();
 
         if ( !it->compile_succeeded() ) {
-            std::cout << "           ["
-                      << BOLD() << "failure" << RESET() << ": compiler exit status = " 
-                      << it->compile_status() << "]" << RESET() << std::endl;
+            std::cout << BOLD() << "failure: " << RESET() << "compiler exit status = " 
+                      << it->compile_status() << std::endl;
             exit(1);
         }      
     }
@@ -492,9 +530,8 @@ int run_cpptests()
             continue;
 
         if ( !it->run_succeeded() ) {
-            std::cout << "           ["
-                      << BOLD() << "failure" << RESET() << ": binary exit status = " 
-                      << it->run_status() << "]" << RESET() << std::endl;
+            std::cout << BOLD() << "failure: " << RESET() << "binary exit_status = " 
+                      << it->run_status() << std::endl;
             exit(1);
         }      
     }
@@ -571,7 +608,24 @@ main(int argc, char *argv[])
         exit(1);
     }
 
-    load_cpptests(target);
+    while( argc > 0 ) {
+        if ( *argv[0] == '@' ) 
+            break;
+        sources.push_back(argv[0]); 
+        argc -= 1;
+        argv += 1;
+    }
+
+    argc -= 1;
+    argv += 1;
+
+    while( argc > 0 ) {
+        runtime_opts.push_back(argv[0]); 
+        argc -= 1;
+        argv += 1;
+    }
+ 
+    load_cpptests();
 
     run_cpptests();
 
