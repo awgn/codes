@@ -10,6 +10,7 @@
 
 #include <tr1/functional>
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <string>
 #include <iterator>
@@ -69,7 +70,7 @@ const std::string  WARNING_ERROR("WARNING_ERROR_");
 using std::tr1::reference_wrapper;
 using namespace std::tr1::placeholders;
 
-typedef more::colorful< TYPELIST(more::ecma::bold, more::ecma::fg_red)>  RED;
+typedef more::colorful< TYPELIST(more::ecma::bold, more::ecma::fg_green)>  GREEN;
 typedef more::colorful< TYPELIST(more::ecma::bold, more::ecma::fg_blue)> BLUE;
 typedef more::colorful< TYPELIST(more::ecma::reset)> RESET;
 typedef more::colorful< TYPELIST(more::ecma::bold)> BOLD;
@@ -86,6 +87,8 @@ class testcpp
     std::vector<std::string>  _M_rt_option;
 
     int         _M_run_status;
+    int         _M_run_signal;
+
     int         _M_run_expect_status;
 	int			_M_compile_status;
     int         _M_compile_expect_status;
@@ -99,6 +102,9 @@ class testcpp
 	std::string bin() const
 	{ return more::format("testbin_%1") % _M_id; }
 
+    int id() const
+    { return _M_id; }
+
 public:
     testcpp()
     : _M_compiler(),
@@ -109,6 +115,7 @@ public:
       _M_include(),
       _M_rt_option(),
       _M_run_status(-1),
+      _M_run_signal(-1),
       _M_run_expect_status(0),
 	  _M_compile_status(-1),
       _M_compile_expect_status(0),
@@ -185,10 +192,10 @@ public:
         std::for_each(_M_library.begin(), _M_library.end(),std::tr1::bind(&more::exec::arg, std::tr1::ref(cc), _1)); 
 
         if ( _M_compile_expect_status ) {
-            std::cout << RED() << "compile: " << RESET() << cc.cmd() << std::endl;
+            std::cout << " #" << std::setw(2) << std::left << this->id() << BOLD() << " compile: " << RESET() << cc.cmd() << std::endl;
         }
         else {
-            std::cout << BOLD() << "compile: " << RESET() << cc.cmd() << std::endl;
+            std::cout << " #" << std::setw(2) << std::left << this->id() << GREEN() << " compile: " << RESET() << cc.cmd() << std::endl;
         }
 
         if ( _M_verbose_compile ) {
@@ -224,7 +231,7 @@ public:
 
         std::for_each(_M_rt_option.begin(), _M_rt_option.end(), std::tr1::bind(&more::exec::arg, std::tr1::ref(target), _1 ));
 
-        std::cout << BOLD() << "running: " << RESET() << target.cmd() << " -> ";
+        std::cout << " #" << std::setw(2) << std::left << this->id() << BLUE() << " running: " << RESET() << target.cmd() << " -> ";
         std::cout.flush();
 
         timeval a, b;
@@ -244,7 +251,12 @@ public:
 		    _M_run_status = target.exit_status();
             std::cout << " exit_value: " << _M_run_status;
         }
-        
+       
+        if ( target.is_signaled() ) {
+            _M_run_signal = target.term_signal();
+            std::cout << " killed by signal: " << _M_run_signal;
+        } 
+
         std::cout << std::endl;
         return true;    
 	}
@@ -338,7 +350,9 @@ bool load_cpptests()
 
     ///////////////////// simple compile test
 
-    std::cout << "\nloading compile tests: ";
+    std::cout << "|=----------------------------  cpp_test  -------------------------------=|\n";
+    
+    std::cout << " loading compile tests: ";
 
     // for each compiler
 
@@ -399,7 +413,7 @@ bool load_cpptests()
     warn = config.get<warning_opt>().begin();
     opt  = config.get<optimization_opt>().begin();
 
-    std::cout << "loading compile errors tests: ";
+    std::cout << " loading compile errors tests: ";
 
     std::vector<std::string> ifdef;
 
@@ -460,7 +474,7 @@ bool load_cpptests()
 
     // for each compiler
 
-    std::cout << "loading runtime tests: ";
+    std::cout << " loading runtime tests: ";
 
     for( ; comp != config.get<compiler>().end(); ++comp)
     {
@@ -510,18 +524,20 @@ bool load_cpptests()
 
 int run_cpptests()
 {
-    std::cout << '\n';
+    std::cout << "|=-----------------------------------------------------------------------=|\n";
 
     std::vector<testcpp>::iterator it = cpptests.begin();
     for( ; it != cpptests.end(); ++it ) {
         it->compile();
 
         if ( !it->compile_succeeded() ) {
-            std::cout << BOLD() << "failure: " << RESET() << "compiler exit status = " 
+            std::cout << BOLD() << "    failure: " << RESET() << "compiler exit status = " 
                       << it->compile_status() << std::endl;
             exit(1);
         }      
     }
+
+    std::cout << "|=-----------------------------------------------------------------------=|\n";
 
     // run tests
     it = cpptests.begin();
@@ -530,13 +546,12 @@ int run_cpptests()
             continue;
 
         if ( !it->run_succeeded() ) {
-            std::cout << BOLD() << "failure: " << RESET() << "binary exit_status = " 
-                      << it->run_status() << std::endl;
+            std::cout << BOLD() << "    failure: " << RESET() << "test not passed!" << std::endl; 
             exit(1);
         }      
     }
 
-    std::cout << BOLD() << "all tests passed successfully!" << RESET() << std::endl;
+    std::cout << "|=------------------  All tests passed successfully!  -------------------=|\n";
     return 0;
 }
 
