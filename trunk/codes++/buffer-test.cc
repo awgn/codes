@@ -170,15 +170,15 @@ int main()
     v.push_back(-1);
     v.push_back(0);
    
-    std::cout << "\ninsert FRONT: enough reverse_capability:\n";
+    std::cout << "\ninsert FRONT: enough reverse_capacity:\n";
     std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin(), v.begin(), v.end()) << std::endl;
     dump_buff("xxx",xxx);
 
-    std::cout << "insert FRONT: insufficient reverse_capability:\n";
+    std::cout << "insert FRONT: insufficient reverse_capacity:\n";
     std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin(), v.begin(), v.end()) << std::endl;
     dump_buff("xxx",xxx);
 
-    std::cout << "insert FRONT: insufficient capability (failure):\n";
+    std::cout << "insert FRONT: insufficient capacity (failure):\n";
     std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin(), v.begin(), v.end()) << std::endl;
     dump_buff("xxx",xxx);
 
@@ -190,11 +190,11 @@ int main()
 
     std::vector<int> pad(5,5);
     
-    std::cout << "\ninsert CENTER: enough capability:\n";
+    std::cout << "\ninsert CENTER: enough capacity:\n";
     std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin()+1, pad.begin(), pad.end()) << std::endl;
     dump_buff("xxx",xxx);
 
-    std::cout << "\ninsert CENTER: insufficient capability:\n";
+    std::cout << "\ninsert CENTER: insufficient capacity:\n";
     std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin()+1, pad.begin(), pad.end()) << std::endl;
     dump_buff("xxx",xxx);
 
@@ -203,7 +203,7 @@ int main()
     std::cout << "RESET:";
     dump_buff("xxx",xxx);
 
-    std::cout << "\ninsert BACK: enough capability:\n";
+    std::cout << "\ninsert BACK: enough capacity:\n";
     std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.end(), pad.begin(), pad.end()) << std::endl;
     dump_buff("xxx",xxx);
 
@@ -214,11 +214,11 @@ int main()
     std::cout << "RESET:";
     dump_buff("xxx",xxx);
 
-    std::cout << "insert BACK:  enough capability:\n";
+    std::cout << "insert BACK:  enough capacity:\n";
     std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.end(), pad.begin(), pad.end()) << std::endl;
     dump_buff("xxx",xxx);
 
-    std::cout << "insert BACK: insufficient capability:\n";
+    std::cout << "insert BACK: insufficient capacity:\n";
     std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.end(), pad.begin(), pad.end()) << std::endl;
     dump_buff("xxx",xxx);
 
@@ -229,7 +229,7 @@ int main()
     std::cout << "RESET:";
     dump_buff("xxx",xxx);
 
-    std::cout << "\ninsert CENTER: enough capability:\n";
+    std::cout << "\ninsert CENTER: enough capacity:\n";
     std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin()+1, pad.begin(), pad.end()) << std::endl;
     dump_buff("xxx",xxx);
 
