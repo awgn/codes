@@ -146,9 +146,9 @@ namespace posix
             }
             catch(std::exception &e)  // application exception;
             {
-                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread termined!\n";
+                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!\n";
             }
-            catch(...)  // assuming it's a calcel expection that must be rethrown;
+            catch(...)  // pthread_cancel cause the thread to throw an exception.. we must rethrow it;
             {
                 throw;
             }
