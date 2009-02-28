@@ -18,8 +18,6 @@
 
 namespace more { 
 
-    using namespace std::tr1::placeholders;
-
     class observer
     { 
     public:
@@ -54,7 +52,8 @@ namespace more {
     { enum { value = v }; };
 
     template < template <typename Tp, typename Alloc = std::allocator<Tp> > 
-               class Cont, bool observerOwnership = false >
+               class Cont,                      /* container template */ 
+               bool observerOwnership = false   /* onwership policy: false = raw pointers, true = shared_ptr<> */ >
     class subject
     { 
     public:
