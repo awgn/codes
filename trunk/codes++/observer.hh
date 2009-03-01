@@ -11,6 +11,8 @@
 #ifndef _OBSERVER_HH_
 #define _OBSERVER_HH_ 
 
+#include <atomicity-policy.hh>
+
 #include <tr1/functional>
 #include <tr1/memory>
 #include <algorithm>
@@ -52,8 +54,9 @@ namespace more {
     { enum { value = v }; };
 
     template < template <typename Tp, typename Alloc = std::allocator<Tp> > 
-               class Cont,                      /* container template */ 
-               bool observerOwnership = false   /* onwership policy: false = raw pointers, true = shared_ptr<> */ >
+               class Cont,                          /* container template */ 
+               bool observerOwnership = false       /* onwership policy: false = raw pointers, true = shared_ptr<> */ ,
+               typename Atomicity = atomicity::NONE /* for multithread set to GNU_CXX */ >
     class subject
     { 
     public:
@@ -62,34 +65,38 @@ namespace more {
                 observer * >::type ptr_type; 
 
         subject()
+        : _M_observers(),
+          _M_mutex()
         {}
 
         void notify()
         {
+            typename Atomicity::scoped_lock lock(_M_mutex);
             std::for_each(_M_observers.begin(),  _M_observers.end(), std::tr1::mem_fn(&observer::updatex)); 
         }
 
         void attach(ptr_type o)
         {
+            typename Atomicity::scoped_lock lock(_M_mutex);
             if ( std::find( _M_observers.begin(), _M_observers.end(), o ) == _M_observers.end())
                 _M_observers.push_back(o);
         }
         void detach(ptr_type o)
         {
+            typename Atomicity::scoped_lock lock(_M_mutex);
             typename Cont<ptr_type>::iterator it = std::find(_M_observers.begin(), _M_observers.end(), o);
             if ( it != _M_observers.end())
                 _M_observers.erase(it);
         }
 
-        int nobserver() const
-        { return _M_observers.size(); }
-
     protected:
         ~subject()
         {}
 
-    private:        
+    private:  
+        
         Cont< ptr_type >  _M_observers;
+        typename Atomicity::mutex  _M_mutex;
     };
 
 } // namespace more
