@@ -10,25 +10,28 @@
 
 #include <iostream>
 #include <buffer.hh>
+#include <colorful.hh>
 
+#include <iterator>
 #include <vector>
+
+using namespace more;
+
+typedef colorful< TYPELIST(ecma::bold) > bold;
+typedef colorful< TYPELIST(ecma::bold,ecma::fg_red) > red_bold;
+typedef colorful< TYPELIST(ecma::reset) > rst;
 
 template <typename T>
 void dump_buff(const char *name, const more::buffer<T> &x, bool content = true)
 {
-    std::cout << "*** " << name << ": " << "size()=" << x.size() << " max_size()=" << x.max_size() << " capacity()=" << x.capacity()
+    std::cout << bold() << "*** " << name << ": " << rst() << "size()=" << x.size() << " max_size()=" << x.max_size() << " capacity()=" << x.capacity()
               << " reverse_capacity()=" << x.reverse_capacity() << " empty()=" << std::boolalpha << x.empty() << std::endl;
 
     if (content) {
-        std::cout << " {";
-        typename more::buffer<T>::const_iterator it = x.begin();
-        for(; it != x.end(); ++it) {
-            std::cout << *it << ",";
-        }
-        std::cout << "}";
+        std::cout << "    {";
+        std::copy(x.begin(), x.end(), std::ostream_iterator<T>(std::cout, ","));
+        std::cout << "}" << std::endl;
     }
-
-    std::cout << std::endl;
 }
 
 
@@ -43,123 +46,146 @@ struct object
 int main()
 {
     more::buffer<int> abc(10);
-
     dump_buff("abc", abc);
 
-    std::cout << "    push_back(1,2,3,4)" << std::endl; abc.push_back(1); abc.push_back(2); abc.push_back(3); abc.push_back(4);
+    std::cout << bold() << "push_back(1,2,3,4)" << rst() << std::endl; 
+    
+    dump_buff("abc", abc);
+    abc.push_back(1); abc.push_back(2); abc.push_back(3); abc.push_back(4);
     dump_buff("abc", abc);
 
-    more::buffer<int> xxx (abc); std::cout << "xxx(abc)\n";
-
+    more::buffer<int> xxx (abc); 
+    
+    std::cout << bold() << "xxx(abc)" << rst() << std::endl;
     dump_buff("xxx",xxx);
-    more::buffer<int> yyy(3); std::cout << "yyy = abc: (truncated)\n";
 
+    std::cout << bold() << "yyy(3); yyy = abc:" << rst() << std::endl;
+    more::buffer<int> yyy(3); 
+
+    dump_buff("yyy",yyy);
     yyy = abc;
     dump_buff("yyy",yyy);
 
 
-    std::cout << "abc[0]=" << abc[0] << std::endl;
+    std::cout << bold() << "abc[0]=" << abc[0] << rst() << std::endl;
     dump_buff("abc", abc);
 
+
     // discard()
-    std::cout << "abc.discard(2)\n";
+    std::cout << bold() << "abc.discard(2)" << rst() << std::endl;
     abc.discard(2);
 
     std::cout << "abc[0]=" << abc[0] << std::endl;
     dump_buff("abc", abc);
 
     // commit()
+    std::cout << bold() << "abc.commit(2):" << rst() << std::endl;
     more::buffer<int>::iterator t = abc.end();
 
     * t++ = 5;
     * t++ = 6;
 
-    std::cout << "abc.commit(2)\n";
     abc.commit(2);
     dump_buff("abc", abc);
 
     // clear()
-    std::cout << "abc.clear()\n";
+    std::cout << bold() << "abc.clear():" << rst() << std::endl;
+    dump_buff("abc", abc);
     abc.clear();
     dump_buff("abc", abc);
 
     // reset()
-    std::cout << "abc.reset()\n";
+    std::cout << bold() << "abc.reset():" << rst() << std::endl;
+    dump_buff("abc", abc);
     abc.reset();
     dump_buff("abc", abc);
 
+
     // swap()
-    std::cout << "abc.swap(xxx)\n";
+    std::cout << bold() <<  "abc.swap(xxx):" << rst() << std::endl;    
+    
+    dump_buff("abc",abc);
+    dump_buff("xxx",xxx);
     abc.swap(xxx);
     dump_buff("abc",abc);
     dump_buff("xxx",xxx);
 
     // push()
-    std::cout << "xxx.push_back(0,1,2)\n";
+    std::cout << bold() << "xxx.push_back(0,1,2)" << rst() << std::endl;
+    dump_buff("xxx",xxx);
     xxx.push_back(0);
     xxx.push_back(1);
     xxx.push_back(2);
     dump_buff("xxx",xxx);
 
     // push_front(): error 
-    std::cout << "xxx.push_front(-1): error\n";
-    xxx.push_front(-1);
-    dump_buff("xxx",xxx);
+    std::cout << bold() << "xxx.push_front(-1): error" << rst() << std::endl;
+    try {
+        dump_buff("xxx",xxx);
+        xxx.push_front(-1);
+    }
+    catch(std::exception &e) {
+        std::cout << red_bold() << "*** catched exception: " << rst() << e.what() << " [ok]" << std::endl;
+        dump_buff("xxx",xxx);
+    }
 
     // pop_back()
-    std::cout << "xxx.pop_back()\n";
+    std::cout << bold() << "xxx.pop_back()" << rst() << std::endl;
+    dump_buff("xxx",xxx);
     xxx.pop_back();
     dump_buff("xxx",xxx);
   
     // pop_front()
-    std::cout << "xxx.pop_front()\n";
+    std::cout << bold() << "xxx.pop_front()" << rst() << std::endl;
+    dump_buff("xxx",xxx);
     xxx.pop_front();
     dump_buff("xxx",xxx);
  
     // push_front(): ok
-    std::cout << "xxx.push_front(-1)\n";
+    std::cout << bold() << "xxx.push_front(-1)" << rst() << std::endl;
+    dump_buff("xxx",xxx);
     xxx.push_front(-1);
     dump_buff("xxx",xxx);
    
-    // erase() test
 
+    // erase() test
     xxx.push_back(2);
     xxx.push_back(3);
     xxx.push_back(4);
 
-    std::cout << "** erase test\n";
+    std::cout << bold() << "xxx.erase( xxx.begin(), xxx.begin()+1 )" << rst() << std::endl;
     dump_buff("xxx",xxx);
-   
-    std::cout << "xxx.erase( xxx.begin(), xxx.begin()+1 )\n";
     xxx.erase( xxx.begin(), xxx.begin()+1 );
     dump_buff("xxx",xxx);
 
-    std::cout << "xxx.erase( xxx.begin()+2, xxx.begin()+4 )\n";
+    std::cout << bold() << "xxx.erase( xxx.begin()+2, xxx.begin()+4 )" << rst() << std::endl;
+    dump_buff("xxx",xxx);
     xxx.erase( xxx.begin()+2, xxx.begin()+ 4 );
     dump_buff("xxx",xxx);
 
     // operator=
-    std::cout << "operator== :\n";
+    std::cout << bold() << "operator== :" << rst() << std::endl;
     std::cout << "    xxx==xxx: " << std::boolalpha << (xxx == xxx) << std::endl;
     std::cout << "    xxx==abc: " << std::boolalpha << (xxx == abc) << std::endl;
 
     // operator <
-    std::cout << "operator< :\n";
+    std::cout << bold() << "operator< :" << rst() << std::endl;
     std::cout << "    xxx<xxx: " << std::boolalpha << (xxx < xxx) << std::endl;
     std::cout << "    xxx<abc: " << std::boolalpha << (xxx < abc) << std::endl;
 
-
     // shift operators...
-
-    std::cout << "__shift_begin:\n";
+    std::cout << bold() << "__shift_begin:" << rst() << std::endl;
+    dump_buff("xxx",xxx);
     xxx.__shift_begin();
     dump_buff("xxx",xxx);
 
-    std::cout << "__shift_end:\n";
+    std::cout << bold() << "__shift_end:" << rst() << std::endl;
+    dump_buff("xxx",xxx);
     xxx.__shift_end();
     dump_buff("xxx",xxx);
 
-    std::cout << "__shift_center:\n";
+    std::cout << bold() << "__shift_center:" << rst() << std::endl;
+    dump_buff("xxx",xxx);
     xxx.__shift_center();
     dump_buff("xxx",xxx);
 
@@ -170,70 +196,78 @@ int main()
     v.push_back(-1);
     v.push_back(0);
    
-    std::cout << "\ninsert FRONT: enough reverse_capacity:\n";
-    std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin(), v.begin(), v.end()) << std::endl;
+    std::cout << bold() << "\ninsert FRONT: enough reverse_capacity:" << rst() << std::endl;
+    dump_buff("xxx",xxx);
+    xxx.insert(xxx.begin(), v.begin(), v.end());
     dump_buff("xxx",xxx);
 
-    std::cout << "insert FRONT: insufficient reverse_capacity:\n";
-    std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin(), v.begin(), v.end()) << std::endl;
+    std::cout << bold() << "\ninsert FRONT: insufficient reverse_capacity (shift):" << rst() << std::endl;
+    dump_buff("xxx",xxx);
+    xxx.insert(xxx.begin(), v.begin(), v.end());
     dump_buff("xxx",xxx);
 
-    std::cout << "insert FRONT: insufficient capacity (failure):\n";
-    std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin(), v.begin(), v.end()) << std::endl;
-    dump_buff("xxx",xxx);
+    std::cout << bold() << "\ninsert FRONT: insufficient capacity (failure):" << rst() << std::endl;
+    try {
+        dump_buff("xxx",xxx);
+        xxx.insert(xxx.begin(), v.begin(), v.end());
+    } catch(std::exception &e) {
+        std::cout << red_bold() << "*** catched exception: " << rst() << e.what() << " [ok]" << std::endl;
+        dump_buff("xxx",xxx);
+    }
 
     xxx.reset();
     xxx.insert(xxx.begin(), v.begin(), v.end());
-    std::cout << "RESET:";
     xxx.__shift_center();
-    dump_buff("xxx",xxx);
 
     std::vector<int> pad(5,5);
     
-    std::cout << "\ninsert CENTER: enough capacity:\n";
-    std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin()+1, pad.begin(), pad.end()) << std::endl;
+    std::cout << bold() << "\ninsert CENTER: enough capacity:" << rst() << std::endl;
+    dump_buff("xxx",xxx);
+    xxx.insert(xxx.begin()+1, pad.begin(), pad.end());
     dump_buff("xxx",xxx);
 
-    std::cout << "\ninsert CENTER: insufficient capacity:\n";
-    std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin()+1, pad.begin(), pad.end()) << std::endl;
-    dump_buff("xxx",xxx);
+    std::cout << bold() << "\ninsert CENTER: insufficient capacity: (failure)" << rst() << std::endl;
+    try {
+        dump_buff("xxx",xxx);
+        xxx.insert(xxx.begin()+1, pad.begin(), pad.end());
+    } catch(std::exception &e) {
+        std::cout << red_bold() << "*** catched exception: " << rst() << e.what() << " [ok]" << std::endl;
+        dump_buff("xxx",xxx);
+    }
 
     xxx.reset();
     xxx.insert(xxx.begin(), v.begin(), v.end());
-    std::cout << "RESET:";
+
+    std::cout << bold() << "\ninsert BACK: enough capacity:" << rst() << std::endl;
     dump_buff("xxx",xxx);
-
-    std::cout << "\ninsert BACK: enough capacity:\n";
-    std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.end(), pad.begin(), pad.end()) << std::endl;
-    dump_buff("xxx",xxx);
-
-    xxx.reset();
-    xxx.insert(xxx.begin(), v.begin(), v.end());
-    xxx.__shift_end();
-
-    std::cout << "RESET:";
-    dump_buff("xxx",xxx);
-
-    std::cout << "insert BACK:  enough capacity:\n";
-    std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.end(), pad.begin(), pad.end()) << std::endl;
-    dump_buff("xxx",xxx);
-
-    std::cout << "insert BACK: insufficient capacity:\n";
-    std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.end(), pad.begin(), pad.end()) << std::endl;
+    xxx.insert(xxx.end(), pad.begin(), pad.end());
     dump_buff("xxx",xxx);
 
     xxx.reset();
     xxx.insert(xxx.begin(), v.begin(), v.end());
     xxx.__shift_end();
 
-    std::cout << "RESET:";
+    std::cout << bold() << "\ninsert BACK:  enough capacity:" << rst() << std::endl;
+    dump_buff("xxx",xxx);
+    xxx.insert(xxx.end(), pad.begin(), pad.end());
     dump_buff("xxx",xxx);
 
-    std::cout << "\ninsert CENTER: enough capacity:\n";
-    std::cout << "   ret: " << std::boolalpha << xxx.insert(xxx.begin()+1, pad.begin(), pad.end()) << std::endl;
-    dump_buff("xxx",xxx);
+    std::cout << bold() << "\ninsert BACK: insufficient capacity: (failure)" << rst() << std::endl;
+    try {
+        dump_buff("xxx",xxx);
+        xxx.insert(xxx.end(), pad.begin(), pad.end());
+    } catch(std::exception &e) {
+        std::cout << red_bold() << "*** catched exception: " << rst() << e.what() << " [ok]" << std::endl;
+        dump_buff("xxx",xxx);
+    }
 
-    // std::cout << "with non-POD types..\n";
-    // more::buffer<object> o(2);
+    xxx.reset();
+    xxx.insert(xxx.begin(), v.begin(), v.end());
+    xxx.__shift_end();
+
+    std::cout << bold() << "\ninsert CENTER: enough capacity:" << rst() << std::endl;
+    dump_buff("xxx",xxx);
+    xxx.insert(xxx.begin()+1, pad.begin(), pad.end());
+    dump_buff("xxx",xxx);
 
 }
