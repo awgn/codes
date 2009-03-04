@@ -15,7 +15,6 @@
 #define MTP_HH
 
 #include <type_traits.hh>
-
 #include <iostream>
 #include <string>
 
@@ -62,7 +61,7 @@ namespace mtp {
     };
 
     template <typename T>
-    struct param : select< traits::is_class<T>::value, 
+    struct param : select< more::traits::is_class_or_union<T>::value, 
                            typename __param<T>::type, 
                            typename tag_type<T>::type >
     {};

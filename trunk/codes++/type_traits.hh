@@ -19,6 +19,8 @@ using std::tr1::true_type; using std::tr1::false_type;
 
 namespace more 
 {
+    namespace traits {
+
     // For use in __is_convertible_simple.
     struct __sfinae_types
     {
@@ -101,6 +103,8 @@ namespace more
     struct is_metafunction : public integral_constant<bool, __is_metafunction_helper<T>::value>
     {};
 
-}
+    } // namespace traits
+
+} // namespace more 
 
 #endif /* TYPE_TRAITS_HH */
