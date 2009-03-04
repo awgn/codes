@@ -52,7 +52,7 @@ namespace more {
         // constructors
         //
 
-        buffer(size_type __n = 4096, const value_type& __value = value_type(), const allocator_type& __a = allocator_type())
+        buffer(size_type __n = 0, const value_type& __value = value_type(), const allocator_type& __a = allocator_type())
         : _M_Vector_impl(__a)
         {
             this->_M_Vector_impl._M_buffer = this->_M_Vector_impl.allocate(__n);
@@ -62,8 +62,9 @@ namespace more {
             _M_Vector_impl._M_begin = _M_Vector_impl._M_end = this->_M_Vector_impl._M_buffer; }
 
         ~buffer()
-        {  std::_Destroy(this->_M_Vector_impl._M_buffer, 
-                         this->_M_Vector_impl._M_buffer + this->_M_Vector_impl._M_size, this->_M_Vector_impl); }
+        {  std::_Destroy(this->_M_Vector_impl._M_buffer, this->_M_Vector_impl._M_buffer + this->_M_Vector_impl._M_size, this->_M_Vector_impl); 
+            _M_Vector_impl.deallocate(this->_M_Vector_impl._M_buffer, this->_M_Vector_impl._M_size); 
+        }
 
         // assignment and copy constructor
         //
