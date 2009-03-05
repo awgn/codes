@@ -22,7 +22,7 @@ namespace more {
 
     struct tick_type
     {
-        timeval current;
+        volatile uint32_t current;
         posix::mutex m;
         posix::cond  c;
     };
@@ -36,14 +36,20 @@ namespace more {
         // the SIGALARM signal handler
         static void tick(int)
         {
-            ::gettimeofday(&T.current, NULL);
+            timeval now;
+            ::gettimeofday(&now, NULL);
+
+            posix::scoped_lock<posix::mutex> lock(T.m);
+            T.current = now.tv_sec * 1000 + now.tv_usec / 1000;
             T.c.broadcast();
         }
 
-        void wait_for_tick()
+        void wait_for_tick(uint32_t &last)
         {
             posix::scoped_lock<posix::mutex> lock(T.m);
-            T.c.wait(lock);
+            if (last == T.current)
+                T.c.wait(lock);
+            last = T.current;
         }
     };
 

@@ -29,12 +29,13 @@ struct Thread : public posix::thread, private more::timer<Tc>
 
     void *operator()()
     {
+        uint32_t ts;
         for(int i=0 ;;) {
            
-            this->wait_for_tick();  // timer
+            this->wait_for_tick(ts);  // timer
 
             std::cout << std::hex << 
-            "[" << this->id() << "] " << std::dec << ++i << " << tick = {" << Tc.current.tv_sec << ',' << Tc.current.tv_usec << "}\n";
+            "[" << this->id() << "] " << std::dec << ++i << " << tick = {" << std::dec << Tc.current << "}\n";
         }
 
         return NULL;
