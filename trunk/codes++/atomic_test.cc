@@ -80,7 +80,7 @@ public:
 
 volatile bad_class   example_0(0);
 volatile good_class  example_1(0);
-volatile atomic_word<int> example_2(0);
+volatile atomic<int> example_2(0);
 
 // threads..
 //
@@ -104,7 +104,7 @@ void *thread_1(void *)
 void *thread_2(void *)
 {
     for (int i=0;i<1000000; i++) {
-        volatile_ptr<good_class, AtomicityPolicy> ptr(example_1);
+        atomic_ptr<good_class, AtomicityPolicy> ptr(example_1);
         (*ptr)++;
     }
     return NULL;
@@ -115,7 +115,7 @@ void *thread_3(void *)
     for (int i=0;i<1000000; i++) {
         // a capillary way to run a single
         // method (thread safe) is using a temporary...
-        (*volatile_ptr<good_class, AtomicityPolicy >(example_1))--;
+        (*atomic_ptr<good_class, AtomicityPolicy >(example_1))--;
     }
     return NULL;
 }
@@ -162,7 +162,7 @@ int main()
         std::cout << "example_0: " << n << check(n) << std::endl;
     }
 
-    std::cout << "\nvolatile_ptr<> access test: " << std::endl;
+    std::cout << "\natomic_ptr<> access test: " << std::endl;
     for (int i=0; i < 20 ; i++) {
         pthread_create(&a, NULL, thread_2, NULL); 
         pthread_create(&b, NULL, thread_3, NULL); 

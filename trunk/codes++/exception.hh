@@ -16,6 +16,7 @@
 #include <cxxabi.h>
 #include <sysexits.h>
 #include <cstring>
+#include <cstdlib>
 #include <errno.h>
 
 extern char *__progname;

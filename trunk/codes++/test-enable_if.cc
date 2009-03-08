@@ -12,7 +12,7 @@
 #include <mtp.hh>
 
 template <typename T>
-typename mtp::enable_if< traits::is_class<T>::value ,int>::type 
+typename mtp::enable_if< more::traits::is_class_or_union<T>::value ,int>::type 
 fun(const T &v) 
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -20,7 +20,7 @@ fun(const T &v)
 }
 
 template <typename T>
-typename mtp::disable_if< traits::is_class<T>::value ,int>::type 
+typename mtp::disable_if< more::traits::is_class_or_union<T>::value ,int>::type 
 fun(T v) 
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
