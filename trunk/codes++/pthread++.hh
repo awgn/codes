@@ -169,6 +169,7 @@ namespace posix
 
         bool cancel()
         {
+            assert(_M_thread && "thread not started");
             if ( !_M_running || ::pthread_cancel(_M_thread) == ESRCH )
                 return false;
 
@@ -196,23 +197,33 @@ namespace posix
 
         int 
         join(void **thread_return=NULL) const 
-        { return ::pthread_join(_M_thread, thread_return); }
+        { 
+            assert(_M_thread && "thread not started");
+            return ::pthread_join(_M_thread, thread_return); }
 
         int 
         detach() const 
-        { return ::pthread_detach(_M_thread); }
+        { 
+            assert(_M_thread && "thread not started");
+            return ::pthread_detach(_M_thread); }
 
         int 
         setschedparam(int policy, const struct sched_param *param)  
-        { return ::pthread_setschedparam(_M_thread, policy, param); }
+        {
+            assert(_M_thread && "thread not started");
+            return ::pthread_setschedparam(_M_thread, policy, param); }
 
         int 
         getschedparam(int *policy, struct sched_param *param) const 
-        { return ::pthread_getschedparam(_M_thread, policy, param); }
+        { 
+            assert(_M_thread && "thread not started");
+            return ::pthread_getschedparam(_M_thread, policy, param); }
 
         int
         setschedprio(int prio)
-        { return ::pthread_setschedprio(_M_thread,prio); }
+        { 
+            assert(_M_thread && "thread not started");
+            return ::pthread_setschedprio(_M_thread,prio); }
 
         pthread_t 
         id() const 
@@ -224,7 +235,9 @@ namespace posix
 
         int 
         kill(int signo)
-        { return ::pthread_kill(_M_thread, signo); }
+        { 
+            assert(_M_thread && "thread not started");
+            return ::pthread_kill(_M_thread, signo); }
 
     protected: 
         // meaningful only in the thread context -- operator() 
