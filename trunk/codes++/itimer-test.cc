@@ -17,7 +17,7 @@
 more::tick_type global; // external linkage
 
 template <more::tick_type & Tc> 
-struct Thread : public posix::thread, private more::timer<Tc> 
+struct Thread : public posix::thread, private more::ticker<Tc> 
 {    
     Thread()
     {}
@@ -45,28 +45,31 @@ struct Thread : public posix::thread, private more::timer<Tc>
 
 int
 main(int argc, char *argv[])
-{
-    // create two threads
-    //
+{    
+    
+    /////////////////////
+    // 1) block sigalarm 
 
-    posix::thread * p = new Thread<global>;
-    posix::thread * q = new Thread<global>;
-  
-    p->start(); 
-    q->start();
+    more::block_signal(SIGALRM);
 
-    // set handler fro SIGALRM
-    signal(SIGALRM, more::timer<global>::tick );
+    ///////////////////////////////
+    // 2) create the itimer thread
 
-    // create the tick-timer
-    //
-
-    more::itimer<ITIMER_REAL> x;
-    timeval t = { 0, 100000 };
+    more::itimer<ITIMER_REAL, global > x;
+    timeval t = { 0, 10000 };
     x.set(&t);
 
+    ///////////////////
+    // and start it... 
+    x.start();
+
+    //////////////////////
+    // 3) create a thread
+
+    posix::thread * p = new Thread<global>;
+  
+    p->start(); 
     p->join();
-    q->join();
 
     return 0;
 }
