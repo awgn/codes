@@ -18,9 +18,33 @@
 #include <algorithm>
 #include <cassert>
 
+using std::tr1::mem_fn;
+using std::tr1::bind;
+using namespace std::tr1::placeholders;
+
 namespace more { 
 
+    template <typename T = void>
     class observer
+    { 
+    public:
+        observer()
+        {}
+
+        virtual ~observer()
+        {}
+
+        void updatex(T x)
+        { 
+            this->update(x); 
+        }
+
+    protected:
+        virtual void update(T)=0;
+    };
+
+    template <>
+    class observer<void>
     { 
     public:
         observer()
@@ -31,7 +55,7 @@ namespace more {
 
         void updatex()
         { 
-            update(); 
+            this->update(); 
         }
 
     protected:
@@ -55,14 +79,15 @@ namespace more {
 
     template < template <typename Tp, typename Alloc = std::allocator<Tp> > 
                class Cont,                          /* container template */ 
+               typename P = void,                   /* update parameter */      
                bool observerOwnership = false       /* onwership policy: false = raw pointers, true = shared_ptr<> */ ,
                typename Atomicity = atomicity::NONE /* for multithread set to GNU_CXX */ >
     class subject
     { 
     public:
         typedef typename select_type<observerOwnership, 
-                std::tr1::shared_ptr<observer>,
-                observer * >::type ptr_type; 
+                std::tr1::shared_ptr<observer<P> >,
+                observer<P> * >::type ptr_type; 
 
         subject()
         : _M_observers(),
@@ -72,7 +97,14 @@ namespace more {
         void notify()
         {
             typename Atomicity::scoped_lock lock(_M_mutex);
-            std::for_each(_M_observers.begin(),  _M_observers.end(), std::tr1::mem_fn(&observer::updatex)); 
+            std::for_each(_M_observers.begin(),  _M_observers.end(), mem_fn(&observer<P>::updatex)); 
+        }
+
+        template<typename T>
+        void notify(T n)
+        {
+            typename Atomicity::scoped_lock lock(_M_mutex);
+            std::for_each(_M_observers.begin(),  _M_observers.end(), bind( mem_fn(&observer<P>::updatex), _1, n) ); 
         }
 
         void attach(ptr_type o)

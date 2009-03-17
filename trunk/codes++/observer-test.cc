@@ -13,7 +13,7 @@
 #include <vector>
 
 struct sub1 : public more::subject<std::vector> {};
-struct sub2 : public more::subject<std::vector, true> 
+struct sub2 : public more::subject<std::vector, void, true> 
 {
     sub2()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
@@ -22,7 +22,17 @@ struct sub2 : public more::subject<std::vector, true>
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
 };
 
-struct obs1 : public more::observer
+struct sub3 : public more::subject<std::vector, int> 
+{
+    sub3()
+    { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
+
+    ~sub3()
+    { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
+};
+
+
+struct obs1 : public more::observer<>
 {
     virtual void
     update()
@@ -31,7 +41,7 @@ struct obs1 : public more::observer
     }
 };
 
-struct obs2 : public more::observer
+struct obs2 : public more::observer<>
 {
     obs2()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
@@ -43,6 +53,21 @@ struct obs2 : public more::observer
     update()
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
+    }
+};
+
+struct obs3 : public more::observer<int>
+{
+    obs3()
+    { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
+
+    ~obs3()
+    { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
+
+    virtual void
+    update(int n)
+    {
+        std::cout << __PRETTY_FUNCTION__ << ": param = " << n << std::endl;
     }
 };
 
@@ -73,8 +98,8 @@ main(int argc, char *argv[])
     {
         sub2 owner;
         {
-            std::tr1::shared_ptr<more::observer> obs_1(new obs2);
-            std::tr1::shared_ptr<more::observer> obs_2(new obs2);
+            std::tr1::shared_ptr<more::observer<> > obs_1(new obs2);
+            std::tr1::shared_ptr<more::observer<> > obs_2(new obs2);
 
             std::cout << "    attach(2)" << std::endl;
             owner.attach(obs_1);
@@ -88,6 +113,14 @@ main(int argc, char *argv[])
         }
 
         std::cout << "    destruct the subect [and all attached observers]" << std::endl;
+    }
+    
+    {
+        sub3 general;
+        obs3 soldier;
+
+        general.attach(&soldier);
+        general.notify(10);
     }
 
     std::cout << "\n[*] done.\n";
