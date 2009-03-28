@@ -148,8 +148,9 @@ namespace posix
             {
                 std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!\n";
             }
-            catch(...)  // pthread_cancel cause the thread to throw an exception.. we must rethrow it;
+            catch(...)  // pthread_cancel causes the thread to throw an exception that is to be rethrown;
             {
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!\n";
                 throw;
             }
 
