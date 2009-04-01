@@ -9,17 +9,17 @@
  */
 
 #include <iostream>
-#include <tsafestream.hh>
+#include <tstream.hh>
 #include <pthread.h>
 
 void * thread(void *)
 {
     for(int i = 0; i < 10 ; i++) 
     {
-        std::cout << more::tsafestream::lock() << "[" << std::hex << pthread_self() << "] ";
+        std::cout << more::tstream::lock() << "[" << std::hex << pthread_self() << "] ";
         std::cout << "hello world! " << std::dec << i << std::endl;
         usleep(100000);
-        std::cout << more::tsafestream::unlock(); 
+        std::cout << more::tstream::unlock(); 
     }
 
     return NULL;
