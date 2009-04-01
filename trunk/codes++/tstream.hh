@@ -13,11 +13,12 @@
 
 #include <iostream>
 #include <tspinlock.hh>
+#include <pthread.h>
 
 namespace more { 
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // this streambuf is cancel-safe againts the pthread_cancel() by means of pthread_setcancelstate(). 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // tstreambuf is cancel-safe streambuf againts the pthread_cancel() by means of pthread_setcancelstate(). 
     // see http://www.codesourcery.com/archives/c++-pthreads/threads.html for more information 
 
     class tstreambuf : public std::streambuf
@@ -33,45 +34,33 @@ namespace more {
         virtual std::streamsize
         xsputn (const char *s, std::streamsize n)
         {
-#ifdef _REENTRANT
             int store;
             int ret;
             pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&store);
             ret = _M_out->sputn(s,n);
             pthread_setcancelstate(store,NULL);
             return ret; 
-#else
-            return _M_out->sputn(s,n);
-#endif
         }
 
         virtual int_type
         overflow (int_type c)
         {
-#ifdef _REENTRANT
             int store;
             int ret;
             pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&store);
             ret = _M_out->sputc(c);
             pthread_setcancelstate(store,NULL);
             return ret;
-#else
-            return _M_out->sputc(c);
-#endif
         }
 
         int sync()
         {
-#ifdef _REENTRANT
             int store;
             int ret;
             pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&store);
             ret = _M_out->pubsync();
             pthread_setcancelstate(store,NULL);
             return ret;
-#else
-            return _M_out->pubsync();
-#endif
         }
 
     private:        
