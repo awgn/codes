@@ -15,6 +15,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <errno.h>
 
 #include <iostream>
@@ -81,14 +82,26 @@ namespace more {
             _M_addr.sin_family = AF_INET;
             _M_addr.sin_port   = htons(port);
             if (host.empty()) {
-                _M_addr.sin_addr.s_addr  = htonl(INADDR_ANY);
+                _M_addr.sin_addr.s_addr = htonl(INADDR_ANY);
                 _M_value = true;
                 return;
             }
-            if (inet_pton( AF_INET, host.c_str(), &_M_addr.sin_addr) <= 0) {
-                std::clog << __PRETTY_FUNCTION__  << ":inet_pton: " << strerror(errno) << std::endl;
+            
+            struct addrinfo hints, * res;
+
+            hints.ai_family   = AF_INET;
+            hints.ai_socktype = 0;
+            hints.ai_protocol = 0;
+            hints.ai_flags    = 0;
+
+            if (getaddrinfo(host.c_str(), NULL, &hints, &res) < 0) {
+                std::clog << __PRETTY_FUNCTION__  << ":getaddrinfo: " << gai_strerror(errno) << std::endl;
                 return;
             }
+
+            _M_addr.sin_addr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr)->sin_addr;
+            
+            freeaddrinfo(res);
             _M_value = true;
         }
 
@@ -127,10 +140,21 @@ namespace more {
                 return;
             }
 
-            if (inet_pton( AF_INET, host.c_str(), &_M_addr.sin_addr) <= 0) {
-                std::clog << __PRETTY_FUNCTION__  << ":inet_pton: " << strerror(errno) << std::endl;
+            struct addrinfo hints, * res;
+
+            hints.ai_family   = AF_INET;
+            hints.ai_socktype = 0;
+            hints.ai_protocol = 0;
+            hints.ai_flags    = 0;
+
+            if (getaddrinfo(host.c_str(), NULL, &hints, &res) < 0) {
+                std::clog << __PRETTY_FUNCTION__  << ":getaddrinfo: " << gai_strerror(errno) << std::endl;
                 return;
             }
+
+            _M_addr.sin_addr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr)->sin_addr;
+            
+            freeaddrinfo(res);
             _M_value = true;    
         }
 
