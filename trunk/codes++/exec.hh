@@ -145,6 +145,9 @@ namespace more {
             return true; 
         }
 
+        int kill(int sig)
+        { return ::kill(_M_pid,sig); }
+
         bool wait()
         {
             _M_wait = false;
