@@ -13,10 +13,12 @@
 
 #include <tr1/functional>
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <vector>
 #include <string>
 #include <cstring>
+#include <iterator>
 #include <cassert>
 
 #include <sys/types.h>
@@ -33,14 +35,17 @@ namespace more {
     public:
         typedef std::tr1::function<int(const char *, char * const[])> exec_type;
 
-        exec(const std::string &arg0, exec_type ex = ::execv)
+        exec(const std::string &arg0 = std::string(), exec_type ex = ::execv)
         : _M_arg(),
           _M_status(-1),
           _M_pipe(),
           _M_wait(false),
           _M_pid(-1),
           _M_exec(ex)
-        { _M_arg.push_back(arg0); }
+        { 
+            if (!arg0.empty())
+                _M_arg.push_back(arg0); 
+        }
 
         ~exec()
         {
@@ -55,17 +60,23 @@ namespace more {
         arg(const std::string &arg)
         { _M_arg.push_back(arg); return *this; }
 
-        std::string
-        cmd() const 
+        exec &
+        cmdline(const std::string &cmd)
         {
-            std::string ret;
-            std::vector<std::string>::const_iterator it = _M_arg.begin();
-            for(; it != _M_arg.end(); ++it)
-            {
-                ret.append(*it).append(" ");
-            }
+            _M_arg.clear();
+            std::stringstream tmp(cmd);
+            std::copy(std::istream_iterator<std::string>(tmp),
+                      std::istream_iterator<std::string>(),
+                      std::back_inserter(_M_arg));
+            return *this;
+        }
 
-            return ret;
+        std::string
+        cmdline() const 
+        {
+            std::stringstream tmp;
+            std::copy(_M_arg.begin(), _M_arg.end(), std::ostream_iterator<std::string>(tmp," "));
+            return tmp.str();
         }
 
         template <int fd>

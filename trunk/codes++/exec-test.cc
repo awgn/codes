@@ -13,11 +13,12 @@
 int
 main(int argc, char *argv[])
 {
-    more::exec abc("/bin/ls");
+    more::exec abc;
 
-    abc.arg("/").arg("-la");
+    abc.arg("/bin/ls").arg("/").arg("-la");
+    // or.. abc.cmdline("/bin/ls -la /");
 
-    std::cout << "running: " << abc.cmd() << std::endl;
+    std::cout << "running: " << abc.cmdline() << std::endl;
 
     int n;
     if ( !abc(more::exec::redirect_fd<1>(n)) ) {
