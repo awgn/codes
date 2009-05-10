@@ -121,10 +121,10 @@ namespace posix
 
         virtual ~thread() 
         {
-            assert(this->_M_running == false || !"posix::thread deleted while the thread ruotine is running!" );
+            assert(!_M_thread || 
+                    _M_running == false || 
+                   !"posix::thread deleted while the thread ruotine is running!" );
         }
-
-        virtual void *operator()() = 0;
 
         friend void cleanup_handler(void *arg);
         friend void *start_routine(void *arg);
@@ -170,8 +170,7 @@ namespace posix
 
         bool cancel()
         {
-            assert(_M_thread && "thread not started");
-            if ( !_M_running || ::pthread_cancel(_M_thread) == ESRCH )
+            if ( !_M_thread || !_M_running || ::pthread_cancel(_M_thread) == ESRCH )
                 return false;
 
             void *status = (void *)0; 
@@ -196,34 +195,40 @@ namespace posix
             return true;
         }
 
+#define METHOD_PRECOND()\
+            if (!_M_thread) {  \
+                std::clog << "thread " << __FUNCTION__ << ": thread not started!\n";    \
+                return ESRCH;  \
+            }
+
         int 
         join(void **thread_return=NULL) const 
-        { 
-            assert(_M_thread && "thread not started");
+        {
+            METHOD_PRECOND();
             return ::pthread_join(_M_thread, thread_return); }
 
         int 
         detach() const 
         { 
-            assert(_M_thread && "thread not started");
+            METHOD_PRECOND();
             return ::pthread_detach(_M_thread); }
 
         int 
         setschedparam(int policy, const struct sched_param *param)  
         {
-            assert(_M_thread && "thread not started");
+            METHOD_PRECOND();
             return ::pthread_setschedparam(_M_thread, policy, param); }
 
         int 
         getschedparam(int *policy, struct sched_param *param) const 
         { 
-            assert(_M_thread && "thread not started");
+            METHOD_PRECOND();
             return ::pthread_getschedparam(_M_thread, policy, param); }
 
         int
         setschedprio(int prio)
         { 
-            assert(_M_thread && "thread not started");
+            METHOD_PRECOND();
             return ::pthread_setschedprio(_M_thread,prio); }
 
         pthread_t 
@@ -237,7 +242,7 @@ namespace posix
         int 
         kill(int signo)
         { 
-            assert(_M_thread && "thread not started");
+            METHOD_PRECOND();
             return ::pthread_kill(_M_thread, signo); }
 
     protected: 
@@ -269,6 +274,7 @@ namespace posix
         setconcurrency(int new_level)
         { return ::pthread_setconcurrency(new_level); }
 
+        virtual void *operator()() = 0;
     };
 
     //////////// __base_lock ////////////
