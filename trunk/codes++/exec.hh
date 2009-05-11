@@ -39,6 +39,7 @@ namespace more {
         : _M_arg(),
           _M_status(-1),
           _M_pipe(),
+          _M_delay(0),
           _M_wait(false),
           _M_pid(-1),
           _M_exec(ex)
@@ -158,6 +159,9 @@ namespace more {
             return true;
         }
 
+        void delay(int value_msec)
+        { _M_delay = value_msec; }
+
         // is_exited() -> exit_status()
         //
 
@@ -198,6 +202,7 @@ namespace more {
 
         int     _M_status;
         int     _M_pipe[2];
+        int     _M_delay;
         bool    _M_wait;
         pid_t   _M_pid;
 
@@ -211,6 +216,9 @@ namespace more {
             for(int i=0; i < n;i++) 
                 argv[i]=_M_arg[i].c_str();
             argv[n] = 0;
+
+            if (_M_delay)
+                usleep(_M_delay*1000);
 
             if ( _M_exec(argv[0], const_cast<char * const *>(argv)) == -1 ) {
                 std::clog << "exec: " << strerror(errno) << std::endl;
