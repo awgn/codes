@@ -117,7 +117,7 @@ namespace posix
         : _M_thread(),
           _M_attr(a),
           _M_running(false)
-        {};
+        {}
 
         virtual ~thread() 
         {
@@ -130,7 +130,9 @@ namespace posix
         friend void *start_routine(void *arg);
         
         static void thread_terminated(void *arg)
-        { reinterpret_cast<thread *>(arg)->_M_running = false; }
+        { 
+            reinterpret_cast<thread *>(arg)->_M_running = false;
+        }
 
         static void *start_routine(void *arg)
         {
@@ -157,6 +159,29 @@ namespace posix
             pthread_cleanup_pop(1);
             return ret;
         }
+        static void *start_detached_routine(void *arg)
+        {
+            thread *that = reinterpret_cast<thread *>(arg);
+            void *ret;
+
+            pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL); 
+
+            try 
+            {
+                ret = that->operator()();
+            }
+            catch(std::exception &e)  // application exception;
+            {
+                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!\n";
+            }
+            catch(...)  // pthread_cancel causes the thread to throw an exception that is to be rethrown;
+            {
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!\n";
+                throw;
+            }
+
+            return ret;
+        }
 
         bool start() 
         {
@@ -164,7 +189,21 @@ namespace posix
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!\n";
                 return false;
             }
+            return (_M_running = true);
+        }
 
+        // note: to be used in conjunction with ->stop_and_delete_this() 
+        //       on threads allocated with new and running in detached state.
+        //       the thread function (operator()) is responsible to delete the object 
+        //       it refers to by means of stop_and_delete_this() method.
+
+        bool start_detached_in_heap() 
+        {
+            if (::pthread_create(&_M_thread, &(*_M_attr), start_detached_routine, this ) != 0) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!\n";
+                return false;
+            }
+            this->detach();
             return (_M_running = true);
         }
 
@@ -273,6 +312,13 @@ namespace posix
         int
         setconcurrency(int new_level)
         { return ::pthread_setconcurrency(new_level); }
+
+        // note: to be used in conjunction with ->start_detached_in_heap(). 
+        //       on threads allocated with new and running in detached state.
+
+        void 
+        stop_and_delete_this()
+        { _M_running = false; delete this; }    
 
         virtual void *operator()() = 0;
     };

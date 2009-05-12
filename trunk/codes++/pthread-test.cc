@@ -141,6 +141,27 @@ struct WaitCond : public posix::thread {
     }
 };
 
+struct Detached : public posix::thread
+{
+    Detached()
+    {
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
+    }
+
+    ~Detached()
+    {
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
+        this->cancel();
+    }
+
+    void *operator()()
+    {
+        sleep(1);
+        stop_and_delete_this();
+    }
+
+};
+
 
 int main(int argc, char *argv[])
 {
@@ -270,6 +291,14 @@ int main(int argc, char *argv[])
         delete wc;
     }
 
+    std::cout << "\n[*] "RED "detached thread in the heap..."RESET"\n";
+    {
+        posix::thread * t = new Detached;
+        t->start_detached_in_heap();
+        sleep(3);
+    }
+
+    std::cout << "done." << std::endl;
 
     return 0;
 }
