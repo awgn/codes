@@ -122,15 +122,15 @@ namespace posix
         virtual ~thread() 
         {
             assert(!_M_thread || 
-                    _M_running == false || 
-                   !"posix::thread deleted while the thread ruotine is running!" );
+                   _M_running == false || 
+                  !"posix::thread deleted while the thread ruotine is running!" );
         }
 
         friend void cleanup_handler(void *arg);
         friend void *start_routine(void *arg);
         
         static void thread_terminated(void *arg)
-        { 
+        {
             reinterpret_cast<thread *>(arg)->_M_running = false;
         }
 
@@ -173,10 +173,12 @@ namespace posix
             catch(std::exception &e)  // application exception;
             {
                 std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!\n";
+                that->_M_running = false; delete that;
             }
             catch(...)  // pthread_cancel causes the thread to throw an exception that is to be rethrown;
             {
                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!\n";
+                that->_M_running = false; delete that;
                 throw;
             }
 
@@ -199,18 +201,21 @@ namespace posix
 
         bool start_detached_in_heap() 
         {
+            _M_running = true;
+            _M_attr->setdetachstate(PTHREAD_CREATE_DETACHED);
+
             if (::pthread_create(&_M_thread, &(*_M_attr), start_detached_routine, this ) != 0) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!\n";
                 return false;
             }
-            this->detach();
-            return (_M_running = true);
+            return true;
         }
 
         bool cancel()
         {
-            if ( !_M_thread || !_M_running || ::pthread_cancel(_M_thread) == ESRCH )
-                return false;
+            if ( !_M_thread || !_M_running || ::pthread_cancel(_M_thread) == ESRCH ) {
+                return _M_running = false;
+            }
 
             void *status = (void *)0; 
             for(;;) {
