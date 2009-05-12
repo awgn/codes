@@ -145,12 +145,12 @@ struct Detached : public posix::thread
 {
     Detached()
     {
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
+        std::cout << "    " << __PRETTY_FUNCTION__ << std::endl;
     }
 
     ~Detached()
     {
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
+        std::cout << "    " << __PRETTY_FUNCTION__ << std::endl;
         this->cancel();
     }
 
