@@ -41,7 +41,7 @@ namespace more {
           _M_pipe(),
           _M_delay(0),
           _M_wait(false),
-          _M_pid(-1),
+          _M_pid(getpid()),
           _M_exec(ex)
         { 
             if (!arg0.empty())
@@ -101,7 +101,7 @@ namespace more {
             _M_wait = true;
             _M_pid = fork();
             if (_M_pid == -1) {
-                std::clog << "fork: " << strerror(errno) << std::endl;
+                std::clog << "exec::fork: " << strerror(errno) << std::endl;
                 return false;
             }
 
@@ -117,13 +117,13 @@ namespace more {
         {            
             _M_wait = true;
             if ( pipe(_M_pipe) < 0 ) {
-                std::clog << "pipe: " << strerror(errno) << std::endl;
+                std::clog << "exec::pipe: " << strerror(errno) << std::endl;
                 return false;
             }
 
             _M_pid = fork();
             if (_M_pid == -1) {
-                std::clog << "fork: " << strerror(errno) << std::endl;
+                std::clog << "exec::fork: " << strerror(errno) << std::endl;
                 close(_M_pipe[0]);
                 close(_M_pipe[1]);
                 _M_pipe[0] = 0;
@@ -147,13 +147,28 @@ namespace more {
         }
 
         int kill(int sig)
-        { return ::kill(_M_pid,sig); }
+        { 
+            if ( getpid() == _M_pid ) {
+                std::clog << "exec::kill: INTERNAL ERROR (pid unitialized!)" << std::endl;
+                return -1; 
+            } 
+            
+            if (_M_pid > 0) // this kill is not meant to kill the world!
+                return ::kill(_M_pid,sig); 
+
+            return -1; 
+        }
 
         bool wait()
         {
             _M_wait = false;
+            if ( getpid() == _M_pid) {
+                std::clog << "exec::kill: INTERNAL ERROR (pid unitialized!)" << std::endl;
+                return -1; 
+            }
+
             if ( waitpid(_M_pid,&_M_status,0) < 0 ) {
-                std::clog << "waitpid: " << strerror(errno) << std::endl;
+                std::clog << "exec::waitpid: " << strerror(errno) << std::endl;
                 return false;
             }   
             return true;
@@ -221,11 +236,10 @@ namespace more {
                 usleep(_M_delay*1000);
 
             if ( _M_exec(argv[0], const_cast<char * const *>(argv)) == -1 ) {
-                std::clog << "exec: " << strerror(errno) << std::endl;
+                std::clog << "exec::exec: " << strerror(errno) << std::endl;
                 raise(SIGABRT);            
             }
         }
-
     };
 
 } // namespace more
