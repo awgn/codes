@@ -17,16 +17,61 @@
 
 namespace more { 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // tstreambuf is cancel-safe streambuf againts the pthread_cancel() by means of pthread_setcancelstate(). 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // tstreambuf is policy-based spinklocked and cancel-safe streambuf againts the pthread_cancel() by means of pthread_setcancelstate(). 
     // see http://www.codesourcery.com/archives/c++-pthreads/threads.html for more information 
 
+    struct nullLock 
+    {
+        static void lock(tspinlock_recursive &)
+        {}
+
+        static void unlock(tspinlock_recursive &)
+        {}
+    }; 
+
+    struct spinLock 
+    {
+        static void lock(tspinlock_recursive &sl)
+        { sl.lock(); 
+        }
+
+        static void unlock(tspinlock_recursive &sl)
+        {
+            sl.unlock(); 
+        }
+    }; 
+
+    ///////////////////////////////////////////////
+
+    struct nullCancel 
+    {
+        static void cancel_disable(int &store)
+        {}
+        static void cancel_restore(int &store)
+        {}
+    };
+
+    struct cancelSafe 
+    {
+        static void cancel_disable(int &store)
+        {
+            pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&store);
+        }
+        static void cancel_restore(int &store)
+        {
+            pthread_setcancelstate(store,NULL);
+        }
+    };
+
+
+    template <typename L = nullLock, typename C = nullCancel >
     class tstreambuf : public std::streambuf
     {
     public:
 
         tstreambuf(std::streambuf *out)
-        : _M_out(out)
+        : _M_out(out), _M_lock()
         {}
 
     protected:
@@ -34,38 +79,39 @@ namespace more {
         virtual std::streamsize
         xsputn (const char *s, std::streamsize n)
         {
-            int store;
-            int ret;
-            pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&store);
+            int store, ret;
+            L::lock(_M_lock);
+            C::cancel_disable(store);
             ret = _M_out->sputn(s,n);
-            pthread_setcancelstate(store,NULL);
+            C::cancel_restore(store);
             return ret; 
         }
 
         virtual int_type
         overflow (int_type c)
         {
-            int store;
-            int ret;
-            pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&store);
-            ret = _M_out->sputc(c);
-            pthread_setcancelstate(store,NULL);
+            int store, ret;
+            C::cancel_disable(store);
+            if (c != EOF)
+                ret = _M_out->sputc(c);
+            C::cancel_restore(store);
+            L::unlock(_M_lock);
             return ret;
         }
 
         int sync()
         {
-            int store;
-            int ret;
-            pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&store);
+            int store, ret;
+            C::cancel_disable(store);
             ret = _M_out->pubsync();
-            pthread_setcancelstate(store,NULL);
+            C::cancel_restore(store);
             return ret;
         }
 
     private:        
 
         std::streambuf *_M_out;
+        more::tspinlock_recursive _M_lock;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////

@@ -12,7 +12,10 @@
 #define _TSPINLOCK_HH_ 
 
 #include <iostream>
+#include <cassert>
+
 #include <sched.h>
+#include <pthread.h>
 
 // This is a c++ implementation of the Linux Kernel "ticket spinlock".
 // http://lwn.net/Articles/267968/
@@ -42,7 +45,8 @@ namespace more {
             unsigned short ticket = (spinlock >> 16) & 0xffff;
             busywait:
             if ( (sl & 0xffff )  != ticket) {
-                sched_yield();
+                // sched_yield();
+                usleep(10);
                 goto busywait;
             }
         }
@@ -51,6 +55,7 @@ namespace more {
         void unlock(volatile int &sl)
         {
             unsigned int spinlock = __sync_add_and_fetch(&sl, 1);
+            assert(sl == spinlock);
             if ( ! (spinlock & 0xffff) ) {
                 __sync_sub_and_fetch(&sl, 1<<16);
             }    
@@ -62,6 +67,35 @@ namespace more {
     private:
         volatile int _M_value;        
     };
+
+
+    struct tspinlock_recursive
+    {
+        tspinlock_recursive()
+        : _M_lock(),
+          _M_owner()
+        {}
+
+        void lock()
+        {
+            if (_M_owner != pthread_self()) {
+                _M_lock.lock();
+                _M_owner = pthread_self();
+            }
+        }
+
+        void unlock()
+        {
+            assert(_M_owner == pthread_self());
+            _M_owner = 0;
+            _M_lock.unlock();
+        }
+
+        private:
+        tspinlock _M_lock; 
+        pthread_t _M_owner;
+    };
+
 
     struct scoped_tspinlock {
        

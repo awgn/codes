@@ -14,12 +14,16 @@
 
 void * thread(void *)
 {
-    for(int i = 0; i < 10 ; i++) 
+    for(int i = 0; i < 1000 ; i++) 
     {
-        std::cout << more::tspinlock_stream::lock() << "[" << std::hex << pthread_self() << "] ";
-        std::cout << "hello world! " << std::dec << i << std::endl;
-        usleep(100000);
-        std::cout << more::tspinlock_stream::unlock(); 
+        std::clog << "hello " << std::dec; 
+        usleep(1000);
+        std::clog << "world! (" << i << ")" <<  std::endl;
+    
+        // std::cout << more::tspinlock_stream::lock() << "[" << std::hex << pthread_self() << "] ";
+        // std::cout << "hello world! " << std::dec << i << std::endl;
+        // usleep(100000);
+        // std::cout << more::tspinlock_stream::unlock(); 
     }
 
     return NULL;
@@ -28,7 +32,10 @@ void * thread(void *)
 
 int
 main(int argc, char *argv[])
-{
+{    
+    more::tstreambuf<more::spinLock> *b = new more::tstreambuf<more::spinLock>(std::cout.rdbuf());
+    std::clog.rdbuf(b);
+
     pthread_t t1;
     pthread_t t2;
     pthread_t t3;
