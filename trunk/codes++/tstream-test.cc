@@ -16,10 +16,10 @@ void * thread(void *)
 {
     for(int i = 0; i < 10 ; i++) 
     {
-        std::cout << more::tstream::lock() << "[" << std::hex << pthread_self() << "] ";
+        std::cout << more::tspinlock_stream::lock() << "[" << std::hex << pthread_self() << "] ";
         std::cout << "hello world! " << std::dec << i << std::endl;
         usleep(100000);
-        std::cout << more::tstream::unlock(); 
+        std::cout << more::tspinlock_stream::unlock(); 
     }
 
     return NULL;

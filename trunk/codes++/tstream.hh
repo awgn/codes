@@ -74,7 +74,7 @@ namespace more {
     // Constructor-on-the-first-use idiom ensures that the iword index is
     // unique across different compilation units.
 
-    struct tstream 
+    struct tspinlock_stream 
     {
         struct lock   {};
         struct unlock {};
@@ -85,14 +85,14 @@ namespace more {
             return index;
         }
 
-        static inline std::ostream &spinlock(std::ostream &out)
+        static inline std::ostream &_lock(std::ostream &out)
         {
             volatile int & sp = reinterpret_cast<int &>(out.iword( iword_index()));
             tspinlock::lock(sp);
             return out;
         }
 
-        static inline std::ostream &spinunlock(std::ostream &out)
+        static inline std::ostream &_unlock(std::ostream &out)
         {
             volatile int & sp = reinterpret_cast<int &>(out.iword( iword_index())); 
             tspinlock::unlock(sp);
@@ -101,16 +101,16 @@ namespace more {
     };
 
     static inline
-    std::ostream &operator<<(std::ostream &out, more::tstream::lock)
+    std::ostream &operator<<(std::ostream &out, more::tspinlock_stream::lock)
     {
-        more::tstream::spinlock(out);
+        more::tspinlock_stream::_lock(out);
         return out;
     }    
     
     static inline
-    std::ostream &operator<<(std::ostream &out, more::tstream::unlock)
+    std::ostream &operator<<(std::ostream &out, more::tspinlock_stream::unlock)
     {
-        more::tstream::spinunlock(out);
+        more::tspinlock_stream::_unlock(out);
         return out;
     }
 
