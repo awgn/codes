@@ -26,25 +26,24 @@ namespace more {
     struct tspinlock 
     {
         tspinlock()
-        : _M_value(0)
+        : _M_ticket(0), _M_value(0)
         {}
 
         void lock()
-        { lock(_M_value); }
+        { this->lock(_M_ticket,_M_value); }
 
         void unlock()
-        { unlock(_M_value); }
+        { this->unlock(_M_ticket,_M_value); }
 
         ////////////////
         // static utils
 
         static 
-        void lock(volatile int &sl)
+        void lock(volatile int &t, volatile int &v)
         {
-            int spinlock = __sync_fetch_and_add(&sl, 1L << 16);
-            unsigned short ticket = (spinlock >> 16) & 0xffff;
+            int ticket = __sync_fetch_and_add(&t, 1);
             busywait:
-            if ( (sl & 0xffff )  != ticket) {
+            if ( v != ticket) {
                 // sched_yield();
                 usleep(10);
                 goto busywait;
@@ -52,19 +51,11 @@ namespace more {
         }
 
         static 
-        void unlock(volatile int &sl)
-        {
-            unsigned int spinlock = __sync_add_and_fetch(&sl, 1);
-            assert(sl == spinlock);
-            if ( ! (spinlock & 0xffff) ) {
-                __sync_sub_and_fetch(&sl, 1<<16);
-            }    
-        }
-
-        const int __value() const
-        { return _M_value; }
+        void unlock(volatile int &t, volatile int &v)
+        { __sync_add_and_fetch(&v, 1); }
 
     private:
+        volatile int _M_ticket;        
         volatile int _M_value;        
     };
 
@@ -101,6 +92,7 @@ namespace more {
        
         // scoped tlock
         //
+
         scoped_tspinlock(tspinlock &sl)
         : _M_sl(sl)
         {
