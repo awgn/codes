@@ -12,6 +12,7 @@
 #define _TSTREAMBUF_HH_ 
 
 #include <iostream>
+#include <atomicity-policy.hh>
 #include <tspinlock.hh>
 #include <pthread.h>
 
@@ -21,32 +22,6 @@ namespace more {
     // tstreambuf is policy-based spinklocked and cancel-safe streambuf (againts pthread_cancel() 
     // by means of pthread_setcancelstate()). 
     // see http://www.codesourcery.com/archives/c++-pthreads/threads.html for more information 
-
-    struct nullLock 
-    {
-        template <typename T>
-        static void lock(T &)
-        {}
-
-        template <typename T>
-        static void unlock(T &)
-        {}
-    }; 
-
-    struct tspinLock 
-    {
-        static void lock(tspinlock_recursive &sl)
-        { 
-            sl.lock(); 
-        }
-
-        static void unlock(tspinlock_recursive &sl)
-        {
-            sl.unlock(); 
-        }
-    }; 
-
-    ///////////////////////////////////////////////
 
     struct nullCancel 
     {
@@ -68,13 +43,13 @@ namespace more {
         }
     };
 
-    template <typename L = nullLock, typename C = nullCancel >
+    template <typename M = more::tspinlock_half_recursive, typename C = nullCancel >
     class tstreambuf : public std::streambuf
     {
     public:
 
         tstreambuf(std::streambuf *out)
-        : _M_out(out), _M_lock()
+        : _M_out(out), _M_device()
         {}
 
     protected:
@@ -83,7 +58,7 @@ namespace more {
         xsputn (const char *s, std::streamsize n)
         {
             int store, ret;
-            L::lock(_M_lock);
+            _M_device.lock();
             C::cancel_disable(store);
             ret = _M_out->sputn(s,n);
             C::cancel_restore(store);
@@ -98,7 +73,7 @@ namespace more {
             if (c != EOF)
                 ret = _M_out->sputc(c);
             C::cancel_restore(store);
-            L::unlock(_M_lock);
+            _M_device.unlock();
             return ret;
         }
 
@@ -114,7 +89,7 @@ namespace more {
     private:        
 
         std::streambuf *_M_out;
-        more::tspinlock_recursive _M_lock;
+        M _M_device;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -130,30 +105,30 @@ namespace more {
 
         protected:
 
-        static tspinlock_recursive * spin_alloc(std::ostream &out)
+        static tspinlock_half_recursive * spin_alloc(std::ostream &out)
         {
             int index = std::ios_base::xalloc();
-            tspinlock_recursive * &ret = reinterpret_cast<tspinlock_recursive * &>(out.iword(index));
-            ret = new tspinlock_recursive;
+            tspinlock_half_recursive * &ret = reinterpret_cast<tspinlock_half_recursive * &>(out.iword(index));
+            ret = new tspinlock_half_recursive;
             return ret;
         }
 
-        static tspinlock_recursive * get_lock(std::ostream &out)
+        static tspinlock_half_recursive * get_lock(std::ostream &out)
         {
-            static tspinlock_recursive * ret = spin_alloc(out);
+            static tspinlock_half_recursive * ret = spin_alloc(out);
             return ret;
         }
 
         static inline std::ostream &_lock(std::ostream &out)
         {
-            tspinlock_recursive * sl = get_lock(out);
+            tspinlock_half_recursive * sl = get_lock(out);
             sl->lock();
             return out;
         }
 
         static inline std::ostream &_unlock(std::ostream &out)
         {
-            tspinlock_recursive * sl = get_lock(out);
+            tspinlock_half_recursive * sl = get_lock(out);
             sl->unlock();
             return out;
         }

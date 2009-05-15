@@ -60,9 +60,9 @@ namespace more {
     };
 
 
-    struct tspinlock_recursive
+    struct tspinlock_half_recursive
     {
-        tspinlock_recursive()
+        tspinlock_half_recursive()
         : _M_lock(),
           _M_owner()
         {}
