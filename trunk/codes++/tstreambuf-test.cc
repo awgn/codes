@@ -9,7 +9,7 @@
  */
 
 #include <iostream>
-#include <tstream.hh>
+#include <tstreambuf.hh>
 #include <pthread.h>
 
 void * thread(void *)
@@ -19,11 +19,18 @@ void * thread(void *)
         std::clog << "hello " << std::dec; 
         usleep(1000);
         std::clog << "world! (" << i << ")" <<  std::endl;
-    
-        // std::cout << more::tspinlock_stream::lock() << "[" << std::hex << pthread_self() << "] ";
-        // std::cout << "hello world! " << std::dec << i << std::endl;
-        // usleep(100000);
-        // std::cout << more::tspinlock_stream::unlock(); 
+   
+        /////////////////////////////////
+        // which is almost equivalent to:
+        
+        // std::clog << more::lock_stream::lock() << "hello " << std::dec; 
+        // usleep(1000);
+        // std::clog << "world! (" << i << ")" <<  std::endl << more::lock_stream::unlock();
+       
+        // 
+        // with the only difference that the spinlock is either stored in the tstreambuf<> 
+        // or in the iword array of the ostream...
+
     }
 
     return NULL;
@@ -32,8 +39,9 @@ void * thread(void *)
 
 int
 main(int argc, char *argv[])
-{    
-    more::tstreambuf<more::spinLock> *b = new more::tstreambuf<more::spinLock>(std::cout.rdbuf());
+{   
+     
+    more::tstreambuf<more::tspinLock> *b = new more::tstreambuf<more::tspinLock>(std::cout.rdbuf());
     std::clog.rdbuf(b);
 
     pthread_t t1;

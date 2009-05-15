@@ -8,8 +8,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef _TSTREAM_HH_
-#define _TSTREAM_HH_ 
+#ifndef _TSTREAMBUF_HH_
+#define _TSTREAMBUF_HH_ 
 
 #include <iostream>
 #include <tspinlock.hh>
@@ -17,23 +17,27 @@
 
 namespace more { 
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // tstreambuf is policy-based spinklocked and cancel-safe streambuf againts the pthread_cancel() by means of pthread_setcancelstate(). 
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    // tstreambuf is policy-based spinklocked and cancel-safe streambuf (againts pthread_cancel() 
+    // by means of pthread_setcancelstate()). 
     // see http://www.codesourcery.com/archives/c++-pthreads/threads.html for more information 
 
     struct nullLock 
     {
-        static void lock(tspinlock_recursive &)
+        template <typename T>
+        static void lock(T &)
         {}
 
-        static void unlock(tspinlock_recursive &)
+        template <typename T>
+        static void unlock(T &)
         {}
     }; 
 
-    struct spinLock 
+    struct tspinLock 
     {
         static void lock(tspinlock_recursive &sl)
-        { sl.lock(); 
+        { 
+            sl.lock(); 
         }
 
         static void unlock(tspinlock_recursive &sl)
@@ -63,7 +67,6 @@ namespace more {
             pthread_setcancelstate(store,NULL);
         }
     };
-
 
     template <typename L = nullLock, typename C = nullCancel >
     class tstreambuf : public std::streambuf
@@ -117,49 +120,61 @@ namespace more {
     ///////////////////////////////////////////////////////////////////////////////////
     // This class makes atomic the access to the stream, by means of a ticket spinlock 
     // stored in the internal extensible array of the stream itself.
-    // Constructor-on-the-first-use idiom ensures that the iword index is
-    // unique across different compilation units.
+    // Constructor-on-the-first-use idiom ensures that the iword index (the pointer to the spinlock) 
+    // is unique across different compilation units.
 
-    struct tspinlock_stream 
+    struct lock_stream 
     {
         struct lock   {};
         struct unlock {};
 
-        static int iword_index()
+        protected:
+
+        static tspinlock_recursive * spin_alloc(std::ostream &out)
         {
-            static int index = std::ios_base::xalloc();
-            return index;
+            int index = std::ios_base::xalloc();
+            tspinlock_recursive * &ret = reinterpret_cast<tspinlock_recursive * &>(out.iword(index));
+            ret = new tspinlock_recursive;
+            return ret;
+        }
+
+        static tspinlock_recursive * get_lock(std::ostream &out)
+        {
+            static tspinlock_recursive * ret = spin_alloc(out);
+            return ret;
         }
 
         static inline std::ostream &_lock(std::ostream &out)
         {
-            volatile int & sp = reinterpret_cast<int &>(out.iword( iword_index()));
-            tspinlock::lock(sp);
+            tspinlock_recursive * sl = get_lock(out);
+            sl->lock();
             return out;
         }
 
         static inline std::ostream &_unlock(std::ostream &out)
         {
-            volatile int & sp = reinterpret_cast<int &>(out.iword( iword_index())); 
-            tspinlock::unlock(sp);
+            tspinlock_recursive * sl = get_lock(out);
+            sl->unlock();
+            return out;
+        }
+
+        public:
+
+        friend 
+        std::ostream &operator<<(std::ostream &out, more::lock_stream::lock)
+        {
+            more::lock_stream::_lock(out);
+            return out;
+        }    
+
+        friend 
+        std::ostream &operator<<(std::ostream &out, more::lock_stream::unlock)
+        {
+            more::lock_stream::_unlock(out);
             return out;
         }
     };
 
-    static inline
-    std::ostream &operator<<(std::ostream &out, more::tspinlock_stream::lock)
-    {
-        more::tspinlock_stream::_lock(out);
-        return out;
-    }    
-    
-    static inline
-    std::ostream &operator<<(std::ostream &out, more::tspinlock_stream::unlock)
-    {
-        more::tspinlock_stream::_unlock(out);
-        return out;
-    }
-
 } // namespace more
 
-#endif /* _TSTREAM_HH_ */
+#endif /* _TSTREAMBUF_HH_ */
