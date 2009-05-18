@@ -77,15 +77,6 @@ namespace more {
             return ret;
         }
 
-        int sync()
-        {
-            int store, ret;
-            C::cancel_disable(store);
-            ret = _M_out->pubsync();
-            C::cancel_restore(store);
-            return ret;
-        }
-
     private:        
 
         std::streambuf *_M_out;
