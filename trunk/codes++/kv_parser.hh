@@ -129,7 +129,7 @@ namespace more {
                 }
                 in >> std::skipws;
                 if (c != '"') {
-                    std::clog << "parse: error at string '" << elem << ": missing quotation.\n";
+                    std::clog << "parse: error at string '" << elem << ": missing quotation." << std::endl;
                     return false;
                 }
             }
@@ -249,7 +249,7 @@ namespace more {
                      {
                          std::ifstream sc(fname.c_str());
                          if (!sc) {
-                             std::clog << fname << ": parse error: no such file\n";
+                             std::clog << fname << ": parse error: no such file" << std::endl;
                              return false;
                          }
 
@@ -294,7 +294,7 @@ namespace more {
 
                              if (key == "{") {
                                  if (block) {
-                                     std::clog << fname << ": parse error: { nested block are not supported (line " << lineno(si) << ")\n";
+                                     std::clog << fname << ": parse error: { nested block are not supported (line " << lineno(si) << ")" << std::endl;
                                      return false;
                                  }
                                  block = true;
@@ -304,7 +304,7 @@ namespace more {
                              if (key == "}") {
                                  if (block)
                                      break;
-                                 std::clog << fname << ": parse error: expected `{' before the end-of-block } (line "<< lineno(si) << ")\n";
+                                 std::clog << fname << ": parse error: expected `{' before the end-of-block } (line "<< lineno(si) << ")" << std::endl;
                                  return false;
                              }
 
@@ -315,7 +315,7 @@ namespace more {
                                  si >> c; 
                                  if ( c != SEP ) {
                                      std::clog << fname << ": parse error: key[" << key << "] missing separator '" 
-                                     << SEP << "' (line "<< lineno(si) << ")\n";
+                                     << SEP << "' (line "<< lineno(si) << ")" << std::endl;
                                      return false;
                                  }
                              }
