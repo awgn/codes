@@ -148,11 +148,11 @@ namespace posix
             }
             catch(std::exception &e)  // application exception;
             {
-                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!\n";
+                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!" << std::endl;
             }
             catch(...)  // pthread_cancel causes the thread to throw an exception that is to be rethrown;
             {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!\n";
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
                 throw;
             }
 
@@ -172,12 +172,12 @@ namespace posix
             }
             catch(std::exception &e)  // application exception;
             {
-                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!\n";
+                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!" << std::endl;
                 that->_M_running = false; delete that;
             }
             catch(...)  // pthread_cancel causes the thread to throw an exception that is to be rethrown;
             {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!\n";
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
                 that->_M_running = false; delete that;
                 throw;
             }
@@ -188,7 +188,7 @@ namespace posix
         bool start() 
         {
             if (::pthread_create(&_M_thread, &(*_M_attr), start_routine, this ) != 0) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!\n";
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!" << std::endl;
                 return false;
             }
             return (_M_running = true);
@@ -205,7 +205,7 @@ namespace posix
             _M_attr->setdetachstate(PTHREAD_CREATE_DETACHED);
 
             if (::pthread_create(&_M_thread, &(*_M_attr), start_detached_routine, this ) != 0) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!\n";
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!" << std::endl;
                 return false;
             }
             return true;
@@ -231,7 +231,7 @@ namespace posix
                 if (status == PTHREAD_CANCELED || _M_running == false)
                     break;
 
-                std::clog << __PRETTY_FUNCTION__ << "(" << std::hex << _M_thread << ") spinning while thread terminates...\n";
+                std::clog << __PRETTY_FUNCTION__ << "(" << std::hex << _M_thread << ") spinning while thread terminates..." << std::endl;
                 usleep(200000);
             }
 
@@ -241,7 +241,7 @@ namespace posix
 
 #define METHOD_PRECOND()\
             if (!_M_thread) {  \
-                std::clog << "thread " << __FUNCTION__ << ": thread not started!\n";    \
+                std::clog << "thread " << __FUNCTION__ << ": thread not started!" << std::endl;    \
                 return ESRCH;  \
             }
 
@@ -434,7 +434,7 @@ namespace posix
         : _M_pm(), _M_state(false)
         { 
             if (pthread_mutex_init(&_M_pm,attr) != 0) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutex_init error!\n"; 
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutex_init error!" << std::endl; 
                 return;
             }
             _M_state = true;
@@ -443,13 +443,13 @@ namespace posix
         ~mutex()
         {
             if (pthread_mutex_destroy(&_M_pm) != 0) 
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy error!\n";  
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy error!" << std::endl;  
         }
 
         bool lock()
         { 
             if (::pthread_mutex_lock(&_M_pm) !=0) { 
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_lock error!\n";
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_lock error!" << std::endl;
                 return false;
             }
             return true; 
@@ -458,7 +458,7 @@ namespace posix
         bool unlock()
         { 
             if ( ::pthread_mutex_unlock(&_M_pm) != 0) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_unlock error!\n";
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_unlock error!" << std::endl;
                 return false;
             }
             return true; 
@@ -481,7 +481,7 @@ namespace posix
         : _M_cond(), _M_state(false)
         {
             if (pthread_cond_init(&_M_cond, attr) != 0) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_init error!\n"; 
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_init error!" << std::endl; 
                 return;
             }
             _M_state = true;
@@ -511,7 +511,7 @@ namespace posix
             int r = ::pthread_cond_timedwait(&_M_cond, &sl.get_mutex()._M_pm, abstime);
             sl.use_incr();
             if ( r != 0 ) {
-                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_timedwait error!\n";
+                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_timedwait error!" << std::endl;
             }
             return r;
         }
@@ -519,7 +519,7 @@ namespace posix
         ~cond()
         { 
             if (::pthread_cond_destroy(&_M_cond) != 0) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy error!\n";
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy error!" << std::endl;
             }
         }
 
@@ -545,7 +545,7 @@ namespace posix
         : _M_pm(), _M_state(false)
         { 
             if ( pthread_rwlock_init(&_M_pm, attr) != 0 ) { 
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_init error!\n"; 
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_init error!" << std::endl; 
                 return;
             }
             _M_state = true;
@@ -554,13 +554,13 @@ namespace posix
         ~rw_mutex() 
         { 
             if (pthread_rwlock_destroy(&_M_pm) != 0 )
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_rw_mutex_destroy error!\n"; 
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_rw_mutex_destroy error!" << std::endl; 
         }
 
         bool rdlock()
         {
             if ( pthread_rwlock_rdlock(&_M_pm) != 0 ) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_rdlock error!\n";
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_rdlock error!" << std::endl;
                 return false;
             }
             return true; 
@@ -569,7 +569,7 @@ namespace posix
         bool wrlock()
         { 
             if ( pthread_rwlock_wrlock(&_M_pm) != 0 ) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_wrlock error!\n";
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_wrlock error!" << std::endl;
                 return false;
             }
             return true; 
@@ -578,7 +578,7 @@ namespace posix
         bool unlock() 
         { 
             if ( pthread_rwlock_unlock(&_M_pm) != 0 ) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_wr_ulock error!\n";
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_wr_ulock error!" << std::endl;
                 return false;
             }
             return true; 
