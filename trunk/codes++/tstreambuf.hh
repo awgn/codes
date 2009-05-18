@@ -49,7 +49,7 @@ namespace more {
     public:
 
         tstreambuf(std::streambuf *out)
-        : _M_out(out), _M_device()
+        : _M_out(out), _M_device(), _M_cancel_state()
         {}
 
     protected:
@@ -57,30 +57,34 @@ namespace more {
         virtual std::streamsize
         xsputn (const char *s, std::streamsize n)
         {
-            int store, ret;
             _M_device.lock();
-            C::cancel_disable(store);
-            ret = _M_out->sputn(s,n);
-            C::cancel_restore(store);
-            return ret; 
+            C::cancel_disable(_M_cancel_state);
+            return  _M_out->sputn(s,n);
         }
 
         virtual int_type
         overflow (int_type c)
         {
-            int store, ret;
-            C::cancel_disable(store);
+            _M_device.lock();
+            C::cancel_disable(_M_cancel_state);
             if (c != EOF)
-                ret = _M_out->sputc(c);
-            C::cancel_restore(store);
+                return _M_out->sputc(c);
+            return c;
+        }
+
+        int sync()
+        { 
+            int ret = _M_out->pubsync();
+            C::cancel_restore(_M_cancel_state);
             _M_device.unlock();
-            return ret;
+            return ret == 0 ? 0 : -1; 
         }
 
     private:        
 
         std::streambuf *_M_out;
         M _M_device;
+        int _M_cancel_state;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////

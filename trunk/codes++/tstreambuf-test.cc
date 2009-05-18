@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <tstreambuf.hh>
 #include <pthread.h>
 
@@ -16,22 +17,30 @@
 
 void * thread(void *)
 {
-    for(int i = 0; i < 1000 ; i++) 
+    for(int i = 0; i < 10000 ; i++) 
     {
         std::clog << "hello " << std::dec; 
-        usleep(1000);
+        std::clog << 0 << ' ';
+        std::clog << 1 << ' ';
+        std::clog << 2 << ' ';
+        std::clog << 3 << ' ';
+        std::clog << 4 << ' ';
+        std::clog << 5 << ' ';
+        std::clog << 6 << ' ';
+        std::clog << 7 << ' ';
+        std::clog << 8 << ' ';
+        std::clog << 9 << ' ';
         std::clog << "world! (" << i << ")" <<  std::endl;
    
         /////////////////////////////////
         // which is almost equivalent to:
         
         // std::clog << more::lock_stream::lock() << "hello " << std::dec; 
-        // usleep(1000);
+        // ...
         // std::clog << "world! (" << i << ")" <<  std::endl << more::lock_stream::unlock();
        
-        // 
-        // with the only difference that the spinlock is either stored in the tstreambuf<> 
-        // or in the iword array of the ostream...
+        // with the only difference that the spinlock is stored in the tstreambuf<> 
+        // instead of in the iword array of the ostream...
 
     }
 
@@ -39,11 +48,15 @@ void * thread(void *)
 }
 
 
+
 int
 main(int argc, char *argv[])
 {   
-    // more::tstreambuf<atomicity::NONE::mutex> *b = new more::tstreambuf<atomicity::NONE::mutex>(std::cout.rdbuf());
-    more::tstreambuf<more::tspinlock_half_recursive> *b = new more::tstreambuf<more::tspinlock_half_recursive>(std::cout.rdbuf());
+    std::ofstream test_txt("test.txt");
+
+    more::tstreambuf<more::tspinlock_half_recursive> *b = new more::tstreambuf<more::tspinlock_half_recursive>(test_txt.rdbuf());
+    // more::tstreambuf<more::tspinlock_half_recursive> *b = new more::tstreambuf<more::tspinlock_half_recursive>(std::cout.rdbuf());
+    // std::clog.rdbuf(b);
 
     std::clog.rdbuf(b);
 
@@ -58,6 +71,9 @@ main(int argc, char *argv[])
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
     pthread_join(t3, NULL);
+
+    test_txt.close();
+    std::clog.rdbuf(NULL);
 
     return 0;
 }
