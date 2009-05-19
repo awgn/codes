@@ -84,6 +84,13 @@ namespace more {
             return c;
         }
 
+        int sync()
+        {
+            if (currentLevel() <= _M_priority) 
+                return _M_out->pubsync();
+            return 0; 
+        }
+
         void priority(int n)
         { _M_priority = n; }
 
