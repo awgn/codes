@@ -74,6 +74,7 @@ namespace more {
 
         int sync()
         { 
+            _M_device.lock();
             int ret = _M_out->pubsync();
             C::cancel_restore(_M_cancel_state);
             _M_device.unlock();
