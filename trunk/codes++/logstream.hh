@@ -86,7 +86,7 @@ namespace more {
 
         int sync()
         {
-            if (currentLevel() <= _M_priority) 
+            if (prio() <= _M_loglevel) 
                 return _M_out->pubsync();
             return 0; 
         }
