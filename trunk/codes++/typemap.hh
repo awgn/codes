@@ -84,20 +84,56 @@
 #define TYPEMAP(...)                  XPASTE(TYPEMAP_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
 #endif /* TYPEMAP */
 
-#define TYPEMAP_KEY(k)  struct k { \
+#define TYPEMAP_KEY_LIST_1(a)          a, a::value_type
+#define TYPEMAP_KEY_LIST_2(a,...)      a, a::value_type, TYPEMAP_KEY_LIST_1(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_3(a,...)      a, a::value_type, TYPEMAP_KEY_LIST_2(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_4(a,...)      a, a::value_type, TYPEMAP_KEY_LIST_3(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_5(a,...)      a, a::value_type, TYPEMAP_KEY_LIST_4(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_6(a,...)      a, a::value_type, TYPEMAP_KEY_LIST_5(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_7(a,...)      a, a::value_type, TYPEMAP_KEY_LIST_6(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_8(a,...)      a, a::value_type, TYPEMAP_KEY_LIST_7(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_9(a,...)      a, a::value_type, TYPEMAP_KEY_LIST_8(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_10(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_9(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_11(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_10(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_12(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_11(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_13(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_12(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_14(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_13(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_15(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_14(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_16(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_15(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_17(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_16(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_18(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_17(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_19(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_18(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_20(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_19(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_21(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_20(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_22(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_21(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_23(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_22(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_24(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_23(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_25(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_24(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_26(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_25(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_27(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_26(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_28(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_27(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_29(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_28(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_30(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_29(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_31(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_30(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST_32(a,...)     a, a::value_type, TYPEMAP_KEY_LIST_31(__VA_ARGS__)
+#define TYPEMAP_KEY_LIST(...)         TYPEMAP( XPASTE(TYPEMAP_KEY_LIST_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) )
+
+#define TYPEMAP_KEY_2(t,k)  struct k { \
+    typedef t value_type; \
     static const bool has_default = false; \
     static const char * value() \
     { return # k; } \
 };
-
-#define TYPEMAP_KEY_DEFAULT(k,v)  struct k { \
+#define TYPEMAP_KEY_3(t,k,v)  struct k { \
+    typedef t value_type; \
     static const bool has_default = true; \
-    typedef typeof(v) default_type;\
     static const char * value() \
     { return # k; } \
-    static const default_type default_value() \
+    static const value_type default_value() \
     { return v; } \
 };
+#define TYPEMAP_KEY(...)              XPASTE(TYPEMAP_KEY_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
+
 
 namespace mtp {
 
