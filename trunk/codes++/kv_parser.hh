@@ -33,13 +33,27 @@ namespace more {
             enum { value = n };
         };
 
-        class lnistreambuf : public std::streambuf {
+        template <typename KEY, typename TYPE, bool has_default>
+        struct get_default
+        {
+            static TYPE value()
+            { return KEY::default_value(); }
+        };
+
+        template <typename KEY, typename TYPE>
+        struct get_default<KEY, TYPE, false>
+        {
+            static TYPE value()
+            { return TYPE(); }
+        };
+
+        class ln_istreambuf : public std::streambuf {
 
             std::streambuf * _M_in;
             int _M_line;
 
         public:
-            lnistreambuf(std::streambuf *in)
+            ln_istreambuf(std::streambuf *in)
             : _M_in(in),
             _M_line(1)
             {}
@@ -64,7 +78,7 @@ namespace more {
 
         static inline
         int lineno(std::istream &in) {
-            lnistreambuf * ln = dynamic_cast<lnistreambuf *>(in.rdbuf());
+            ln_istreambuf * ln = dynamic_cast<ln_istreambuf *>(in.rdbuf());
             if (ln) {
                 return ln->line();
             }
@@ -179,7 +193,7 @@ namespace more {
                      parser()
                      : _M_map(),
                        _M_key(),
-                       _M_value() 
+                       _M_value( get_default<key_type,value_type, key_type::has_default>::value() ) 
                      {}
 
                      virtual ~parser()
@@ -253,7 +267,7 @@ namespace more {
                              return false;
                          }
 
-                         lnistreambuf sb(sc.rdbuf());
+                         ln_istreambuf sb(sc.rdbuf());
                          std::istream in(&sb);    
 
                          return parse(in, fname);

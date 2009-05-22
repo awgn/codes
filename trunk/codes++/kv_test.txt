@@ -2,7 +2,7 @@
 # kv-file example
 #
 
-unsigned_int = 69
+# unsigned_int = 69
 
 integers = 10     
 integers = 0x10     

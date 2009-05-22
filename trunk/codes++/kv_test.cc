@@ -11,7 +11,8 @@
 #include <cstdlib>
 #include <kv_parser.hh>
 
-TYPEMAP_KEY(unsigned_int);
+TYPEMAP_KEY_DEFAULT(unsigned_int, 3);   // set the default value for the key "unsigned_int" 
+
 TYPEMAP_KEY(integers);
 
 TYPEMAP_KEY(booleans);

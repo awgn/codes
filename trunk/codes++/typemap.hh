@@ -84,10 +84,19 @@
 #define TYPEMAP(...)                  XPASTE(TYPEMAP_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
 #endif /* TYPEMAP */
 
-
 #define TYPEMAP_KEY(k)  struct k { \
+    static const bool has_default = false; \
     static const char * value() \
     { return # k; } \
+};
+
+#define TYPEMAP_KEY_DEFAULT(k,v)  struct k { \
+    static const bool has_default = true; \
+    typedef typeof(v) default_type;\
+    static const char * value() \
+    { return # k; } \
+    static const default_type default_value() \
+    { return v; } \
 };
 
 namespace mtp {
