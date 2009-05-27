@@ -96,7 +96,7 @@ namespace more {
                                       typename P2 = factory_util::null_type, 
                                       typename P3 = factory_util::null_type, 
                                       typename P4 = factory_util::null_type
-                                      >   // B must be the base class of T 
+                                      >   // B is the base class of D 
     struct factory_allocator : public factory_base_allocator<B,P0,P1,P2,P3,P4>
     {
         virtual D * alloc(P0 p0, P1 p1,P2 p2,P3 p3,P4 p4)
