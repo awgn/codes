@@ -192,10 +192,10 @@ public:
         std::for_each(_M_library.begin(), _M_library.end(),std::tr1::bind(&more::exec::arg, std::tr1::ref(cc), _1)); 
 
         if ( _M_compile_expect_status ) {
-            std::cout << " #" << std::setw(2) << std::left << this->id() << BOLD() << " compile: " << RESET() << cc.cmd() << std::endl;
+            std::cout << " #" << std::setw(2) << std::left << this->id() << BOLD() << " compile: " << RESET() << cc.cmdline() << std::endl;
         }
         else {
-            std::cout << " #" << std::setw(2) << std::left << this->id() << GREEN() << " compile: " << RESET() << cc.cmd() << std::endl;
+            std::cout << " #" << std::setw(2) << std::left << this->id() << GREEN() << " compile: " << RESET() << cc.cmdline() << std::endl;
         }
 
         if ( _M_verbose_compile ) {
@@ -231,14 +231,14 @@ public:
 
         std::for_each(_M_rt_option.begin(), _M_rt_option.end(), std::tr1::bind(&more::exec::arg, std::tr1::ref(target), _1 ));
 
-        std::cout << " #" << std::setw(2) << std::left << this->id() << BLUE() << " running: " << RESET() << target.cmd() << " -> ";
+        std::cout << " #" << std::setw(2) << std::left << this->id() << BLUE() << " running: " << RESET() << target.cmdline() << " -> ";
         std::cout.flush();
 
         timeval a, b;
 
         gettimeofday(&a, NULL);
         if (!target()) {
-            std::cout << std::endl << __FUNCTION__<< ": couldn't run " << target.cmd() 
+            std::cout << std::endl << __FUNCTION__<< ": couldn't run " << target.cmdline() 
                       << ": " << strerror(errno) << std::endl;
         }
         target.wait();
@@ -294,13 +294,11 @@ int testcpp::_S_id = 0;
 
 ///////////////////////// testcpprc parser 
 
-TYPEMAP_KEY(compiler);
-TYPEMAP_KEY(warning_opt);
-TYPEMAP_KEY(optimization_opt);
+TYPEMAP_KEY(std::vector<std::string>,compiler);
+TYPEMAP_KEY(std::vector<std::string>,warning_opt);
+TYPEMAP_KEY(std::vector<std::string>,optimization_opt);
 
-typedef TYPEMAP(compiler,         std::vector<std::string>,
-                warning_opt,      std::vector<std::string>,
-                optimization_opt, std::vector<std::string>) rcfile_type;
+typedef TYPEMAP_KEY_LIST(compiler, warning_opt, optimization_opt) rcfile_type;
 
 struct cpptestrc : public more::kv::parser<rcfile_type> {};
 

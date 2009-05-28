@@ -11,10 +11,10 @@
 #include <typemap.hh>
 #include <typeinfo>
 
-TYPEMAP_KEY(name);
-TYPEMAP_KEY(nickname);
-TYPEMAP_KEY(age);
-TYPEMAP_KEY(size);
+TYPEMAP_KEY(std::string,name);
+TYPEMAP_KEY(std::string,nickname);
+TYPEMAP_KEY(int, age);
+TYPEMAP_KEY(int, size);
 
 int
 main(int argc, char *argv[])
