@@ -46,6 +46,13 @@ struct test_template_class
     { std::cout << __PRETTY_FUNCTION__  << std::endl; } 
 };
 
+
+template <typename T>
+bool function( const T &x)
+{
+    FUNCTION_REQUIRES_CONCEPT(T, IsIntegralConcept);
+}
+
 int main()
 {
     test_class a, b;
@@ -53,4 +60,6 @@ int main()
 
     test_template_class<test_class>().hello_world(); 
 
+    int c = 10;
+    function(c);
 }
