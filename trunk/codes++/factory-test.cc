@@ -85,7 +85,7 @@ main(int argc, char *argv[])
 {    
     // basic registration: by invoking the regist() method on the factory object, providing the "id" and the factory_allocator
 
-    // factory_0.regist("der1", new more::factory_allocator<base, der1> );
+    // factory_0.regist("der1", new more::factory_allocator<der1, base> ); <- this error is trapped by IsBaseOfConcept
     // factory_0.regist("der2", new more::factory_allocator<base, der2> );
     // factory_1.regist("der3", new more::factory_allocator<base, der3, std::string> );
     // factory_1.regist("der4", new more::factory_allocator<base, der4, std::string> );

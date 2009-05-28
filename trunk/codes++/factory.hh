@@ -12,14 +12,37 @@
 #define _FACTORY_HH_ 
 
 #include <tr1/memory>
+#include <tr1/type_traits>
 #include <string>
 #include <map>
 
 namespace more { 
 
     using std::tr1::shared_ptr;
-
+    
     namespace factory_util {
+
+        template <bool> struct static_assert__;
+        template <>
+        struct static_assert__<true>
+        {
+            enum { value = true };
+        };
+
+#ifndef CLASS_REQUIRES_BINARY_CONCEPT
+#define CLASS_REQUIRES_BINARY_CONCEPT(t1,t2,C)       \
+    template <void (C<t1,t2>::*ptr_value)()> struct class_ ## C {}; \
+    typedef class_ ## C< & C<t1,t2>::constraints> C ## _type
+#endif
+
+        template <typename B, typename D>
+        struct IsBaseOfConcept
+        {
+            void constraints()
+            {  
+                static_assert__<std::tr1::is_base_of<B,D>::value>(); 
+            }
+        };
 
         struct null_type
         {};
@@ -76,6 +99,7 @@ namespace more {
 
     }
 
+    using namespace factory_util;
     template <typename B, typename P0 = factory_util::null_type, 
                           typename P1 = factory_util::null_type, 
                           typename P2 = factory_util::null_type, 
@@ -99,6 +123,8 @@ namespace more {
                                       >   // B is the base class of D 
     struct factory_allocator : public factory_base_allocator<B,P0,P1,P2,P3,P4>
     {
+        CLASS_REQUIRES_BINARY_CONCEPT(B,D,IsBaseOfConcept);
+
         virtual D * alloc(P0 p0, P1 p1,P2 p2,P3 p3,P4 p4)
         {
             return alloc__(factory_util::int2type<factory_util::length<factory_base_allocator<B,P0,P1,P2,P3,P4> >::value >(), p0, p1, p2, p3, p4);
@@ -146,6 +172,8 @@ namespace more {
               >
     struct factory_register
     {
+        CLASS_REQUIRES_BINARY_CONCEPT(B,E,IsBaseOfConcept);
+
         template <typename F /* factory */>
         factory_register(F &f, const std::string &k)
         {
