@@ -115,6 +115,36 @@ namespace more { namespace basic_concepts {
         }
     };
 
+    template <class T>
+    struct LessOrEqualThanComparable
+    {
+        T a, b;
+        void constraints()
+        {
+            a <= b;
+        }
+    };
+
+    template <class T>
+    struct GreaterThanComparable
+    {
+        T a, b;
+        void constraints()
+        {
+            a > b;
+        }
+    };
+
+    template <class T>
+    struct GreaterOrEqualThanComparable
+    {
+        T a, b;
+        void constraints()
+        {
+            a >= b;
+        }
+    };
+
     /////////////////// tr1::type_traits concepts /////////////////// 
 
 #define TR1_TYPE_TRAITS_CONCEPT(type, trait) \
