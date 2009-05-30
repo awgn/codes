@@ -518,25 +518,46 @@ namespace more { namespace posix
             return true;
         }
 
-        // note: to be used in conjunction with ->stop_and_delete_this() 
-        //       on threads allocated with new and running in detached state.
+        // note: to be used in conjunction with ->stop_and_delete_this(). 
         //       the thread function (operator()) is responsible to delete the object 
         //       it refers to by means of stop_and_delete_this() method.
 
-        bool start_detached_in_heap() 
+        template <typename T>
+        static bool start_detached_in_heap() 
         {
-            if (_M_running == thread_running)
-                return false;   // already started
-            
-            _M_attr->setdetachstate(PTHREAD_CREATE_DETACHED);
+            T * that = new T;
+            return create_detached_in_heap(that);
+        }
 
-            if (::pthread_create(&_M_thread, &(*_M_attr), start_detached_routine, this ) != 0) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!" << std::endl;
-                return false;
-            }
-            _M_running = thread_running;
-            _M_joinable = false;
-            return true;
+        template <typename T, typename P1>
+        static bool start_detached_in_heap(P1 p1) 
+        {
+            T * that = new T(p1);
+            return create_detached_in_heap(that);
+        }
+        template <typename T, typename P1, typename P2>
+        static bool start_detached_in_heap(P1 p1, P2 p2) 
+        {
+            T * that = new T(p1,p2);
+            return create_detached_in_heap(that);
+        }
+        template <typename T, typename P1, typename P2, typename P3>
+        static bool start_detached_in_heap(P1 p1, P2 p2, P3 p3) 
+        {
+            T * that = new T(p1,p2,p3);
+            return create_detached_in_heap(that);
+        }
+        template <typename T, typename P1, typename P2, typename P3, typename P4>
+        static bool start_detached_in_heap(P1 p1, P2 p2, P3 p3, P4 p4) 
+        {
+            T * that = new T(p1,p2,p3,p4);
+            return create_detached_in_heap(that);
+        }
+        template <typename T, typename P1, typename P2, typename P3, typename P4, typename P5>
+        static bool start_detached_in_heap(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) 
+        {
+            T * that = new T(p1,p2,p3,p4,p5);
+            return create_detached_in_heap(that);
         }
 
         // nore: this requires the concrete thread to be implementing the restart_impl method
@@ -553,7 +574,6 @@ namespace more { namespace posix
             this->restart_impl();
             return this->start();      
         }
-
 
         bool cancel()
         {
@@ -700,7 +720,23 @@ namespace more { namespace posix
             delete this; 
         }    
 
-        virtual void *operator()() = 0;
+        virtual void *operator()() = 0;        
+        
+    private:
+
+        static bool create_detached_in_heap(thread *that)
+        {
+            that->_M_attr->setdetachstate(PTHREAD_CREATE_DETACHED);
+
+            if (::pthread_create(&that->_M_thread, &(*that->_M_attr), start_detached_routine, that ) != 0) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!" << std::endl;
+                return false;
+            }
+            that->_M_running = thread_running;
+            that->_M_joinable = false;
+            return true;
+        }
+
     };
 
     class thread_group 

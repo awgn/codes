@@ -158,7 +158,7 @@ struct Detached : public posix::thread
     void *operator()()
     {
         sleep(1);
-        stop_and_delete_this();
+        this->stop_and_delete_this();
         return NULL;
     }
 
@@ -321,10 +321,10 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*] "RED "detached thread in the heap..."RESET"\n";
     {
-        posix::thread * t = new Detached;
-        t->start_detached_in_heap();
+        thread::start_detached_in_heap<Detached>();
         sleep(3);
     }
+
     std::cout << "\n[*] "RED "restartable..."RESET"\n";
     {
         posix::thread * t = new Restartable(1);
