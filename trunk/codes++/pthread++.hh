@@ -12,18 +12,24 @@
 #define PTHREADPP_HH
 
 #include <tr1/memory>
+#include <tr1/functional>
+#include <stdexcept>
 #include <iostream>
 #include <cassert>
-#include <stdexcept>
+#include <algorithm>
+#include <set>
 
 #include <pthread.h>
 #include <signal.h>
 #include <errno.h>
 #include <err.h>
 
-namespace posix 
+namespace more { namespace posix 
 {
+    using namespace std::tr1::placeholders;
     using std::tr1::shared_ptr;
+    using std::tr1::mem_fn;
+    using std::tr1::bind;
 
     template <int n>
     struct int2type {
@@ -102,233 +108,7 @@ namespace posix
         pthread_attr_t  _M_value;
     };
 
-    class thread 
-    {
-        pthread_t       _M_thread;
-        shared_ptr<thread_attr> _M_attr;
-
-        volatile bool   _M_running;
-
-        thread(const thread &);               // noncopyable
-        thread &operator=(const thread &);    // noncopyable
-
-    public: 
-        explicit thread(shared_ptr<thread_attr> a = shared_ptr<thread_attr>(new thread_attr))
-        : _M_thread(),
-          _M_attr(a),
-          _M_running(false)
-        {}
-
-        virtual ~thread() 
-        {
-            assert(!_M_thread || 
-                   _M_running == false || 
-                  !"posix::thread deleted while the thread ruotine is running!" );
-        }
-
-        friend void cleanup_handler(void *arg);
-        friend void *start_routine(void *arg);
-        
-        static void thread_terminated(void *arg)
-        {
-            reinterpret_cast<thread *>(arg)->_M_running = false;
-        }
-
-        static void *start_routine(void *arg)
-        {
-            thread *that = reinterpret_cast<thread *>(arg);
-            void *ret;
-
-            pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL); 
-            pthread_cleanup_push(thread_terminated,arg);
-
-            try 
-            {
-                ret = that->operator()();
-            }
-            catch(std::exception &e)  // application exception;
-            {
-                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!" << std::endl;
-            }
-            catch(...)  // pthread_cancel causes the thread to throw an exception that is to be rethrown;
-            {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
-                throw;
-            }
-
-            pthread_cleanup_pop(1);
-            return ret;
-        }
-        static void *start_detached_routine(void *arg)
-        {
-            thread *that = reinterpret_cast<thread *>(arg);
-            void *ret;
-
-            pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL); 
-
-            try 
-            {
-                ret = that->operator()();
-            }
-            catch(std::exception &e)  // application exception;
-            {
-                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!" << std::endl;
-                that->_M_running = false; delete that;
-            }
-            catch(...)  // pthread_cancel causes the thread to throw an exception that is to be rethrown;
-            {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
-                that->_M_running = false; delete that;
-                throw;
-            }
-
-            return ret;
-        }
-
-        bool start() 
-        {
-            if (::pthread_create(&_M_thread, &(*_M_attr), start_routine, this ) != 0) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!" << std::endl;
-                return false;
-            }
-            return (_M_running = true);
-        }
-
-        // note: to be used in conjunction with ->stop_and_delete_this() 
-        //       on threads allocated with new and running in detached state.
-        //       the thread function (operator()) is responsible to delete the object 
-        //       it refers to by means of stop_and_delete_this() method.
-
-        bool start_detached_in_heap() 
-        {
-            _M_running = true;
-            _M_attr->setdetachstate(PTHREAD_CREATE_DETACHED);
-
-            if (::pthread_create(&_M_thread, &(*_M_attr), start_detached_routine, this ) != 0) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!" << std::endl;
-                return false;
-            }
-            return true;
-        }
-
-        bool cancel()
-        {
-            if ( !_M_thread || !_M_running || ::pthread_cancel(_M_thread) == ESRCH ) {
-                return _M_running = false;
-            }
-
-            void *status = (void *)0; 
-            for(;;) {
-
-                // on joinable thread, pthread_join waits for the thread to be canceled
-                //
-
-                if ( ::pthread_join(_M_thread,&status)  == ESRCH ) {
-                    _M_running = false;
-                    return true;
-                }
-
-                if (status == PTHREAD_CANCELED || _M_running == false)
-                    break;
-
-                std::clog << __PRETTY_FUNCTION__ << "(" << std::hex << _M_thread << ") spinning while thread terminates..." << std::endl;
-                usleep(200000);
-            }
-
-            _M_running = false;
-            return true;
-        }
-
-#define METHOD_PRECOND()\
-            if (!_M_thread) {  \
-                std::clog << "thread " << __FUNCTION__ << ": thread not started!" << std::endl;    \
-                return ESRCH;  \
-            }
-
-        int 
-        join(void **thread_return=NULL) const 
-        {
-            METHOD_PRECOND();
-            return ::pthread_join(_M_thread, thread_return); }
-
-        int 
-        detach() const 
-        { 
-            METHOD_PRECOND();
-            return ::pthread_detach(_M_thread); }
-
-        int 
-        setschedparam(int policy, const struct sched_param *param)  
-        {
-            METHOD_PRECOND();
-            return ::pthread_setschedparam(_M_thread, policy, param); }
-
-        int 
-        getschedparam(int *policy, struct sched_param *param) const 
-        { 
-            METHOD_PRECOND();
-            return ::pthread_getschedparam(_M_thread, policy, param); }
-
-        int
-        setschedprio(int prio)
-        { 
-            METHOD_PRECOND();
-            return ::pthread_setschedprio(_M_thread,prio); }
-
-        pthread_t 
-        id() const 
-        { return _M_thread; }
-
-        bool
-        is_running() const
-        { return _M_running; }
-
-        int 
-        kill(int signo)
-        { 
-            METHOD_PRECOND();
-            return ::pthread_kill(_M_thread, signo); }
-
-    protected: 
-        // meaningful only in the thread context -- operator() 
-        int
-        setcancelstate(int state, int *oldstate)
-        { return ::pthread_setcancelstate(state,oldstate); }
-
-        int
-        setcanceltype(int type, int *oldtype)
-        { return ::pthread_setcanceltype(type,oldtype); }
-
-        void 
-        testcancel() 
-        { ::pthread_testcancel(); }
-
-        pthread_t self() const
-        { return ::pthread_self(); }
-
-        int 
-        psigmask(int how, const sigset_t * __restrict s, sigset_t * __restrict os)
-        { return ::pthread_sigmask(how,s,os); }
-
-        int
-        getconcurrency() const
-        { return ::pthread_getconcurrency(); }
-
-        int
-        setconcurrency(int new_level)
-        { return ::pthread_setconcurrency(new_level); }
-
-        // note: to be used in conjunction with ->start_detached_in_heap(). 
-        //       on threads allocated with new and running in detached state.
-
-        void 
-        stop_and_delete_this()
-        { _M_running = false; delete this; }    
-
-        virtual void *operator()() = 0;
-    };
-
-    //////////// __base_lock ////////////
+    /////////// __base_lock ////////////
 
     template <int n>
     class __base_lock
@@ -595,6 +375,378 @@ namespace posix
     template <int n>
     __thread int __base_lock<n>::_M_lock_cnt = 0;
 
+    ////////////////////////////// thread  //////////////////////////////
+
+    class thread 
+    {
+        pthread_t               _M_thread;
+        shared_ptr<thread_attr> _M_attr;
+
+        enum { 
+               thread_not_started,
+               thread_running,
+               thread_cancelled,
+               thread_terminated
+        } volatile _M_running;
+
+        volatile bool   _M_joinable;
+
+        thread(const thread &);               // noncopyable
+        thread &operator=(const thread &);    // noncopyable
+
+    public: 
+        explicit thread(shared_ptr<thread_attr> a = shared_ptr<thread_attr>(new thread_attr))
+        : _M_thread(),
+          _M_attr(a),
+          _M_running(thread_not_started),
+          _M_joinable(false)
+        {}
+
+        virtual ~thread() 
+        {
+            assert(!_M_thread || 
+                   _M_running != thread_running || 
+                  !"posix::thread deleted while the thread ruotine is running!" );
+        }        
+        
+        // for join_one method...
+        //
+
+        static cond &
+        terminate_cond()
+        {
+            static cond ret;
+            return ret;
+        } 
+        static mutex &
+        terminate_mutex()
+        {
+            static mutex ret;
+            return ret;
+        } 
+
+        static thread * &
+        terminate_thread()
+        {
+            static thread * ret;
+            return ret;
+        }
+
+        friend void *start_routine(void *);
+        static void *start_routine(void *arg)
+        {
+            thread *that = reinterpret_cast<thread *>(arg);
+            void *ret;
+
+            pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL); 
+
+            try 
+            {
+                ret = that->operator()();
+            }
+            catch(std::exception &e)  // uncaught thread exceptions;
+            {
+                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!" << std::endl;
+            }
+            catch(...)  // pthread_cancel causes the thread to throw an unknown exception that is to be rethrown;
+            {
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
+
+                that->_M_running = thread_cancelled;
+                that->_M_joinable = false;
+                that->_M_thread = static_cast<pthread_t>(0);
+
+                scoped_lock<mutex> lock(terminate_mutex());
+                terminate_thread() = that;
+                terminate_cond().signal();
+                throw;
+            }
+
+            that->_M_running = thread_terminated;
+            that->_M_joinable = false;
+            that->_M_thread = static_cast<pthread_t>(0);
+            
+            scoped_lock<mutex> lock(terminate_mutex());
+            terminate_thread() = that;
+            terminate_cond().signal();
+            return ret;
+        }
+
+        friend void *start_detached_routine(void *arg);
+        static void *start_detached_routine(void *arg)
+        {
+            thread *that = reinterpret_cast<thread *>(arg);
+            void *ret;
+
+            pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL); 
+
+            try 
+            {
+                ret = that->operator()();
+            }
+            catch(std::exception &e)  // application exception;
+            {
+                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!" << std::endl;
+                // that->_M_running = thread_terminated; 
+                // that->_M_joinable = false;
+                delete that;
+            }
+            catch(...)  // pthread_cancel causes the thread to throw an unknown exception that is to be rethrown;
+            {
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
+                // that->_M_running = thread_cancelled; 
+                // that->_M_joinable = false;
+                delete that;
+                throw;
+            }
+
+            return ret;
+        }
+      
+
+        bool start() 
+        {
+            if (_M_running == thread_running)
+                return false;   // already started
+
+            if (::pthread_create(&_M_thread, &(*_M_attr), start_routine, this ) != 0) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!" << std::endl;
+                return false;
+            }
+            _M_running = thread_running;
+            _M_joinable = true;
+            return true;
+        }
+
+        // note: to be used in conjunction with ->stop_and_delete_this() 
+        //       on threads allocated with new and running in detached state.
+        //       the thread function (operator()) is responsible to delete the object 
+        //       it refers to by means of stop_and_delete_this() method.
+
+        bool start_detached_in_heap() 
+        {
+            if (_M_running == thread_running)
+                return false;   // already started
+            
+            _M_attr->setdetachstate(PTHREAD_CREATE_DETACHED);
+
+            if (::pthread_create(&_M_thread, &(*_M_attr), start_detached_routine, this ) != 0) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_create error!" << std::endl;
+                return false;
+            }
+            _M_running = thread_running;
+            _M_joinable = false;
+            return true;
+        }
+
+        // nore: this requires the concrete thread to be implementing the restart_impl method
+        //       example:
+        //
+        //       void restart_impl()
+        //       {
+        //           new (this) concreteThread;
+        //       }
+
+        bool restart()
+        {
+            this->cancel();
+            this->restart_impl();
+            return this->start();      
+        }
+
+
+        bool cancel()
+        {
+            pthread_t pt = this->get_id();
+
+            if ( !pt || _M_running != thread_running  || ::pthread_cancel(pt) == ESRCH ) {
+                _M_running = thread_cancelled;
+                _M_joinable = false;
+                return false;
+            }
+
+            void *status = (void *)0; 
+            for(;;) {
+
+                // on joinable thread, pthread_join waits for the thread to be canceled
+                //
+
+                if ( ::pthread_join(pt, &status)  == ESRCH ) {
+                    _M_running = thread_cancelled;
+                    _M_joinable = false;
+                    return true;
+                }
+
+                if (status == PTHREAD_CANCELED || _M_running != thread_running)
+                    break;
+
+                std::clog << __PRETTY_FUNCTION__ << "(" << std::hex << pt << ") spinning while thread terminates..." << std::endl;
+                usleep(200000);
+            }
+
+            _M_running = thread_cancelled;
+            _M_joinable = false;
+            return true;
+        }
+
+#define METHOD_PRECOND(p)\
+            if (!p || _M_running != thread_running) {  \
+                return ESRCH;  \
+            }
+
+        int 
+        join(void **thread_return=NULL) const 
+        {
+            pthread_t p = this->get_id();
+            METHOD_PRECOND(p);
+            return ::pthread_join(p, thread_return); 
+        }
+
+        int 
+        detach()  
+        { 
+            pthread_t p = this->get_id();
+            METHOD_PRECOND(p);
+            return ::pthread_detach(p); 
+        }
+
+        int 
+        setschedparam(int policy, const struct sched_param *param)  
+        { 
+            pthread_t p = this->get_id();
+            METHOD_PRECOND(p);
+            return ::pthread_setschedparam(p, policy, param); 
+        }
+
+        int 
+        getschedparam(int *policy, struct sched_param *param) const 
+        { 
+            pthread_t p = this->get_id();
+            METHOD_PRECOND(p);
+            return ::pthread_getschedparam(p, policy, param); 
+        }
+
+        int
+        setschedprio(int prio)
+        { 
+            pthread_t p = this->get_id();
+            METHOD_PRECOND(p);
+            return ::pthread_setschedprio(p,prio); 
+        }
+
+        int 
+        kill(int signo)
+        { 
+            pthread_t p = this->get_id();
+            METHOD_PRECOND(p);
+            return ::pthread_kill(p, signo); 
+        }
+
+        pthread_t 
+        get_id() const 
+        { return _M_thread; }
+
+        bool 
+        is_running() const
+        { return _M_running == thread_running; }
+
+        bool joinable() const
+        { return _M_joinable; }
+
+
+    protected:
+        // meaningful only in the thread context -- operator() 
+        
+        virtual void restart_impl()
+        {
+            assert(!"restart not implemented in this concrete thread");
+        }
+
+        int
+        setcancelstate(int state, int *oldstate)
+        { return ::pthread_setcancelstate(state,oldstate); }
+
+        int
+        setcanceltype(int type, int *oldtype)
+        { return ::pthread_setcanceltype(type,oldtype); }
+
+        void 
+        testcancel() 
+        { ::pthread_testcancel(); }
+
+        pthread_t self() const
+        { return ::pthread_self(); }
+
+        int 
+        psigmask(int how, const sigset_t * __restrict s, sigset_t * __restrict os)
+        { return ::pthread_sigmask(how,s,os); }
+
+        int
+        getconcurrency() const
+        { return ::pthread_getconcurrency(); }
+
+        int
+        setconcurrency(int new_level)
+        { return ::pthread_setconcurrency(new_level); }
+
+        // note: to be used in conjunction with ->start_detached_in_heap(). 
+        //       on threads allocated with new and running in detached state.
+
+        void 
+        stop_and_delete_this()
+        {   
+            _M_running = thread_terminated;
+            _M_joinable = false; 
+            delete this; 
+        }    
+
+        virtual void *operator()() = 0;
+    };
+
+    class thread_group 
+    {
+        public:
+            bool add(thread *value)
+            {
+                return _M_group.insert(value).second;    
+            }
+
+            void remove(thread *value)
+            {
+                _M_group.erase(value);
+            }
+
+            void start_all()
+            {
+                for_each(_M_group.begin(), _M_group.end(), mem_fn(&thread::start));
+            }
+
+            void detach_all()
+            {
+                for_each(_M_group.begin(), _M_group.end(), mem_fn(&thread::detach));
+            }
+
+            void join_all()
+            {
+                for_each(_M_group.begin(), _M_group.end(), bind( mem_fn(&thread::join),_1, static_cast<void **>(NULL) ));
+            }
+
+            thread *join_one()
+            {
+                scoped_lock<mutex> lock(thread::terminate_mutex());
+                for(;;) {
+                    thread::terminate_cond().wait(lock);
+                    if ( _M_group.find(thread::terminate_thread()) != _M_group.end())
+                        return thread::terminate_thread();
+                } 
+                return NULL;           
+            }
+
+        private:
+            std::set<thread *> _M_group;
+    };
+
 } // namespace posix
+} // namespace more
 
 #endif /* PTHREADPP_HH */

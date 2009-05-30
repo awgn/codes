@@ -10,7 +10,8 @@
 
 #include "pthread++.hh"
 
-using namespace posix;
+using namespace more;
+using namespace more::posix;
 
 mutex global_mutex;
 cond  global_cond;
@@ -158,16 +159,43 @@ struct Detached : public posix::thread
     {
         sleep(1);
         stop_and_delete_this();
+        return NULL;
     }
 
 };
 
-
-int main(int argc, char *argv[])
+struct Restartable : public posix::thread
 {
+    Restartable(int n)
+    : _M_init(n), _M_value(n)
+    {
+        std::cout << "    " << __PRETTY_FUNCTION__ << std::endl;
+    }
+
+    void restart_impl()
+    {
+        new (this) Restartable(_M_init);
+    }
+
+    void *operator()()
+    {
+        for(int i=0; i<5; i++) {
+            std::cout << "    [" << std::hex << self() << "] " << _M_value++ << std::endl; 
+            sleep(1);
+        }
+        return NULL;
+    }
+
+    int _M_init;
+    int _M_value;
+};
+
 
 #define RED     "\E[0;31;1m"
 #define RESET   "\E[0m"
+
+int main(int argc, char *argv[])
+{
 
     std::cout << "\n[*]" RED " scoped thread..." RESET "\n";
     {
@@ -296,6 +324,44 @@ int main(int argc, char *argv[])
         posix::thread * t = new Detached;
         t->start_detached_in_heap();
         sleep(3);
+    }
+    std::cout << "\n[*] "RED "restartable..."RESET"\n";
+    {
+        posix::thread * t = new Restartable(1);
+        t->start();
+        t->join();
+        std::cout << "\n[*] "RED "-----"RESET"\n";
+        t->restart();
+        t->join();
+    }
+
+    std::cout << "\n[*] "RED "thread_group..."RESET"\n";
+    {   
+        thread *hello = new Hello;
+        thread *world = new World;
+
+        thread_group grp;
+
+        grp.add(hello);
+        grp.add(world);
+
+        grp.start_all();
+
+        std::cout << "    hello.is_running(): " << std::boolalpha << hello->is_running() << std::endl;
+        std::cout << "    world.is_running(): " << std::boolalpha << world->is_running() << std::endl;
+
+        // grp.join_all()
+
+        for(int i=0;i<2;i++) {
+            thread * t = grp.join_one();
+            std::cout << "thread@" << t << " is terminated: " << " t->get_id() = " << t->get_id() << std::endl;
+        }
+
+        std::cout << "    hello.is_running(): " << std::boolalpha << hello->is_running() << std::endl;
+        std::cout << "    world.is_running(): " << std::boolalpha << world->is_running() << std::endl;
+
+        delete hello;
+        delete world;
     }
 
     std::cout << "done." << std::endl;
