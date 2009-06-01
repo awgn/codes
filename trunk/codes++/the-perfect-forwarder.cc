@@ -138,7 +138,7 @@
 
              This wrapper has the following properties:
 
-             *) Argument deduction is done in the following way: 
+             *) The template argument deduction for an rvalue reference is done in the following way: 
 
                 - if an lvalue of type A is passed, T resolves to A& and by the reference collapsing rules, 
                 the argument type becomes A& (lvalue reference);
