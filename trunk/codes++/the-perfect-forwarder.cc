@@ -30,10 +30,10 @@
              The client of the wrapper (the callee) must be able to pass both lvalue and rvalue as arguments, 
              in accordance with the target signature. Obviously if a target parameter (a parameter of the target function) 
              is taken as non-const reference, the corresponding actual parameter must not be provided to the wrapper 
-             as unnamed object or rvalue.
+             as rvalue (unnamed object).
 
              In the study presented, the following free function has been chosen as target object (it could be an object
-             providing the overloaded operator()() const, or any other callable object):
+             providing the operator() const or any other callable object):
 
              int fun(arg a1, const arg & a2, arg & a3)
              {
@@ -79,18 +79,19 @@
              
              Consequently this second wrapper has the following problems: 
 
-             *1) it's not a perfect forwarder due to the decay in the type deduction. The deducted arguments, indeed, 
-                 cannot be used to select a possible overloaded target function (feature not required in this study). 
+             *1) it's not a perfect forwarder due to the template argument deduction decay. The template arguments resolve 
+                 to types that cannot be used to select a possible overloaded target function (feature not required 
+                 in this study). 
 
              *2) parameters of the target function taken by reference are bound to the formal parameters of the forwarder 
                  (t3, in the example) and not to actual ones provided by the callee (a3 in the test), which is very bad!
 
              *3) parameters are passed by value and additional copy constructors are called.
 
-             The test #2 shows the major problem (*2) that makes the wrapper incorrect: the argument a3 passed to the wrapper 
-             is not updated by the target function as it would be if it were passed directly to the target function.
+             The test #2 shows the major problem (*2) that makes this wrapper incorrect: the argument a3 passed to the wrapper 
+             is not updated by the target function as it would be if it were passed directly to the target.
             
-             Fortunately a workaround to this problem does exists. The std::tr1::reference_wrapper<> is the helper class 
+             Fortunately a workaround to this problem does exist. The std::tr1::reference_wrapper<> is the helper class 
              the callee must use for those arguments intended to be passed as non-const reference to the target function.
           
              The common instantiation point will be the following one:
@@ -100,12 +101,12 @@
              Test #3 and #4 show the correctness of the forwarder function achieved by means of the tr1::reference_wrapper<>. 
             
              The comparison of the test #0 and #4 shows further copy constructors involved for passing a1 and a2 (*3). 
-             This is price to pay to have a correct wrapper that can accept rvalues where the target function does.
+             This is price to pay to have a correct wrapper that can accept lvalue and rvalues where the target function does.
 
              Also note that test #3 does not involove additional copy constructors thanks to certain optimizations
              of temporary/unnamed objects that takes place during the argument passing:
 
-                               copy constructor are optimized away
+                               copy constructors are optimized away
                                           /       /
              candidate_forwarder_2(fun, arg(), arg(), std::tr1::ref(a3) );
 
@@ -115,7 +116,7 @@
 
              The object adaptor std::tr1::bind, for instance, is written exactly this way.
 
-             The perfect forwarder is enabled by means of C++0x rvalue reference and has the following form:
+             Instead, the perfect forwarder is enabled by means of C++0x rvalue reference and has the following form:
 
              template <typename F, typename T1, typename T2, typename T3>
              int the_perfect_forwarder(F f, T1 && t1, T2 && t2, T3 && t3)
@@ -126,7 +127,7 @@
              }
 
              The limitation that a non-const reference cannot bind a rvalue is overcome by means of the rvalue reference [&&]
-             which can binds to rvalue and allows its modification.
+             which can binds to a rvalue and allows its modification.
 
              Bearing in mind the following reference collapsing rules introduced by C++0x:
 
@@ -144,7 +145,7 @@
 
                 - if an rvalue is passed, T resolves to A, and the argument type becomes A&&. 
                 
-                The std::forward<>() helper is required for the wrapper to be perfect.
+                The std::forward<> helper is required for the wrapper to be perfect.
 
                 namespace std {
 
@@ -162,7 +163,7 @@
                 argument and return type of std::forward become A&&. 
                 
                 The return type of std::forward is an expression that is declared rvalue and has no-name, therefore 
-                it is an rvalue. Without the use of std::forward the parameter couldn't be an rvalue because it had a name. 
+                it is an rvalue. Without the use of std::forward the parameter couldn't be an rvalue because of its name (a). 
 
              *) Both lvalue and rvalue can be provided as argument to the wrapper, in accordance to the signature of the
                 target function/object.
