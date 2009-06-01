@@ -69,18 +69,18 @@
                  return f(t1,t2,t3);
              }
 
-             [ note: this is the decaying version of candidate_forwarder_1, as defined in 
+             [ note: this is the decay version of candidate_forwarder_1, as defined in 
                      C++ Template: the complete guide (Vandevoorde/Josuttis) ]
 
              with all the arguments passed by value. At first glance it seems that the ban of rvalue passed as argument 
-             is removed and indeed it is. But just because it's the decaying version, arguments are copy-constructed and 
+             is removed and indeed it is. But just because it's the decay version, arguments are copy-constructed and 
              more importantly the type deduction follows the rule that array and function types are deducted as pointer types 
              and that top-level CV qualifiers (const/volatile) are discarded.
              
              Consequently this second wrapper has the following problems: 
 
-             *1) it's not a perfect forwarder due to the decaying deduction. The deducted arguments, indeed, cannot be used 
-                 to select a possible overloaded target function (feature not required in this study). 
+             *1) it's not a perfect forwarder due to the decay in the type deduction. The deducted arguments, indeed, 
+                 cannot be used to select a possible overloaded target function (feature not required in this study). 
 
              *2) parameters of the target function taken by reference are bound to the formal parameters of the forwarder 
                  (t3, in the example) and not to actual ones provided by the callee (a3 in the test), which is very bad!
