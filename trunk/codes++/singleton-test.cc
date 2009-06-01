@@ -13,8 +13,7 @@
 
 struct s0: public more::singleton<s0, more::singleton_type> 
 {
-    s0( singleton_tag tag )
-    : more::singleton<s0, more::singleton_type>(tag)
+    s0( base_type::tag )
     {}
 };
 
@@ -22,9 +21,9 @@ struct s1: public more::singleton<s1, volatile more::singleton_type, TYPELIST(in
 {
     int _M_value;
 
-    s1( singleton_tag tag, int value)
-    : more::singleton<s1, volatile more::singleton_type, TYPELIST(int) >(tag),
-      _M_value(value)
+    // s1( more::singleton<s1, volatile more::singleton_type, TYPELIST(int)>::tag, int value)
+    s1( base_type::tag, int value)
+    :  _M_value(value)
     {}
 };
 
@@ -33,9 +32,8 @@ struct s2: public more::singleton<s2, const more::singleton_type, TYPELIST(std::
     std::string _M_par1;
     std::string _M_par2;
 
-    s2( singleton_tag tag, const std::string &p1, const std::string &p2)
-    : more::singleton<s2, const more::singleton_type, TYPELIST(std::string, std::string) > (tag),
-      _M_par1(p1),
+    s2( base_type::tag, const std::string &p1, const std::string &p2)
+    : _M_par1(p1),
       _M_par2(p2)
       {}
 };
@@ -46,13 +44,11 @@ struct s3: public more::singleton< s3<T>, more::singleton_type, TYPELIST(T) >
 {
     T _M_value;
 
-    s3( typename more::singleton< s3<T>, more::singleton_type, TYPELIST(T) >::singleton_tag tag, T value )
-    : more::singleton< s3<T>, more::singleton_type, TYPELIST(T)>(tag),
-      _M_value(value)
+    // s3( typename base_type::tag, T value )
+    s3( typename more::singleton< s3<T>, more::singleton_type, TYPELIST(T) >::tag, T value )
+    :  _M_value(value)
     {}
 };
-
-
 
 
 int 
@@ -83,8 +79,13 @@ main(int argc, char *argv[])
     std::cout << RED << "\ntemplate singleton<T> instance:" << RESET << std::endl;
 
     s3<double> & t3 = s3<double>::instance(11.2);
+    s3<float>  & t4 = s3<float>::instance(10.2);
 
     std::cout << "t3: slot @" << std::hex << &t3 << " value:" << std::dec << t3._M_value << '\n';
+    std::cout << "t4: slot @" << std::hex << &t4 << " value:" << std::dec << t4._M_value << '\n';
+
+    std::cout << "t3: slot @" << std::hex << & s3<double>::instance() << " value:" << std::dec << s3<double>::instance()._M_value << '\n';
+    std::cout << "t4: slot @" << std::hex << & s3<float>::instance() << " value:" << std::dec << s3<float>::instance()._M_value << '\n';
 
 #ifdef ERR_0
     s1 a;  // <- instances of singleton are not allowed 
@@ -93,7 +94,7 @@ main(int argc, char *argv[])
     s1 b ( const_cast<const s1 &>(s1::instance()) ); // <- instances are not copyable
 #endif
 #ifdef ERR_2
-    s1 & r1 = s1::instance(97); // cv-correctness
+    s1 & r5 = s1::instance(97); // cv-correctness
 #endif
     return 0;
 }

@@ -23,6 +23,12 @@ namespace more
 
     struct singleton_base
     {
+        template <typename T>
+        struct identity
+        {
+            typedef T type;
+        };
+
         template <typename U, bool c, bool v> struct __add_cv;
         template <typename U>
         struct __add_cv<U, true, false>
@@ -58,6 +64,7 @@ namespace more
     protected:
         singleton_base()
         {}
+        
         ~singleton_base()
         {}
     };
@@ -65,22 +72,18 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,0> : public singleton_base
     {
-    protected:
-        struct singleton_tag {
-            friend class singleton<T,CV,S,0>;
-        private:
-            singleton_tag()  {}
-        };
+        friend class singleton_base::identity<T>::type;
+
+        struct tag {};
 
     public:
-        singleton(singleton_tag &)
-        {} 
+        typedef singleton<T,CV,S,0> base_type;
 
         // singleton instance...
         //
         static typename singleton_base::add_cv_qualifier<T,CV>::type & instance()
         {
-            static typename singleton_base::add_cv_qualifier<T,CV>::type one((singleton_tag()));
+            static typename singleton_base::add_cv_qualifier<T,CV>::type one( (typename base_type::tag()) );
             return one;
         }
     };
@@ -88,24 +91,19 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,1> : public singleton_base
     {
-        typedef typename mtp::TL::at<S,0>::type arg1;
+        friend class singleton_base::identity<T>::type;
+        typedef typename mtp::TL::at<S,0>::type arg1_type;
 
-    protected:
-        struct singleton_tag {
-            friend class singleton<T,CV,S,1>;
-        private:
-            singleton_tag()  {}
-        };
+        struct tag {};
 
     public:
-        singleton(singleton_tag)
-        {}
+        typedef singleton<T,CV,S,1> base_type;
 
         // singleton instance...
         //
-        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1 x1 = arg1() )
+        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1_type x1 = arg1_type() )
         {
-            static typename singleton_base::add_cv_qualifier<T,CV>::type one((singleton_tag()), x1);
+            static typename singleton_base::add_cv_qualifier<T,CV>::type one( typename base_type::tag(), x1);
             return one;
         }
     };
@@ -113,25 +111,20 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,2> : public singleton_base
     {
-        typedef typename mtp::TL::at<S,0>::type arg1;
-        typedef typename mtp::TL::at<S,1>::type arg2;
+        friend class singleton_base::identity<T>::type;
+        typedef typename mtp::TL::at<S,0>::type arg1_type;
+        typedef typename mtp::TL::at<S,1>::type arg2_type;
 
-    protected:
-        struct singleton_tag {
-            friend class singleton<T,CV,S,2>;
-        private:
-            singleton_tag()  {}
-        };
+        struct tag {};
 
     public:
-        singleton(singleton_tag)
-        {}
+        typedef singleton<T,CV,S,2> base_type;
 
         // singleton instance...
         //
-        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1 x1 = arg1(), arg2 x2 = arg2() )
+        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1_type x1 = arg1_type(), arg2_type x2 = arg2_type() )
         {
-            static typename singleton_base::add_cv_qualifier<T,CV>::type one((singleton_tag()), x1, x2);
+            static typename singleton_base::add_cv_qualifier<T,CV>::type one(typename base_type::tag(), x1, x2);
             return one;
         }
     };
@@ -139,26 +132,21 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,3> : public singleton_base
     {
-        typedef typename mtp::TL::at<S,0>::type arg1;
-        typedef typename mtp::TL::at<S,1>::type arg2;
-        typedef typename mtp::TL::at<S,2>::type arg3;
+        friend class singleton_base::identity<T>::type;
+        typedef typename mtp::TL::at<S,0>::type arg1_type;
+        typedef typename mtp::TL::at<S,1>::type arg2_type;
+        typedef typename mtp::TL::at<S,2>::type arg3_type;
 
-    protected:
-        struct singleton_tag {
-            friend class singleton<T,CV,S,3>;
-        private:
-            singleton_tag()  {}
-        };
+        struct tag {};
 
     public:
-        singleton(singleton_tag)
-        {}
+        typedef singleton<T,CV,S,3> base_type;
 
         // singleton instance...
         //
-        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1 x1 = arg1(), arg2 x2 = arg2(), arg3 x3 = arg3() )
+        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1_type x1 = arg1_type(), arg2_type x2 = arg2_type(), arg3_type x3 = arg3_type() )
         {
-            static typename singleton_base::add_cv_qualifier<T,CV>::type one((singleton_tag()), x1, x2, x3);
+            static typename singleton_base::add_cv_qualifier<T,CV>::type one(typename base_type::tag(), x1, x2, x3);
             return one;
         }
     };
@@ -166,27 +154,23 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,4> : public singleton_base
     {
-        typedef typename mtp::TL::at<S,0>::type arg1;
-        typedef typename mtp::TL::at<S,1>::type arg2;
-        typedef typename mtp::TL::at<S,2>::type arg3;
-        typedef typename mtp::TL::at<S,3>::type arg4;
+        friend class singleton_base::identity<T>::type;
+        typedef typename mtp::TL::at<S,0>::type arg1_type;
+        typedef typename mtp::TL::at<S,1>::type arg2_type;
+        typedef typename mtp::TL::at<S,2>::type arg3_type;
+        typedef typename mtp::TL::at<S,3>::type arg4_type;
 
-    protected:
-        struct singleton_tag {
-            friend class singleton<T,CV,S,4>;
-        private:
-            singleton_tag()  {}
-        };
+        struct tag {};
 
     public:
-        singleton(singleton_tag)
-        {}
+        typedef singleton<T,CV,S,4> base_type;
 
         // singleton instance...
         //
-        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1 x1 = arg1(), arg2 x2 = arg2(), arg3 x3 = arg3(), arg4 x4 = arg4() )
+        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1_type x1 = arg1_type(), arg2_type x2 = arg2_type(), arg3_type x3 = arg3_type(),
+                                                                                 arg4_type x4 = arg4_type() )
         {
-            static typename singleton_base::add_cv_qualifier<T,CV>::type one((singleton_tag()), x1, x2, x3, x4);
+            static typename singleton_base::add_cv_qualifier<T,CV>::type one(typename base_type::tag(), x1, x2, x3, x4);
             return one;
         }
     };
@@ -194,29 +178,24 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,5> : public singleton_base
     {
-        typedef typename mtp::TL::at<S,0>::type arg1;
-        typedef typename mtp::TL::at<S,1>::type arg2;
-        typedef typename mtp::TL::at<S,2>::type arg3;
-        typedef typename mtp::TL::at<S,3>::type arg4;
-        typedef typename mtp::TL::at<S,4>::type arg5;
+        friend class singleton_base::identity<T>::type;
+        typedef typename mtp::TL::at<S,0>::type arg1_type;
+        typedef typename mtp::TL::at<S,1>::type arg2_type;
+        typedef typename mtp::TL::at<S,2>::type arg3_type;
+        typedef typename mtp::TL::at<S,3>::type arg4_type;
+        typedef typename mtp::TL::at<S,4>::type arg5_type;
 
-    protected:
-        struct singleton_tag {
-            friend class singleton<T,CV,S,5>;
-        private:
-            singleton_tag()  {}
-        };
+        struct tag {};
 
     public:
-        singleton(singleton_tag)
-        {}
+        typedef singleton<T,CV,S,5> base_type;
 
         // singleton instance...
         //
-        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1 x1 = arg1(), arg2 x2 = arg2(), arg3 x3 = arg3(), arg4 x4 = arg4(), 
-                                                                                 arg5 x5 = arg5() )
+        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1_type x1 = arg1_type(), arg2_type x2 = arg2_type(), arg3_type x3 = arg3_type(), 
+                                                                                 arg4_type x4 = arg4_type(), arg5_type x5 = arg5_type() )
         {
-            static typename singleton_base::add_cv_qualifier<T,CV>::type one((singleton_tag()), x1, x2, x3, x4, x5);
+            static typename singleton_base::add_cv_qualifier<T,CV>::type one(typename base_type::tag(), x1, x2, x3, x4, x5);
             return one;
         }
     };
@@ -224,30 +203,25 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,6> : public singleton_base
     {
-        typedef typename mtp::TL::at<S,0>::type arg1;
-        typedef typename mtp::TL::at<S,1>::type arg2;
-        typedef typename mtp::TL::at<S,2>::type arg3;
-        typedef typename mtp::TL::at<S,3>::type arg4;
-        typedef typename mtp::TL::at<S,4>::type arg5;
-        typedef typename mtp::TL::at<S,5>::type arg6;
+        friend class singleton_base::identity<T>::type;
+        typedef typename mtp::TL::at<S,0>::type arg1_type;
+        typedef typename mtp::TL::at<S,1>::type arg2_type;
+        typedef typename mtp::TL::at<S,2>::type arg3_type;
+        typedef typename mtp::TL::at<S,3>::type arg4_type;
+        typedef typename mtp::TL::at<S,4>::type arg5_type;
+        typedef typename mtp::TL::at<S,5>::type arg6_type;
 
-    protected:
-        struct singleton_tag {
-            friend class singleton<T,CV,S,6>;
-        private:
-            singleton_tag()  {}
-        };
+        struct tag {};
 
     public:
-        singleton(singleton_tag)
-        {}
+        typedef singleton<T,CV,S,6> base_type;
 
         // singleton instance...
         //
-        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1 x1 = arg1(), arg2 x2 = arg2(), arg3 x3 = arg3(), arg4 x4 = arg4(), 
-                                                                                 arg5 x5 = arg5(), arg6 x6 = arg6() )
+        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1_type x1 = arg1_type(), arg2_type x2 = arg2_type(), arg3_type x3 = arg3_type(), 
+                                                                                 arg4_type x4 = arg4_type(), arg5_type x5 = arg5_type(), arg6_type x6 = arg6_type() )
         {
-            static typename singleton_base::add_cv_qualifier<T,CV>::type one((singleton_tag()), x1, x2, x3, x4, x5, x6);
+            static typename singleton_base::add_cv_qualifier<T,CV>::type one(typename base_type::tag(), x1, x2, x3, x4, x5, x6);
             return one;
         }
     };
@@ -255,31 +229,27 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,7> : public singleton_base
     {
-        typedef typename mtp::TL::at<S,0>::type arg1;
-        typedef typename mtp::TL::at<S,1>::type arg2;
-        typedef typename mtp::TL::at<S,2>::type arg3;
-        typedef typename mtp::TL::at<S,3>::type arg4;
-        typedef typename mtp::TL::at<S,4>::type arg5;
-        typedef typename mtp::TL::at<S,5>::type arg6;
-        typedef typename mtp::TL::at<S,6>::type arg7;
+        friend class singleton_base::identity<T>::type;
+        typedef typename mtp::TL::at<S,0>::type arg1_type;
+        typedef typename mtp::TL::at<S,1>::type arg2_type;
+        typedef typename mtp::TL::at<S,2>::type arg3_type;
+        typedef typename mtp::TL::at<S,3>::type arg4_type;
+        typedef typename mtp::TL::at<S,4>::type arg5_type;
+        typedef typename mtp::TL::at<S,5>::type arg6_type;
+        typedef typename mtp::TL::at<S,6>::type arg7_type;
 
-    protected:
-        struct singleton_tag {
-            friend class singleton<T,CV,S,7>;
-        private:
-            singleton_tag()  {}
-        };
+        struct tag {};
 
     public:
-        singleton(singleton_tag)
-        {}
+        typedef singleton<T,CV,S,7> base_type;
 
         // singleton instance...
         //
-        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1 x1 = arg1(), arg2 x2 = arg2(), arg3 x3 = arg3(), arg4 x4 = arg4(), 
-                                                                                 arg5 x5 = arg5(), arg6 x6 = arg6(), arg7 x7 = arg7() )
+        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1_type x1 = arg1_type(), arg2_type x2 = arg2_type(), arg3_type x3 = arg3_type(), 
+                                                                                 arg4_type x4 = arg4_type(), arg5_type x5 = arg5_type(), arg6_type x6 = arg6_type(), 
+                                                                                 arg7_type x7 = arg7_type() )
         {
-            static typename singleton_base::add_cv_qualifier<T,CV>::type one((singleton_tag()), x1, x2, x3, x4, x5, x6, x7);
+            static typename singleton_base::add_cv_qualifier<T,CV>::type one(typename base_type::tag(), x1, x2, x3, x4, x5, x6, x7);
             return one;
         }
     };
@@ -287,35 +257,62 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,8> : public singleton_base
     {
-        typedef typename mtp::TL::at<S,0>::type arg1;
-        typedef typename mtp::TL::at<S,1>::type arg2;
-        typedef typename mtp::TL::at<S,2>::type arg3;
-        typedef typename mtp::TL::at<S,3>::type arg4;
-        typedef typename mtp::TL::at<S,4>::type arg5;
-        typedef typename mtp::TL::at<S,5>::type arg6;
-        typedef typename mtp::TL::at<S,6>::type arg7;
-        typedef typename mtp::TL::at<S,7>::type arg8;
+        friend class singleton_base::identity<T>::type;
+        typedef typename mtp::TL::at<S,0>::type arg1_type;
+        typedef typename mtp::TL::at<S,1>::type arg2_type;
+        typedef typename mtp::TL::at<S,2>::type arg3_type;
+        typedef typename mtp::TL::at<S,3>::type arg4_type;
+        typedef typename mtp::TL::at<S,4>::type arg5_type;
+        typedef typename mtp::TL::at<S,5>::type arg6_type;
+        typedef typename mtp::TL::at<S,6>::type arg7_type;
+        typedef typename mtp::TL::at<S,7>::type arg8_type;
 
-    protected:
-        struct singleton_tag {
-            friend class singleton<T,CV,S,8>;
-        private:
-            singleton_tag()  {}
-        };
+        struct tag {};
 
     public:
-        singleton(singleton_tag)
-        {}
+        typedef singleton<T,CV,S,8> base_type;
 
         // singleton instance...
         //
-        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1 x1 = arg1(), arg2 x2 = arg2(), arg3 x3 = arg3(), arg4 x4 = arg4(), 
-                                                                                 arg5 x5 = arg5(), arg6 x6 = arg6(), arg7 x7 = arg7(), arg8 x8 = arg8() )
+        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1_type x1 = arg1_type(), arg2_type x2 = arg2_type(), arg3_type x3 = arg3_type(), 
+                                                                                 arg4_type x4 = arg4_type(), arg5_type x5 = arg5_type(), arg6_type x6 = arg6_type(), 
+                                                                                 arg7_type x7 = arg7_type(), arg8_type x8 = arg8_type() )
         {
-            static typename singleton_base::add_cv_qualifier<T,CV>::type one((singleton_tag()), x1, x2, x3, x4, x5, x6, x7, x8);
+            static typename singleton_base::add_cv_qualifier<T,CV>::type one(typename base_type::tag(), x1, x2, x3, x4, x5, x6, x7, x8);
             return one;
         }
     };
+
+    template <typename T,typename CV, typename S>
+    class singleton<T,CV,S,9> : public singleton_base
+    {
+        friend class singleton_base::identity<T>::type;
+        typedef typename mtp::TL::at<S,0>::type arg1_type;
+        typedef typename mtp::TL::at<S,1>::type arg2_type;
+        typedef typename mtp::TL::at<S,2>::type arg3_type;
+        typedef typename mtp::TL::at<S,3>::type arg4_type;
+        typedef typename mtp::TL::at<S,4>::type arg5_type;
+        typedef typename mtp::TL::at<S,5>::type arg6_type;
+        typedef typename mtp::TL::at<S,6>::type arg7_type;
+        typedef typename mtp::TL::at<S,7>::type arg8_type;
+        typedef typename mtp::TL::at<S,8>::type arg9_type;
+
+        struct tag {};
+
+    public:
+        typedef singleton<T,CV,S,9> base_type;
+
+        // singleton instance...
+        //
+        static typename singleton_base::add_cv_qualifier<T,CV>::type & instance( arg1_type x1 = arg1_type(), arg2_type x2 = arg2_type(), arg3_type x3 = arg3_type(), 
+                                                                                 arg4_type x4 = arg4_type(), arg5_type x5 = arg5_type(), arg6_type x6 = arg6_type(), 
+                                                                                 arg7_type x7 = arg7_type(), arg8_type x8 = arg8_type(), arg9_type x9 = arg9_type() )
+        {
+            static typename singleton_base::add_cv_qualifier<T,CV>::type one(typename base_type::tag(), x1, x2, x3, x4, x5, x6, x7, x8, x9);
+            return one;
+        }
+    };
+
 
 } // namespace more
 
