@@ -347,8 +347,13 @@ int main(int argc, char *argv[])
 
         grp.start_all();
 
-        std::cout << "    hello.is_running(): " << std::boolalpha << hello->is_running() << std::endl;
-        std::cout << "    world.is_running(): " << std::boolalpha << world->is_running() << std::endl;
+        thread_group::iterator it = grp.begin();
+        for(; it != grp.end(); ++it) {
+            std::cout << "thread@" << *it <<" is_running()=" << std::boolalpha << (*it)->is_running() << std::endl;
+        }
+
+        // std::cout << "    hello.is_running(): " << std::boolalpha << hello->is_running() << std::endl;
+        // std::cout << "    world.is_running(): " << std::boolalpha << world->is_running() << std::endl;
 
         // grp.join_all()
 
