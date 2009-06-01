@@ -560,7 +560,7 @@ namespace more { namespace posix
             return create_detached_in_heap(that);
         }
 
-        // nore: this requires the concrete thread to be implementing the restart_impl method
+        // nore: restart() requires the concrete thread to be implementing the restart_impl method
         //       example:
         //
         //       void restart_impl()
@@ -742,6 +742,44 @@ namespace more { namespace posix
     class thread_group 
     {
         public:
+
+            typedef std::set<thread *>::iterator                iterator;
+            typedef std::set<thread *>::const_iterator          const_iterator;
+            typedef std::set<thread *>::reverse_iterator        reverse_iterator;
+            typedef std::set<thread *>::const_reverse_iterator  const_reverse_iterator;
+             
+            iterator
+            begin()
+            { return _M_group.begin(); }
+
+            const_iterator
+            begin() const
+            { return _M_group.begin(); }
+
+            iterator
+            end()
+            { return _M_group.end(); }
+
+            const_iterator
+            end() const
+            { return _M_group.end(); }
+
+            reverse_iterator
+            rbegin()
+            { return _M_group.rbegin(); }
+
+            const_reverse_iterator
+            rbegin() const
+            { return _M_group.rbegin(); }
+
+            reverse_iterator
+            rend()
+            { return _M_group.rend(); }
+
+            const_reverse_iterator
+            rend() const
+            { return _M_group.rend(); }
+
             bool add(thread *value)
             {
                 return _M_group.insert(value).second;    
