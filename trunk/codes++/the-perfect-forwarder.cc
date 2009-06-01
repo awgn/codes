@@ -33,7 +33,7 @@
              as unnamed object or rvalue.
 
              In the study presented, the following free function has been chosen as target object (it could be an object
-             class providing the overloaded operator()() const, or any other callable object):
+             providing the overloaded operator()() const, or any other callable object):
 
              int fun(arg a1, const arg & a2, arg & a3)
              {
@@ -58,10 +58,10 @@
              However such a wrapper has a limitation: it does not allow the callee to pass an rvalue as argument 
              even if this argument is intended to be passed to the target function by value or const reference. 
              
-             This limitation is imposed by the standard that does not allow the non-const reference of the wrapper 
-             to bind an rvalue, to prevent the common error that modifyng an rvalue does not make much sense.
+             This limitation is imposed by the standard that does not allow a non-const reference to bind an rvalue, 
+             this for preventing the common error of modifyng an rvalue that does not make much sense.
 
-             To remove this limitation, a second candidate for the perfect forwarder is taken into account:
+             To overcome this limitation, a second candidate for the perfect forwarder is taken into account:
 
              template <typename F, typename T1, typename T2, typename T3>
              int candidate_forwarder_2(F f, T1 t1, T2 t2, T3 t3)
@@ -69,13 +69,13 @@
                  return f(t1,t2,t3);
              }
 
-             [ note: this is the decay version of candidate_forwarder_1, as defined in 
+             [ note: the template argument deduction dacay, as pointed out in: 
                      C++ Template: the complete guide (Vandevoorde/Josuttis) ]
 
-             with all the arguments passed by value. At first glance it seems that the ban of rvalue passed as argument 
-             is removed and indeed it is. But just because it's the decay version, arguments are copy-constructed and 
-             more importantly the type deduction follows the rule that array and function types are deducted as pointer types 
-             and that top-level CV qualifiers (const/volatile) are discarded.
+             In this wrapper all the arguments are passed by value. At first glance it seems that the ban of passing rvalues 
+             as argument is removed and indeed it is. But alas, arguments are copy-constructed and more importantly the type 
+             deduction decay makes array and function types be deducted as pointer types and the top-level CV qualifiers 
+             (const/volatile) be discarded.
              
              Consequently this second wrapper has the following problems: 
 
@@ -102,18 +102,20 @@
              The comparison of the test #0 and #4 shows further copy constructors involved for passing a1 and a2 (*3). 
              This is price to pay to have a correct wrapper that can accept rvalues where the target function does.
 
-             Also note that test #3 does not show such additional copy constructors thanks to certain optimizations
+             Also note that test #3 does not involove additional copy constructors thanks to certain optimizations
              of temporary/unnamed objects that takes place during the argument passing:
 
                                copy constructor are optimized away
                                           /       /
              candidate_forwarder_2(fun, arg(), arg(), std::tr1::ref(a3) );
 
-             Despite of the performance loss the test #4 shows, candidate_forwarder_2 function is preferable to 
+             Despite of the performance loss the test #4 points out, candidate_forwarder_2 function is preferable to 
              candidate_forwarder_1, in that the limitation of rvalue passed as argument is removed. Even if if it's not 
              perfect at all (*1), it's the most convenient implementation the current C++ standard allows with the help of TR1.
 
-             The the perfect forwarder is enabled by means of C++0x rvalue reference and has the following form:
+             The object adaptor std::tr1::bind, for instance, is written exactly this way.
+
+             The perfect forwarder is enabled by means of C++0x rvalue reference and has the following form:
 
              template <typename F, typename T1, typename T2, typename T3>
              int the_perfect_forwarder(F f, T1 && t1, T2 && t2, T3 && t3)
@@ -126,13 +128,45 @@
              The limitation that a non-const reference cannot bind a rvalue is overcome by means of the rvalue reference [&&]
              which can binds to rvalue and allows its modification.
 
+             Bearing in mind the following reference collapsing rules introduced by C++0x:
+
+             T&  -> &  -> T&
+             T&  -> && -> T&
+             T&& -> &  -> T&
+             T&& -> && -> T&&
+
              This wrapper has the following properties:
 
-             *) Argument deduction is done in the following way: if an lvalue is passed, than Tn is deducted as an lvalue reference; 
-                if an rvalue is passed, then Tn is deducted as plain type and the std::forward<>() helper is required for 
-                the wrapper to be perfect.
+             *) Argument deduction is done in the following way: 
+
+                - if an lvalue of type A is passed, T resolves to A& and by the reference collapsing rules, 
+                the argument type becomes A& (lvalue reference);
+
+                - if an rvalue is passed, T resolves to A, and the argument type becomes A&&. 
+                
+                The std::forward<>() helper is required for the wrapper to be perfect.
+
+                namespace std {
+
+                    template<class T> 
+                    T&& forward(T&& a) 
+                    {
+                        return a;
+                    } 
+                }
+                
+                If an lvalue of type A is passed as argument, the corresponding type T of the wrapper resolves to A&. Then 
+                by the collapsing rules, argument and return type of std::forward become A&. 
+                
+                If an rvaule of type A is passed as argument, the corresponding type T of the wrapper resolves to A. Then
+                argument and return type of std::forward become A&&. 
+                
+                The return type of std::forward is an expression that is declared rvalue and has no-name, therefore 
+                it is an rvalue. Without the use of std::forward the parameter couldn't be an rvalue because it had a name. 
+
              *) Both lvalue and rvalue can be provided as argument to the wrapper, in accordance to the signature of the
-                target function/object. 
+                target function/object.
+
              *) Additional copy constructors are not involeved.
 
              Nicola -- 09/05/31
