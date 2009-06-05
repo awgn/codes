@@ -191,6 +191,15 @@ struct Restartable : public posix::thread
 };
 
 
+struct join_functor
+{
+    void operator()(more::posix::thread *t) const
+    {
+        std::cout << "thread@ " << t << " finished! [" << t->get_id() << "]" << std::endl;
+    }
+};
+
+
 #define RED     "\E[0;31;1m"
 #define RESET   "\E[0m"
 
@@ -338,6 +347,7 @@ int main(int argc, char *argv[])
     std::cout << "\n[*] "RED "thread_group..."RESET"\n";
     {   
         thread *hello = new Hello;
+
         thread *world = new World;
 
         thread_group grp;
@@ -354,19 +364,39 @@ int main(int argc, char *argv[])
 
         // std::cout << "    hello.is_running(): " << std::boolalpha << hello->is_running() << std::endl;
         // std::cout << "    world.is_running(): " << std::boolalpha << world->is_running() << std::endl;
-
         // grp.join_all()
 
-        for(int i=0;i<2;i++) {
-            thread * t = grp.join_one();
-            std::cout << "thread@" << t << " is terminated: " << " t->get_id() = " << t->get_id() << std::endl;
+        {
+            scoped_lock<posix::mutex> lock(posix::thread::terminate_mutex());
+            for(int i=0;i<2;i++) {
+                thread * t = grp.join_one(lock);
+                std::cout << "thread@" << t << " is terminated: " << " t->get_id() = " << t->get_id() << std::endl;
+            }
         }
 
         std::cout << "    hello.is_running(): " << std::boolalpha << hello->is_running() << std::endl;
         std::cout << "    world.is_running(): " << std::boolalpha << world->is_running() << std::endl;
 
+        grp.remove(hello);
+        grp.remove(world);
+
+        thread *ciao1  = new Reader;
+        thread *ciao2  = new Reader;
+
+        grp.add(ciao1);
+        grp.add(ciao2);
+
+        grp.start_all();
+        grp.join_all ( join_functor() );
+
+        std::cout << "    ciao1.is_running(): " << std::boolalpha << ciao1->is_running() << std::endl;
+        std::cout << "    ciao2.is_running(): " << std::boolalpha << ciao2->is_running() << std::endl;
+
         delete hello;
         delete world;
+
+        delete ciao1;
+        delete ciao2;
     }
 
     std::cout << "done." << std::endl;

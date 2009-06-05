@@ -462,12 +462,13 @@ namespace more { namespace posix
                 throw;
             }
 
-            that->_M_running = thread_terminated;
-            that->_M_joinable = false;
-            that->_M_thread = static_cast<pthread_t>(0);
-            
             scoped_lock<mutex> lock(terminate_mutex());
+
             terminate_thread() = that;
+            that->_M_running   = thread_terminated;
+            that->_M_joinable  = false;
+            that->_M_thread    = static_cast<pthread_t>(0);
+            
             terminate_cond().signal();
             return ret;
         }
@@ -780,6 +781,11 @@ namespace more { namespace posix
             rend() const
             { return _M_group.rend(); }
 
+            int running() 
+            {
+                return count_if(_M_group.begin(), _M_group.end(), mem_fn(&thread::is_running));
+            }
+
             bool add(thread *value)
             {
                 return _M_group.insert(value).second;    
@@ -805,15 +811,26 @@ namespace more { namespace posix
                 for_each(_M_group.begin(), _M_group.end(), bind( mem_fn(&thread::join),_1, static_cast<void **>(NULL) ));
             }
 
-            thread *join_one()
+            template <typename T>
+            void join_all(T cw)
             {
                 scoped_lock<mutex> lock(thread::terminate_mutex());
                 for(;;) {
                     thread::terminate_cond().wait(lock);
                     if ( _M_group.find(thread::terminate_thread()) != _M_group.end())
+                        cw(thread::terminate_thread());
+                    if (this->running()==0)
+                        return;
+                } 
+            }
+       
+            thread *join_one(scoped_lock<mutex> &lock)
+            {
+                for(;;) {
+                    thread::terminate_cond().wait(lock);
+                    if ( _M_group.find(thread::terminate_thread()) != _M_group.end())
                         return thread::terminate_thread();
                 } 
-                return NULL;           
             }
 
         private:
