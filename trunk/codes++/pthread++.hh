@@ -16,10 +16,13 @@
 #include <stdexcept>
 #include <iostream>
 #include <cassert>
+#include <cstring>
 #include <algorithm>
 #include <set>
 
+#include <sys/time.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <signal.h>
 #include <errno.h>
 #include <err.h>
@@ -377,6 +380,39 @@ namespace more { namespace posix
 
     ////////////////////////////// thread  //////////////////////////////
 
+    class thread;
+    struct global
+    {
+        volatile bool         jg_enabled;
+        sem_t                 term_sem;
+        mutex                 term_mutex;
+        thread * volatile     thread_id;
+
+        static global &
+        instance(int n = 0)
+        {
+            static global one(n);
+            return one;
+        }
+
+    private:
+
+        global(const global &);
+        global & operator=(const global &);
+
+        global(int n)
+        : jg_enabled(false), term_sem(), thread_id(NULL)
+        {
+            sem_init(&term_sem,0,n);
+        }
+
+        ~global()
+        {
+            sem_destroy(&term_sem);
+        }
+    };
+
+
     class thread 
     {
         pthread_t               _M_thread;
@@ -408,30 +444,7 @@ namespace more { namespace posix
                    _M_running != thread_running || 
                   !"posix::thread deleted while the thread ruotine is running!" );
         }        
-        
-        // for join_one method...
-        //
-
-        static cond &
-        terminate_cond()
-        {
-            static cond ret;
-            return ret;
-        } 
-        static mutex &
-        terminate_mutex()
-        {
-            static mutex ret;
-            return ret;
-        } 
-
-        static thread * &
-        terminate_thread()
-        {
-            static thread * ret;
-            return ret;
-        }
-
+       
         friend void *start_routine(void *);
         static void *start_routine(void *arg)
         {
@@ -452,24 +465,23 @@ namespace more { namespace posix
             {
                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
 
+                if ( global::instance().jg_enabled )
+                    term_notify(that);
+
                 that->_M_running = thread_cancelled;
                 that->_M_joinable = false;
                 that->_M_thread = static_cast<pthread_t>(0);
-
-                scoped_lock<mutex> lock(terminate_mutex());
-                terminate_thread() = that;
-                terminate_cond().signal();
+            
                 throw;
             }
 
-            scoped_lock<mutex> lock(terminate_mutex());
+            if ( global::instance().jg_enabled )
+                term_notify(that);
 
-            terminate_thread() = that;
-            that->_M_running   = thread_terminated;
-            that->_M_joinable  = false;
-            that->_M_thread    = static_cast<pthread_t>(0);
-            
-            terminate_cond().signal();
+            that->_M_running = thread_terminated;
+            that->_M_joinable = false;
+            that->_M_thread = static_cast<pthread_t>(0);
+
             return ret;
         }
 
@@ -680,7 +692,7 @@ namespace more { namespace posix
         
         virtual void restart_impl()
         {
-            assert(!"restart not implemented in this concrete thread");
+            assert(!"restart not implemented in this thread");
         }
 
         int
@@ -738,6 +750,41 @@ namespace more { namespace posix
             return true;
         }
 
+        static void term_notify(thread *that)
+        {
+            scoped_lock<mutex> _L_ (global::instance().term_mutex);
+
+            for(;;) {
+                
+                if (!global::instance().jg_enabled)
+                    return;
+
+                if ( global::instance().thread_id == NULL ) {
+                    
+                    global::instance().thread_id = that;
+                    
+                    timeval now; gettimeofday(&now,NULL);
+                    const timespec timeo = { now.tv_sec + 2, 0 };
+                  
+                    if ( sem_timedwait(&global::instance().term_sem, &timeo) == 0 )
+                        return;
+
+                    if ( errno == ETIMEDOUT ) {
+                        std::clog << __PRETTY_FUNCTION__ << ": sem_timedwait() TIMEDOUT! (termination notification would be lost)" << std::endl;
+                    }
+                    else {
+                        std::clog << __PRETTY_FUNCTION__ << ": sem_timedwait() error: " << strerror(errno) << std::endl;
+                    }
+
+                    global::instance().thread_id = NULL;
+                    continue;   // retry now
+                } 
+                
+                std::clog << __PRETTY_FUNCTION__ << ": global::instance().thread_is slot busy!?!?" << std::endl;
+                usleep(1000);   // just to relax the CPU and retry... 
+            } 
+        }
+
     };
 
     class thread_group 
@@ -781,7 +828,7 @@ namespace more { namespace posix
             rend() const
             { return _M_group.rend(); }
 
-            int running() 
+            int running() const
             {
                 return count_if(_M_group.begin(), _M_group.end(), mem_fn(&thread::is_running));
             }
@@ -814,23 +861,30 @@ namespace more { namespace posix
             template <typename T>
             void join_all(T cw)
             {
-                scoped_lock<mutex> lock(thread::terminate_mutex());
-                for(;;) {
-                    thread::terminate_cond().wait(lock);
-                    if ( _M_group.find(thread::terminate_thread()) != _M_group.end())
-                        cw(thread::terminate_thread());
-                    if (this->running()==0)
+                global::instance().thread_id  = NULL; 
+                global::instance().jg_enabled = true;
+
+                for(;;) {                    
+
+                    if (this->running()==0) {
+                        global::instance().jg_enabled = false;
                         return;
-                } 
-            }
-       
-            thread *join_one(scoped_lock<mutex> &lock)
-            {
-                for(;;) {
-                    thread::terminate_cond().wait(lock);
-                    if ( _M_group.find(thread::terminate_thread()) != _M_group.end())
-                        return thread::terminate_thread();
-                } 
+                    }
+
+                    if (global::instance().thread_id) {
+                        
+                        if ( _M_group.find(const_cast<thread *>(global::instance().thread_id)) != _M_group.end()) {
+
+                            cw(global::instance().thread_id);
+
+                            global::instance().thread_id  = NULL;
+                            sem_post(&global::instance().term_sem);
+
+                        }
+                        continue;
+                    }
+                    usleep(1000); // just to relax the cpu...
+                }
             }
 
         private:

@@ -195,7 +195,7 @@ struct join_functor
 {
     void operator()(more::posix::thread *t) const
     {
-        std::cout << "thread@ " << t << " finished! [" << t->get_id() << "]" << std::endl;
+        std::cout << __PRETTY_FUNCTION__ << " thread@ " << t << " finished! [" << t->get_id() << "]" << std::endl;
     }
 };
 
@@ -334,7 +334,7 @@ int main(int argc, char *argv[])
         sleep(3);
     }
 
-    std::cout << "\n[*] "RED "restartable..."RESET"\n";
+    std::cout << "\n[*] "RED "restartable thread..."RESET"\n";
     {
         posix::thread * t = new Restartable(1);
         t->start();
@@ -346,57 +346,30 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*] "RED "thread_group..."RESET"\n";
     {   
-        thread *hello = new Hello;
-
-        thread *world = new World;
-
         thread_group grp;
 
-        grp.add(hello);
-        grp.add(world);
+        thread *t1  = new Reader;
+        thread *t2  = new Reader;
+        thread *t3  = new Reader;
+        thread *t4  = new Reader;
+        thread *t5  = new Reader;
+
+        grp.add(t1);
+        grp.add(t2);
+        grp.add(t3);
+        grp.add(t4);
+        grp.add(t5);
 
         grp.start_all();
-
-        thread_group::iterator it = grp.begin();
-        for(; it != grp.end(); ++it) {
-            std::cout << "thread@" << *it <<" is_running()=" << std::boolalpha << (*it)->is_running() << std::endl;
-        }
-
-        // std::cout << "    hello.is_running(): " << std::boolalpha << hello->is_running() << std::endl;
-        // std::cout << "    world.is_running(): " << std::boolalpha << world->is_running() << std::endl;
-        // grp.join_all()
-
-        {
-            scoped_lock<posix::mutex> lock(posix::thread::terminate_mutex());
-            for(int i=0;i<2;i++) {
-                thread * t = grp.join_one(lock);
-                std::cout << "thread@" << t << " is terminated: " << " t->get_id() = " << t->get_id() << std::endl;
-            }
-        }
-
-        std::cout << "    hello.is_running(): " << std::boolalpha << hello->is_running() << std::endl;
-        std::cout << "    world.is_running(): " << std::boolalpha << world->is_running() << std::endl;
-
-        grp.remove(hello);
-        grp.remove(world);
-
-        thread *ciao1  = new Reader;
-        thread *ciao2  = new Reader;
-
-        grp.add(ciao1);
-        grp.add(ciao2);
-
-        grp.start_all();
+        
         grp.join_all ( join_functor() );
 
-        std::cout << "    ciao1.is_running(): " << std::boolalpha << ciao1->is_running() << std::endl;
-        std::cout << "    ciao2.is_running(): " << std::boolalpha << ciao2->is_running() << std::endl;
-
-        delete hello;
-        delete world;
-
-        delete ciao1;
-        delete ciao2;
+        delete t1;
+        delete t2;
+        delete t3;
+        delete t4;
+        delete t5;
+        
     }
 
     std::cout << "done." << std::endl;
