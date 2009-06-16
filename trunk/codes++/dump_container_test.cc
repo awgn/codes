@@ -11,13 +11,14 @@
 #include <dump_container.hh>
 #include <vector>
 #include <list>
+#include <map>
+
 #include <iostream>
 
 int 
 main(int argc, char *argv[])
 {
     std::cout << "string      :" << std::string("hello world") << std::endl; 
-
     std::vector<int> v1;
 
     v1.push_back(0);
@@ -37,5 +38,13 @@ main(int argc, char *argv[])
     more::dump::sep(std::cout);    // remove separator
 
     std::cout << "list< std::pair<int,int> >  :" << l1 << std::endl;
+
+    std::map<std::string,int> m;
+
+    m["hello"]=0;
+    m["world"]=1;
+
+    std::cout << "map<std::string,int> :" << m << std::endl;
+
     return 0;
 }
