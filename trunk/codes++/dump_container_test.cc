@@ -36,6 +36,6 @@ main(int argc, char *argv[])
 
     more::dump::sep(std::cout);    // remove separator
 
-    std::cout << "list<char>  :" << l1 << std::endl;
+    std::cout << "list< std::pair<int,int> >  :" << l1 << std::endl;
     return 0;
 }
