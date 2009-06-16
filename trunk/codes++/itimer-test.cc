@@ -17,7 +17,7 @@
 more::tick_type global; // external linkage
 
 template <more::tick_type & Tc> 
-struct Thread : public posix::thread, private more::ticker<Tc> 
+struct Thread : public more::posix::thread, private more::ticker<Tc> 
 {    
     Thread()
     {}
@@ -35,7 +35,7 @@ struct Thread : public posix::thread, private more::ticker<Tc>
             this->wait_for_tick(ts);  // timer
 
             std::cout << std::hex << 
-            "[" << this->id() << "] " << std::dec << ++i << " << tick = {" << std::dec << Tc.current << "}\n";
+            "[" << this->get_id() << "] " << std::dec << ++i << " << tick = {" << std::dec << Tc.current << "}\n";
         }
 
         return NULL;
@@ -66,7 +66,7 @@ main(int argc, char *argv[])
     //////////////////////
     // 3) create a thread
 
-    posix::thread * p = new Thread<global>;
+    more::posix::thread * p = new Thread<global>;
   
     p->start(); 
     p->join();
