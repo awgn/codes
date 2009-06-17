@@ -101,7 +101,7 @@ namespace std {
     inline std::ostream &
     operator<< (std::ostream &out, const std::pair<U,V> &r)
     {
-        out << '<' << r.first << ',' << r.second << '>';
+        out << '<' << r.first << ':' << r.second << '>';
         return out;
     }
 }

@@ -29,6 +29,17 @@ main(int argc, char *argv[])
 
     std::cout << "vector<int>                   :" << v1 << std::endl;
 
+    std::vector<char> v2;
+
+    v2.push_back('a');
+    v2.push_back('b');
+    v2.push_back('c');
+    v2.push_back('\n');
+    v2.push_back('\0');
+
+    more::stream_container::sep(std::cout, "|");   // set the separator
+    std::cout << "vector<char>                  :" << v2 << std::endl;
+
     std::list<std::pair<int,int> > l1;
 
     l1.push_back( std::make_pair(0,0) );
