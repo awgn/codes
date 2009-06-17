@@ -8,8 +8,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef DUMP_CONTAINER_HH
-#define DUMP_CONTAINER_HH
+#ifndef STREAM_CONTAINER_HH
+#define STREAM_CONTAINER_HH
 
 #include <iostream>
 #include <string>
@@ -21,7 +21,7 @@ namespace more {
     // between different compilation units 
     //
 
-    struct dump 
+    struct stream_container 
     {
         static int sep_index()
         {
@@ -30,9 +30,9 @@ namespace more {
         }    
 
         static std::ostream &
-        sep(std::ostream &out, char sep = '\0')
+        sep(std::ostream &out, const char * sep = NULL)
         {
-            out.iword(dump::sep_index()) = static_cast<int>(sep);
+            out.iword(sep_index()) = reinterpret_cast<long>(sep);
             return out;
         }
 
@@ -42,26 +42,26 @@ namespace more {
     //
 
     template <typename T>
-    struct dump_mangling_traits 
+    struct sc_mangling_traits 
     { typedef T type; };
     template <>
-    struct dump_mangling_traits<char>
+    struct sc_mangling_traits<char>
     { typedef std::string type; };
     template <>
-    struct dump_mangling_traits<unsigned char>
+    struct sc_mangling_traits<unsigned char>
     { typedef std::string type; };
 
     // type mangling
     //
 
     template <typename T>
-    static inline typename std::tr1::add_const< typename dump_mangling_traits<T>::type >::type  dump_type_mangling(const T &t)
+    static inline typename std::tr1::add_const< typename sc_mangling_traits<T>::type >::type  sc_type_mangling(const T &t)
     { return t; }
 
     template <>
     inline
-    std::tr1::add_const<dump_mangling_traits<char>::type>::type 
-    dump_type_mangling<char>(const char &c)
+    std::tr1::add_const<sc_mangling_traits<char>::type>::type 
+    sc_type_mangling<char>(const char &c)
     {
         char buf[8];
         sprintf(buf, (c > 31 && c < 127) ? "%c" : "0x%x", static_cast<unsigned char>(c));
@@ -69,8 +69,8 @@ namespace more {
     }
     template <>
     inline
-    std::tr1::add_const<dump_mangling_traits<unsigned char>::type>::type
-    dump_type_mangling<unsigned char>(const unsigned char &c)
+    std::tr1::add_const<sc_mangling_traits<unsigned char>::type>::type
+    sc_type_mangling<unsigned char>(const unsigned char &c)
     {
         char buf[8];
         sprintf(buf, (c > 31 && c < 127) ? "%c" : "0x%x", static_cast<unsigned char>(c));
@@ -89,9 +89,9 @@ namespace std {
     {
         typename T::const_iterator it = v.begin();
         for(; it != v.end();) {
-            out << more::dump_type_mangling(*it); 
-            if ( ++it != v.end() && out.iword(more::dump::sep_index()) ) {
-                out << static_cast<char>(out.iword(more::dump::sep_index()));   
+            out << more::sc_type_mangling(*it); 
+            if ( ++it != v.end() && out.iword(more::stream_container::sep_index()) ) {
+                out << reinterpret_cast<char *>(out.iword(more::stream_container::sep_index()));   
             } 
         }
         return out;
@@ -106,4 +106,4 @@ namespace std {
     }
 }
 
-#endif /* DUMP_CONTAINER_HH */
+#endif /* STREAM_CONTAINER_HH */
