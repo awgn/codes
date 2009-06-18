@@ -12,13 +12,16 @@
 #include <algorithm>
 #include <iterator>
 #include <cstdlib>
+#include <vector>
+#include <list>
+
 #include <kv_parser.hh>
 
 TYPEMAP_KEY(unsigned int, unsigned_int, 3);   // default value for the key  
 
 TYPEMAP_KEY(std::vector<int>,         integers);
 TYPEMAP_KEY(std::vector<bool>,        booleans);
-TYPEMAP_KEY(std::vector<std::string>, strings);
+TYPEMAP_KEY(std::list<std::string>,   strings);
 
 
     // <--- block --->

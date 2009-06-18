@@ -23,9 +23,7 @@
 //////////////////////////////////
 //  key-value config file parser 
 
-namespace more {
-
-    namespace kv {
+namespace more { namespace kv {
 
         template <int n>
         struct int2type
@@ -160,8 +158,8 @@ namespace more {
 
             return true;
         }
-        template <typename E>
-        static inline bool lex_parse(std::istream &in, std::vector<E> &elems)
+        template <typename E, template <typename _Tp, typename Alloc = std::allocator<_Tp> > class C >
+        static inline bool lex_parse(std::istream &in, C<E> &elems)
         {
             E tmp;
             if ( lex_parse(in,tmp) ) {
@@ -178,184 +176,187 @@ namespace more {
                  bool SMD  = false /* strict mode */, 
                  char SEP  = '='  /* separator */, 
                  char COM  = '#' /* comment */ >
-                 struct parser
-                 {
-                 public:
-                     typedef typename T::key key_type;
-                     typedef typename T::type value_type;
+         struct parser
+         {
+         public:
+             typedef typename T::key key_type;
+             typedef typename T::type value_type;
 
-                     typedef parser<typename T::next, SMD, SEP, COM> map_type;
+             typedef parser<typename T::next, SMD, SEP, COM> map_type;
 
-                     map_type     _M_map;
-                     key_type     _M_key;
-                     value_type   _M_value;
+             map_type     _M_map;
+             key_type     _M_key;
+             value_type   _M_value;
 
-                     parser()
-                     : _M_map(),
-                       _M_key(),
-                       _M_value( get_default<key_type,value_type, key_type::has_default>::value() ) 
-                     {}
+             parser()
+             : _M_map(),
+               _M_key(),
+               _M_value( get_default<key_type,value_type, key_type::has_default>::value() ) 
+             {}
 
-                     virtual ~parser()
-                     {}
+             virtual ~parser()
+             {}
 
-                     //////////////////////////////////////////////////////////////////////////
-                     // compile-time get
+             //////////////////////////////////////////////////////////////////////////
+             // compile-time get
 
-                     template <typename K>
-                     typename std::tr1::add_reference< typename mtp::TM::get<K, T>::type>::type
-                     get() 
-                     { return __get<K>(int2type< mtp::TM::indexof<K, T>::value >()); }
+             template <typename K>
+             typename std::tr1::add_reference< typename mtp::TM::get<K, T>::type>::type
+             get() 
+             { return __get<K>(int2type< mtp::TM::indexof<K, T>::value >()); }
 
-                     template <typename K, int n>
-                     typename std::tr1::add_reference<typename mtp::TM::get<K, T>::type>::type
-                     __get(int2type<n>) 
-                     { return _M_map.__get<K>(int2type<n-1>()); }
+             template <typename K, int n>
+             typename std::tr1::add_reference<typename mtp::TM::get<K, T>::type>::type
+             __get(int2type<n>) 
+             { return _M_map.__get<K>(int2type<n-1>()); }
 
-                     template <typename K>
-                     typename std::tr1::add_reference<value_type>::type
-                     __get(int2type<0>) 
-                     { return _M_value; } 
+             template <typename K>
+             typename std::tr1::add_reference<value_type>::type
+             __get(int2type<0>) 
+             { return _M_value; } 
 
-                 protected:
-                     //////////////////////////////////////////////////////////////////////////
-                     // run-time parser 
+         protected:
+             //////////////////////////////////////////////////////////////////////////
+             // run-time parser 
 
-                     bool parse_key_value(std::istream &in, const std::string &fname, const std::string &key)
-                     { return __parse(in, fname, key, *this); }
+             bool parse_key_value(std::istream &in, const std::string &fname, const std::string &key)
+             { return __parse(in, fname, key, *this); }
 
-                     template <typename U, bool S >
-                     static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<U,S,SEP,COM> &that)
-                     {
-                         if (key == U::key::value()) {
-                             if (!lex_parse(in,that._M_value) || in.fail() ) {
-                                 std::clog << fname << ": parse error: key[" << 
-                                              U::key::value() << "] unexpected argument (line " << lineno(in) << ")" << std::endl;
-                                 return false;
-                             }
-
-                             return true;
-                         }
-
-                         return __parse(in, fname, key, that._M_map);
+             template <typename U, bool S >
+             static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<U,S,SEP,COM> &that)
+             {
+                 if (key == U::key::value()) {
+                     if (!lex_parse(in,that._M_value) || in.fail() ) {
+                         std::clog << fname << ": parse error: key[" << 
+                                      U::key::value() << "] unexpected argument (line " << 
+                                      lineno(in) << ")" << std::endl;
+                         return false;
                      }
-                     template <bool S>
-                     static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<mtp::TM::null,S,SEP,COM> &)
-                     {
-                         // unknown key-value!
-                         //
 
-                         if (S) {   // strict mode: dump-error 
-                             std::clog << fname << ": parse error: key[" << key << "] unknown (line " << lineno(in) << ")" << std::endl;
+                     return true;
+                 }
+
+                 return __parse(in, fname, key, that._M_map);
+             }
+             template <bool S>
+             static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<mtp::TM::null,S,SEP,COM> &)
+             {
+                 // unknown key-value!
+                 //
+
+                 if (S) {   // strict mode: dump-error 
+                     std::clog << fname << ": parse error: key[" << key << "] unknown (line " << 
+                                  lineno(in) << ")" << std::endl;
+                     return false;
+                 }
+
+                 // non-strict mode: skip this line
+                 //
+
+                 skipline(in);
+                 return true;
+             }
+
+         public:
+
+             bool parse(const std::string &fname)
+             {
+                 std::ifstream sc(fname.c_str());
+                 if (!sc) {
+                     std::clog << fname << ": parse error: no such file" << std::endl;
+                     return false;
+                 }
+
+                 ln_istreambuf sb(sc.rdbuf());
+                 std::istream in(&sb);    
+
+                 return parse(in, fname);
+             }
+
+             bool parse(std::istream &si, const std::string &fname = "unnamed")
+             {
+                 bool block = false;
+
+                 si.unsetf(std::ios::dec);
+                 si.unsetf(std::ios::hex);
+                 si.unsetf(std::ios::oct);
+
+                 for(; si ;) {
+
+                     std::string key;
+                     si >> std::noskipws >> std::ws;
+
+                     // parse KEY 
+                     //
+
+                     char c('\0');
+                     while ( si >> c && !isspace(c) && c != SEP ) {
+                         key.push_back(c);
+                     }
+
+                     // std::cout << "KEY ["  << key << "]\n";
+
+                     // skip comments/empty lines
+                     //
+
+                     if (key.empty() || key[0] == COM ) {
+                         skipline(si);
+                         continue;
+                     }
+
+                     si >> std::skipws;
+
+                     if (key == "{") {
+                         if (block) {
+                             std::clog << fname << ": parse error: { nested block are not supported (line " << 
+                                          lineno(si) << ")" << std::endl;
                              return false;
                          }
-
-                         // non-strict mode: skip this line
-                         //
-
-                         skipline(in);
-                         return true;
+                         block = true;
+                         continue;
                      }
 
-                 public:
+                     if (key == "}") {
+                         if (block)
+                             break;
+                         std::clog << fname << ": parse error: expected `{' before the end-of-block } (line "<< 
+                                      lineno(si) << ")" << std::endl;
+                         return false;
+                     }
 
-                     bool parse(const std::string &fname)
-                     {
-                         std::ifstream sc(fname.c_str());
-                         if (!sc) {
-                             std::clog << fname << ": parse error: no such file" << std::endl;
+                     // parse SEPARATOR ('=')
+                     //
+
+                     if ( c != SEP ) {
+                         si >> c; 
+                         if ( c != SEP ) {
+                             std::clog << fname << ": parse error: key[" << key << "] missing separator '" 
+                             << SEP << "' (line "<< lineno(si) << ")" << std::endl;
                              return false;
                          }
-
-                         ln_istreambuf sb(sc.rdbuf());
-                         std::istream in(&sb);    
-
-                         return parse(in, fname);
                      }
 
-                     bool parse(std::istream &si, const std::string &fname = "unnamed")
-                     {
-                         bool block = false;
+                     // parse value... 
+                     //
 
-                         si.unsetf(std::ios::dec);
-                         si.unsetf(std::ios::hex);
-                         si.unsetf(std::ios::oct);
+                     if ( !parse_key_value(si, fname, key) ) 
+                         return false;
 
-                         for(; si ;) {
+                 }
 
-                             std::string key;
-                             si >> std::noskipws >> std::ws;
+                 // std::cout << "EOF\n";
+                 return true;
 
-                             // parse KEY 
-                             //
+                 }
+             };
 
-                             char c('\0');
-                             while ( si >> c && !isspace(c) && c != SEP ) {
-                                 key.push_back(c);
-                             }
+        template <bool S, char SEP, char COM>
+        class parser<mtp::TM::null, S, SEP, COM> {};
 
-                             // std::cout << "KEY ["  << key << "]\n";
+        template <typename T, bool SMD = false> 
+        struct block : public parser<T, SMD, ':', '#'> {}; 
 
-                             // skip comments/empty lines
-                             //
-
-                             if (key.empty() || key[0] == COM ) {
-                                 skipline(si);
-                                 continue;
-                             }
-
-                             si >> std::skipws;
-
-                             if (key == "{") {
-                                 if (block) {
-                                     std::clog << fname << ": parse error: { nested block are not supported (line " << lineno(si) << ")" << std::endl;
-                                     return false;
-                                 }
-                                 block = true;
-                                 continue;
-                             }
-
-                             if (key == "}") {
-                                 if (block)
-                                     break;
-                                 std::clog << fname << ": parse error: expected `{' before the end-of-block } (line "<< lineno(si) << ")" << std::endl;
-                                 return false;
-                             }
-
-                             // parse SEPARATOR ('=')
-                             //
-
-                             if ( c != SEP ) {
-                                 si >> c; 
-                                 if ( c != SEP ) {
-                                     std::clog << fname << ": parse error: key[" << key << "] missing separator '" 
-                                     << SEP << "' (line "<< lineno(si) << ")" << std::endl;
-                                     return false;
-                                 }
-                             }
-
-                             // parse value... 
-                             //
-
-                             if ( !parse_key_value(si, fname, key) ) 
-                                 return false;
-
-                         }
-
-                         // std::cout << "EOF\n";
-                         return true;
-
-                         }
-                     };
-
-                     template <bool S, char SEP, char COM>
-                     class parser<mtp::TM::null, S, SEP, COM> {};
-
-                     template <typename T, bool SMD = false> 
-                     struct block : public parser<T, SMD, ':', '#'> {}; 
-
-                 } // namespace kv
-
-    } // namespace more
+} // namespace kv
+} // namespace more
 
 #endif /* _KV_FILE_HH_ */
