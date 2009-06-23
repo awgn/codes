@@ -66,24 +66,33 @@ namespace mtp {
                            typename tag_type<T>::type >
     {};
 
-    // enable_if / disable_if ala boost
+    // enable_if_c / disable_if_c ala boost
     // to be used on return type or additional paramenter
     //
     template <bool B, class T = void>
-    struct enable_if 
+    struct enable_if_c 
     {
         typedef T type;
     };
     template <class T>
-    struct enable_if<false, T> {};
+    struct enable_if_c<false, T> {};
 
     template <bool B, class T = void>
-    struct disable_if 
+    struct disable_if_c 
     {
         typedef T type;
     };
     template <class T>
-    struct disable_if<true, T> {};
+    struct disable_if_c<true, T> {};
+
+    // enable_if / disable_if ala boost
+    // to be used on return type or additional paramenter
+    //
+    template <typename B, class T = void>
+    struct enable_if : public enable_if_c<B::value,T> {}; 
+
+    template <typename B, class T = void>
+    struct disable_if : public disable_if_c<B::value,T> {};
 
     // identity (yalob: yet another layer of abstraction)
 

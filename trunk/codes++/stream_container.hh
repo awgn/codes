@@ -84,7 +84,7 @@ namespace std {
     // dumper
 
     template <typename T>
-    typename mtp::enable_if< more::traits::is_container<T>::value && !tr1::is_same<T, std::string>::value, std::ostream>::type &
+    typename mtp::enable_if_c< more::traits::is_container<T>::value && !tr1::is_same<T, std::string>::value, std::ostream>::type &
     operator<<(std::ostream &out, const T &v)
     {
         typename T::const_iterator it = v.begin();
