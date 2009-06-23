@@ -16,7 +16,7 @@
 namespace more
 {
     template <typename T>
-    void checked_delete(T *p)
+    inline void checked_delete(T *p)
     {
         static_assert(sizeof(T),pointer_type_must_be_complete);
         delete p;
