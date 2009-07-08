@@ -92,16 +92,17 @@ namespace more {
         //
 
         template <typename Fn>
-        void push_enabled_if(const Fn predicate, const Tp & value)
+        bool push_enabled_if(const Fn predicate, const Tp & value)
         {
             {
                 posix::scoped_lock<posix::mutex> lock(_M_mutex);
-                if (!predicate())
-                    return;
+                if (!predicate()) 
+                    return false;
                 _M_queue.push(value);
             } // lock.unlock()
 
             _M_cond.signal();
+            return true;
         }
 
         template <typename Fn>
