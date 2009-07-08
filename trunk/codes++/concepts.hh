@@ -204,8 +204,8 @@ namespace more { namespace basic_concepts {
     TR1_TYPE_TRAITS_CONCEPT(IsUnsignedConcept, is_unsigned);  
 
     TR1_TYPE_TRAITS_BINARY_CONCEPT(IsSameConcept, is_same);
-    TR1_TYPE_TRAITS_BINARY_CONCEPT(IsConvertibleConcept, is_same);
-    TR1_TYPE_TRAITS_BINARY_CONCEPT(IsBaseOfConcept, is_same);
+    TR1_TYPE_TRAITS_BINARY_CONCEPT(IsConvertibleConcept, is_convertible);
+    TR1_TYPE_TRAITS_BINARY_CONCEPT(IsBaseOfConcept, is_base_of);
 
 }}
 
