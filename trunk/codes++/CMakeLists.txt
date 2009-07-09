@@ -51,6 +51,7 @@ add_executable(getopt-test getopt-test.cc)
 add_executable(atomic_test atomic_test.cc)
 add_executable(refcnt-test refcnt-test.cc)
 add_executable(endianless-test endianless-test.cc)
+add_executable(tqueue-test tqueue-test.cc)
 
 target_link_libraries(atomic_test -pthread)
 target_link_libraries(fast_deque-test -pthread)
@@ -58,4 +59,5 @@ target_link_libraries(pthread-test -pthread)
 target_link_libraries(refcnt-test -pthread)
 target_link_libraries(itimer-test -pthread)
 target_link_libraries(tstreambuf-test -pthread)
+target_link_libraries(tqueue-test -pthread)
 
