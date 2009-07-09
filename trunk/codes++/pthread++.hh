@@ -155,12 +155,16 @@ namespace more { namespace posix
         {   
             assert(Type == base_lock::simple || Type == base_lock::reader || Type == base_lock::writer);
             this->use_incr();
-            this->lock();
+            if (!this->lock()) {
+                this->use_decr();
+                throw std::runtime_error("scoped_lock");
+            }
         }
 
         ~scoped_lock()
         {
-            this->unlock();
+            if (!this->unlock())
+                std::clog << __PRETTY_FUNCTION__  << ": scoped_lock: unlock error!" << std::endl;  
             this->use_decr();
         }
 
@@ -182,20 +186,20 @@ namespace more { namespace posix
             }
         }
 
-        void lock()
-        { this->lock(int2type<Type>()); }
+        bool lock()
+        { return this->lock(int2type<Type>()); }
 
-        void unlock()
-        { _M_mutex.unlock(); }
+        bool unlock()
+        { return _M_mutex.unlock(); }
 
-        void lock(int2type<base_lock::simple>)
-        { _M_mutex.lock(); }
+        bool lock(int2type<base_lock::simple>)
+        { return _M_mutex.lock(); }
 
-        void lock(int2type<base_lock::reader>)
-        { _M_mutex.rdlock(); }
+        bool lock(int2type<base_lock::reader>)
+        { return _M_mutex.rdlock(); }
 
-        void lock(int2type<base_lock::writer>)
-        { _M_mutex.wrlock(); }
+        bool lock(int2type<base_lock::writer>)
+        { return _M_mutex.wrlock(); }
 
         mutex_type &
         get_mutex()
