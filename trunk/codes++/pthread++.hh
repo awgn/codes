@@ -214,39 +214,32 @@ namespace more { namespace posix
 
     public:
         explicit mutex(pthread_mutexattr_t *attr = NULL) 
-        : _M_pm(), _M_state(false)
+        : _M_pm()
         { 
             if (pthread_mutex_init(&_M_pm,attr) != 0) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutex_init error!" << std::endl; 
-                return;
+                throw std::runtime_error("pthread_mutex_init");
             }
-            _M_state = true;
         }
 
         /* type can be either: PTHREAD_MUTEX_DEFAULT, PTHREAD_MUTEX_NORMAL, 
                                PTHREAD_MUTEX_ERRORCHECK or PTHREAD_MUTEX_RECURSIVE */
 
         explicit mutex(int type) 
-        : _M_pm(), _M_state(false)
+        : _M_pm()
         {
             pthread_mutexattr_t attr; 
             if (pthread_mutexattr_init(&attr) != 0 ) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutexattr_init error!" << std::endl; 
-                return;
+                throw std::runtime_error("pthread_mutexattr_init");
             }
             if (pthread_mutexattr_settype (&attr, type) != 0) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutexattr_settype error!" << std::endl; 
-                return;
+                throw std::runtime_error("pthread_mutexattr_settype");
             }
             if (pthread_mutex_init(&_M_pm,&attr) != 0) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutex_init error!" << std::endl; 
-                return;
+                throw std::runtime_error("pthread_mutex_init");
             }
             if (pthread_mutexattr_destroy (&attr) != 0) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutexattr_destroy error!" << std::endl; 
-                return;
+                throw std::runtime_error("pthread_mutexattr_destroy");
             }
-            _M_state = true;
         }
 
 
@@ -274,12 +267,8 @@ namespace more { namespace posix
             return true; 
         }
 
-        operator bool() const
-        { return _M_state; }
-
     private:
         pthread_mutex_t _M_pm;
-        bool _M_state;
     };
 
     ////////////////////////////// cond  //////////////////////////////
@@ -288,13 +277,11 @@ namespace more { namespace posix
     { 
     public:
         cond(pthread_condattr_t *attr = NULL)
-        : _M_cond(), _M_state(false)
+        : _M_cond()
         {
             if (pthread_cond_init(&_M_cond, attr) != 0) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_init error!" << std::endl; 
-                return;
+                throw std::runtime_error("pthread_cond_init");
             }
-            _M_state = true;
         }
 
         void signal()
@@ -333,12 +320,8 @@ namespace more { namespace posix
             }
         }
 
-        operator bool() const
-        { return _M_state; }
-
     private:
         pthread_cond_t  _M_cond;
-        bool            _M_state;
 
         // non-copyable idiom
         cond(const cond &);
@@ -352,19 +335,18 @@ namespace more { namespace posix
     {
     public:
         explicit rw_mutex(pthread_rwlockattr_t *attr = NULL) 
-        : _M_pm(), _M_state(false)
+        : _M_pm()
         { 
             if ( pthread_rwlock_init(&_M_pm, attr) != 0 ) { 
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_init error!" << std::endl; 
-                return;
+                throw std::runtime_error("pthread_rwlock_init");
             }
-            _M_state = true;
         }
 
         ~rw_mutex() 
         { 
-            if (pthread_rwlock_destroy(&_M_pm) != 0 )
+            if (pthread_rwlock_destroy(&_M_pm) != 0 ) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_rw_mutex_destroy error!" << std::endl; 
+            }
         }
 
         bool rdlock()
@@ -388,18 +370,14 @@ namespace more { namespace posix
         bool unlock() 
         { 
             if ( pthread_rwlock_unlock(&_M_pm) != 0 ) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_wr_ulock error!" << std::endl;
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_wrulock error!" << std::endl;
                 return false;
             }
             return true; 
         }
 
-        operator bool() const
-        { return _M_state; }
-
     private:
         pthread_rwlock_t _M_pm;
-        bool _M_state;
     };
 
     template <int n>
@@ -410,7 +388,7 @@ namespace more { namespace posix
     class thread;
     struct global
     {
-        volatile bool         jg_enabled;
+        volatile bool         join_group_enabled;
         sem_t                 term_sem;
         mutex                 term_mutex;
         thread * volatile     thread_id;
@@ -428,7 +406,7 @@ namespace more { namespace posix
         global & operator=(const global &);
 
         global(int n)
-        : jg_enabled(false), term_sem(), thread_id(NULL)
+        : join_group_enabled(false), term_sem(), thread_id(NULL)
         {
             sem_init(&term_sem,0,n);
         }
@@ -492,7 +470,7 @@ namespace more { namespace posix
             {
                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
 
-                if ( global::instance().jg_enabled )
+                if ( global::instance().join_group_enabled )
                     term_notify(that);
 
                 that->_M_running = thread_cancelled;
@@ -502,7 +480,7 @@ namespace more { namespace posix
                 throw;
             }
 
-            if ( global::instance().jg_enabled )
+            if ( global::instance().join_group_enabled )
                 term_notify(that);
 
             that->_M_running = thread_terminated;
@@ -783,7 +761,7 @@ namespace more { namespace posix
 
             for(;;) {
                 
-                if (!global::instance().jg_enabled)
+                if (!global::instance().join_group_enabled)
                     return;
 
                 if ( global::instance().thread_id == NULL ) {
@@ -807,7 +785,7 @@ namespace more { namespace posix
                     continue;   // retry now
                 } 
                 
-                std::clog << __PRETTY_FUNCTION__ << ": global::instance().thread_is slot busy!?!?" << std::endl;
+                std::clog << __PRETTY_FUNCTION__ << ": global::instance().thread_id slot busy!?!?" << std::endl;
                 usleep(1000);   // just to relax the CPU and retry... 
             } 
         }
@@ -889,12 +867,12 @@ namespace more { namespace posix
             void join_all(T cw)
             {
                 global::instance().thread_id  = NULL; 
-                global::instance().jg_enabled = true;
+                global::instance().join_group_enabled = true;
 
                 for(;;) {                    
 
                     if (this->running()==0) {
-                        global::instance().jg_enabled = false;
+                        global::instance().join_group_enabled = false;
                         return;
                     }
 

@@ -126,8 +126,7 @@ struct WaitCond : public posix::thread {
     {
         scoped_lock<mutex> lock(global_mutex);
 
-        std::cout << "    [" << std::hex << self() << "] waiting on cond... (" << 
-        std::boolalpha << (bool)global_cond << ")\n"; 
+        std::cout << "    [" << std::hex << self() << "] waiting on conditon...\n";  
 
         global_cond.wait(lock);
 
