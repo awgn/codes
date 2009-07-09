@@ -17,7 +17,7 @@ struct predicate
 {
     bool operator()() const
     {
-        std::cout << __PRETTY_FUNCTION__  << std::endl;
+        std::cout << __PRETTY_FUNCTION__  << ": queue.size() = " << Q.size() << std::endl;
         return true;
     }
 };

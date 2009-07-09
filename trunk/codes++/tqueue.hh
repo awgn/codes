@@ -34,6 +34,15 @@ namespace more {
 
     public:
 
+        tqueue()
+        : _M_queue(),
+          _M_mutex(PTHREAD_MUTEX_RECURSIVE),
+          _M_cond()
+        {}
+
+        ~tqueue()
+        {}
+
         bool 
         empty() const
         {
