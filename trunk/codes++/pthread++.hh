@@ -223,6 +223,33 @@ namespace more { namespace posix
             _M_state = true;
         }
 
+        /* type can be either: PTHREAD_MUTEX_DEFAULT, PTHREAD_MUTEX_NORMAL, 
+                               PTHREAD_MUTEX_ERRORCHECK or PTHREAD_MUTEX_RECURSIVE */
+
+        explicit mutex(int type) 
+        : _M_pm(), _M_state(false)
+        {
+            pthread_mutexattr_t attr; 
+            if (pthread_mutexattr_init(&attr) != 0 ) {
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutexattr_init error!" << std::endl; 
+                return;
+            }
+            if (pthread_mutexattr_settype (&attr, type) != 0) {
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutexattr_settype error!" << std::endl; 
+                return;
+            }
+            if (pthread_mutex_init(&_M_pm,&attr) != 0) {
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutex_init error!" << std::endl; 
+                return;
+            }
+            if (pthread_mutexattr_destroy (&attr) != 0) {
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_mutexattr_destroy error!" << std::endl; 
+                return;
+            }
+            _M_state = true;
+        }
+
+
         ~mutex()
         {
             if (pthread_mutex_destroy(&_M_pm) != 0) 
