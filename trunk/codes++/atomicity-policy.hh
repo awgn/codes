@@ -15,6 +15,9 @@
 #if   __GNUC__ >= 4
 #include <tr1/memory>
 #endif
+#ifdef BOOST_HAS_THREADS
+#include <boost/thread.hpp>
+#endif
 
 namespace atomicity {
 
