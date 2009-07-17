@@ -64,7 +64,7 @@ namespace more {
         int 
         recvfrom(void *buf, size_t len, int flags, sockaddress<FAMILY> &from) 
         { return ::recvfrom(_M_fd, buf, len, flags, 
-                            reinterpret_cast<const struct sockaddr *>(&from), &from.len()); }
+                            reinterpret_cast<struct sockaddr *>(&from), &from.len()); }
 
         virtual int 
         connect(const sockaddress<FAMILY> &addr)
@@ -93,11 +93,11 @@ namespace more {
 
         int 
         getsockname(sockaddress<FAMILY> &name) const
-        { return ::getsockname(_M_fd, reinterpret_cast<const struct sockaddr *>(&name), &name.len()); }
+        { return ::getsockname(_M_fd, reinterpret_cast<struct sockaddr *>(&name), &name.len()); }
 
         int 
         getpeername(sockaddress<FAMILY> &name) const
-        { return ::getpeername(_M_fd, reinterpret_cast<const struct sockaddr *>(&name), &name.len()); }
+        { return ::getpeername(_M_fd, reinterpret_cast<struct sockaddr *>(&name), &name.len()); }
 
         int 
         setsockopt(int level, int optname, const void *optval, socklen_t optlen)
