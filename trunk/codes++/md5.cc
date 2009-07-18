@@ -271,6 +271,7 @@ static uint8_t md5_test_sum[7][16] =
 };
 
 #include <vector>
+#include <fstream>
 
 /*
  * Checkup routine
@@ -357,6 +358,45 @@ int md5_self_test()
         std::cout << std::endl;
         std::cout << "          digest_str: " << cipher.digest_str() << std::endl;
     }
+
+    // stream test:
+    {
+        std::cout << "     stream test (1): ";
+
+        more::md5 cipher;
+        cipher << "abc";
+        cipher.finish();
+
+        std::cout << std::hex;
+        std::copy( cipher.digest_begin(), cipher.digest_end(), std::ostream_iterator<uint32_t>(std::cout, " "));
+        if ( std::equal(cipher.digest_begin(), cipher.digest_end(),  md5_test_sum[2]) )
+            std::cout << ": passed";
+        else
+            std::cout << ": failed";
+
+        std::cout << std::endl;
+    }
+    // stream test(2):
+    {
+        std::cout << "     stream test (2): ";
+
+        std::stringstream s;
+        s << "abc";
+        
+        more::md5 cipher;
+        cipher << s.rdbuf();    // stream the whole rdbuf() into the cipher
+        cipher.finish();
+
+        std::cout << std::hex;
+        std::copy( cipher.digest_begin(), cipher.digest_end(), std::ostream_iterator<uint32_t>(std::cout, " "));
+        if ( std::equal(cipher.digest_begin(), cipher.digest_end(),  md5_test_sum[2]) )
+            std::cout << ": passed";
+        else
+            std::cout << ": failed";
+
+        std::cout << std::endl;
+    }
+
 
     // md5_adaptor test (csum functor):
     {

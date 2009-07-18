@@ -59,9 +59,8 @@ namespace more {
         ~md5()
         {}
 
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+        /////////////////////////////////////////////////////////////////////////
+        // cipher functor interface
 
         void 
         operator()(const char &c)
@@ -90,10 +89,11 @@ namespace more {
         void operator()(I first, I last)
         {
             std::for_each(first, last, 
-                std::tr1::bind(
-                               static_cast<void (md5::*)(const typename std::iterator_traits<I>::value_type &)> (&md5::operator()), 
-                               std::tr1::ref(*this), _1) 
-                              );
+                std::tr1::bind
+                    (
+                    static_cast<void (md5::*)(const typename std::iterator_traits<I>::value_type &)> (&md5::operator()), 
+                    std::tr1::ref(*this), _1) 
+                    );
         }
 
         template <typename T>
@@ -102,9 +102,8 @@ namespace more {
             this->operator()(cont.begin(), cont.end());
         }
 
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+        /////////////////////////////////////////////////////////////////////////
+        //
 
         void init()
         {
@@ -176,15 +175,15 @@ namespace more {
         };
 
         std::string
-        digest_str() const
+        digest_str(const std::string & sep = "" ) const
         {
             std::ostringstream digest;
-            std::copy(_M_digest.begin(), _M_digest.end(), hex_ostream_iterator<uint32_t,2,'0'>(digest,""));
+            std::copy(_M_digest.begin(), _M_digest.end(), hex_ostream_iterator<uint32_t,2,'0'>(digest,sep));
             return digest.str();
         }
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // this md5 object is itself an output iterator:
+        /////////////////////////////////////////////////////////////////////////
+        // md5 object is itself an output iterator:
 
         md5 & 
         operator=(unsigned char c)
@@ -212,10 +211,22 @@ namespace more {
         operator++(int)
         { return *this; }
 
+        /////////////////////////////////////////////////////////////////////////
+        // stream support:
+
+        template <typename T>
+        friend inline
+        md5 operator<<(md5 & cipher, const T & object)
+        {
+            std::ostringstream out;
+            out << object;
+            cipher(out.str());
+            return cipher;
+        } 
     };
 
-    //////////////////////////////////////
-    // md5_adaptor is an md5 csum functor
+    //////////////////////////////////
+    // md5_adaptor: md5 csum functor
 
     template <class T>
     struct md5_adaptor
