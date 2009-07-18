@@ -355,6 +355,7 @@ int md5_self_test()
             std::cout << ": failed";
 
         std::cout << std::endl;
+        std::cout << "          digest_str: " << cipher.digest_str() << std::endl;
     }
 
     // md5_adaptor test (csum functor):
@@ -376,6 +377,7 @@ int md5_self_test()
         else
             std::cout << ": failed";
         std::cout << std::endl;
+
     }
 
     return 0;

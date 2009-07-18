@@ -15,11 +15,13 @@
 #include <tr1/array>
 #include <tr1/functional>
 
-#include <iterator>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <cstring>
 #include <stdexcept>
 #include <algorithm>
+#include <iterator>
 
 #include <stdint.h>
 
@@ -134,6 +136,52 @@ namespace more {
         { 
             return _M_digest.end(); 
         } 
+
+        template <typename T, int W, char C = '0'>
+        struct hex_ostream_iterator : public std::iterator<std::output_iterator_tag, void, void, void, void>
+        {
+            std::ostream &_M_out;
+            const std::string _M_sep;
+
+            hex_ostream_iterator(std::ostream &out, const std::string &sep)
+            : _M_out(out),
+              _M_sep(sep)
+            {
+                _M_out << std::hex;
+            }
+            
+            ~hex_ostream_iterator()
+            {
+                _M_out << std::dec;
+            }
+            
+            hex_ostream_iterator &
+            operator=(T c)
+            {
+                _M_out << std::setw(W) << std::setfill(C) << std::right << c << _M_sep;
+                return *this;
+            }
+
+            hex_ostream_iterator &
+            operator *()
+            { return *this; }
+
+            hex_ostream_iterator &
+            operator++()
+            { return *this; }
+
+            hex_ostream_iterator &
+            operator++(int)
+            { return *this; }
+        };
+
+        std::string
+        digest_str() const
+        {
+            std::ostringstream digest;
+            std::copy(_M_digest.begin(), _M_digest.end(), hex_ostream_iterator<uint32_t,2,'0'>(digest,""));
+            return digest.str();
+        }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
         // this md5 object is itself an output iterator:
