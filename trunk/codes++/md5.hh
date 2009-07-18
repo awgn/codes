@@ -136,7 +136,7 @@ namespace more {
         } 
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // this md5 object is itself as output iterator:
+        // this md5 object is itself an output iterator:
 
         md5 & 
         operator=(unsigned char c)
