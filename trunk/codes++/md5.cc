@@ -235,7 +235,7 @@ more::md5::finish(uint8_t digest[16])
 }
 
 
-#ifdef SELF_TEST
+#ifdef MD5_TEST
 
 /* 
  * RFC 1321 test vectors
@@ -296,7 +296,7 @@ int md5_self_test()
         std::cout << "passed" << std::endl;
     }
 
-    // cipher test iterator interface:
+    // cipher test iterators:
     for(int i = 0; i < 7; i++ )
     {
         std::cout << "  MD5++ cipher test %" << i+1 << ": ";
@@ -312,6 +312,27 @@ int md5_self_test()
 
         std::cout << "iterator test passed" << std::endl;
     }
+
+    // cipher test iterators (2):
+    for(int i = 0; i < 7; i++ )
+    {
+        std::vector<uint8_t> vec(md5_test_str[i],md5_test_str[i]+strlen( md5_test_str[i]));
+
+        std::cout << "  MD5++ cipher test ^" << i+1 << ": ";
+        more::md5 ctx;
+        
+        ctx(vec);
+        ctx.finish();
+
+        if( memcmp( ctx.digest_begin(), md5_test_sum[i], 16 ) != 0 )
+        {
+            std::cout << "iterator test failed" << std::endl;
+            return 1;
+        }
+
+        std::cout << "iterator test passed" << std::endl;
+    }
+
 
     // STL alogorithm test:
     {

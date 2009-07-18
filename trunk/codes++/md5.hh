@@ -57,10 +57,17 @@ namespace more {
         ~md5()
         {}
 
-        ///////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
         void 
         operator()(const char &c)
+        {
+            this->update(reinterpret_cast<const uint8_t *>(&c),1);
+        }
+        void 
+        operator()(const unsigned char &c)
         {
             this->update(reinterpret_cast<const uint8_t *>(&c),1);
         }
@@ -81,9 +88,21 @@ namespace more {
         void operator()(I first, I last)
         {
             std::for_each(first, last, 
-                          std::tr1::bind(static_cast<void (md5::*)(const typename std::iterator_traits<I>::value_type &)>
-                                         (&md5::operator()), std::tr1::ref(*this), _1) );
+                std::tr1::bind(
+                               static_cast<void (md5::*)(const typename std::iterator_traits<I>::value_type &)> (&md5::operator()), 
+                               std::tr1::ref(*this), _1) 
+                              );
         }
+
+        template <typename T>
+        void operator()(const T &cont)
+        {
+            this->operator()(cont.begin(), cont.end());
+        }
+
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
         void init()
         {
@@ -116,8 +135,8 @@ namespace more {
             return _M_digest.end(); 
         } 
 
-        ///////////////////////////////////////////////////
-        // md5 as output iterator:
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // this md5 object is itself as output iterator:
 
         md5 & 
         operator=(unsigned char c)
@@ -147,6 +166,9 @@ namespace more {
 
     };
 
+    //////////////////////////////////////
+    // md5_adaptor is an md5 csum functor
+
     template <class T>
     struct md5_adaptor
     {
@@ -160,7 +182,17 @@ namespace more {
         T operator()(I first, I last)
         {
             T ret; md5 cipher;
-            cipher = std::copy(first, last, cipher); 
+            cipher(first, last);
+            cipher.finish();
+            std::copy(cipher.digest_begin(), cipher.digest_end(), std::back_inserter(ret)); 
+            return ret;
+        }
+
+        template <typename C>
+        T operator()(const C & cont)
+        {
+            T ret; md5 cipher;
+            cipher(cont);
             cipher.finish();
             std::copy(cipher.digest_begin(), cipher.digest_end(), std::back_inserter(ret)); 
             return ret;
