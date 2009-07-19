@@ -422,12 +422,4 @@ int md5_self_test()
 
     return 0;
 }
-
-int
-main(int argc, char *argv[])
-{
-    md5_self_test();
-    return 0;
-}
-
 #endif 
