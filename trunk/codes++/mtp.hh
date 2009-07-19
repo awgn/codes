@@ -34,8 +34,21 @@ namespace mtp {
         typedef T type;
     };
 
-    // select type... (ala loki)
-    //
+    //////////////////////////////////////////////////////
+    // Loki's heritage
+    //////////////////////////////////////////////////////
+
+    template <int n>
+    struct int2type
+    {
+        enum { value = n };
+    };
+
+    template <typename T>
+    struct type2type
+    {
+        typedef T type;
+    }; 
 
     template <bool v, typename U, typename V>
     struct select 
@@ -48,23 +61,17 @@ namespace mtp {
         typedef V type;
     };
 
-    // paramenter optimization ala Loki (Alexandrescu)
-    //
-
-    template <typename U> struct __param 
-    {
-        typedef const U & type;
-    };
-    template <typename U> struct __param<U &> 
-    {
-        typedef U& type;
-    };
+    // parameter optimization:
 
     template <typename T>
-    struct param : select< more::traits::is_class_or_union<T>::value, 
-                           typename __param<T>::type, 
-                           typename tag_type<T>::type >
+    struct parameter : select< more::traits::is_class_or_union<T>::value, 
+                               typename std::tr1::add_reference<T>::type, 
+                               typename tag_type<T>::type >
     {};
+
+    //////////////////////////////////////////////////////
+    // boost's heritage
+    //////////////////////////////////////////////////////
 
     // enable_if_c / disable_if_c ala boost
     // to be used on return type or additional paramenter
@@ -94,15 +101,8 @@ namespace mtp {
     template <typename B, class T = void>
     struct disable_if : public disable_if_c<B::value,T> {};
 
-    // identity (yalob: yet another layer of abstraction)
-
-    template <typename T>
-    struct identity
-    {
-        typedef T type;
-    };
-
-    // if_ and eval_if ala boost
+    // if_ and eval_if (same as Loki select) 
+    //
 
     template <bool Cond, typename TrueType, typename FalseType>
     struct if_
