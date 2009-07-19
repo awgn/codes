@@ -24,6 +24,7 @@
 #include <iterator>
 
 #include <stdint.h>
+#include <mtp.hh>
 
 namespace more { 
 
@@ -211,19 +212,42 @@ namespace more {
         operator++(int)
         { return *this; }
 
-        /////////////////////////////////////////////////////////////////////////
-        // stream support:
+   };
 
-        template <typename T>
-        friend inline
-        md5 operator<<(md5 & cipher, const T & object)
-        {
-            std::ostringstream out;
-            out << object;
-            cipher(out.str());
-            return cipher;
-        } 
-    };
+    ////////////////////////////////////////////////////////////////////////////////////////
+    // streambuf support: 
+    //  it does provide the correct overloading for std::streambuf * by means of disable_if
+
+    static inline 
+    md5 &  
+    operator<<(md5 & cipher, std::streambuf * sb)
+    {
+        // std::cout << __PRETTY_FUNCTION__ << std::endl;
+        cipher = std::copy( std::istreambuf_iterator<char>(sb),
+                            std::istreambuf_iterator<char>(),
+                            cipher);
+        return cipher;
+    }
+
+    template <typename T>
+    static inline
+    typename mtp::disable_if<
+        std::tr1::is_base_of
+            <
+            std::streambuf, // to provide a better overloading for std::basic_stringbuf<char, std::char_traits<char>, std::allocator<char> > 
+            typename std::tr1::remove_pointer<T>::type
+            >,
+        md5 &
+    >::type
+    operator<<(md5 & cipher, const T & object)
+    {
+        // std::cout << __PRETTY_FUNCTION__ << std::endl;
+        std::ostringstream out;
+        out << object;
+        cipher(out.str());
+        return cipher;
+    } 
+    
 
     //////////////////////////////////
     // md5_adaptor: md5 csum functor
