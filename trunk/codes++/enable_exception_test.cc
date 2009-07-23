@@ -15,7 +15,7 @@
 #define EXCEPTION_ENABLED false
 #endif
 
-class test_class : public enable_exception_if<EXCEPTION_ENABLED> {
+class test_class : public more::enable_exception_if<EXCEPTION_ENABLED> {
 
 public:
     test_class()
