@@ -9,6 +9,7 @@
  */
 
 #include <socket.hh>
+#include <cstdlib>
 
 char buffer[80];
 
@@ -17,9 +18,19 @@ int main()
     // simple echo server
     //
 
-    more::sockaddress<AF_INET> addr("127.0.0.1",31337);
+    more::sockaddress<AF_INET> addr("127.0.0.891",31337);
     more::sockaddress<AF_INET> peer;
     more::socket<AF_INET> l(SOCK_STREAM);
+
+    if (!addr) {
+        std::cerr << "sockaddr error!" << std::endl;
+        exit(1);
+    }
+    
+    if (!l) {
+        std::cerr << "socket error!" << std::endl;
+        exit(2);
+    }
 
     l.bind(addr);
     l.listen(1);

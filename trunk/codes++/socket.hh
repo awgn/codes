@@ -19,7 +19,13 @@
 
 #include <sockaddress.hh>
 #include <atomicity-policy.hh>
+#include <enable_exception_if.hh>
+
 #include <tr1/array>
+
+#ifndef ENABLE_EXCEPTION   
+#define ENABLE_EXCEPTION true 
+#endif
 
 namespace more {
 
@@ -30,7 +36,7 @@ namespace more {
 #endif
 
     template <int FAMILY, typename ATOMICITY>
-    class base_socket  
+    class base_socket  : public more::enable_exception_if<ENABLE_EXCEPTION> 
     {
     public:
 
@@ -57,12 +63,12 @@ namespace more {
         }
 
         int 
-        sendto(const void *buf, size_t len, int flags, const sockaddress<FAMILY> &to) 
+        sendto(const void *buf, size_t len, int flags, const sockaddress<FAMILY> &to) const 
         { return ::sendto(_M_fd, buf, len, flags, 
                           reinterpret_cast<const struct sockaddr *>(&to), to.len()); }
 
         int 
-        recvfrom(void *buf, size_t len, int flags, sockaddress<FAMILY> &from) 
+        recvfrom(void *buf, size_t len, int flags, sockaddress<FAMILY> &from) const
         { return ::recvfrom(_M_fd, buf, len, flags, 
                             reinterpret_cast<struct sockaddr *>(&from), &from.len()); }
 
@@ -111,23 +117,18 @@ namespace more {
         fd() const 
         { return _M_fd; }        
 
-        operator bool() const
-        { return _M_fd  == -1 ? false : true; }
-
         int 
         init(int type,int protocol=0) 
         {
             typename ATOMICITY::scoped_lock sl(_M_mutex);
 
             if (_M_fd != -1) {
-                std::clog  << "base_socket::init: socket already open" << std::endl;
-                return -1;
+                throw_ ( std::runtime_error("base_socket::init: socket already opened"), -1 );
             }
 
             _M_fd = ::socket(FAMILY, type, protocol);
             if (_M_fd == -1) {
-                std::clog  << "base_socket::init: " << strerror(errno) << std::endl;
-                return -1;
+                throw_ ( std::runtime_error(std::string("base_socket::init: ").append(strerror(errno))), -1 );
             }
             return 0;
         }
@@ -147,7 +148,7 @@ namespace more {
           _M_mutex()
         {
             if ( _M_fd == -1) {
-                std::clog << "base_socket: " << strerror(errno) << std::endl;
+                throw_ ( std::runtime_error(std::string("base_socket: ").append(strerror(errno))));
             }
         }
 
@@ -157,14 +158,21 @@ namespace more {
         {
             typename ATOMICITY::scoped_lock sl(_M_mutex);
             _M_fd = rhs._M_fd;
+            if ( _M_fd == -1 )
+                throw_ ( std::runtime_error(std::string("base_socket(base_socket &) ").append(strerror(errno))));
+
             rhs._M_fd = -1;
         }
 
-        base_socket &operator=(const base_socket &rhs)
+        base_socket &
+        operator=(const base_socket &rhs)
         {
             typename ATOMICITY::scoped_lock sl(_M_mutex);
             if (this != &rhs) {
-                _M_fd = rhs._M_fd;
+                _M_fd = rhs._M_fd;            
+                if ( _M_fd == -1 )
+                throw_ ( std::runtime_error(std::string("base_socket::operator=(base_socket &) ").append(strerror(errno))));
+
                 rhs._M_fd = -1;
             }
             return *this;         
@@ -239,7 +247,7 @@ namespace more {
         bool _M_bound;
     };
 
-} // namespace net
+} // namespace more 
 
 #endif /* SOCKET_HH */
 

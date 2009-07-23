@@ -21,33 +21,23 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <stdexcept>
+
+#include <enable_exception_if.hh>
 
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX 108
 #endif
 
+#ifndef ENABLE_EXCEPTION   
+#define ENABLE_EXCEPTION true 
+#endif
+
 namespace more {
-
-    struct sockaddress_base 
-    {
-        bool _M_value;
-
-        sockaddress_base() 
-        : _M_value(false)
-        {}
-
-        operator bool()
-        { return _M_value;}
-
-    protected:
-        ~sockaddress_base()
-        {}
-
-    };
 
     template <int f> class sockaddress;
     template <>
-    class sockaddress<AF_INET> : public sockaddress_base {
+    class sockaddress<AF_INET> : public more::enable_exception_if<ENABLE_EXCEPTION> {
 
         sockaddr_in _M_addr;
         socklen_t   _M_len;
@@ -56,37 +46,34 @@ namespace more {
 
         sockaddress() 
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_in))
+          _M_len(sizeof(struct sockaddr_in))
         {
             _M_addr.sin_family = AF_INET;
             _M_addr.sin_port   = 0;
             _M_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-            _M_value = true;
         }
 
         sockaddress(const sockaddr_in &sa) 
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_in))
+          _M_len(sizeof(struct sockaddr_in))
         {
             assert(sa.sin_family == AF_INET);
             _M_addr.sin_family = AF_INET;
             _M_addr.sin_port   = sa.sin_port;
             _M_addr.sin_addr   = sa.sin_addr;
-            _M_value = true;
         }
 
         sockaddress(const std::string &host, unsigned short port ) 
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_in))
+          _M_len(sizeof(struct sockaddr_in))
         { 
             _M_addr.sin_family = AF_INET;
             _M_addr.sin_port   = htons(port);
             if (host.empty()) {
                 _M_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-                _M_value = true;
                 return;
             }
-            
+
             struct addrinfo hints, * res;
 
             hints.ai_family   = AF_INET;
@@ -95,34 +82,30 @@ namespace more {
             hints.ai_flags    = 0;
 
             if (getaddrinfo(host.c_str(), NULL, &hints, &res) < 0) {
-                std::clog << __PRETTY_FUNCTION__  << ":getaddrinfo: " << gai_strerror(errno) << std::endl;
-                return;
+                throw_ ( std::runtime_error( std::string("getaddrinfo: ").append(gai_strerror(errno))) );
             }
 
             _M_addr.sin_addr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr)->sin_addr;
-            
             freeaddrinfo(res);
-            _M_value = true;
         }
 
         sockaddress(const sockaddress<AF_INET> &so)
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_in))
+          _M_len(sizeof(struct sockaddr_in))
         {
             _M_addr.sin_family = (&so)->sin_family;
             _M_addr.sin_addr   = (&so)->sin_addr;
             _M_addr.sin_port   = (&so)->sin_port;
-            _M_value = true;
         }
 
-        const sockaddress &operator=(const sockaddress<AF_INET> &so)
+        const sockaddress &
+        operator=(const sockaddress<AF_INET> &so)
         {
             if( & *this == &so )
                 return *this;
             _M_addr.sin_family = (&so)->sin_family;
             _M_addr.sin_addr   = (&so)->sin_addr;
             _M_addr.sin_port   = (&so)->sin_port;
-            _M_value = so._M_value;
             return *this;
         }
 
@@ -130,13 +113,12 @@ namespace more {
         {}
 
         // set...
+
         void 
-        set_host(const std::string &host) 
+        host(const std::string &h) 
         {
-            _M_value = false;
-            if (host.empty()) {
+            if (h.empty()) {
                 _M_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-                _M_value = true;
                 return;
             }
 
@@ -147,19 +129,16 @@ namespace more {
             hints.ai_protocol = 0;
             hints.ai_flags    = 0;
 
-            if (getaddrinfo(host.c_str(), NULL, &hints, &res) < 0) {
-                std::clog << __PRETTY_FUNCTION__  << ":getaddrinfo: " << gai_strerror(errno) << std::endl;
-                return;
+            if (getaddrinfo(h.c_str(), NULL, &hints, &res) < 0) {
+                throw_ ( std::runtime_error(std::string("getaddrinfo: ").append(gai_strerror(errno))) );
             }
 
             _M_addr.sin_addr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr)->sin_addr;
-            
             freeaddrinfo(res);
-            _M_value = true;    
         }
 
         void 
-        set_port(unsigned short port) 
+        port(unsigned short port) 
         { _M_addr.sin_port = htons(port); }
 
         // get...
@@ -168,17 +147,16 @@ namespace more {
         {
             char buf[64];
             if (inet_ntop(AF_INET, &_M_addr.sin_addr, buf, sizeof(buf)) <= 0) {
-                std::clog << __PRETTY_FUNCTION__  << ":inet_ntop: " << strerror(errno) << std::endl;
-                return std::string();
+                throw_ ( std::runtime_error(std::string("inet_ntop: ").append(strerror(errno))), std::string() );
             }
             return std::string(buf);
         }
 
-        const unsigned short 
+        unsigned short 
         port() const 
         { return ntohs(_M_addr.sin_port); }
 
-        const int 
+        int 
         family() const 
         { return _M_addr.sin_family; }
 
@@ -202,7 +180,7 @@ namespace more {
     };
 
     template <>
-    class sockaddress<AF_INET6> : public sockaddress_base {
+    class sockaddress<AF_INET6> : public more::enable_exception_if<ENABLE_EXCEPTION> {
 
         sockaddr_in6 _M_addr;
         socklen_t    _M_len;
@@ -211,62 +189,55 @@ namespace more {
 
         sockaddress()
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_in6))
+          _M_len(sizeof(struct sockaddr_in6))
         {
             _M_addr.sin6_family = AF_INET6;
             _M_addr.sin6_port   = 0;
             memcpy(&_M_addr.sin6_addr.s6_addr, &in6addr_any, sizeof(struct in6_addr));
-            _M_value = true;
         }
 
         sockaddress(const sockaddr_in6 &sa) 
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_in6))
+          _M_len(sizeof(struct sockaddr_in6))
         {
             assert(sa.sin6_family == AF_INET6);
             _M_addr.sin6_family = AF_INET6;
             _M_addr.sin6_port   = sa.sin6_port;
             memcpy(_M_addr.sin6_addr.s6_addr, sa.sin6_addr.s6_addr, sizeof(struct in6_addr));
-            _M_value = true;
         }
 
         sockaddress(const std::string &host, unsigned short port ) 
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_in6))
+          _M_len(sizeof(struct sockaddr_in6))
         {
-            _M_value = false;
             _M_addr.sin6_family = AF_INET6;
             _M_addr.sin6_port   = htons(port);
             if (host.empty()) {
                 memcpy(&_M_addr.sin6_addr.s6_addr, &in6addr_any, sizeof(struct in6_addr));
-                _M_value = true;
                 return;
             }
             if (inet_pton(AF_INET6, host.c_str(), &_M_addr.sin6_addr.s6_addr) <= 0) {
-                std::clog << __PRETTY_FUNCTION__  << ":inet_pton: " << strerror(errno) << std::endl;
-                return;
+                throw_ ( std::runtime_error(std::string("inet_pton: ").append(strerror(errno))) );
             }
-            _M_value = true;
         }
 
         sockaddress(const sockaddress<AF_INET6> &so)
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_in6))
+          _M_len(sizeof(struct sockaddr_in6))
         {
             _M_addr.sin6_family = (&so)->sin6_family;
             _M_addr.sin6_port   = (&so)->sin6_port;
             memcpy(&_M_addr.sin6_addr.s6_addr, (&so)->sin6_addr.s6_addr, sizeof(struct in6_addr));
-            _M_value = true;
         }
 
-        const sockaddress &operator=(const sockaddress<AF_INET6> &so)
+        const sockaddress &
+        operator=(const sockaddress<AF_INET6> &so)
         {
             if( & *this == &so )
                 return *this;
             _M_addr.sin6_family = (&so)->sin6_family;
             _M_addr.sin6_port   = (&so)->sin6_port;
             memcpy(&_M_addr.sin6_addr.s6_addr, (&so)->sin6_addr.s6_addr, sizeof(struct in6_addr));
-            _M_value = so._M_value;
             return *this;
         }
 
@@ -275,23 +246,19 @@ namespace more {
 
         // set...
         void 
-        set_host(const std::string &host) 
+        host(const std::string &h) 
         {
-            _M_value = false;
-            if (host.empty()) {
+            if (h.empty()) {
                 memcpy(&_M_addr.sin6_addr.s6_addr, &in6addr_any, sizeof(struct in6_addr));
-                _M_value = true; 
                 return;
             }
-            if (inet_pton(AF_INET6, host.c_str(), &_M_addr.sin6_addr.s6_addr) <= 0) {
-                std::clog << __PRETTY_FUNCTION__  << ":inet_pton: " << strerror(errno) << std::endl;
-                return;
+            if (inet_pton(AF_INET6, h.c_str(), &_M_addr.sin6_addr.s6_addr) <= 0) {
+                throw_ ( std::runtime_error(std::string("inet_pton: ").append(strerror(errno))) );
             }
-            _M_value = true;
         }
 
         void 
-        set_port(unsigned short port) 
+        port(unsigned short port) 
         { _M_addr.sin6_port = htons(port); }
 
         // get...
@@ -300,17 +267,16 @@ namespace more {
         {
             char buf[64];
             if (inet_ntop(AF_INET6, &_M_addr.sin6_addr, buf, sizeof(buf)) <= 0) {
-                std::clog << __PRETTY_FUNCTION__  << ":inet_ntop: " << strerror(errno) << std::endl;
-                return std::string();
+                throw_ ( std::runtime_error(std::string("inet_ntop: ").append(strerror(errno))), std::string() );
             }
             return std::string(buf);
         }
 
-        const unsigned short 
+        unsigned short 
         port() const 
         { return ntohs(_M_addr.sin6_port); }
 
-        const int 
+        int 
         family() const 
         { return _M_addr.sin6_family; }
 
@@ -334,7 +300,7 @@ namespace more {
     };
 
     template <>
-    class sockaddress<AF_UNIX> : public sockaddress_base {
+    class sockaddress<AF_UNIX> : public more::enable_exception_if<ENABLE_EXCEPTION> {
 
         sockaddr_un _M_addr;
         socklen_t _M_len;
@@ -342,48 +308,45 @@ namespace more {
     public:
         sockaddress()
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_un))
+          _M_len(sizeof(struct sockaddr_un))
         {
             _M_addr.sun_family = AF_UNIX;
             _M_addr.sun_path[0]= '\0';
-            _M_value = true;
         }
 
         sockaddress(const std::string &name) 
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_un))
+          _M_len(sizeof(struct sockaddr_un))
         {
             _M_addr.sun_family = AF_UNIX;
             strncpy(_M_addr.sun_path, name.c_str(), UNIX_PATH_MAX-1);
             _M_addr.sun_path[UNIX_PATH_MAX-1]='\0';
-            _M_value = true;
         }
 
         sockaddress(const sockaddress<AF_UNIX> &so)
         : _M_addr(),
-        _M_len(sizeof(struct sockaddr_un))
+          _M_len(sizeof(struct sockaddr_un))
         {
             _M_addr.sun_family = AF_UNIX;
             strncpy(_M_addr.sun_path, (&so)->sun_path, UNIX_PATH_MAX-1);
             _M_addr.sun_path[UNIX_PATH_MAX-1]='\0';
-            _M_value = true;
         }
 
-        sockaddress &operator=(const sockaddress<AF_UNIX> &so)
+        sockaddress &
+        operator=(const sockaddress<AF_UNIX> &so)
         {
             if ( & *this == &so )
                 return *this;
             _M_addr.sun_family = AF_UNIX;
             strncpy(_M_addr.sun_path, (&so)->sun_path, UNIX_PATH_MAX-1);
             _M_addr.sun_path[UNIX_PATH_MAX-1]='\0';
-            _M_value = so._M_value;
             return *this;
         }
 
         ~sockaddress()
         {}
 
-        const int 
+        int 
         family() const 
         { return _M_addr.sun_family; }
 
@@ -409,6 +372,6 @@ namespace more {
 
     };
 
-} // namespace net
+} // namespace more 
 
 #endif /* SOCKADDRESS_HH */
