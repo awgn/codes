@@ -14,6 +14,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <typeinfo>
+#include <cassert>
 
 #ifndef PP_NARG
 /* the so-called __VA_NARG__ (PP_NARG) macro from the thread at 
@@ -56,8 +57,18 @@ PP_ARG_N(__VA_ARGS__)
 
 namespace more {
 
+    namespace {
+
+        template <bool value> struct ct_assert;
+        template <>
+        struct ct_assert<true>
+        {
+            enum { value = true };
+        };
+    }
+
     template <bool value>
-    class enable_exception_if 
+    class enable_exception_if // <false> 
     {
         mutable bool _M_value;
 
@@ -102,7 +113,13 @@ namespace more {
         template <typename T>
         void
         throw_exception(const T &e) const
-        { throw e; }
+        { 
+#ifdef __EXCEPTIONS
+            throw e;
+#else
+            ct_assert<false> exception_enabled_while_fno_exceptions_option_is_set;
+#endif
+        }
 
     };
 
