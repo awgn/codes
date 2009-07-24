@@ -49,8 +49,16 @@ PP_ARG_N(__VA_ARGS__)
 
 #ifndef throw_
 
-#define throw_1(x)      this->throw_exception(x); return;
-#define throw_2(x,r)    this->throw_exception(x); return r;
+#define throw_1(x) do { \
+    this->throw_exception(x); \
+    return; \
+} while (0)
+
+#define throw_2(x,r) do { \
+    this->throw_exception(x); \
+    return r; \
+} while(0)
+
 #define throw_(...)     XPASTE(throw_, PP_NARG(__VA_ARGS__))(__VA_ARGS__)         
 
 #endif
