@@ -36,11 +36,16 @@ main(int argc, char *argv[])
 {
     test_class x;
 
-    if (x) {
-        std::cout << "testclass constructor ok!\n";
-    }    
-    else {
-        std::cout << "testclass constructor failed!\n";
+    try {
+        if (x) {
+            std::cout << "testclass constructor ok!\n";
+        }    
+        else {
+            std::cout << "testclass constructor failed!\n";
+        }
+    }
+    catch(std::exception &e) {
+        throw;
     }
 
     return 0;

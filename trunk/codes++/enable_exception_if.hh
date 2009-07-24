@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <typeinfo>
 #include <cassert>
+#include <mtp.hh>
 
 #ifndef PP_NARG
 /* the so-called __VA_NARG__ (PP_NARG) macro from the thread at 
@@ -66,7 +67,6 @@ PP_ARG_N(__VA_ARGS__)
 namespace more {
 
     namespace {
-
         template <bool value> struct ct_assert;
         template <>
         struct ct_assert<true>
@@ -75,8 +75,9 @@ namespace more {
         };
     }
 
-    template <bool value>
-    class enable_exception_if // <false> 
+    template <bool value> class enable_exception_if;
+    template <>
+    class enable_exception_if<false> 
     {
         mutable bool _M_value;
 
@@ -93,14 +94,17 @@ namespace more {
         { return _M_value; }
 
         template <typename T>
-        void throw_exception(const T & e) const
+        typename mtp::disable_if<std::tr1::is_base_of<std::exception, typename std::tr1::remove_reference<T>::type > ,void>::type  
+        throw_exception(const T &e) const
         {
-            std::clog << "warning: exception error of '" << typeid(T).name() << "': ";
-            const std::exception * p = dynamic_cast<const std::exception *>(&e);
-            if (p) {
-                std::clog << p->what() << '!';
-            }
-            std::clog << std::endl;
+            std::clog << "enable_exception_if<false>: an exception of type '" << typeid(T).name() << "' could have been thrown!" << std::endl;
+            _M_value = false;        
+        }
+
+        void 
+        throw_exception(const std::exception &e) const
+        {
+            std::clog << "enable_exception_if<false>: an exception of type '" << typeid(e).name() << "' could have been thrown: " << e.what() << "!" << std::endl;
             _M_value = false;        
         }
 
@@ -119,8 +123,7 @@ namespace more {
         { return true; }
 
         template <typename T>
-        void
-        throw_exception(const T &e) const
+        void throw_exception(const T &e) const
         { 
 #ifdef __EXCEPTIONS
             throw e;
