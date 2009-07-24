@@ -18,7 +18,7 @@ int main()
     // simple echo server
     //
 
-    more::sockaddress<AF_INET> addr("127.0.0.891",31337);
+    more::sockaddress<AF_INET> addr("127.0.0.1",31337);
     more::sockaddress<AF_INET> peer;
     more::socket<AF_INET> l(SOCK_STREAM);
 
