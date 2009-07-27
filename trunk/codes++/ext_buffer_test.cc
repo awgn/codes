@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <ext_buffer.h>
+#include <ext_buffer.hh>
 
 #include <iostream>
 #include <algorithm>
@@ -42,11 +42,11 @@ main(int argc, char *argv[])
     std::cout << std::endl;
 
     std::string str( x_hello.begin(), x_hello.end() );
-
     std::cout << "iterator test: -> " << str << std::endl; 
+    std::string rstr( x_hello.rbegin(), x_hello.rend() );
+    std::cout << "reverse iterator iterator test: -> " << rstr << std::endl; 
 
     more::ext_const_buffer const_hello (x_hello);
-
     more::ext_const_buffer::const_iterator it = const_hello.begin();
 
     more::ext_const_buffer copy_constructor_const_hello(const_hello);

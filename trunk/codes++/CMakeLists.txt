@@ -54,6 +54,7 @@ add_executable(endianless-test endianless-test.cc)
 add_executable(tqueue-test tqueue-test.cc)
 add_executable(md5-test md5-test.cc md5.cc)
 add_executable(enable_exception_test enable_exception_test.cc)
+add_executable(ext_buffer_test ext_buffer_test.cc)
 
 target_link_libraries(atomic_test -pthread)
 target_link_libraries(fast_deque-test -pthread)
