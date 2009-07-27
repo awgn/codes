@@ -56,7 +56,7 @@ namespace more {
         //
 
         const void *
-        c_buf() const 
+        data() const 
         { return _M_iovec.iov_base; }
 
         size_type
@@ -120,10 +120,10 @@ namespace more {
             return *this;
         }
 
-        using ext_buffer_base::c_buf;
+        using ext_buffer_base::data;
 
         void *
-        c_buf() 
+        data() 
         { return _M_iovec.iov_base; }
 
         // iterators 

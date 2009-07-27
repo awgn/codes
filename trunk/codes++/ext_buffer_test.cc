@@ -27,7 +27,7 @@ main(int argc, char *argv[])
 
     const more::ext_buffer y_hello = x_hello;
 
-    const void * p_hello = y_hello.c_buf();
+    const void * p_hello = y_hello.data();
 
     const struct iovec * iov_hello = &x_hello;
 
