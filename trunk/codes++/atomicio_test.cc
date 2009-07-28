@@ -24,9 +24,9 @@ int main()
 
     char buffer[8];
 
-    more::functor_read<>  r0(0, buffer, 4); r0();
-    more::functor_write<> w0(1, buffer, 4); w0();
+    more::functor::read<>  r0(0, buffer, 4); r0();
+    more::functor::write<> w0(1, buffer, 4); w0();
 
-    more::functor_read<atomic_io>  r1(0, buffer, 4); r1();
-    more::functor_write<atomic_io> w1(1, buffer, 4); w1();
+    more::functor::read<atomic_io>  r1(0, buffer, 4); r1();
+    more::functor::write<atomic_io> w1(1, buffer, 4); w1();
 }

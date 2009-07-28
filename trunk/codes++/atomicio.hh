@@ -161,166 +161,168 @@ namespace more
 
     };
 
+    namespace functor {
 
-    /////////////////////////////////////////
-    // I/O functors
-    //
+        /////////////////////////////////////////
+        // I/O functors
+        //
 
-    template <typename P>
-    struct io_functor_base
-    {
-    protected:
-        P * _M_buf;
-        size_t _M_count;
-
-    public:
-        io_functor_base(P *buf, size_t count)
-        : _M_buf(buf), _M_count(count)
-        {}
-
-        P *
-        data() 
-        { return _M_buf; }
-
-        size_t
-        data_size() const
-        { return _M_count; }
-    };
-
-    template <typename IO = interruptible_io >
-    struct functor_read : public io_functor_base<void>
-    {
-        int _M_fd;
-
-        functor_read(int fd, void *buf, size_t count)
-        : io_functor_base<void>(buf,count), _M_fd(fd)
-        {}
-
-        ssize_t operator()() const
+        template <typename P>
+        struct io_base
         {
-            return IO::call(::read,_M_fd,_M_buf,_M_count);
-        }
-    };
-    
-    template <typename IO = interruptible_io >
-    struct functor_write : public io_functor_base<const void>
-    {
-        int _M_fd;
+        protected:
+            P * _M_buf;
+            size_t _M_count;
 
-        functor_write(int fd, const void *buf, size_t count)
-        : io_functor_base<const void>(buf,count), _M_fd(fd)
-        {}
+        public:
+            io_base(P *buf, size_t count)
+            : _M_buf(buf), _M_count(count)
+            {}
 
-        ssize_t operator()() const
+            P *
+            data() 
+            { return _M_buf; }
+
+            size_t
+            data_size() const
+            { return _M_count; }
+        };
+
+        template <typename IO = interruptible_io >
+        struct read : public io_base<void>
         {
-            return IO::call(::write,_M_fd,_M_buf,_M_count);
-        }
-    };
+            int _M_fd;
 
-    template <typename IO = interruptible_io >
-    struct functor_pread : public io_functor_base<void>
-    {
-        int _M_fd;
-        off_t   _M_offset;
+            read(int fd, void *buf, size_t count)
+            : io_base<void>(buf,count), _M_fd(fd)
+            {}
 
-        functor_pread(int fd, void *buf, size_t count, off_t offset)
-        : io_functor_base<void>(buf,count), _M_fd(fd), _M_offset(offset)
-        {}
+            ssize_t operator()() const
+            {
+                return IO::call(::read,_M_fd,_M_buf,_M_count);
+            }
+        };
 
-        ssize_t operator()() const
+        template <typename IO = interruptible_io >
+        struct write : public io_base<const void>
         {
-            return IO::call(::pread,_M_fd,_M_buf,_M_count, _M_offset);
-        }
-    };
-    template <typename IO = interruptible_io >
-    struct functor_pwrite : public io_functor_base<const void>
-    {
-        int _M_fd;
-        off_t _M_offset;
+            int _M_fd;
 
-        functor_pwrite(int fd, const void *buf, size_t count, off_t offset)
-        : io_functor_base<const void>(buf,count), _M_fd(fd), _M_offset(offset)
-        {}
+            write(int fd, const void *buf, size_t count)
+            : io_base<const void>(buf,count), _M_fd(fd)
+            {}
 
-        ssize_t operator()() const
+            ssize_t operator()() const
+            {
+                return IO::call(::write,_M_fd,_M_buf,_M_count);
+            }
+        };
+
+        template <typename IO = interruptible_io >
+        struct pread : public io_base<void>
         {
-            return IO::call(::pwrite,_M_fd,_M_buf,_M_count, _M_offset);
-        }
-    };
+            int _M_fd;
+            off_t   _M_offset;
 
-    /////////////////////////////////////////////////////////////
-    // I/O socket functors
-    //
+            pread(int fd, void *buf, size_t count, off_t offset)
+            : io_base<void>(buf,count), _M_fd(fd), _M_offset(offset)
+            {}
 
-    template <typename IO = interruptible_io >
-    struct functor_recv : public io_functor_base<void>
-    {
-        int _M_fd;
-        int _M_flags;
-
-        functor_recv(int fd, void *buf, size_t count, int flags)
-        : io_functor_base<void>(buf,count), _M_fd(fd), _M_flags(flags)
-        {}
-
-        ssize_t operator()() const
+            ssize_t operator()() const
+            {
+                return IO::call(::pread,_M_fd,_M_buf,_M_count, _M_offset);
+            }
+        };
+        template <typename IO = interruptible_io >
+        struct pwrite : public io_base<const void>
         {
-            return IO::call(::recv,_M_fd,_M_buf,_M_count, _M_flags);
-        }
-    };
+            int _M_fd;
+            off_t _M_offset;
 
-    template <typename IO = interruptible_io >
-    struct functor_recvfrom : public io_functor_base<void>
-    {
-        int _M_fd;
-        int _M_flags;
-        struct sockaddr * _M_from;
-        socklen_t * _M_fromlen;
+            pwrite(int fd, const void *buf, size_t count, off_t offset)
+            : io_base<const void>(buf,count), _M_fd(fd), _M_offset(offset)
+            {}
 
-        functor_recvfrom(int fd, void *buf, size_t count, int flags,
-                         struct sockaddr *from, socklen_t *fromlen)
-        : io_functor_base<void>(buf,count), _M_fd(fd), _M_flags(flags), _M_from(from), _M_fromlen(fromlen)
-        {}
+            ssize_t operator()() const
+            {
+                return IO::call(::pwrite,_M_fd,_M_buf,_M_count, _M_offset);
+            }
+        };
 
-        ssize_t operator()() const
+        /////////////////////////////////////////////////////////////
+        // I/O socket functors
+        //
+
+        template <typename IO = interruptible_io >
+        struct recv : public io_base<void>
         {
-            return IO::call(::recvfrom,_M_fd,_M_buf,_M_count, _M_flags, _M_from, _M_fromlen);
-        }
-    };
+            int _M_fd;
+            int _M_flags;
 
-    template <typename IO = interruptible_io >
-    struct functor_send : public io_functor_base<const void>
-    {
-        int _M_fd;
-        int _M_flags;
+            recv(int fd, void *buf, size_t count, int flags)
+            : io_base<void>(buf,count), _M_fd(fd), _M_flags(flags)
+            {}
 
-        functor_send(int fd, const void *buf, size_t count, int flags)
-        : io_functor_base<const void>(buf,count), _M_fd(fd), _M_flags(flags)
-        {}
+            ssize_t operator()() const
+            {
+                return IO::call(::recv,_M_fd,_M_buf,_M_count, _M_flags);
+            }
+        };
 
-        ssize_t operator()() const
+        template <typename IO = interruptible_io >
+        struct recvfrom : public io_base<void>
         {
-            return IO::call(::send,_M_fd,_M_buf,_M_count, _M_flags);
-        }
-    };
-    template <typename IO = interruptible_io >
-    struct functor_sendto : public io_functor_base<const void>
-    {
-        int _M_fd;
-        int _M_flags;
-        struct sockaddr * _M_from;
-        socklen_t _M_tolen;
+            int _M_fd;
+            int _M_flags;
+            struct sockaddr * _M_from;
+            socklen_t * _M_fromlen;
 
-        functor_sendto(int fd, void *buf, size_t count, int flags,
-                       struct sockaddr *from, socklen_t tolen)
-        : io_functor_base<const void>(buf,count), _M_fd(fd), _M_flags(flags), _M_from(from), _M_tolen(tolen)
-        {}
+            recvfrom(int fd, void *buf, size_t count, int flags,
+                             struct sockaddr *from, socklen_t *fromlen)
+            : io_base<void>(buf,count), _M_fd(fd), _M_flags(flags), _M_from(from), _M_fromlen(fromlen)
+            {}
 
-        ssize_t operator()() const
+            ssize_t operator()() const
+            {
+                return IO::call(::recvfrom,_M_fd,_M_buf,_M_count, _M_flags, _M_from, _M_fromlen);
+            }
+        };
+
+        template <typename IO = interruptible_io >
+        struct send : public io_base<const void>
         {
-            return IO::call(::sendto,_M_fd,_M_buf,_M_count, _M_flags, _M_from, _M_tolen);
-        }
-    };
+            int _M_fd;
+            int _M_flags;
 
+            send(int fd, const void *buf, size_t count, int flags)
+            : io_base<const void>(buf,count), _M_fd(fd), _M_flags(flags)
+            {}
+
+            ssize_t operator()() const
+            {
+                return IO::call(::send,_M_fd,_M_buf,_M_count, _M_flags);
+            }
+        };
+        template <typename IO = interruptible_io >
+        struct sendto : public io_base<const void>
+        {
+            int _M_fd;
+            int _M_flags;
+            struct sockaddr * _M_from;
+            socklen_t _M_tolen;
+
+            sendto(int fd, void *buf, size_t count, int flags,
+                           struct sockaddr *from, socklen_t tolen)
+            : io_base<const void>(buf,count), _M_fd(fd), _M_flags(flags), _M_from(from), _M_tolen(tolen)
+            {}
+
+            ssize_t operator()() const
+            {
+                return IO::call(::sendto,_M_fd,_M_buf,_M_count, _M_flags, _M_from, _M_tolen);
+            }
+        };
+
+    } // namespace functor
 } // namespace more
 
 #endif /* ATOMICIO_HH */
