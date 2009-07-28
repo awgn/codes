@@ -15,6 +15,8 @@
 #include <iostream>
 #include <cstring>
 
+#include <atomicio.hh>
+
 namespace more {
 
     class ext_buffer_base
@@ -149,7 +151,18 @@ namespace more {
         reverse_iterator
         rend() 
         { return reverse_iterator(this->begin()); }
+     
+        ///////////////////////////////////////////// 
+        // builder through io_functors (atomicio.hh)
        
+        template <typename Fn>
+        static inline ext_buffer 
+        make(Fn cw)
+        {
+            ssize_t s = cw();
+            return ext_buffer(cw.data(), s);
+        }
+
     };
 
     struct ext_const_buffer : public ext_buffer_base
@@ -192,6 +205,18 @@ namespace more {
             return *this;
         }
  
+        ///////////////////////////////////////////// 
+        // builder through io_functors (atomicio.hh)
+       
+        template <typename Fn>
+        static inline ext_const_buffer 
+        make(Fn cw)
+        {
+            ssize_t s = cw();
+            return ext_const_buffer(cw.data(), s);
+        }
+
+
     };
 
 

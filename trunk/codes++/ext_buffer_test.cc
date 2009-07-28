@@ -52,6 +52,21 @@ main(int argc, char *argv[])
     more::ext_const_buffer copy_constructor_const_hello(const_hello);
     more::ext_const_buffer copy_constructor_const_world(x_world);
 
+    //////////////
+    // make test:
+
+    std::cout << "enter 4 chars:" << std::flush;
+    char buf[4];
+
+    // more::ext_buffer b = more::ext_buffer::make( more::functor_read<>(0, buf, 4) );                          // simple read()
+    more::ext_const_buffer b = more::ext_const_buffer::make( more::functor_read<more::atomic_io>(0, buf, 4) );        // atomic_io read()
+
+    std::cout << "b.data()=" << b.data() << " b.size()=" << b.size() << std::endl;
+    
+    std::cout << "[";
+    std::copy( b.begin(), b.end(), std::ostream_iterator<char>(std::cout, ""));
+    std::cout << "]" << std::endl;
+
     return 0;
 }
  
