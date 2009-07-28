@@ -14,7 +14,7 @@
 #include <sys/uio.h>
 #include <iostream>
 #include <cstring>
-
+#include <algorithm>
 #include <atomicio.hh>
 
 namespace more {
@@ -43,6 +43,21 @@ namespace more {
 
         ~ext_buffer_base()
         {}
+
+        // commit & discard
+        //
+
+        void discard(int n) const 
+        {
+            n = std::min(size_t(n), _M_iovec.iov_len);
+            _M_iovec.iov_base = reinterpret_cast<char *>(_M_iovec.iov_base) + n;  
+            _M_iovec.iov_len -= n;
+        }
+
+        void commit(int n) const
+        {
+            _M_iovec.iov_len += n;
+        }
 
         // iovec support...
         //
@@ -84,9 +99,8 @@ namespace more {
         rend() const
         { return const_reverse_iterator(this->begin()); }
 
-
     protected: 
-        struct __iovec _M_iovec;
+        mutable struct __iovec _M_iovec;
 
     };
 
@@ -160,6 +174,8 @@ namespace more {
         make(Fn cw)
         {
             ssize_t s = cw();
+            if (s < 0)
+                throw std::runtime_error(std::string("ext_buffer::make: ").append(strerror(errno)));
             return ext_buffer(cw.data(), s);
         }
 
@@ -213,9 +229,10 @@ namespace more {
         make(Fn cw)
         {
             ssize_t s = cw();
+            if (s < 0)
+                throw std::runtime_error(std::string("ext_const_buffer::make: ").append(strerror(errno)));
             return ext_const_buffer(cw.data(), s);
         }
-
 
     };
 

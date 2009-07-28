@@ -56,7 +56,7 @@ main(int argc, char *argv[])
     // make test:
 
     std::cout << "enter 4 chars:" << std::flush;
-    char buf[4];
+    char buf[8];
 
     // more::ext_buffer b = more::ext_buffer::make( more::functor::read<>(0, buf, 4) );                          // simple read()
     more::ext_const_buffer b = more::ext_const_buffer::make( more::functor::read<more::atomic_io>(0, buf, 4) );        // atomic_io read()
@@ -66,6 +66,12 @@ main(int argc, char *argv[])
     std::cout << "[";
     std::copy( b.begin(), b.end(), std::ostream_iterator<char>(std::cout, ""));
     std::cout << "]" << std::endl;
+
+    b.discard(4);
+    std::cout << "b.data()=" << b.data() << " b.size()=" << b.size() << std::endl;
+
+    b.commit(4);
+    std::cout << "b.data()=" << b.data() << " b.size()=" << b.size() << std::endl;
 
     return 0;
 }
