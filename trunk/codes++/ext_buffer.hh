@@ -69,11 +69,6 @@ namespace more {
             _M_iovec.iov_len -= n;
         }
 
-        void commit(size_type n) const
-        {
-            _M_iovec.iov_len += n;
-        }
-
         // iovec support...
         //
 
@@ -171,6 +166,10 @@ namespace more {
             return *(reinterpret_cast<char *>(_M_iovec.iov_base) + n); 
         }
 
+        void commit(size_type n)
+        {
+            _M_iovec.iov_len += n;
+        }
 
         // iterators 
         //

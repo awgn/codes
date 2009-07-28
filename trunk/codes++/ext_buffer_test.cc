@@ -58,8 +58,8 @@ main(int argc, char *argv[])
     std::cout << "enter 4 chars:" << std::flush;
     char buf[8];
 
-    more::ext_buffer b = more::ext_buffer::make( more::functor::read<>(0, buf, 4) );                                      // simple read()
-    // more::ext_const_buffer b = more::ext_const_buffer::make( more::functor::read<more::atomic_io>(0, buf, 4) );        // atomic_io read()
+    // more::ext_buffer b = more::ext_buffer::make( more::functor::read<>(0, buf, 4) );                                      // simple read()
+    more::ext_const_buffer b = more::ext_const_buffer::make( more::functor::read<more::atomic_io>(0, buf, 4) );        // atomic_io read()
 
     std::cout << "b.data()=" << b.data() << " b.size()=" << b.size() << std::endl;
     
@@ -67,12 +67,13 @@ main(int argc, char *argv[])
     std::copy( b.begin(), b.end(), std::ostream_iterator<char>(std::cout, ""));
     std::cout << "]" << std::endl;
 
-    b.at(0) = 'c';
+    // b.at(0) = 'c';
 
     std::cout << "[";
     std::cout << b[0] << b[1] << b.at(2) << b.at(3);
     std::cout << "]" << std::endl;
 
+    // b.commit(4);
 
     // b.discard(4);
     // std::cout << "b.data()=" << b.data() << " b.size()=" << b.size() << std::endl;
