@@ -11,10 +11,13 @@
 #ifndef ATOMICIO_HH
 #define ATOMICIO_HH
 
-#include <tr1/type_traits>
-#include <stdexcept>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <errno.h>
 #include <unistd.h>
+
+#include <tr1/type_traits>
+#include <stdexcept>
 
 namespace more
 {
@@ -29,55 +32,294 @@ namespace more
         typedef V type;
     };
 
-    // files: read/write signatures like
+    struct atomic_io {
+
+        // files: read/write signatures like
+        //
+
+        template < typename C, typename T > 
+        static inline int call(C callback, int fd, T *buff, size_t n)
+        {
+            typename __select< std::tr1::is_const<T>::value , const char *,char *>::type p = reinterpret_cast<typeof(p)>(buff);
+            size_t res, pos = 0;
+
+            while (n > pos) {
+                res = (callback) (fd, p + pos, n - pos);
+                switch(res) {
+                case -1:
+                    if ( errno == EINTR || errno == EAGAIN )
+                        continue;
+                    throw std::runtime_error("atoimic_io failure");
+                case 0:
+                    return res;
+                default:
+                    pos += res;
+                }
+            }
+            return pos;
+        }
+
+        // socket: send/recv signatures like
+        //
+
+        template < typename C, typename T, typename P1 > 
+        static inline int call(C callback, int fd, T *buff, size_t n, P1 p1)
+        {
+            typename __select< std::tr1::is_const<T>::value , const char *,char *>::type p = reinterpret_cast<typeof(p)>(buff);
+            size_t res, pos = 0;
+
+            while (n > pos) {
+                res = (callback) (fd, p + pos, n - pos, p1);
+                switch(res) {
+                case -1:
+                    if ( errno == EINTR || errno == EAGAIN )
+                        continue;
+                    throw std::runtime_error("atoimic_io failure");
+                case 0:
+                    return res;
+                default:
+                    pos += res;
+                }
+            }
+            return pos;
+        }
+
+        template < typename C, typename T, typename P1, typename P2 > 
+        static inline int call(C callback, int fd, T *buff, size_t n, P1 p1, P2 p2)
+        {
+            typename __select< std::tr1::is_const<T>::value , const char *,char *>::type p = reinterpret_cast<typeof(p)>(buff);
+            size_t res, pos = 0;
+
+            while (n > pos) {
+                res = (callback) (fd, p + pos, n - pos, p1, p2);
+                switch(res) {
+                case -1:
+                    if ( errno == EINTR || errno == EAGAIN )
+                        continue;
+                    throw std::runtime_error("atoimic_io failure");
+                case 0:
+                    return res;
+                default:
+                    pos += res;
+                }
+            }
+            return pos;
+        }
+
+        // socket: sendto/recvfrom signatures like
+        //
+
+        template < typename C, typename T, typename P1, typename P2, typename P3 > 
+        static inline int call(C callback, int fd, T *buff, size_t n, P1 p1, P2 p2, P3 p3)
+        {
+            typename __select< std::tr1::is_const<T>::value , const char *,char *>::type p = reinterpret_cast<typeof(p)>(buff);
+            size_t res, pos = 0;
+
+            while (n > pos) {
+                res = (callback) (fd, p + pos, n - pos, p1, p2, p3);
+                switch(res) {
+                case -1:
+                    if ( errno == EINTR || errno == EAGAIN )
+                        continue;
+                    throw std::runtime_error("atoimic_io failure");
+                case 0:
+                    return res;
+                default:
+                    pos += res;
+                }
+            }
+            return pos;
+        }
+
+    };
+
+    struct interruptible_io {
+
+        template < typename C, typename T > 
+        static inline int call(C callback, int fd, T *buff, size_t n)
+        {
+            return callback(fd, buff, n);
+        }
+
+        template < typename C, typename T, typename P1 > 
+        static inline int call(C callback, int fd, T *buff, size_t n, P1 p1)
+        {
+            return callback(fd, buff, n, p1);
+        }
+
+        template < typename C, typename T, typename P1, typename P2 > 
+        static inline int call(C callback, int fd, T *buff, size_t n, P1 p1, P2 p2)
+        {
+            return callback(fd, buff, n, p1, p2);
+        }
+
+        template < typename C, typename T, typename P1, typename P2, typename P3 > 
+        static inline int call(C callback, int fd, T *buff, size_t n, P1 p1, P2 p2, P3 p3)
+        {
+            return callback(fd, buff, n, p1, p2, p3);
+        }
+
+    };
+
+
+    /////////////////////////////////////////
+    // I/O functors
     //
 
-    template < typename C, typename T > 
-    int atomicio(C callback, int fd, T *buff, size_t n)
+    template <typename P>
+    struct io_functor_base
     {
-        typename __select< std::tr1::is_const<T>::value , const char *,char *>::type p = reinterpret_cast<typeof(p)>(buff);
-        size_t res, pos = 0;
+    protected:
+        P * _M_buf;
+        size_t _M_count;
 
-        while (n > pos) {
-            res = (callback) (fd, p + pos, n - pos);
-            switch(res) {
-            case -1:
-                if ( errno == EINTR || errno == EAGAIN )
-                    continue;
-                throw std::runtime_error("atoimic_io failure");
-            case 0:
-                return res;
-            default:
-                pos += res;
-            }
+    public:
+        io_functor_base(P *buf, size_t count)
+        : _M_buf(buf), _M_count(count)
+        {}
+
+        P *
+        data() 
+        { return _M_buf; }
+
+        size_t
+        data_size() const
+        { return _M_count; }
+    };
+
+    template <typename IO = interruptible_io >
+    struct functor_read : public io_functor_base<void>
+    {
+        int _M_fd;
+
+        functor_read(int fd, void *buf, size_t count)
+        : io_functor_base<void>(buf,count), _M_fd(fd)
+        {}
+
+        ssize_t operator()() const
+        {
+            return IO::call(::read,_M_fd,_M_buf,_M_count);
         }
-        return pos;
-    }
+    };
+    
+    template <typename IO = interruptible_io >
+    struct functor_write : public io_functor_base<const void>
+    {
+        int _M_fd;
 
-    // socket: send/recv signatures like
+        functor_write(int fd, const void *buf, size_t count)
+        : io_functor_base<const void>(buf,count), _M_fd(fd)
+        {}
+
+        ssize_t operator()() const
+        {
+            return IO::call(::write,_M_fd,_M_buf,_M_count);
+        }
+    };
+
+    template <typename IO = interruptible_io >
+    struct functor_pread : public io_functor_base<void>
+    {
+        int _M_fd;
+        off_t   _M_offset;
+
+        functor_pread(int fd, void *buf, size_t count, off_t offset)
+        : io_functor_base<void>(buf,count), _M_fd(fd), _M_offset(offset)
+        {}
+
+        ssize_t operator()() const
+        {
+            return IO::call(::pread,_M_fd,_M_buf,_M_count, _M_offset);
+        }
+    };
+    template <typename IO = interruptible_io >
+    struct functor_pwrite : public io_functor_base<const void>
+    {
+        int _M_fd;
+        off_t _M_offset;
+
+        functor_pwrite(int fd, const void *buf, size_t count, off_t offset)
+        : io_functor_base<const void>(buf,count), _M_fd(fd), _M_offset(offset)
+        {}
+
+        ssize_t operator()() const
+        {
+            return IO::call(::pwrite,_M_fd,_M_buf,_M_count, _M_offset);
+        }
+    };
+
+    /////////////////////////////////////////////////////////////
+    // I/O socket functors
     //
 
-    template < typename C, typename T > 
-    int atomicio(C callback, int fd, T *buff, size_t n, int flags)
+    template <typename IO = interruptible_io >
+    struct functor_recv : public io_functor_base<void>
     {
-        typename __select< std::tr1::is_const<T>::value , const char *,char *>::type p = reinterpret_cast<typeof(p)>(buff);
-        size_t res, pos = 0;
+        int _M_fd;
+        int _M_flags;
 
-        while (n > pos) {
-            res = (callback) (fd, p + pos, n - pos, flags);
-            switch(res) {
-            case -1:
-                if ( errno == EINTR || errno == EAGAIN )
-                    continue;
-                throw std::runtime_error("atoimic_io failure");
-            case 0:
-                return res;
-            default:
-                pos += res;
-            }
+        functor_recv(int fd, void *buf, size_t count, int flags)
+        : io_functor_base<void>(buf,count), _M_fd(fd), _M_flags(flags)
+        {}
+
+        ssize_t operator()() const
+        {
+            return IO::call(::recv,_M_fd,_M_buf,_M_count, _M_flags);
         }
-        return pos;
-    }
+    };
+
+    template <typename IO = interruptible_io >
+    struct functor_recvfrom : public io_functor_base<void>
+    {
+        int _M_fd;
+        int _M_flags;
+        struct sockaddr * _M_from;
+        socklen_t * _M_fromlen;
+
+        functor_recvfrom(int fd, void *buf, size_t count, int flags,
+                         struct sockaddr *from, socklen_t *fromlen)
+        : io_functor_base<void>(buf,count), _M_fd(fd), _M_flags(flags), _M_from(from), _M_fromlen(fromlen)
+        {}
+
+        ssize_t operator()() const
+        {
+            return IO::call(::recvfrom,_M_fd,_M_buf,_M_count, _M_flags, _M_from, _M_fromlen);
+        }
+    };
+
+    template <typename IO = interruptible_io >
+    struct functor_send : public io_functor_base<const void>
+    {
+        int _M_fd;
+        int _M_flags;
+
+        functor_send(int fd, const void *buf, size_t count, int flags)
+        : io_functor_base<const void>(buf,count), _M_fd(fd), _M_flags(flags)
+        {}
+
+        ssize_t operator()() const
+        {
+            return IO::call(::send,_M_fd,_M_buf,_M_count, _M_flags);
+        }
+    };
+    template <typename IO = interruptible_io >
+    struct functor_sendto : public io_functor_base<const void>
+    {
+        int _M_fd;
+        int _M_flags;
+        struct sockaddr * _M_from;
+        socklen_t _M_tolen;
+
+        functor_sendto(int fd, void *buf, size_t count, int flags,
+                       struct sockaddr *from, socklen_t tolen)
+        : io_functor_base<const void>(buf,count), _M_fd(fd), _M_flags(flags), _M_from(from), _M_tolen(tolen)
+        {}
+
+        ssize_t operator()() const
+        {
+            return IO::call(::sendto,_M_fd,_M_buf,_M_count, _M_flags, _M_from, _M_tolen);
+        }
+    };
 
 } // namespace more
 

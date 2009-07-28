@@ -8,12 +8,25 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "atomicio.hh"
+#include <atomicio.hh>
+
+using namespace more;
 
 int main()
 {
-    char buffer[4];
-    more::atomicio<>(write, 1, "hello world!\n",13);
-    more::atomicio<>(read, 0, buffer, 4);
+    // atomic_io policy:
+    //
 
+    more::atomic_io::call(write, 1, "hello world!\n",13);
+
+    // io functors:
+    //
+
+    char buffer[8];
+
+    more::functor_read<>  r0(0, buffer, 4); r0();
+    more::functor_write<> w0(1, buffer, 4); w0();
+
+    more::functor_read<atomic_io>  r1(0, buffer, 4); r1();
+    more::functor_write<atomic_io> w1(1, buffer, 4); w1();
 }
