@@ -44,17 +44,32 @@ namespace more {
         ~ext_buffer_base()
         {}
 
+        // operator[] and at()
+        //
+
+        const char &
+        operator[](size_type n) const
+        { return *(reinterpret_cast<const char *>(_M_iovec.iov_base) + n); }
+
+        const char &
+        at(size_type n) const
+        { 
+            if (_M_iovec.iov_len < n )
+                throw std::out_of_range("ext_buffer: range check");
+            return *(reinterpret_cast<const char *>(_M_iovec.iov_base) + n); 
+        }
+
         // commit & discard
         //
 
-        void discard(int n) const 
+        void discard(size_type n) const 
         {
             n = std::min(size_t(n), _M_iovec.iov_len);
             _M_iovec.iov_base = reinterpret_cast<char *>(_M_iovec.iov_base) + n;  
             _M_iovec.iov_len -= n;
         }
 
-        void commit(int n) const
+        void commit(size_type n) const
         {
             _M_iovec.iov_len += n;
         }
@@ -137,10 +152,25 @@ namespace more {
         }
 
         using ext_buffer_base::data;
+        using ext_buffer_base::operator[];
+        using ext_buffer_base::at;
 
         void *
         data() 
         { return _M_iovec.iov_base; }
+
+        char &
+        operator[](size_type n)
+        { return *(reinterpret_cast<char *>(_M_iovec.iov_base) + n); }
+
+        char &
+        at(size_type n)
+        { 
+            if (_M_iovec.iov_len < n )
+                throw std::out_of_range("ext_buffer: range check");
+            return *(reinterpret_cast<char *>(_M_iovec.iov_base) + n); 
+        }
+
 
         // iterators 
         //
