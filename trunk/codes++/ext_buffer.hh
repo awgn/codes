@@ -55,16 +55,19 @@ namespace more {
         at(size_type n) const
         { 
             if (_M_iovec.iov_len < n )
-                throw std::out_of_range("ext_buffer: range check");
+                throw std::out_of_range("ext_buffer::at");
+
             return *(reinterpret_cast<const char *>(_M_iovec.iov_base) + n); 
         }
 
-        // commit & discard
+        // discard
         //
 
         void discard(size_type n) const 
         {
-            n = std::min(size_t(n), _M_iovec.iov_len);
+            if ( n > _M_iovec.iov_len )
+                throw std::out_of_range("ext_buffer::discard");
+
             _M_iovec.iov_base = reinterpret_cast<char *>(_M_iovec.iov_base) + n;  
             _M_iovec.iov_len -= n;
         }
@@ -134,6 +137,31 @@ namespace more {
         : ext_buffer_base(b,s)
         {}
 
+        template <typename Fn>
+        ext_buffer(Fn cw)
+        {
+            ssize_t b = cw();
+            if (b < 0)
+                throw std::runtime_error(std::string("ext_buffer: ").append(strerror(errno)));
+
+            _M_iovec.iov_base = cw.data();
+            _M_iovec.iov_len  = b;
+        }
+
+        template <typename Fn>
+        ext_buffer(void * b, size_t s, Fn cw)
+        {            
+            if ( (static_cast<char *>(b) + s) < (static_cast<char *>(cw.data()) + cw.data_size()) )
+                throw std::overflow_error("ext_buffer: buffer overflow");
+
+            ssize_t c = cw();
+            if (c < 0)
+                throw std::runtime_error(std::string("ext_buffer: ").append(strerror(errno)));
+
+            _M_iovec.iov_base = b;
+            _M_iovec.iov_len  = c + (static_cast<char *>(cw.data()) - static_cast<char *>(b));
+        }
+
         ext_buffer(const ext_buffer &b)
         : ext_buffer_base(b._M_iovec.iov_base, b._M_iovec.iov_len)
         {}
@@ -162,7 +190,8 @@ namespace more {
         at(size_type n)
         { 
             if (_M_iovec.iov_len < n )
-                throw std::out_of_range("ext_buffer: range check");
+                throw std::out_of_range("ext_buffer::at");
+
             return *(reinterpret_cast<char *>(_M_iovec.iov_base) + n); 
         }
 
@@ -171,7 +200,7 @@ namespace more {
             _M_iovec.iov_len += n;
         }
 
-        // iterators 
+        // non const iterators 
         //
 
         using ext_buffer_base::begin;
@@ -195,19 +224,6 @@ namespace more {
         rend() 
         { return reverse_iterator(this->begin()); }
      
-        ///////////////////////////////////////////// 
-        // builder through io_functors (atomicio.hh)
-       
-        template <typename Fn>
-        static inline ext_buffer 
-        make(Fn cw)
-        {
-            ssize_t s = cw();
-            if (s < 0)
-                throw std::runtime_error(std::string("ext_buffer::make: ").append(strerror(errno)));
-            return ext_buffer(cw.data(), s);
-        }
-
     };
 
     struct ext_const_buffer : public ext_buffer_base
@@ -222,8 +238,8 @@ namespace more {
         : ext_buffer_base()
         {}
 
-        ext_const_buffer(void * b, size_t s)
-        : ext_buffer_base(b,s)
+        ext_const_buffer(const void * b, size_t s)
+        : ext_buffer_base(const_cast<void *>(b),s)
         {}
 
         ext_const_buffer(const ext_const_buffer &b)
@@ -233,6 +249,31 @@ namespace more {
         ext_const_buffer(const ext_buffer &b)
         : ext_buffer_base(b._M_iovec.iov_base, b._M_iovec.iov_len)
         {}
+
+        template <typename Fn>
+        ext_const_buffer(Fn cw)
+        {
+            ssize_t b = cw();
+            if (b < 0)
+                throw std::runtime_error(std::string("ext_const_buffer: ").append(strerror(errno)));
+
+            _M_iovec.iov_base = cw.data();
+            _M_iovec.iov_len  = b;
+        }
+
+        template <typename Fn>
+        ext_const_buffer(const void * b, size_t s, Fn cw)
+        {            
+            if ( (static_cast<char *>(b) + s) < (static_cast<char *>(cw.data()) + cw.data_size()) )
+                throw std::overflow_error("ext_const_buffer: buffer overflow");
+
+            ssize_t c = cw();
+            if (c < 0)
+                throw std::runtime_error(std::string("ext_const_buffer: ").append(strerror(errno)));
+
+            _M_iovec.iov_base = const_cast<void *>(b);
+            _M_iovec.iov_len  = c + (static_cast<char *>(cw.data()) - static_cast<char *>(b));
+        }
 
         ext_const_buffer &
         operator=(const ext_const_buffer &b)
@@ -249,20 +290,6 @@ namespace more {
             std::swap(ret,*this);
             return *this;
         }
- 
-        ///////////////////////////////////////////// 
-        // builder through io_functors (atomicio.hh)
-       
-        template <typename Fn>
-        static inline ext_const_buffer 
-        make(Fn cw)
-        {
-            ssize_t s = cw();
-            if (s < 0)
-                throw std::runtime_error(std::string("ext_const_buffer::make: ").append(strerror(errno)));
-            return ext_const_buffer(cw.data(), s);
-        }
-
     };
 
 

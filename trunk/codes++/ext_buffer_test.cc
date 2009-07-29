@@ -59,7 +59,7 @@ main(int argc, char *argv[])
     char buf[8];
 
     // more::ext_buffer b = more::ext_buffer::make( more::functor::read<>(0, buf, 4) );                                      // simple read()
-    more::ext_const_buffer b = more::ext_const_buffer::make( more::functor::read<more::atomic_io>(0, buf, 4) );        // atomic_io read()
+    more::ext_const_buffer b = more::ext_const_buffer( more::functor::read<more::atomic_io>(0, buf, 4) );        // atomic_io read()
 
     std::cout << "b.data()=" << b.data() << " b.size()=" << b.size() << std::endl;
     
@@ -80,6 +80,14 @@ main(int argc, char *argv[])
 
     // b.commit(4);
     // std::cout << "b.data()=" << b.data() << " b.size()=" << b.size() << std::endl;
+
+        
+    char tmp[8];
+
+    more::ext_buffer b1 = more::ext_buffer(tmp, 8, more::functor::read<more::atomic_io>(0, tmp+1, 7 ) );
+    // more::ext_buffer b1 = more::ext_buffer(tmp, 8, more::functor::read<>(0, tmp, 8 ) );
+
+    std::cout << "b1.data()=" << b.data() << " b1.size()=" << b1.size() << std::endl;
 
     return 0;
 }
