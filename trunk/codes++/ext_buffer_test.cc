@@ -55,23 +55,25 @@ main(int argc, char *argv[])
     //////////////
     // make test:
 
-    std::cout << "enter 4 chars:" << std::flush;
+    std::cout << "enter 3 chars (+return):" << std::flush;
     char buf[8];
+
 
     // more::ext_buffer b = more::ext_buffer::make( more::functor::read<>(0, buf, 4) );                                      // simple read()
     more::ext_const_buffer b = more::ext_const_buffer( more::functor::read<more::atomic_io>(0, buf, 4) );        // atomic_io read()
 
+    std::cout << "raw buf@ " << (void *)buf << std::endl;
     std::cout << "b.data()=" << b.data() << " b.size()=" << b.size() << std::endl;
     
-    std::cout << "[";
-    std::copy( b.begin(), b.end(), std::ostream_iterator<char>(std::cout, ""));
-    std::cout << "]" << std::endl;
+    // std::cout << "[";
+    // std::copy( b.begin(), b.end(), std::ostream_iterator<char>(std::cout, ""));
+    // std::cout << "]" << std::endl;
 
     // b.at(0) = 'c';
 
-    std::cout << "[";
-    std::cout << b[0] << b[1] << b.at(2) << b.at(3);
-    std::cout << "]" << std::endl;
+    // std::cout << "[";
+    // std::cout << b[0] << b[1] << b.at(2) << b.at(3);
+    // std::cout << "]" << std::endl;
 
     // b.commit(4);
 
@@ -81,13 +83,20 @@ main(int argc, char *argv[])
     // b.commit(4);
     // std::cout << "b.data()=" << b.data() << " b.size()=" << b.size() << std::endl;
 
+    std::cout << "enter 7 chars (+return):" << std::flush;
         
-    char tmp[8];
+    char buf1[8];
 
-    more::ext_buffer b1 = more::ext_buffer(tmp, 8, more::functor::read<more::atomic_io>(0, tmp+1, 7 ) );
+    more::ext_buffer b1 = more::ext_buffer(buf1, 8, more::functor::read<more::atomic_io>(0, buf1, 8) );
     // more::ext_buffer b1 = more::ext_buffer(tmp, 8, more::functor::read<>(0, tmp, 8 ) );
 
-    std::cout << "b1.data()=" << b.data() << " b1.size()=" << b1.size() << std::endl;
+    std::cout << "raw buf1@ " << (void *)buf1 << std::endl;
+    std::cout << "b1.data()=" << b1.data() << " b1.size()=" << b1.size() << std::endl;
+
+    std::cout << "enter 7 chars (+return):" << std::flush;
+
+    more::ext_buffer b2 = more::ext_buffer(b1, more::functor::read<more::atomic_io>(0, b1.data(), b1.size() ));
+    std::cout << "b2.data()=" << b2.data() << " b2.size()=" << b1.size() << std::endl;
 
     return 0;
 }

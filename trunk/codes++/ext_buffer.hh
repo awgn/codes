@@ -138,7 +138,7 @@ namespace more {
         {}
 
         template <typename Fn>
-        ext_buffer(Fn cw)
+        explicit ext_buffer(Fn cw)
         {
             ssize_t b = cw();
             if (b < 0)
@@ -150,7 +150,7 @@ namespace more {
 
         template <typename Fn>
         ext_buffer(void * b, size_t s, Fn cw)
-        {            
+        {      
             if ( (static_cast<char *>(b) + s) < (static_cast<char *>(cw.data()) + cw.data_size()) )
                 throw std::overflow_error("ext_buffer: buffer overflow");
 
@@ -162,6 +162,14 @@ namespace more {
             _M_iovec.iov_len  = c + (static_cast<char *>(cw.data()) - static_cast<char *>(b));
         }
 
+        template <typename Fn>
+        ext_buffer(const ext_buffer &b, Fn cw)
+        : ext_buffer_base(0,0)
+        { 
+            ext_buffer ret(b._M_iovec.iov_base, b._M_iovec.iov_len, cw);
+            this->swap(ret);
+        } 
+
         ext_buffer(const ext_buffer &b)
         : ext_buffer_base(b._M_iovec.iov_base, b._M_iovec.iov_len)
         {}
@@ -170,7 +178,7 @@ namespace more {
         operator=(const ext_buffer &b)
         {
             ext_buffer ret(b);
-            std::swap(ret,*this);
+            this->swap(ret);
             return *this;
         }
 
@@ -223,6 +231,16 @@ namespace more {
         reverse_iterator
         rend() 
         { return reverse_iterator(this->begin()); }
+        
+        // swap
+        //
+
+        void
+        swap(ext_buffer &x)
+        {
+            std::swap(this->_M_iovec.iov_base, x._M_iovec.iov_base);
+            std::swap(this->_M_iovec.iov_len, x._M_iovec.iov_len);
+        }
      
     };
 
@@ -251,7 +269,7 @@ namespace more {
         {}
 
         template <typename Fn>
-        ext_const_buffer(Fn cw)
+        explicit ext_const_buffer(Fn cw)
         {
             ssize_t b = cw();
             if (b < 0)
@@ -275,11 +293,27 @@ namespace more {
             _M_iovec.iov_len  = c + (static_cast<char *>(cw.data()) - static_cast<char *>(b));
         }
 
+        template <typename Fn>
+        ext_const_buffer(const ext_const_buffer &b, Fn cw)
+        : ext_buffer_base(0,0)
+        {   
+            ext_const_buffer ret(b._M_iovec.iov_base, b._M_iovec.iov_len, cw);
+            this->swap(ret);
+        } 
+
+        template <typename Fn>
+        ext_const_buffer(const ext_buffer &b, Fn cw)
+        : ext_buffer_base(0,0)
+        {   
+            ext_const_buffer ret(b._M_iovec.iov_base, b._M_iovec.iov_len, cw);
+            this->swap(ret);
+        } 
+
         ext_const_buffer &
         operator=(const ext_const_buffer &b)
         {
             ext_const_buffer ret(b);
-            std::swap(ret,*this);
+            this->swap(ret);
             return *this;
         }        
         
@@ -287,12 +321,39 @@ namespace more {
         operator=(const ext_buffer &b)
         {
             ext_const_buffer ret(b);
-            std::swap(ret,*this);
+            this->swap(ret);
             return *this;
+        }        
+        
+        // swap
+        //
+
+        void
+        swap(ext_const_buffer &x)
+        {
+            std::swap(this->_M_iovec.iov_base, x._M_iovec.iov_base);
+            std::swap(this->_M_iovec.iov_len, x._M_iovec.iov_len);
         }
+ 
     };
 
-
 } // namespace more 
+
+namespace std {
+   
+    // global swap() in std:: namespace
+
+    static inline void
+    swap(more::ext_buffer &x, more::ext_buffer &y)
+    {
+        x.swap(y);
+    }
+     
+    static inline void
+    swap(more::ext_const_buffer &x, more::ext_const_buffer &y)
+    {
+        x.swap(y);
+    }
+}
 
 #endif /* _EXT_BUFFER_HH_ */
