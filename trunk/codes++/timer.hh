@@ -66,7 +66,7 @@ namespace more { namespace time {
     };
 
     ////////////////////////////////////////////////////////////////////////
-    // itimer and itimer_thread 
+    // itimer and itimer_pulse_thread 
 
     template <int w> struct itimer_trait;
     template <> struct itimer_trait<ITIMER_REAL>
@@ -160,27 +160,27 @@ namespace more { namespace time {
 
 
     template <int WHICH, tick_type & T>
-    class itimer_thread : public posix::thread 
+    class itimer_pulse_thread : public posix::thread 
     {
 
     public:
-        itimer_thread()
+        itimer_pulse_thread()
         : _M_itimer()
         {}
 
-        itimer_thread(const struct itimerval *value, struct itimerval *oldvalue = NULL)
+        itimer_pulse_thread(const struct itimerval *value, struct itimerval *oldvalue = NULL)
         : _M_itimer(value, oldvalue)
         {}
 
-        itimer_thread(const struct timeval *value)
+        itimer_pulse_thread(const struct timeval *value)
         : _M_itimer(value)
         {}
 
-        itimer_thread(time_t sec, suseconds_t usec)
+        itimer_pulse_thread(time_t sec, suseconds_t usec)
         : _M_itimer(sec, usec)
         {}
 
-        ~itimer_thread()
+        ~itimer_pulse_thread()
         {
             this->cancel();
         }
@@ -214,8 +214,8 @@ namespace more { namespace time {
         itimer<WHICH>  _M_itimer;
 
         // non-copyable idiom
-        itimer_thread(const itimer_thread &);
-        itimer_thread & operator=(const itimer_thread &);
+        itimer_pulse_thread(const itimer_pulse_thread &);
+        itimer_pulse_thread & operator=(const itimer_pulse_thread &);
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -352,27 +352,27 @@ namespace more { namespace time {
     };
 
     template <int SIGNO, tick_type & T, clockid_t CID = CLOCK_REALTIME >
-    class rt_timer_thread : public posix::thread
+    class rt_timer_pulse_thread : public posix::thread
     {        
     public:
 
-        rt_timer_thread()
+        rt_timer_pulse_thread()
         : _M_rt_timer()
         {}
 
-        rt_timer_thread(const itimerspec *value, itimerspec *oldvalue = NULL)
+        rt_timer_pulse_thread(const itimerspec *value, itimerspec *oldvalue = NULL)
         : _M_rt_timer(value, oldvalue)
         {}
 
-        rt_timer_thread(const timespec *value)
+        rt_timer_pulse_thread(const timespec *value)
         : _M_rt_timer(value)
         {}
 
-        rt_timer_thread(time_t sec, long nsec)
+        rt_timer_pulse_thread(time_t sec, long nsec)
         : _M_rt_timer(sec,nsec)
         {}
 
-        virtual ~rt_timer_thread()
+        virtual ~rt_timer_pulse_thread()
         {
             this->cancel();
         }
@@ -402,7 +402,11 @@ namespace more { namespace time {
         }
 
     private:
-        rt_timer<CID, SIGEV_SIGNAL, SIGNO>  _M_rt_timer;
+        rt_timer<CID, SIGEV_SIGNAL, SIGNO>  _M_rt_timer;        
+        
+        // non-copyable idiom
+        rt_timer_pulse_thread(const rt_timer_pulse_thread &);
+        rt_timer_pulse_thread & operator=(const rt_timer_pulse_thread &);
     };
 
 } // namespace time

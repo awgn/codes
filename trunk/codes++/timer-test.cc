@@ -118,7 +118,7 @@ main(int argc, char *argv[])
     // 2) create the itimer thread
 
     timeval t = { 0, 10000 };
-    more::time::itimer_thread<ITIMER_REAL,    global_tick > x(&t);
+    more::time::itimer_pulse_thread<ITIMER_REAL,    global_tick > x(&t);
 
     ///////////////////
     // and start it ... 
@@ -166,8 +166,8 @@ main(int argc, char *argv[])
     {
         std::cout << "rt_timer_thread test: " << std::endl;
 
-        more::time::rt_timer_thread<SIGRT_MIN,   global_tick > rt_1(&spec); 
-        more::time::rt_timer_thread<SIGRT_MIN+1, global_tick > rt_2(&spec2); 
+        more::time::rt_timer_pulse_thread<SIGRT_MIN,   global_tick > rt_1(&spec); 
+        more::time::rt_timer_pulse_thread<SIGRT_MIN+1, global_tick > rt_2(&spec2); 
         
         rt_1.start();
         rt_2.start();
