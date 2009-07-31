@@ -25,10 +25,10 @@ public:
         sleep(1);
 
         for(int j=0;j<2;j++) {
-            this->testcancel();
+            this_thread::testcancel();
             scoped_lock<mutex> lock(global_mutex);
             for(int i=0;i<3;i++) {
-                std::cout << "    [" << std::hex << self() << "] hello\n"; 
+                std::cout << "    [" << std::hex << this_thread::get_id() << "] hello\n"; 
                 usleep(500000);
             }
         }
@@ -57,10 +57,10 @@ public:
         sleep(1);
 
         for(int j=0;j<2;j++) {
-            this->testcancel();
+            this_thread::testcancel();
             scoped_lock<mutex> lock(global_mutex);
             for(int i=0;i<3;i++) {
-                std::cout << "    [" << std::hex << self() << "] world\n"; 
+                std::cout << "    [" << std::hex << this_thread::get_id() << "] world\n"; 
                 usleep(500000);
             }
         }
@@ -84,7 +84,7 @@ public:
             scoped_lock<rw_mutex, base_lock::reader> lock(global_mutex_rw);
 
             for(int i=0;i<5;i++) {
-                std::cout << "    [" << std::hex << self() << "] reader!\n"; 
+                std::cout << "    [" << std::hex << this_thread::get_id() << "] reader!\n"; 
                 usleep(500000);
             }
         }
@@ -106,7 +106,7 @@ public:
         scoped_lock<rw_mutex, base_lock::writer> lock(global_mutex_rw);
 
         for(int i=0;i<3;i++) {
-            std::cout << "    [" << std::hex << self() << "] writer!\n"; 
+            std::cout << "    [" << std::hex << this_thread::get_id() << "] writer!\n"; 
             usleep(500000);
         }
         return NULL;
@@ -126,11 +126,11 @@ struct WaitCond : public posix::thread {
     {
         scoped_lock<mutex> lock(global_mutex);
 
-        std::cout << "    [" << std::hex << self() << "] waiting on conditon...\n";  
+        std::cout << "    [" << std::hex << this_thread::get_id() << "] waiting on conditon...\n";  
 
         global_cond.wait(lock);
 
-        std::cout << "    [" << std::hex << self() << "] signaled...\n"; 
+        std::cout << "    [" << std::hex << this_thread::get_id() << "] signaled...\n"; 
         usleep(500000);
         return NULL;
     } 
@@ -179,7 +179,7 @@ struct Restartable : public posix::thread
     void *operator()()
     {
         for(int i=0; i<5; i++) {
-            std::cout << "    [" << std::hex << self() << "] " << _M_value++ << std::endl; 
+            std::cout << "    [" << std::hex << this_thread::get_id() << "] " << _M_value++ << std::endl; 
             sleep(1);
         }
         return NULL;

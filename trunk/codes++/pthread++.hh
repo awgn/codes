@@ -246,7 +246,6 @@ namespace more { namespace posix
             }
         }
 
-
         ~mutex()
         {
             if (pthread_mutex_destroy(&_M_pm) != 0) 
@@ -392,7 +391,7 @@ namespace more { namespace posix
     class thread;
     struct global
     {
-        volatile bool         join_group_enabled;
+        volatile bool         jgroup_enabled;
         sem_t                 term_sem;
         mutex                 term_mutex;
         thread * volatile     thread_id;
@@ -410,7 +409,7 @@ namespace more { namespace posix
         global & operator=(const global &);
 
         global(int n)
-        : join_group_enabled(false), term_sem(), thread_id(NULL)
+        : jgroup_enabled(false), term_sem(), term_mutex(), thread_id(NULL)
         {
             sem_init(&term_sem,0,n);
         }
@@ -474,7 +473,7 @@ namespace more { namespace posix
             {
                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
 
-                if ( global::instance().join_group_enabled )
+                if ( global::instance().jgroup_enabled )
                     term_notify(that);
 
                 that->_M_running = thread_cancelled;
@@ -484,7 +483,7 @@ namespace more { namespace posix
                 throw;
             }
 
-            if ( global::instance().join_group_enabled )
+            if ( global::instance().jgroup_enabled )
                 term_notify(that);
 
             that->_M_running = thread_terminated;
@@ -525,7 +524,6 @@ namespace more { namespace posix
             return ret;
         }
       
-
         bool start() 
         {
             if (_M_running == thread_running)
@@ -704,33 +702,6 @@ namespace more { namespace posix
             assert(!"restart not implemented in this thread");
         }
 
-        int
-        setcancelstate(int state, int *oldstate)
-        { return ::pthread_setcancelstate(state,oldstate); }
-
-        int
-        setcanceltype(int type, int *oldtype)
-        { return ::pthread_setcanceltype(type,oldtype); }
-
-        void 
-        testcancel() 
-        { ::pthread_testcancel(); }
-
-        pthread_t self() const
-        { return ::pthread_self(); }
-
-        int 
-        psigmask(int how, const sigset_t * __restrict s, sigset_t * __restrict os)
-        { return ::pthread_sigmask(how,s,os); }
-
-        int
-        getconcurrency() const
-        { return ::pthread_getconcurrency(); }
-
-        int
-        setconcurrency(int new_level)
-        { return ::pthread_setconcurrency(new_level); }
-
         // note: to be used in conjunction with ->start_detached_in_heap(). 
         //       on threads allocated with new and running in detached state.
 
@@ -765,7 +736,7 @@ namespace more { namespace posix
 
             for(;;) {
                 
-                if (!global::instance().join_group_enabled)
+                if (!global::instance().jgroup_enabled)
                     return;
 
                 if ( global::instance().thread_id == NULL ) {
@@ -871,12 +842,12 @@ namespace more { namespace posix
             void join_all(T cw)
             {
                 global::instance().thread_id  = NULL; 
-                global::instance().join_group_enabled = true;
+                global::instance().jgroup_enabled = true;
 
                 for(;;) {                    
 
                     if (this->running()==0) {
-                        global::instance().join_group_enabled = false;
+                        global::instance().jgroup_enabled = false;
                         return;
                     }
 
@@ -899,6 +870,100 @@ namespace more { namespace posix
         private:
             std::set<thread *> _M_group;
     };
+
+    namespace this_thread 
+    {
+        static inline pthread_t
+        get_id() 
+        { 
+            return pthread_self(); 
+        }
+
+        static inline pthread_t
+        self()
+        { 
+            return pthread_self(); 
+        }
+
+        static inline int
+        setcancelstate(int state, int *oldstate)
+        { 
+            return ::pthread_setcancelstate(state,oldstate); 
+        }
+
+        static inline int
+        setcanceltype(int type, int *oldtype)
+        { 
+            return ::pthread_setcanceltype(type,oldtype); 
+        }
+
+        static inline void 
+        testcancel() 
+        { 
+            ::pthread_testcancel(); 
+        }
+
+        static inline int 
+        psigmask(int how, const sigset_t * __restrict s, sigset_t * __restrict os)
+        { 
+            return ::pthread_sigmask(how,s,os); 
+        }
+
+        static inline int
+        getconcurrency() 
+        { 
+            return ::pthread_getconcurrency(); 
+        }
+
+        static inline int
+        setconcurrency(int new_level)
+        { 
+            return ::pthread_setconcurrency(new_level); 
+        }
+
+        static inline int
+        key_create(pthread_key_t *key, void (*destructor)(void*))
+        {
+            return ::pthread_key_create(key, destructor);
+        }
+
+        static inline int
+        key_delete(pthread_key_t key)
+        {
+            return ::pthread_key_delete(key);
+        }
+
+        static inline void *
+        getspecific(pthread_key_t key) 
+        {
+            return ::pthread_getspecific(key);
+        }
+       
+        static inline int
+        once(pthread_once_t *once_control, void (*init_routine)(void))
+        {
+            return ::pthread_once(once_control, init_routine);
+        }
+
+        static inline int 
+        setspecific(pthread_key_t key, const void *value)
+        { 
+            return ::pthread_setspecific(key, value);
+        }
+
+        static inline bool
+        equal(pthread_t t1, pthread_t t2 = this_thread::get_id() )
+        {
+            return ::pthread_equal(t1, t2);
+        }
+
+    }
+
+    static inline bool
+    operator==(const thread &t1, const thread &t2)
+    {
+        return ::pthread_equal(t1.get_id(), t2.get_id());
+    }
 
 } // namespace posix
 } // namespace more
