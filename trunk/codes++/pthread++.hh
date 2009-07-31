@@ -388,41 +388,39 @@ namespace more { namespace posix
 
     ////////////////////////////// thread  //////////////////////////////
 
-    class thread;
-    struct global
-    {
-        volatile bool         jgroup_enabled;
-        sem_t                 term_sem;
-        mutex                 term_mutex;
-        thread * volatile     thread_id;
-
-        static global &
-        instance(int n = 0)
-        {
-            static global one(n);
-            return one;
-        }
-
-    private:
-
-        global(const global &);
-        global & operator=(const global &);
-
-        global(int n)
-        : jgroup_enabled(false), term_sem(), term_mutex(), thread_id(NULL)
-        {
-            sem_init(&term_sem,0,n);
-        }
-
-        ~global()
-        {
-            sem_destroy(&term_sem);
-        }
-    };
-
-
     class thread 
     {
+        struct global
+        {
+            volatile bool         jgroup_enabled;
+            sem_t                 term_sem;
+            mutex                 term_mutex;
+            thread * volatile     thread_id;
+
+            static global &
+            instance(int n = 0)
+            {
+                static global one(n);
+                return one;
+            }
+
+        private:
+
+            global(const global &);
+            global & operator=(const global &);
+
+            global(int n)
+            : jgroup_enabled(false), term_sem(), term_mutex(), thread_id(NULL)
+            {
+                sem_init(&term_sem,0,n);
+            }
+
+            ~global()
+            {
+                sem_destroy(&term_sem);
+            }
+        };
+
         pthread_t               _M_thread;
         shared_ptr<thread_attr> _M_attr;
 
@@ -770,7 +768,6 @@ namespace more { namespace posix
     class thread_group 
     {
         public:
-
             typedef std::set<thread *>::iterator                iterator;
             typedef std::set<thread *>::const_iterator          const_iterator;
             typedef std::set<thread *>::reverse_iterator        reverse_iterator;
@@ -841,24 +838,24 @@ namespace more { namespace posix
             template <typename T>
             void join_all(T cw)
             {
-                global::instance().thread_id  = NULL; 
-                global::instance().jgroup_enabled = true;
+                thread::global::instance().thread_id  = NULL; 
+                thread::global::instance().jgroup_enabled = true;
 
                 for(;;) {                    
 
                     if (this->running()==0) {
-                        global::instance().jgroup_enabled = false;
+                        thread::global::instance().jgroup_enabled = false;
                         return;
                     }
 
-                    if (global::instance().thread_id) {
+                    if (thread::global::instance().thread_id) {
                         
-                        if ( _M_group.find(const_cast<thread *>(global::instance().thread_id)) != _M_group.end()) {
+                        if ( _M_group.find(const_cast<thread *>(thread::global::instance().thread_id)) != _M_group.end()) {
 
-                            cw(global::instance().thread_id);
+                            cw(thread::global::instance().thread_id);
 
-                            global::instance().thread_id  = NULL;
-                            sem_post(&global::instance().term_sem);
+                            thread::global::instance().thread_id  = NULL;
+                            sem_post(&thread::global::instance().term_sem);
 
                         }
                         continue;
