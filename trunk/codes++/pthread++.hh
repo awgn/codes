@@ -904,7 +904,7 @@ namespace more { namespace posix
         }
 
         static inline int 
-        psigmask(int how, const sigset_t * __restrict s, sigset_t * __restrict os)
+        sig_mask(int how, const sigset_t * __restrict s, sigset_t * __restrict os)
         { 
             return ::pthread_sigmask(how,s,os); 
         }
