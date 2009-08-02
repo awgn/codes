@@ -71,7 +71,7 @@ public:
     void *operator()()
     {
         {
-            scoped_lock<rw_mutex, base_lock::reader> lock(global_mutex_rw);
+            scoped_lock<read_mutex> lock(global_mutex_rw);
 
             for(int i=0;i<5;i++) {
                 std::cout << "    [" << std::hex << this_thread::get_id() << "] reader!\n"; 
@@ -88,7 +88,7 @@ class Writer : public posix::thread {
 public:
     void *operator()()
     {
-        scoped_lock<rw_mutex, base_lock::writer> lock(global_mutex_rw);
+        scoped_lock<write_mutex> lock(global_mutex_rw);
 
         for(int i=0;i<3;i++) {
             std::cout << "    [" << std::hex << this_thread::get_id() << "] writer!\n"; 

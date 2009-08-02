@@ -28,12 +28,22 @@
 #include <err.h>
 
 namespace more { namespace posix 
-{
+{    
+    using namespace std::tr1::placeholders;
+    using std::tr1::shared_ptr;
+    using std::tr1::mem_fn;
+    using std::tr1::bind;
+
     namespace  
     {
         template <int n>
         struct int2type {
             enum { value = n };
+        };
+
+        template <typename T>
+        struct type2type {
+            typedef T type;
         };
 
         template <bool N> struct static_assert;
@@ -44,10 +54,19 @@ namespace more { namespace posix
         };
     }
 
-    using namespace std::tr1::placeholders;
-    using std::tr1::shared_ptr;
-    using std::tr1::mem_fn;
-    using std::tr1::bind;
+    class noncopyable
+    {
+    protected:
+        noncopyable()
+        {}
+
+        ~noncopyable()
+        {}
+
+    private:
+        noncopyable(const noncopyable &);
+        const noncopyable & operator=(const noncopyable &);
+    };
 
     class thread_attr
     {
@@ -121,114 +140,56 @@ namespace more { namespace posix
         pthread_attr_t  _M_value;
     };
 
-    ////////////////////////////// base_lock  //////////////////////////////
+    ////////////////////////////// base_mutex  //////////////////////////////
 
     template <int n>
-    class __base_lock
-    {
+    class __base_mutex : private noncopyable
+    {    
     public:
-        enum { simple = 0, reader = 1, writer = 2 };
 
-        static __thread int _M_lock_cnt;
-
-        __base_lock() 
+        __base_mutex()
+        : _M_cancelstate_old()
         {}
 
-        ~__base_lock() 
+        ~__base_mutex() 
         {}
 
     private:
-        __base_lock(const __base_lock&);                    // disable copy constructor
-        __base_lock& operator=(const __base_lock&);         // disable operator= 
-        void* operator new(std::size_t);                    // disable heap allocation
-        void* operator new[](std::size_t);                  // disable heap allocation
-        void operator delete(void*);                        // disable delete operation
-        void operator delete[](void*);                      // disable delete operation
-        __base_lock* operator&();                           // disable address taking
-    };
+        int _M_cancelstate_old;
 
-    template <int n>
-    __thread int __base_lock<n>::_M_lock_cnt = 0;
+        static __thread int _S_lock_cnt;
 
-    typedef __base_lock<0> base_lock;
-
-    ////////////////////////////// scoped_lock  //////////////////////////////
-
-    template <class M, int Type = base_lock::simple >
-    class scoped_lock : protected base_lock 
-    {
-        friend class cond;
-
-    public:
-        typedef M mutex_type;
-
-        scoped_lock(mutex_type &m) 
-        : _M_cs_old(0),
-          _M_mutex(m)
-        {   
-            static_assert<  Type == base_lock::simple || 
-                            Type == base_lock::reader || 
-                            Type == base_lock::writer> lock_type_unknown __attribute__((unused));
-
-            this->use_incr();
-            if (!this->lock()) {
-                this->use_decr();
-                throw std::runtime_error("scoped_lock");
-            }
-        }
-
-        ~scoped_lock()
-        {
-            if (!this->unlock())
-                std::clog << __PRETTY_FUNCTION__  << ": " << strerror(errno) << std::endl;  
-            this->use_decr();
-        }
-
-    private:
+    protected:
 
         void use_incr()
-        {  
-            if ( !base_lock::_M_lock_cnt++ ) {
-                // std::cout << __PRETTY_FUNCTION__ << ": set cancelstate to PTHREAD_CANCEL_DISABLE" << std::endl; 
-                ::pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&_M_cs_old);
+        {
+            if ( !_S_lock_cnt++ ) {
+                ::pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&_M_cancelstate_old);
             }
         }
 
         void use_decr()
         {
-            if (!--base_lock::_M_lock_cnt) {
-                // std::cout << __PRETTY_FUNCTION__ << ": restore calcelstate" << std::endl; 
-                ::pthread_setcancelstate(_M_cs_old,NULL);
+            if (!--_S_lock_cnt) {
+                ::pthread_setcancelstate(_M_cancelstate_old,NULL);
             }
         }
 
-        bool lock()
-        { return this->lock(int2type<Type>()); }
-
-        bool unlock()
-        { return _M_mutex.unlock(); }
-
-        bool lock(int2type<base_lock::simple>)
-        { return _M_mutex.lock(); }
-
-        bool lock(int2type<base_lock::reader>)
-        { return _M_mutex.rdlock(); }
-
-        bool lock(int2type<base_lock::writer>)
-        { return _M_mutex.wrlock(); }
-
-        mutex_type &
-        get_mutex()
-        { return _M_mutex; }
-
-        int _M_cs_old;
-
-        mutex_type & _M_mutex;
+        static int
+        use_count()
+        { 
+            return _S_lock_cnt;
+        }
     };
+
+    template <int n>
+    __thread int __base_mutex<n>::_S_lock_cnt = 0;
+
+    typedef __base_mutex<0> base_mutex;
 
     ////////////////////////////// mutex //////////////////////////////
 
-    class mutex
+    class mutex : protected base_mutex
     {
         friend class cond;
 
@@ -241,13 +202,19 @@ namespace more { namespace posix
             }
         }
 
-        /* type can be either: PTHREAD_MUTEX_DEFAULT, PTHREAD_MUTEX_NORMAL, 
-                               PTHREAD_MUTEX_ERRORCHECK or PTHREAD_MUTEX_RECURSIVE */
-
         explicit mutex(int type) 
         : _M_pm()
-        {
+        {        
+            /* type can be either: PTHREAD_MUTEX_DEFAULT, PTHREAD_MUTEX_NORMAL, 
+                               PTHREAD_MUTEX_ERRORCHECK or PTHREAD_MUTEX_RECURSIVE */
+
+            assert ( type == PTHREAD_MUTEX_DEFAULT ||
+                     type == PTHREAD_MUTEX_NORMAL  ||
+                     type == PTHREAD_MUTEX_ERRORCHECK ||
+                     type == PTHREAD_MUTEX_RECURSIVE);
+
             pthread_mutexattr_t attr; 
+
             if (::pthread_mutexattr_init(&attr) != 0 ) {
                 throw std::runtime_error("pthread_mutexattr_init");
             }
@@ -264,14 +231,17 @@ namespace more { namespace posix
 
         ~mutex()
         {
-            if (::pthread_mutex_destroy(&_M_pm) != 0) 
+            if (::pthread_mutex_destroy(&_M_pm) != 0) { 
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy: " << strerror(errno) << std::endl;  
+            }
         }
 
         bool lock()
-        { 
+        {
+            this->use_incr(); 
             if (::pthread_mutex_lock(&_M_pm) !=0) { 
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_lock: " << strerror(errno) << std::endl;
+                this->use_decr();
                 return false;
             }
             return true; 
@@ -283,6 +253,7 @@ namespace more { namespace posix
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_unlock: " << strerror(errno) << std::endl;
                 return false;
             }
+            this->use_decr();
             return true; 
         }
 
@@ -290,70 +261,9 @@ namespace more { namespace posix
         pthread_mutex_t _M_pm;
     };
 
-    ////////////////////////////// condition  //////////////////////////////
-
-    class cond
-    { 
-    public:
-        cond(pthread_condattr_t *attr = NULL)
-        : _M_cond()
-        {
-            if (::pthread_cond_init(&_M_cond, attr) != 0) {
-                throw std::runtime_error("pthread_cond_init");
-            }
-        }
-
-        void signal()
-        { ::pthread_cond_signal(&_M_cond); }
-
-        void broadcast()
-        {
-            ::pthread_cond_broadcast(&_M_cond); 
-        }
-
-        template <typename M, int Type>
-        int wait(scoped_lock<M,Type> &sl) 
-        {
-            sl.use_decr();
-            int r = ::pthread_cond_wait(&_M_cond, & sl.get_mutex()._M_pm);
-            sl.use_incr();
-            if (r != 0) {
-                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_wait: " << strerror(errno) << std::endl;
-            }
-            return r; 
-        }
-
-        template <typename M, int Type>
-        int timedwait(scoped_lock<M, Type> &sl, const struct timespec *abstime) 
-        {
-            sl.use_decr();
-            int r = ::pthread_cond_timedwait(&_M_cond, &sl.get_mutex()._M_pm, abstime);
-            sl.use_incr();
-            if (r != 0) {
-                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_timedwait: " << strerror(errno) << std::endl;
-            }
-            return r;
-        }
-
-        ~cond()
-        { 
-            if (::pthread_cond_destroy(&_M_cond) != 0) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy: " << strerror(errno) << std::endl;
-            }
-        }
-
-    private:
-        pthread_cond_t  _M_cond;
-
-        // non-copyable idiom
-        cond(const cond &);
-        cond & operator=(const cond &);
-
-    };
-
     ////////////////////////////// reader/writer mutex  //////////////////////////////
 
-    class rw_mutex 
+    class rw_mutex : protected base_mutex 
     {
     public:
         explicit rw_mutex(pthread_rwlockattr_t *attr = NULL) 
@@ -373,8 +283,10 @@ namespace more { namespace posix
 
         bool rdlock()
         {
+            this->use_incr(); 
             if (::pthread_rwlock_rdlock(&_M_pm) != 0 ) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_rdlock: " << strerror(errno) << std::endl;
+                this->use_decr();
                 return false;
             }
             return true; 
@@ -382,8 +294,10 @@ namespace more { namespace posix
 
         bool wrlock()
         { 
+            this->use_incr(); 
             if (::pthread_rwlock_wrlock(&_M_pm) != 0 ) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_wrlock: " << strerror(errno) << std::endl;
+                this->use_decr();
                 return false;
             }
             return true; 
@@ -395,11 +309,145 @@ namespace more { namespace posix
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_wr_ulock: " << strerror(errno) << std::endl;
                 return false;
             }
+            this->use_decr();
             return true; 
         }
 
     private:
         pthread_rwlock_t _M_pm;
+    };
+
+    struct read_mutex : public rw_mutex 
+    {
+        operator rw_mutex &()
+        { return *this; }
+    };
+
+    struct write_mutex : public rw_mutex 
+    {
+        operator rw_mutex &()
+        { return *this; }
+    };
+
+    ////////////////////////////// scoped_lock  //////////////////////////////
+
+    template <class M>
+    class scoped_lock : private noncopyable 
+    {
+        friend class cond;
+
+    public:
+
+        typedef M mutex_type;
+
+        template <typename T>
+        scoped_lock(T &m) 
+        : _M_mutex( static_cast<mutex_type &>(m) )
+        {   
+            static_assert<  std::tr1::is_same<T, M>::value || 
+                            std::tr1::is_base_of<T, M>::value > 
+                            lock_type_unknown __attribute__((unused));
+
+            if (!this->lock()) { 
+                throw std::runtime_error("scoped_lock<>");
+            }
+        }
+
+        ~scoped_lock()
+        {
+            if (!this->unlock())
+                std::clog << __PRETTY_FUNCTION__  << ": " << strerror(errno) << std::endl;  
+        }
+
+    private:
+
+        bool lock()
+        { 
+            return this->lock( type2type<M>() ); 
+        }
+
+        bool unlock()
+        { 
+            return _M_mutex.unlock(); 
+        }
+
+        bool lock( type2type<mutex> )
+        { 
+            return _M_mutex.lock(); 
+        }
+
+        bool lock( type2type<read_mutex> )
+        { 
+            return _M_mutex.rdlock(); 
+        }
+
+        bool lock( type2type<write_mutex> )
+        { 
+            return _M_mutex.wrlock(); 
+        }
+
+        mutex_type &
+        get_mutex()
+        { return _M_mutex; }
+
+        mutex_type & _M_mutex;
+    };
+
+    ////////////////////////////// condition  //////////////////////////////
+
+    class cond : private noncopyable
+    { 
+    public:
+        cond(pthread_condattr_t *attr = NULL)
+        : _M_cond()
+        {
+            if (::pthread_cond_init(&_M_cond, attr) != 0) {
+                throw std::runtime_error("pthread_cond_init");
+            }
+        }
+
+        void signal()
+        { ::pthread_cond_signal(&_M_cond); }
+
+        void broadcast()
+        {
+            ::pthread_cond_broadcast(&_M_cond); 
+        }
+
+        template <typename M>
+        int wait(scoped_lock<M> &sl) 
+        {
+            sl.get_mutex().use_decr();
+            int r = ::pthread_cond_wait(&_M_cond, & sl.get_mutex()._M_pm);
+            sl.get_mutex().use_incr();
+            if (r != 0) {
+                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_wait: " << strerror(errno) << std::endl;
+            }
+            return r; 
+        }
+
+        template <typename M>
+        int timedwait(scoped_lock<M> &sl, const struct timespec *abstime) 
+        {
+            sl.get_mutex().use_decr();
+            int r = ::pthread_cond_timedwait(&_M_cond, &sl.get_mutex()._M_pm, abstime);
+            sl.get_mutex().use_incr();
+            if (r != 0) {
+                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_timedwait: " << strerror(errno) << std::endl;
+            }
+            return r;
+        }
+
+        ~cond()
+        { 
+            if (::pthread_cond_destroy(&_M_cond) != 0) {
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy: " << strerror(errno) << std::endl;
+            }
+        }
+
+    private:
+        pthread_cond_t  _M_cond;
+
     };
 
     ////////////////////////////// thread  //////////////////////////////
@@ -731,7 +779,7 @@ namespace more { namespace posix
 
         virtual void *operator()() = 0;        
  
-        virtual void concrete_thread_impl() = 0;    
+        virtual void concrete_thread_impl() = 0;  // to enforce the concrete_thread<> usage class  
 
         virtual void restart_impl()
         {
