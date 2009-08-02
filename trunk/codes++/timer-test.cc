@@ -118,7 +118,7 @@ main(int argc, char *argv[])
     // 2) create the itimer thread
 
     timeval t = { 0, 10000 };
-    more::time::itimer_pulse_thread<ITIMER_REAL,    global_tick > x(&t);
+    concrete_thread< more::time::itimer_pulse_thread<ITIMER_REAL,    global_tick > > x(&t);
 
     ///////////////////
     // and start it ... 
@@ -127,7 +127,7 @@ main(int argc, char *argv[])
     //////////////////////
     // 3) create threads
 
-    more::posix::thread * p = new Thread_1<global_tick>;
+    more::posix::thread * p = new concrete_thread< Thread_1<global_tick> >;
     p->start(); 
     p->join();
 
@@ -166,14 +166,14 @@ main(int argc, char *argv[])
     {
         std::cout << "rt_timer_thread test: " << std::endl;
 
-        more::time::rt_timer_pulse_thread<SIGRT_MIN,   global_tick > rt_1(&spec); 
-        more::time::rt_timer_pulse_thread<SIGRT_MIN+1, global_tick > rt_2(&spec2); 
+        concrete_thread< more::time::rt_timer_pulse_thread<SIGRT_MIN,   global_tick > > rt_1(&spec); 
+        concrete_thread< more::time::rt_timer_pulse_thread<SIGRT_MIN+1, global_tick > > rt_2(&spec2); 
         
         rt_1.start();
         rt_2.start();
 
-        more::posix::thread * p = new Thread_2<global_tick>;
-        more::posix::thread * q = new Thread_3<global_tick>;
+        more::posix::thread * p = new concrete_thread< Thread_2<global_tick> >;
+        more::posix::thread * q = new concrete_thread< Thread_3<global_tick> >;
 
         p->start(); 
         q->start(); 

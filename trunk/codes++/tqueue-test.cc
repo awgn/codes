@@ -71,8 +71,8 @@ struct thread_pop : public more::posix::thread
 int
 main(int, char *[])
 {
-    thread_push producer;
-    thread_pop  consumer;
+    more::posix::concrete_thread<thread_push> producer;
+    more::posix::concrete_thread<thread_pop > consumer;
 
     producer.start();
     consumer.start();
