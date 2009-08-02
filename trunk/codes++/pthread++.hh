@@ -404,6 +404,48 @@ namespace more { namespace posix
 
     ////////////////////////////// thread  //////////////////////////////
 
+    template <typename T>
+    class concrete_thread : public T
+    {
+        void concrete_thread_impl()
+        {}
+
+    public:
+        concrete_thread()
+        {}
+
+        template <typename T1>
+        concrete_thread(T1 t1)
+        : T(t1)
+        {}
+
+        template <typename T1, typename T2>
+        concrete_thread(T1 t1, T2 t2)
+        : T(t1,t2)
+        {}
+
+        template <typename T1, typename T2, typename T3>
+        concrete_thread(T1 t1, T2 t2, T3 t3)
+        : T(t1,t2,t3)
+        {}
+
+        template <typename T1, typename T2, typename T3, typename T4>
+        concrete_thread(T1 t1, T2 t2, T3 t3, T4 t4)
+        : T(t1,t2,t3,t4)
+        {}
+
+        template <typename T1, typename T2, typename T3, typename T4, typename T5>
+        concrete_thread(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5)
+        : T(t1,t2,t3,t4,t5)
+        {}
+
+        ~concrete_thread()
+        {
+            this->cancel();
+        }
+    };
+
+
     class thread 
     {
         struct global
@@ -445,6 +487,7 @@ namespace more { namespace posix
                thread_running,
                thread_cancelled,
                thread_terminated
+
         } volatile _M_running;
 
         volatile bool   _M_joinable;
@@ -462,9 +505,8 @@ namespace more { namespace posix
 
         virtual ~thread() 
         {
-            assert(!_M_thread || 
-                   _M_running != thread_running || 
-                  !"posix::thread deleted while the thread ruotine is running [ probably this->cancel() call missing in the thread descructor ]!" );
+            assert(!_M_thread || _M_running != thread_running || 
+                  !"posix::thread deleted while the thread_ruotine is running!" );
         }        
       
         template <bool delete_that> 
@@ -490,32 +532,28 @@ namespace more { namespace posix
             {
                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
 
-                if ( !delete_that ) {
-                    if ( global::instance().jgroup_enabled )
-                        term_notify(that);
+                if ( global::instance().jgroup_enabled )
+                    term_notify(that);
 
-                    that->_M_running  = thread_cancelled;
-                    that->_M_joinable = false;
-                    that->_M_thread   = static_cast<pthread_t>(0);
-           
-                } else {
-                    delete that;
-                }
+                that->_M_running  = thread_cancelled;
+                that->_M_joinable = false;
+                that->_M_thread   = static_cast<pthread_t>(0);
+
+                if (delete_that)
+                    delete that; 
 
                 throw;
             }
 
-            if ( !delete_that) {
-                if ( global::instance().jgroup_enabled )
-                    term_notify(that);
+            if ( global::instance().jgroup_enabled )
+                term_notify(that);
 
-                that->_M_running  = thread_terminated;
-                that->_M_joinable = false;
-                that->_M_thread   = static_cast<pthread_t>(0);
+            that->_M_running  = thread_terminated;
+            that->_M_joinable = false;
+            that->_M_thread   = static_cast<pthread_t>(0);
 
-            } else {
+            if (delete_that)
                 delete that;
-            }
 
             return ret;
         }
@@ -535,45 +573,41 @@ namespace more { namespace posix
             return true;
         }
 
-        // note: to be used in conjunction with ->stop_and_delete_this(). 
-        //       the thread function (operator()) is responsible to delete the object 
-        //       it refers to by means of stop_and_delete_this() method.
-
         template <typename T>
         static bool start_detached_in_heap() 
         {
-            T * that = new T;
+            T * that = new concrete_thread<T>;
             return create_detached_in_heap(that);
         }
 
         template <typename T, typename P1>
         static bool start_detached_in_heap(P1 p1) 
         {
-            T * that = new T(p1);
+            T * that = new concrete_thread<T>(p1);
             return create_detached_in_heap(that);
         }
         template <typename T, typename P1, typename P2>
         static bool start_detached_in_heap(P1 p1, P2 p2) 
         {
-            T * that = new T(p1,p2);
+            T * that = new concrete_thread<T>(p1,p2);
             return create_detached_in_heap(that);
         }
         template <typename T, typename P1, typename P2, typename P3>
         static bool start_detached_in_heap(P1 p1, P2 p2, P3 p3) 
         {
-            T * that = new T(p1,p2,p3);
+            T * that = new concrete_thread<T>(p1,p2,p3);
             return create_detached_in_heap(that);
         }
         template <typename T, typename P1, typename P2, typename P3, typename P4>
         static bool start_detached_in_heap(P1 p1, P2 p2, P3 p3, P4 p4) 
         {
-            T * that = new T(p1,p2,p3,p4);
+            T * that = new concrete_thread<T>(p1,p2,p3,p4);
             return create_detached_in_heap(that);
         }
         template <typename T, typename P1, typename P2, typename P3, typename P4, typename P5>
         static bool start_detached_in_heap(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) 
         {
-            T * that = new T(p1,p2,p3,p4,p5);
+            T * that = new concrete_thread<T>(p1,p2,p3,p4,p5);
             return create_detached_in_heap(that);
         }
 
@@ -626,7 +660,7 @@ namespace more { namespace posix
             return true;
         }
 
-#define METHOD_PRECOND(p)\
+#define THREAD_METHOD_PRECONDITION(p)\
             if (!p || _M_running != thread_running) {  \
                 return ESRCH;  \
             }
@@ -635,7 +669,7 @@ namespace more { namespace posix
         join(void **thread_return=NULL) const 
         {
             pthread_t p = this->get_id();
-            METHOD_PRECOND(p);
+            THREAD_METHOD_PRECONDITION(p);
             return ::pthread_join(p, thread_return); 
         }
 
@@ -643,7 +677,7 @@ namespace more { namespace posix
         detach()  
         { 
             pthread_t p = this->get_id();
-            METHOD_PRECOND(p);
+            THREAD_METHOD_PRECONDITION(p);
             return ::pthread_detach(p); 
         }
 
@@ -651,7 +685,7 @@ namespace more { namespace posix
         setschedparam(int policy, const struct sched_param *param)  
         { 
             pthread_t p = this->get_id();
-            METHOD_PRECOND(p);
+            THREAD_METHOD_PRECONDITION(p);
             return ::pthread_setschedparam(p, policy, param); 
         }
 
@@ -659,7 +693,7 @@ namespace more { namespace posix
         getschedparam(int *policy, struct sched_param *param) const 
         { 
             pthread_t p = this->get_id();
-            METHOD_PRECOND(p);
+            THREAD_METHOD_PRECONDITION(p);
             return ::pthread_getschedparam(p, policy, param); 
         }
 
@@ -667,7 +701,7 @@ namespace more { namespace posix
         setschedprio(int prio)
         { 
             pthread_t p = this->get_id();
-            METHOD_PRECOND(p);
+            THREAD_METHOD_PRECONDITION(p);
             return ::pthread_setschedprio(p,prio); 
         }
 
@@ -675,7 +709,7 @@ namespace more { namespace posix
         kill(int signo)
         { 
             pthread_t p = this->get_id();
-            METHOD_PRECOND(p);
+            THREAD_METHOD_PRECONDITION(p);
             return ::pthread_kill(p, signo); 
         }
 
@@ -699,20 +733,14 @@ namespace more { namespace posix
             assert(!"restart not implemented in this thread");
         }
 
-        // note: to be used in conjunction with ->start_detached_in_heap(). 
-        //       on threads allocated with new and running in detached state.
-
-        void 
-        stop_and_delete_this()
-        {   
-            _M_running = thread_terminated;
-            _M_joinable = false; 
-            delete this; 
-        }    
+        ///////////////////////////////////////////
+        // thread main function: to be implemented
 
         virtual void *operator()() = 0;        
         
     private:
+
+        virtual void concrete_thread_impl() = 0;    
 
         static bool create_detached_in_heap(thread *that)
         {
@@ -970,5 +998,7 @@ namespace more { namespace posix
 
 } // namespace posix
 } // namespace more
+
+#undef THREAD_METHOD_PRECONDITION
 
 #endif /* PTHREADPP_HH */

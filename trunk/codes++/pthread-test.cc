@@ -43,10 +43,6 @@ public:
     : posix::thread(a)
     {}
 
-    ~Hello()
-    {
-        this->cancel();
-    }
 };
 
 class World : public posix::thread {
@@ -66,12 +62,6 @@ public:
         }
         return NULL;
     }
-
-    ~World()
-    {
-        this->cancel();
-    }
-
 };
 
 
@@ -91,11 +81,6 @@ public:
 
         return NULL;
     }
-
-    ~Reader()
-    {
-        this->cancel();
-    }
 };
 
 class Writer : public posix::thread {
@@ -110,11 +95,6 @@ public:
             usleep(500000);
         }
         return NULL;
-    }
-
-    ~Writer()
-    {
-        this->cancel();
     }
 
 };
@@ -134,33 +114,26 @@ struct WaitCond : public posix::thread {
         usleep(500000);
         return NULL;
     } 
-
-    ~WaitCond()
-    {
-        this->cancel();
-    }
 };
+
 
 struct Detached : public posix::thread
 {
+    void *operator()()
+    {
+        sleep(1);
+        return NULL;
+    }
+
     Detached()
     {
-        std::cout << "    " << __PRETTY_FUNCTION__ << std::endl;
+        std::cout << "    [" << std::hex << this_thread::get_id() << "] started...\n"; 
     }
 
     ~Detached()
     {
-        std::cout << "    " << __PRETTY_FUNCTION__ << std::endl;
-        this->cancel();
+        std::cout << "    [" << std::hex << this_thread::get_id() << "] finished!\n"; 
     }
-
-    void *operator()()
-    {
-        sleep(1);
-        this->stop_and_delete_this();
-        return NULL;
-    }
-
 };
 
 struct Restartable : public posix::thread
@@ -173,7 +146,7 @@ struct Restartable : public posix::thread
 
     void restart_impl()
     {
-        new (this) Restartable(_M_init);
+        new (this) concrete_thread<Restartable>(_M_init);
     }
 
     void *operator()()
@@ -194,7 +167,7 @@ struct join_functor
 {
     void operator()(more::posix::thread *t) const
     {
-        std::cout << __PRETTY_FUNCTION__ << " thread@ " << t << " finished! [" << t->get_id() << "]" << std::endl;
+        std::cout << __PRETTY_FUNCTION__ << " thread@ " << t << " finished! [ thread_id = " << t->get_id() << "]" << std::endl;
     }
 };
 
@@ -207,7 +180,7 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*]" RED " scoped thread..." RESET "\n";
     {
-        Hello test;
+        concrete_thread<Hello> test;
         test.start();
         sleep(2);
     } // terminate as soon as possible
@@ -217,7 +190,7 @@ int main(int argc, char *argv[])
         std::tr1::shared_ptr<posix::thread_attr> a(new posix::thread_attr);
         a->setstacksize(1000000);
 
-        Hello test(a);
+        concrete_thread<Hello> test(a);
         test.start();
         sleep(2);
     } // terminate as soon as possible
@@ -225,8 +198,8 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*] "RED"basic mutex..."RESET"\n";
     {
-        Hello *hello = new Hello;
-        World *world = new World;
+        Hello *hello = new concrete_thread<Hello>;
+        World *world = new concrete_thread<World>;
 
         hello->start();
         world->start();
@@ -247,8 +220,8 @@ int main(int argc, char *argv[])
     std::cout << "\n[*] " RED "reader mutex..." RESET "\n";
     {
 
-        Reader *one = new Reader;
-        Reader *two = new Reader;
+        Reader *one = new concrete_thread<Reader>;
+        Reader *two = new concrete_thread<Reader>;
 
         one->start();
         two->start();
@@ -262,8 +235,8 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*] "RED"reader/writer mutex..."RESET"\n";
     {
-        Reader *one = new Reader;
-        Writer *two = new Writer;
+        Reader *one = new concrete_thread<Reader>;
+        Writer *two = new concrete_thread<Writer>;
 
         one->start();
         two->start();
@@ -277,7 +250,7 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*] "RED"stopping a thread in a critical section..."RESET"\n";
     {
-        Reader *one = new Reader;
+        Reader *one = new concrete_thread<Reader>;
         one->start();
         sleep(1);
         delete one;
@@ -285,7 +258,7 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*] "RED"stopping a detached thread in a critical section..."RESET"\n";
     {
-        Reader *one = new Reader;
+        Reader *one = new concrete_thread<Reader>;
         one->start();
         one->detach();
         delete one;
@@ -294,7 +267,7 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*] "RED"wait cond thread..."RESET"\n";
     {   
-        WaitCond * wc = new WaitCond;
+        WaitCond * wc = new concrete_thread<WaitCond>;
         wc->start();
 
         std::cout << "    -> waiting for the thread to wait for conditions to be signaled...\n";
@@ -317,7 +290,7 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*] "RED "terminate on cond thread..."RESET"\n";
     {   
-        WaitCond * wc = new WaitCond;
+        WaitCond * wc = new concrete_thread<WaitCond>;
         wc->start();
 
         std::cout << "    -> waiting for the thread to wait for conditions to be signaled...\n";
@@ -335,7 +308,7 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*] "RED "restartable thread..."RESET"\n";
     {
-        posix::thread * t = new Restartable(1);
+        posix::thread * t = new concrete_thread<Restartable>(1);
         t->start();
         t->join();
         std::cout << "\n[*] "RED "-----"RESET"\n";
@@ -347,11 +320,11 @@ int main(int argc, char *argv[])
     {   
         thread_group grp;
 
-        thread *t1  = new Reader;
-        thread *t2  = new Reader;
-        thread *t3  = new Reader;
-        thread *t4  = new Reader;
-        thread *t5  = new Reader;
+        thread *t1  = new concrete_thread<Reader>;
+        thread *t2  = new concrete_thread<Reader>;
+        thread *t3  = new concrete_thread<Reader>;
+        thread *t4  = new concrete_thread<Reader>;
+        thread *t5  = new concrete_thread<Reader>;
 
         grp.add(t1);
         grp.add(t2);
