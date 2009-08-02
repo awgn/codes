@@ -724,23 +724,19 @@ namespace more { namespace posix
         bool joinable() const
         { return _M_joinable; }
 
-
-    protected:
-        // meaningful only in the thread context -- operator() 
-        
-        virtual void restart_impl()
-        {
-            assert(!"restart not implemented in this thread");
-        }
+    private:
 
         ///////////////////////////////////////////
         // thread main function: to be implemented
 
         virtual void *operator()() = 0;        
-        
-    private:
-
+ 
         virtual void concrete_thread_impl() = 0;    
+
+        virtual void restart_impl()
+        {
+            assert(!"restart not implemented in this thread");
+        }
 
         static bool create_detached_in_heap(thread *that)
         {
