@@ -25,7 +25,6 @@
 #include <semaphore.h>
 #include <signal.h>
 #include <errno.h>
-#include <err.h>
 
 namespace more { namespace posix 
 {    
@@ -231,16 +230,16 @@ namespace more { namespace posix
 
         ~mutex()
         {
-            if (::pthread_mutex_destroy(&_M_pm) != 0) { 
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy: " << strerror(errno) << std::endl;  
+            if (int err = ::pthread_mutex_destroy(&_M_pm)) { 
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy: " << strerror(err) << std::endl;  
             }
         }
 
         bool lock()
         {
             this->use_incr(); 
-            if (::pthread_mutex_lock(&_M_pm) !=0) { 
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_lock: " << strerror(errno) << std::endl;
+            if (int err = ::pthread_mutex_lock(&_M_pm)) { 
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_lock: " << strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -249,8 +248,8 @@ namespace more { namespace posix
 
         bool unlock()
         { 
-            if ( ::pthread_mutex_unlock(&_M_pm) != 0) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_unlock: " << strerror(errno) << std::endl;
+            if ( int err = ::pthread_mutex_unlock(&_M_pm)) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_unlock: " << strerror(err) << std::endl;
                 return false;
             }
             this->use_decr();
@@ -276,16 +275,16 @@ namespace more { namespace posix
 
         ~rw_mutex() 
         { 
-            if (::pthread_rwlock_destroy(&_M_pm) != 0 ) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_rw_mutex_destroy: " << strerror(errno) << std::endl; 
+            if (int err = ::pthread_rwlock_destroy(&_M_pm)) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_rw_mutex_destroy: " << strerror(err) << std::endl; 
             }
         }
 
         bool rdlock()
         {
             this->use_incr(); 
-            if (::pthread_rwlock_rdlock(&_M_pm) != 0 ) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_rdlock: " << strerror(errno) << std::endl;
+            if (int err = ::pthread_rwlock_rdlock(&_M_pm)) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_rdlock: " << strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -295,8 +294,8 @@ namespace more { namespace posix
         bool wrlock()
         { 
             this->use_incr(); 
-            if (::pthread_rwlock_wrlock(&_M_pm) != 0 ) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_wrlock: " << strerror(errno) << std::endl;
+            if (int err = ::pthread_rwlock_wrlock(&_M_pm)) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_wrlock: " << strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -305,8 +304,8 @@ namespace more { namespace posix
 
         bool unlock() 
         { 
-            if (::pthread_rwlock_unlock(&_M_pm) != 0 ) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_wr_ulock: " << strerror(errno) << std::endl;
+            if (int err = ::pthread_rwlock_unlock(&_M_pm)) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_wr_ulock: " << strerror(err) << std::endl;
                 return false;
             }
             this->use_decr();
@@ -356,7 +355,7 @@ namespace more { namespace posix
         ~scoped_lock()
         {
             if (!this->unlock())
-                std::clog << __PRETTY_FUNCTION__  << ": " << strerror(errno) << std::endl;  
+                std::clog << __PRETTY_FUNCTION__  << std::endl;  
         }
 
     private:
@@ -418,30 +417,30 @@ namespace more { namespace posix
         int wait(scoped_lock<M> &sl) 
         {
             sl.get_mutex().use_decr();
-            int r = ::pthread_cond_wait(&_M_cond, & sl.get_mutex()._M_pm);
+            int err = ::pthread_cond_wait(&_M_cond, & sl.get_mutex()._M_pm);
             sl.get_mutex().use_incr();
-            if (r != 0) {
-                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_wait: " << strerror(errno) << std::endl;
+            if (err) {
+                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_wait: " << strerror(err) << std::endl;
             }
-            return r; 
+            return err; 
         }
 
         template <typename M>
         int timedwait(scoped_lock<M> &sl, const struct timespec *abstime) 
         {
             sl.get_mutex().use_decr();
-            int r = ::pthread_cond_timedwait(&_M_cond, &sl.get_mutex()._M_pm, abstime);
+            int err = ::pthread_cond_timedwait(&_M_cond, &sl.get_mutex()._M_pm, abstime);
             sl.get_mutex().use_incr();
-            if (r != 0) {
-                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_timedwait: " << strerror(errno) << std::endl;
+            if (err) {
+                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_timedwait: " << strerror(err) << std::endl;
             }
-            return r;
+            return err;
         }
 
         ~cond()
         { 
-            if (::pthread_cond_destroy(&_M_cond) != 0) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy: " << strerror(errno) << std::endl;
+            if (int err = ::pthread_cond_destroy(&_M_cond)) {
+                std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy: " << strerror(err) << std::endl;
             }
         }
 
@@ -612,8 +611,8 @@ namespace more { namespace posix
             if (_M_running == thread_running)
                 return false;   // already started
 
-            if (::pthread_create(&_M_thread, &(*_M_attr), thread_routine<false>, this ) != 0) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << strerror(errno) << std::endl;
+            if (int err = ::pthread_create(&_M_thread, &(*_M_attr), thread_routine<false>, this )) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << strerror(err) << std::endl;
                 return false;
             }
             _M_running = thread_running;
@@ -790,8 +789,8 @@ namespace more { namespace posix
         {
             that->_M_attr->setdetachstate(PTHREAD_CREATE_DETACHED);
 
-            if (::pthread_create(&that->_M_thread, &(*that->_M_attr), thread_routine<true>, that ) != 0) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << strerror(errno) << std::endl;
+            if (int err = ::pthread_create(&that->_M_thread, &(*that->_M_attr), thread_routine<true>, that )) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << strerror(err) << std::endl;
                 return false;
             }
             that->_M_running = thread_running;
