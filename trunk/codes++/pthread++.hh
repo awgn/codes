@@ -464,27 +464,27 @@ namespace more { namespace posix
         {}
 
         template <typename T1>
-        concrete_thread(T1 t1)
+        concrete_thread(const T1 &t1)
         : T(t1)
         {}
 
         template <typename T1, typename T2>
-        concrete_thread(T1 t1, T2 t2)
+        concrete_thread(const T1 &t1, const T2 &t2)
         : T(t1,t2)
         {}
 
         template <typename T1, typename T2, typename T3>
-        concrete_thread(T1 t1, T2 t2, T3 t3)
+        concrete_thread(const T1 &t1, const T2 &t2, const T3 &t3)
         : T(t1,t2,t3)
         {}
 
         template <typename T1, typename T2, typename T3, typename T4>
-        concrete_thread(T1 t1, T2 t2, T3 t3, T4 t4)
+        concrete_thread(const T1 &t1, const T2 &t2, const T3 &t3, const T4 &t4)
         : T(t1,t2,t3,t4)
         {}
 
         template <typename T1, typename T2, typename T3, typename T4, typename T5>
-        concrete_thread(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5)
+        concrete_thread(const T1 &t1, const T2 &t2, const T3 &t3, const T4 &t4, const T5 &t5)
         : T(t1,t2,t3,t4,t5)
         {}
 
@@ -630,31 +630,31 @@ namespace more { namespace posix
         }
 
         template <typename T, typename P1>
-        static bool start_detached_in_heap(P1 p1) 
+        static bool start_detached_in_heap(const P1 &p1) 
         {
             T * that = new concrete_thread<T>(p1);
             return create_detached_in_heap(that);
         }
         template <typename T, typename P1, typename P2>
-        static bool start_detached_in_heap(P1 p1, P2 p2) 
+        static bool start_detached_in_heap(const P1 &p1, const P2 &p2) 
         {
             T * that = new concrete_thread<T>(p1,p2);
             return create_detached_in_heap(that);
         }
         template <typename T, typename P1, typename P2, typename P3>
-        static bool start_detached_in_heap(P1 p1, P2 p2, P3 p3) 
+        static bool start_detached_in_heap(const P1 &p1, const P2 &p2, const P3 &p3) 
         {
             T * that = new concrete_thread<T>(p1,p2,p3);
             return create_detached_in_heap(that);
         }
         template <typename T, typename P1, typename P2, typename P3, typename P4>
-        static bool start_detached_in_heap(P1 p1, P2 p2, P3 p3, P4 p4) 
+        static bool start_detached_in_heap(const P1 &p1, const P2 &p2, const P3 &p3, const P4 &p4) 
         {
             T * that = new concrete_thread<T>(p1,p2,p3,p4);
             return create_detached_in_heap(that);
         }
         template <typename T, typename P1, typename P2, typename P3, typename P4, typename P5>
-        static bool start_detached_in_heap(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) 
+        static bool start_detached_in_heap(const P1 &p1, const P2 &p2, const P3 &p3, const P4 &p4, const P5 &p5) 
         {
             T * that = new concrete_thread<T>(p1,p2,p3,p4,p5);
             return create_detached_in_heap(that);

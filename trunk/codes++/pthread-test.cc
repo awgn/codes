@@ -17,6 +17,24 @@ mutex global_mutex;
 cond  global_cond;
 rw_mutex global_mutex_rw;
 
+class NonConstRef : public posix::thread 
+{
+    int & _M_ref;
+
+public:
+
+    NonConstRef(int & ref)
+    : _M_ref(ref)
+    {}
+
+    void *operator()()
+    {
+        _M_ref = 1;
+        return NULL;
+    }
+};
+
+
 class Hello : public posix::thread {
 
 public:
@@ -177,7 +195,19 @@ struct join_functor
 
 int main(int argc, char *argv[])
 {
+    std::cout << "\n[*]" RED " non-const reference in thread constructor..." RESET "\n";
+    {
+        int n = 0;
+        concrete_thread<NonConstRef> test(std::tr1::ref(n));
+        test.start();
+        test.join();
+        assert(n == 1);
 
+        std::cout << "    ok" << std::endl;
+    } // terminate as soon as possible
+
+
+    
     std::cout << "\n[*]" RED " scoped thread..." RESET "\n";
     {
         concrete_thread<Hello> test;
