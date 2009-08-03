@@ -231,7 +231,8 @@ namespace more { namespace posix
         ~mutex()
         {
             if (int err = ::pthread_mutex_destroy(&_M_pm)) { 
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy: " << strerror(err) << std::endl;  
+                if (err != EBUSY)
+                    std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy: " << strerror(err) << std::endl;  
             }
         }
 
@@ -440,7 +441,8 @@ namespace more { namespace posix
         ~cond()
         { 
             if (int err = ::pthread_cond_destroy(&_M_cond)) {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy: " << strerror(err) << std::endl;
+                if (err != EBUSY)
+                    std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy: " << strerror(err) << std::endl;
             }
         }
 
