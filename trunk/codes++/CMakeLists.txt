@@ -1,5 +1,6 @@
 include_directories(.)
 
+add_executable(any-test any-test.cc)
 add_executable(tuple-test tuple-test.cc)
 add_executable(observer-test observer-test.cc)
 add_executable(syslog-test syslog.cc syslog-test.cc)
