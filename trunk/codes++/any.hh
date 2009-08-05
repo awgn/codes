@@ -213,6 +213,14 @@ namespace more {
             return out;
         }
 
+        any &
+        get() 
+        { return _M_value; }
+
+        const any &
+        get() const
+        { return _M_value; }
+
         private:
 
         struct streamer

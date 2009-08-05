@@ -35,6 +35,9 @@ main(int argc, char *argv[])
     std::cout << a_out << std::endl;
     std::cout << b_out << std::endl;
 
+    std::cout << more::any_cast<std::string>  ( b_out.get() ) << std::endl;
+    std::cout << * more::any_cast<std::string>(&b_out.get() ) << std::endl;
+
     return 0;
 }
  
