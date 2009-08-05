@@ -17,7 +17,7 @@
 #include <vector>
 #include <cassert>
 
-#include <typecode.hh>
+#include <any.hh>
 
 namespace more { 
 
@@ -26,7 +26,7 @@ namespace more {
     public:
         format(const std::string &f)
         : _M_format(f),
-        _M_args()
+          _M_args()
         {}
 
         ~format()
@@ -36,7 +36,7 @@ namespace more {
         format &
         operator % (T rhs)
         {
-            _M_args.push_back(gt::type(rhs));
+            _M_args.push_back(any_out(rhs));
             return *this;
         }   
 
@@ -72,39 +72,16 @@ namespace more {
                 }
 
                 assert ( n <= obj._M_args.size() );
-                gt::type & e = obj._M_args[n-1];
-
-                switch(e.code()) 
-                {
-#define typecode(xxx, e) gt::xxx:  \
-                    out <<  e.get<gt::xxx>(); \
-                    break
-                    case typecode(_char,e);
-                    case typecode(u_char,e);
-                    case typecode(short_int,e);
-                    case typecode(u_short_int,e);
-                    case typecode(_int,e);
-                    case typecode(u_int,e);
-                    case typecode(long_int,e);
-                    case typecode(u_long_int,e);
-                    case typecode(long_long_int,e);
-                    case typecode(u_long_long_int,e);
-                    case typecode(_float,e);
-                    case typecode(_double,e);
-                    case typecode(long_double,e);
-                    case typecode(char_p,e);
-                    case typecode(const_char_p,e);
-                    case typecode(std_string,e);
-                }            
+                more::any_out & e = obj._M_args.at(n-1);
+                out << e;
 
             }
-
             return out;
         }
 
     private:
         std::string _M_format;
-        std::vector<gt::type> _M_args;
+        std::vector<any_out> _M_args;
 
         // non-copyable idiom
         format(const format &);
