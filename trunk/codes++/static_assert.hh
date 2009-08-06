@@ -13,22 +13,25 @@
 
 namespace more
 {
-    // CTassert ala Loki
-    template <bool> struct CTassert;
+    ///////////////////////////////
+    // compiletime assert ala Loki.
+
+    template <bool> struct compile_time_assert;
     template <>
-    struct CTassert<true>
+    struct compile_time_assert<true>
     {
         enum { value = true };
     };
 }
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-#define static_assert(v,tok) more::CTassert<(v)> tok __attribute__((unused))
+#define static_assert(v,tok) more::compile_time_assert<(v)> tok __attribute__((unused))
 #else
 #define static_assert(v,tok) static_assert((v), #tok)
 #endif
 
 #include <cassert>
+#include <stdexcept>
 
 /* from glibc: This prints an "Assertion failed" message and aborts.  */
 
@@ -43,6 +46,14 @@ __END_DECLS
   (__ASSERT_VOID_CAST ((expr) ? 0 :                       \
                (__assert_fail (__STRING(expr), __FILE__, __LINE__,    \
                        __ASSERT_FUNCTION), 0)))
+
+#ifdef NDEBUG
+#define safe_assert(expr) \
+if (__builtin_expect(!(expr),0))\
+    throw std::runtime_error(__FILE__ ": safe_assert: Assertion `" __STRING(expr) "' failed."  )
+#else
+#define safe_assert(expr) assert(expr)
+#endif
 
 # if defined __cplusplus ? __GNUC_PREREQ (2, 6) : __GNUC_PREREQ (2, 4)
 #   define __ASSERT_FUNCTION    __PRETTY_FUNCTION__
