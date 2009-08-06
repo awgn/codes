@@ -12,10 +12,11 @@
 #define PROXY_HH
 
 #include <tr1/functional>
+#include <stdexcept>
+#include <typeinfo>
 
 namespace more 
 {
-    //
     // to be used in place of typedef... 
     // define USE_EXPLICIT to enforce typechecking
     //
@@ -55,7 +56,10 @@ namespace more
         { return _M_val; }
 
 #ifndef USE_EXPLICIT
-        operator T() const
+        operator const T &() const
+        { return _M_val; }
+
+        operator T &() 
         { return _M_val; }
 #endif
         T *
@@ -67,7 +71,8 @@ namespace more
         { return &_M_val; }
     };
 
-    // to detect writers...
+    //////////////////////////////////////
+    // to detect writers at compile time
     //
 
     template <typename T, int N = 0>
@@ -92,9 +97,99 @@ namespace more
         operator &() const
         { return &_M_val; }
 
-        operator const T &()
+        operator const T &() const
         { return _M_val; }
 
+    };
+
+    /////////////////////////////
+    // runtime lockable variable
+
+    template <typename T>
+    class lockable
+    {
+    public:
+
+        explicit
+        lockable(bool enable = false)
+        : _M_value(),
+          _M_locked(enable)
+        {}
+
+        explicit 
+        lockable(const T & value, bool enable = false)
+        : _M_value(value),
+          _M_locked(enable)
+        {}
+
+        lockable(const lockable & rhs)
+        : _M_value(rhs._M_value),
+          _M_locked(rhs._M_locked)
+        {}
+
+        lockable & 
+        operator=(lockable rhs)
+        {
+            _M_checklock();
+            rhs.swap(*this);
+            return *this;
+        }
+
+        lockable & 
+        operator=(const T & value)
+        {            
+            _M_checklock();
+            _M_value = value;
+            return *this;
+        }
+
+        lockable &
+        swap(lockable &rhs)
+        {
+            std::swap(_M_value, rhs._M_value);
+            std::swap(_M_locked,rhs._M_locked);
+        }
+
+        /////////////////////////////////////
+        // internals are available readonly!
+
+        operator const T &() const
+        { 
+            return _M_value;
+        }
+
+        const T *
+        operator &() const
+        { 
+            return & _M_value;
+        }
+
+        void lock()
+        {
+            _M_locked = true;
+        }
+
+        void unlock()
+        {
+            _M_locked = false;
+        }
+
+        bool
+        is_locked() const
+        {
+            return _M_locked;
+        }
+
+    private:
+        void
+        _M_checklock()
+        {
+            if (_M_locked)
+                throw std::runtime_error( std::string("writing on a lockable<").append(typeid(T).name()).append("> [locked]"));
+        }
+
+        T _M_value;
+        bool _M_locked;
     };
 
     // reference_proxy...

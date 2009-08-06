@@ -85,5 +85,21 @@ int main(int argc, char *argv[])
     fun( ref_proxy<int>(std::tr1::ref(zzz)), 12345 );
     std::cout << "after : zzz=" << zzz << std::endl;
 
+    std::cout << "lockable<int> test:" << std::endl;
+
+    more::lockable<int> lockable_one;
+    const more::lockable<int> lockable_two(20);
+
+    lockable_one.lock();
+    lockable_one.unlock();
+
+    lockable_one = 10;
+    int n = lockable_one;
+
+    const int & q = lockable_one;
+
+    std::cout << "      : lockable_one = " << lockable_one << std::endl;
+    std::cout << "      : lockable_two = " << lockable_two << std::endl;
+
     return 0;
 }
