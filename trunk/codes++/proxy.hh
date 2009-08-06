@@ -185,7 +185,7 @@ namespace more
         _M_checklock()
         {
             if (_M_locked)
-                throw std::runtime_error( std::string("writing on a lockable<").append(typeid(T).name()).append("> [locked]"));
+                throw std::logic_error( std::string("writing on a locked lockable<").append(typeid(T).name()).append(">"));
         }
 
         T _M_value;
