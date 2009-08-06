@@ -50,7 +50,7 @@ __END_DECLS
 #ifdef NDEBUG
 #define safe_assert(expr) \
 if (__builtin_expect(!(expr),0))\
-    throw std::runtime_error(__FILE__ ": safe_assert: Assertion `" __STRING(expr) "' failed."  )
+    throw std::logic_error(__FILE__ ": safe_assert: Assertion `" __STRING(expr) "' failed."  )
 #else
 #define safe_assert(expr) assert(expr)
 #endif
