@@ -47,7 +47,7 @@ public:
     int get() volatile const { return val; }
 };
 
-// good_class is also shared between threads, but
+// the good_class is shared between threads, but
 // it correctly derives from atomic_class...
 //
 
@@ -80,7 +80,7 @@ public:
 
 volatile bad_class   example_0(0);
 volatile good_class  example_1(0);
-volatile atomic<int> example_2(0);
+atomic<int> example_2(0);
 
 // threads..
 //
@@ -162,7 +162,7 @@ int main()
         std::cout << "example_0: " << n << check(n) << std::endl;
     }
 
-    std::cout << "\natomic_ptr<> access test: " << std::endl;
+    std::cout << "\natomic_class and atomic_ptr<> access test: " << std::endl;
     for (int i=0; i < 20 ; i++) {
         pthread_create(&a, NULL, thread_2, NULL); 
         pthread_create(&b, NULL, thread_3, NULL); 
@@ -175,7 +175,7 @@ int main()
         std::cout << "example_1: " << n << check(n) << std::endl;
     }
 
-    std::cout << "\natomic_word test:" << std::endl;
+    std::cout << "\natomic<> test:" << std::endl;
     for (int i=0; i < 20 ; i++) {
         pthread_create(&a, NULL, thread_4, NULL); 
         pthread_create(&b, NULL, thread_5, NULL); 
@@ -187,6 +187,6 @@ int main()
         std::cout << "example_2: " << n << check(n) << std::endl;
     }
 
-    std::cout << "\nDo you wonder why atomic_word increments/decrements are exactly 3 times faster? :)" << std::endl;
+    std::cout << "\nDo you wonder why atomic<> increments/decrements are exactly 3 times faster than those of atomic_class/atomic_ptr ? :)" << std::endl;
 }
 
