@@ -497,32 +497,32 @@ namespace more { namespace posix
 
     class thread 
     {
-        struct global
+        struct __global
         {
             volatile bool         jgroup_enabled;
             sem_t                 term_sem;
             mutex                 term_mutex;
             thread * volatile     thread_id;
 
-            static global &
+            static __global &
             instance(int n = 0)
             {
-                static global one(n);
+                static __global one(n);
                 return one;
             }
 
         private:
 
-            global(const global &);
-            global & operator=(const global &);
+            __global(const __global &);
+            __global & operator=(const __global &);
 
-            global(int n)
+            __global(int n)
             : jgroup_enabled(false), term_sem(), term_mutex(), thread_id(NULL)
             {
                 sem_init(&term_sem,0,n);
             }
 
-            ~global()
+            ~__global()
             {
                 sem_destroy(&term_sem);
             }
@@ -581,7 +581,7 @@ namespace more { namespace posix
             {
                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
 
-                if ( global::instance().jgroup_enabled )
+                if ( __global::instance().jgroup_enabled )
                     term_notify(that);
 
                 that->_M_running  = thread_cancelled;
@@ -594,7 +594,7 @@ namespace more { namespace posix
                 throw;
             }
 
-            if ( global::instance().jgroup_enabled )
+            if ( __global::instance().jgroup_enabled )
                 term_notify(that);
 
             that->_M_running  = thread_terminated;
@@ -802,21 +802,21 @@ namespace more { namespace posix
 
         static void term_notify(thread *that)
         {
-            scoped_lock<mutex> _L_ (global::instance().term_mutex);
+            scoped_lock<mutex> _L_ (__global::instance().term_mutex);
 
             for(;;) {
                 
-                if (!global::instance().jgroup_enabled)
+                if (!__global::instance().jgroup_enabled)
                     return;
 
-                if ( global::instance().thread_id == NULL ) {
+                if ( __global::instance().thread_id == NULL ) {
                     
-                    global::instance().thread_id = that;
+                    __global::instance().thread_id = that;
                     
                     timeval now; gettimeofday(&now,NULL);
                     const timespec timeo = { now.tv_sec + 2, 0 };
                   
-                    if ( sem_timedwait(&global::instance().term_sem, &timeo) == 0 )
+                    if ( sem_timedwait(&__global::instance().term_sem, &timeo) == 0 )
                         return;
 
                     if ( errno == ETIMEDOUT ) {
@@ -826,11 +826,11 @@ namespace more { namespace posix
                         std::clog << __PRETTY_FUNCTION__ << ": sem_timedwait: " << strerror(errno) << std::endl;
                     }
 
-                    global::instance().thread_id = NULL;
+                    __global::instance().thread_id = NULL;
                     continue;   // retry now
                 } 
                 
-                std::clog << __PRETTY_FUNCTION__ << ": global::instance().thread_id slot busy!?!?" << std::endl;
+                std::clog << __PRETTY_FUNCTION__ << ": __global::instance().thread_id slot busy!?!?" << std::endl;
                 usleep(1000);   // just to relax the CPU and retry... 
             } 
         }
@@ -917,24 +917,24 @@ namespace more { namespace posix
             template <typename T>
             void join_all(T cw)
             {
-                thread::global::instance().thread_id  = NULL; 
-                thread::global::instance().jgroup_enabled = true;
+                thread::__global::instance().thread_id  = NULL; 
+                thread::__global::instance().jgroup_enabled = true;
 
                 for(;;) {                    
 
                     if (this->running()==0) {
-                        thread::global::instance().jgroup_enabled = false;
+                        thread::__global::instance().jgroup_enabled = false;
                         return;
                     }
 
-                    if (thread::global::instance().thread_id) {
+                    if (thread::__global::instance().thread_id) {
                         
-                        if ( _M_group.find(const_cast<thread *>(thread::global::instance().thread_id)) != _M_group.end()) {
+                        if ( _M_group.find(const_cast<thread *>(thread::__global::instance().thread_id)) != _M_group.end()) {
 
-                            cw(thread::global::instance().thread_id);
+                            cw(thread::__global::instance().thread_id);
 
-                            thread::global::instance().thread_id  = NULL;
-                            sem_post(&thread::global::instance().term_sem);
+                            thread::__global::instance().thread_id  = NULL;
+                            sem_post(&thread::__global::instance().term_sem);
 
                         }
                         continue;
