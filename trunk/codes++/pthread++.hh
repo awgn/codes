@@ -497,12 +497,14 @@ namespace more { namespace posix
 
     class thread 
     {
+        friend class thread_group;
+
         struct __global
         {
             volatile bool         jgroup_enabled;
             sem_t                 term_sem;
             mutex                 term_mutex;
-            thread * volatile     thread_id;
+            thread * volatile     thread_p;
 
             static __global &
             instance(int n = 0)
@@ -517,7 +519,7 @@ namespace more { namespace posix
             __global & operator=(const __global &);
 
             __global(int n)
-            : jgroup_enabled(false), term_sem(), term_mutex(), thread_id(NULL)
+            : jgroup_enabled(false), term_sem(), term_mutex(), thread_p(NULL)
             {
                 sem_init(&term_sem,0,n);
             }
@@ -809,9 +811,9 @@ namespace more { namespace posix
                 if (!__global::instance().jgroup_enabled)
                     return;
 
-                if ( __global::instance().thread_id == NULL ) {
+                if ( __global::instance().thread_p == NULL ) {
                     
-                    __global::instance().thread_id = that;
+                    __global::instance().thread_p = that;
                     
                     timeval now; gettimeofday(&now,NULL);
                     const timespec timeo = { now.tv_sec + 2, 0 };
@@ -826,11 +828,11 @@ namespace more { namespace posix
                         std::clog << __PRETTY_FUNCTION__ << ": sem_timedwait: " << strerror(errno) << std::endl;
                     }
 
-                    __global::instance().thread_id = NULL;
+                    __global::instance().thread_p = NULL;
                     continue;   // retry now
                 } 
                 
-                std::clog << __PRETTY_FUNCTION__ << ": __global::instance().thread_id slot busy!?!?" << std::endl;
+                std::clog << __PRETTY_FUNCTION__ << ": __global::instance().thread_p slot busy!?!?" << std::endl;
                 usleep(1000);   // just to relax the CPU and retry... 
             } 
         }
@@ -917,7 +919,7 @@ namespace more { namespace posix
             template <typename T>
             void join_all(T cw)
             {
-                thread::__global::instance().thread_id  = NULL; 
+                thread::__global::instance().thread_p  = NULL; 
                 thread::__global::instance().jgroup_enabled = true;
 
                 for(;;) {                    
@@ -927,13 +929,13 @@ namespace more { namespace posix
                         return;
                     }
 
-                    if (thread::__global::instance().thread_id) {
+                    if (thread::__global::instance().thread_p) {
                         
-                        if ( _M_group.find(const_cast<thread *>(thread::__global::instance().thread_id)) != _M_group.end()) {
+                        if ( _M_group.find(const_cast<thread *>(thread::__global::instance().thread_p)) != _M_group.end()) {
 
-                            cw(thread::__global::instance().thread_id);
+                            cw(thread::__global::instance().thread_p);
 
-                            thread::__global::instance().thread_id  = NULL;
+                            thread::__global::instance().thread_p  = NULL;
                             sem_post(&thread::__global::instance().term_sem);
 
                         }
