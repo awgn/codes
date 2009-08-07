@@ -308,6 +308,11 @@ namespace more { namespace time {
             return ::timer_gettime(_M_id, &value);
         }
 
+        int overrun() const
+        {
+            return ::timer_getoverrun(_M_id);
+        }
+
     private:
         void init()
         {
@@ -392,9 +397,11 @@ namespace more { namespace time {
             {
                 sigwait(&sigexp, &sig);
                 assert( sig == SIGNO );
+
                 ::gettimeofday(&now, NULL);
 
                 posix::scoped_lock<posix::mutex> lock(T.thread_data[SIGNO]._mutex);
+
                 T.current = now.tv_sec * 1000 + now.tv_usec / 1000;
                 T.thread_data[SIGNO]._cond.broadcast();
             }
