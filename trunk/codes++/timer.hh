@@ -49,18 +49,25 @@ namespace more { namespace time {
         volatile uint32_t current;
     };
 
-    //////////////////////////////////////////////////////
-    // threads derive privately from ticker class in order
-    // to inherit wait_for_tick() member function.
+    //////////////////////////////////////////////////////////////////////
+    // threads listening to tick derive privately from enable_tick class 
+    // in order to inherit wait_for_tick() member function.
 
-    template <tick_type & T, int sig>
-    struct ticker
+    template <tick_type & T, int SIG>
+    struct enable_tick
     {
         void wait_for_tick(uint32_t &last)
         {
-            posix::scoped_lock<posix::mutex> lock(T.thread_data[sig]._mutex);
-            if (last == T.current)
-                T.thread_data[sig]._cond.wait(lock);
+            posix::scoped_lock<posix::mutex> lock(T.thread_data[SIG]._mutex);
+
+            if (last == T.current) {
+                T.thread_data[SIG]._cond.wait(lock);
+                while (last == T.current) {
+                    // avoid spurious wakeup which do not return EINTR but 0 according to POSIX.
+                    T.thread_data[SIG]._cond.wait(lock);
+                }
+            }
+
             last = T.current;
         }
     };
@@ -203,6 +210,7 @@ namespace more { namespace time {
                 ::gettimeofday(&now, NULL);
 
                 posix::scoped_lock<posix::mutex> lock(T.thread_data[ itimer_trait<WHICH>::signal_expiration  ]._mutex);
+
                 T.current = now.tv_sec * 1000 + now.tv_usec / 1000;
                 T.thread_data[ itimer_trait<WHICH>::signal_expiration ]._cond.broadcast();
             }
@@ -395,11 +403,10 @@ namespace more { namespace time {
 
             for(timeval now;;)
             {
-                sigwait(&sigexp, &sig);
+                sigwait(&sigexp, &sig); 
                 assert( sig == SIGNO );
-
                 ::gettimeofday(&now, NULL);
-
+        
                 posix::scoped_lock<posix::mutex> lock(T.thread_data[SIGNO]._mutex);
 
                 T.current = now.tv_sec * 1000 + now.tv_usec / 1000;
