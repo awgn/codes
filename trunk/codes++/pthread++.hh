@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <set>
 
+#include <noncopyable.hh>
+
 #include <sys/time.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -52,20 +54,6 @@ namespace more { namespace posix
             enum { value = true };
         };
     }
-
-    class noncopyable
-    {
-    protected:
-        noncopyable()
-        {}
-
-        ~noncopyable()
-        {}
-
-    private:
-        noncopyable(const noncopyable &);
-        const noncopyable & operator=(const noncopyable &);
-    };
 
     class thread_attr
     {
@@ -232,7 +220,8 @@ namespace more { namespace posix
         {
             if (int err = ::pthread_mutex_destroy(&_M_pm)) { 
                 if (err != EBUSY)
-                    std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy: " << strerror(err) << std::endl;  
+                    std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy: " << 
+                    strerror(err) << std::endl;  
             }
         }
 
@@ -240,7 +229,8 @@ namespace more { namespace posix
         {
             this->use_incr(); 
             if (int err = ::pthread_mutex_lock(&_M_pm)) { 
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_lock: " << strerror(err) << std::endl;
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_lock: " << 
+                    strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -250,7 +240,8 @@ namespace more { namespace posix
         bool unlock()
         { 
             if ( int err = ::pthread_mutex_unlock(&_M_pm)) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_unlock: " << strerror(err) << std::endl;
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_unlock: " << 
+                    strerror(err) << std::endl;
                 return false;
             }
             this->use_decr();
@@ -277,7 +268,8 @@ namespace more { namespace posix
         ~rw_mutex() 
         { 
             if (int err = ::pthread_rwlock_destroy(&_M_pm)) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_rw_mutex_destroy: " << strerror(err) << std::endl; 
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_rw_mutex_destroy: " << 
+                        strerror(err) << std::endl; 
             }
         }
 
@@ -285,7 +277,8 @@ namespace more { namespace posix
         {
             this->use_incr(); 
             if (int err = ::pthread_rwlock_rdlock(&_M_pm)) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_rdlock: " << strerror(err) << std::endl;
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_rdlock: " << 
+                        strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -296,7 +289,8 @@ namespace more { namespace posix
         { 
             this->use_incr(); 
             if (int err = ::pthread_rwlock_wrlock(&_M_pm)) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_wrlock: " << strerror(err) << std::endl;
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_wrlock: " << 
+                            strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -306,7 +300,8 @@ namespace more { namespace posix
         bool unlock() 
         { 
             if (int err = ::pthread_rwlock_unlock(&_M_pm)) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_wr_ulock: " << strerror(err) << std::endl;
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_wr_ulock: " << 
+                            strerror(err) << std::endl;
                 return false;
             }
             this->use_decr();
@@ -317,17 +312,8 @@ namespace more { namespace posix
         pthread_rwlock_t _M_pm;
     };
 
-    struct read_mutex : public rw_mutex 
-    {
-        operator rw_mutex &()
-        { return *this; }
-    };
-
-    struct write_mutex : public rw_mutex 
-    {
-        operator rw_mutex &()
-        { return *this; }
-    };
+    struct read_mutex  : public rw_mutex {};
+    struct write_mutex : public rw_mutex {};
 
     ////////////////////////////// scoped_lock  //////////////////////////////
 
@@ -418,37 +404,79 @@ namespace more { namespace posix
         int wait(scoped_lock<M> &sl) 
         {
             sl.get_mutex().use_decr();
-            int err = ::pthread_cond_wait(&_M_cond, & sl.get_mutex()._M_pm);
-            sl.get_mutex().use_incr();
-            if (err) {
-                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_wait: " << strerror(err) << std::endl;
+            if (int err = ::pthread_cond_wait(&_M_cond, & sl.get_mutex()._M_pm)) {
+                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_wait: " << 
+                    strerror(err) << std::endl;
             }
-            return err; 
+            sl.get_mutex().use_incr();
+            return 0; 
         }
 
         template <typename M>
         int timedwait(scoped_lock<M> &sl, const struct timespec *abstime) 
         {
             sl.get_mutex().use_decr();
-            int err = ::pthread_cond_timedwait(&_M_cond, &sl.get_mutex()._M_pm, abstime);
-            sl.get_mutex().use_incr();
-            if (err) {
-                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_timedwait: " << strerror(err) << std::endl;
+            if (int err = ::pthread_cond_timedwait(&_M_cond, &sl.get_mutex()._M_pm, abstime)){
+                 std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_timedwait: " << 
+                    strerror(err) << std::endl;
             }
-            return err;
+            sl.get_mutex().use_incr();
+            return 0;
         }
 
         ~cond()
         { 
             if (int err = ::pthread_cond_destroy(&_M_cond)) {
                 if (err != EBUSY)
-                    std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy: " << strerror(err) << std::endl;
+                    std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy: " << 
+                        strerror(err) << std::endl;
             }
         }
 
     private:
         pthread_cond_t  _M_cond;
 
+    };
+
+    ////////////////////////////// barrier  //////////////////////////////
+
+    class barrier : private noncopyable 
+    {
+
+    public:
+        barrier(int count, const pthread_barrierattr_t * attr = NULL)
+        : _M_barrier()
+        {
+            if (this->init(count,attr)) {
+                throw std::runtime_error("pthread_barrier_init");
+            }
+        }
+
+        ~barrier()
+        {
+            if (int err=pthread_barrier_destroy(&_M_barrier)) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_barrier_destroy: " << 
+                    strerror(err) << std::endl;
+            }
+        }
+
+        int init(int count, const pthread_barrierattr_t * attr = NULL)
+        {
+            if (int err=pthread_barrier_init(&_M_barrier, attr, count)) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_barrier_init: " << 
+                    strerror(err) << std::endl;
+                return err;
+            }
+            return 0; 
+        }
+
+        void wait() 
+        {
+            pthread_barrier_wait(&_M_barrier);        
+        }
+        
+    private:
+        pthread_barrier_t _M_barrier;
     };
 
     ////////////////////////////// thread  //////////////////////////////
@@ -494,40 +522,39 @@ namespace more { namespace posix
         }
     };
 
-
-    class thread 
+    class thread : private noncopyable
     {
         friend class thread_group;
 
-        struct __global
+        struct __global : private noncopyable
         {
-            volatile bool         jgroup_enabled;
-            sem_t                 term_sem;
-            mutex                 term_mutex;
-            thread * volatile     thread_p;
+            mutex               term_mutex;
+            mutex               term_cond_mutex;
+            cond                term_cond;
+            barrier             term_barrier;
+
+            int                 thread_cnt;
+            thread *            thread_p;
 
             static __global &
-            instance(int n = 0)
+            instance()
             {
-                static __global one(n);
+                static __global one;
                 return one;
             }
 
         private:
-
-            __global(const __global &);
-            __global & operator=(const __global &);
-
-            __global(int n)
-            : jgroup_enabled(false), term_sem(), term_mutex(), thread_p(NULL)
-            {
-                sem_init(&term_sem,0,n);
-            }
+            __global()            
+            : term_mutex(),
+              term_cond_mutex(),
+              term_cond(),
+              term_barrier(1),
+              thread_cnt(0),
+              thread_p(0)
+            {}
 
             ~__global()
-            {
-                sem_destroy(&term_sem);
-            }
+            {}
         };
 
         pthread_t               _M_thread;
@@ -536,27 +563,25 @@ namespace more { namespace posix
         enum { 
                thread_not_started,
                thread_running,
-               thread_cancelled,
-               thread_terminated
+               thread_terminating,
+               thread_terminated,
+               thread_cancelled
 
-        } volatile _M_running;
+        } volatile _M_run_state;
 
         volatile bool   _M_joinable;
-
-        thread(const thread &);               // noncopyable
-        thread &operator=(const thread &);    // noncopyable
 
     public: 
         explicit thread(shared_ptr<thread_attr> a = shared_ptr<thread_attr>(new thread_attr))
         : _M_thread(),
           _M_attr(a),
-          _M_running(thread_not_started),
+          _M_run_state(thread_not_started),
           _M_joinable(false)
         {}
 
         virtual ~thread() 
         {
-            assert(!_M_thread || _M_running != thread_running || 
+            assert(!_M_thread || _M_run_state != thread_running || 
                   !"posix::thread deleted while the thread_ruotine is running!" );
         }        
       
@@ -577,18 +602,20 @@ namespace more { namespace posix
             }
             catch(std::exception &e)  // uncaught thread exceptions;
             {
-                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << ": thread terminated!" << std::endl;
+                std::clog << __PRETTY_FUNCTION__ << ": uncaught exception: " << e.what() << 
+                    ": thread terminated!" << std::endl;
             }
-            catch(...)  // pthread_cancel causes the thread to throw an unknown exception that is to be rethrown;
+            catch(...)  // pthread_cancel causes the thread to throw an 
+                        // unknown exception that is to be rethrown;
             {
-                std::clog << __PRETTY_FUNCTION__ << ": pthread_cancel exception: thread terminated!" << std::endl;
+                std::clog << __PRETTY_FUNCTION__ << 
+                    ": pthread_cancel exception: thread terminated!" << std::endl;
 
-                if ( __global::instance().jgroup_enabled )
-                    term_notify(that);
+                term_notify(that);
 
-                that->_M_running  = thread_cancelled;
-                that->_M_joinable = false;
-                that->_M_thread   = static_cast<pthread_t>(0);
+                that->_M_run_state  = thread_cancelled;
+                that->_M_joinable   = false;
+                that->_M_thread     = static_cast<pthread_t>(0);
 
                 if (delete_that)
                     delete that; 
@@ -596,10 +623,9 @@ namespace more { namespace posix
                 throw;
             }
 
-            if ( __global::instance().jgroup_enabled )
-                term_notify(that);
+            term_notify(that);
 
-            that->_M_running  = thread_terminated;
+            that->_M_run_state  = thread_terminated;
             that->_M_joinable = false;
             that->_M_thread   = static_cast<pthread_t>(0);
 
@@ -612,14 +638,15 @@ namespace more { namespace posix
       
         bool start() 
         {
-            if (_M_running == thread_running)
+            if (_M_run_state == thread_running)
                 return false;   // already started
 
-            if (int err = ::pthread_create(&_M_thread, &(*_M_attr), thread_routine<false>, this )) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << strerror(err) << std::endl;
+            if (int err = ::pthread_create(&_M_thread,&(*_M_attr),thread_routine<false>, this)) {
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << 
+                    strerror(err) << std::endl;
                 return false;
             }
-            _M_running = thread_running;
+            _M_run_state = thread_running;
             _M_joinable = true;
             return true;
         }
@@ -630,7 +657,6 @@ namespace more { namespace posix
             T * that = new concrete_thread<T>;
             return create_detached_in_heap(that);
         }
-
         template <typename T, typename P1>
         static bool start_detached_in_heap(const P1 &p1) 
         {
@@ -662,7 +688,7 @@ namespace more { namespace posix
             return create_detached_in_heap(that);
         }
 
-        // nore: restart() requires the concrete thread to be implementing the restart_impl method
+        // nore: restart() requires the concrete thread be implementing the restart_impl method
         //       example:
         //
         //       void restart_impl()
@@ -681,8 +707,8 @@ namespace more { namespace posix
         {
             pthread_t pt = this->get_id();
 
-            if ( !pt || _M_running != thread_running  || ::pthread_cancel(pt) == ESRCH ) {
-                _M_running = thread_cancelled;
+            if ( !pt || _M_run_state != thread_running  || ::pthread_cancel(pt) == ESRCH ) {
+                _M_run_state = thread_cancelled;
                 _M_joinable = false;
                 return false;
             }
@@ -694,25 +720,26 @@ namespace more { namespace posix
                 //
 
                 if ( ::pthread_join(pt, &status)  == ESRCH ) {
-                    _M_running = thread_cancelled;
+                    _M_run_state = thread_cancelled;
                     _M_joinable = false;
                     return true;
                 }
 
-                if (status == PTHREAD_CANCELED || _M_running != thread_running)
+                if (status == PTHREAD_CANCELED || _M_run_state != thread_running)
                     break;
 
-                std::clog << __PRETTY_FUNCTION__ << "(" << std::hex << pt << ") spinning while thread terminates..." << std::endl;
+                std::clog << __PRETTY_FUNCTION__ << "(" << std::hex << pt << 
+                    ") spinning while thread terminates..." << std::endl;
                 usleep(200000);
             }
 
-            _M_running = thread_cancelled;
+            _M_run_state = thread_cancelled;
             _M_joinable = false;
             return true;
         }
 
 #define THREAD_METHOD_PRECONDITION(p)\
-            if (!p || _M_running != thread_running) {  \
+            if (!p || _M_run_state != thread_running) {  \
                 return ESRCH;  \
             }
 
@@ -770,7 +797,7 @@ namespace more { namespace posix
 
         bool 
         is_running() const
-        { return _M_running == thread_running; }
+        { return _M_run_state == thread_running; }
 
         bool joinable() const
         { return _M_joinable; }
@@ -782,11 +809,11 @@ namespace more { namespace posix
 
         virtual void *operator()() = 0;        
  
-        virtual void concrete_thread_impl() = 0;  // to enforce the concrete_thread<> usage class  
+        virtual void concrete_thread_impl() = 0;  // ensure the concrete_thread<> instantiation  
 
         virtual void restart_impl()
         {
-            assert(!"restart not implemented in this thread");
+            throw std::runtime_error("restart not implemented in this thread");
         }
 
         static bool create_detached_in_heap(thread *that)
@@ -794,47 +821,53 @@ namespace more { namespace posix
             that->_M_attr->setdetachstate(PTHREAD_CREATE_DETACHED);
 
             if (int err = ::pthread_create(&that->_M_thread, &(*that->_M_attr), thread_routine<true>, that )) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << strerror(err) << std::endl;
+                std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << 
+                    strerror(err) << std::endl;
                 return false;
             }
-            that->_M_running = thread_running;
+            that->_M_run_state = thread_running;
             that->_M_joinable = false;
             return true;
         }
 
         static void term_notify(thread *that)
         {
-            scoped_lock<mutex> _L_ (__global::instance().term_mutex);
+            scoped_lock<mutex> _LM_ (__global::instance().term_mutex);
+            {
+                scoped_lock<mutex> _CM_ (__global::instance().term_cond_mutex);
 
-            for(;;) {
-                
-                if (!__global::instance().jgroup_enabled)
+                if (__global::instance().thread_cnt == 0) {
                     return;
+                }
 
-                if ( __global::instance().thread_p == NULL ) {
-                    
-                    __global::instance().thread_p = that;
-                    
-                    timeval now; gettimeofday(&now,NULL);
-                    const timespec timeo = { now.tv_sec + 2, 0 };
-                  
-                    if ( sem_timedwait(&__global::instance().term_sem, &timeo) == 0 )
-                        return;
+                // initialize the barrier
+                __global::instance().term_barrier.init(__global::instance().thread_cnt+1 );
 
-                    if ( errno == ETIMEDOUT ) {
-                        std::clog << __PRETTY_FUNCTION__ << ": sem_timedwait() TIMEDOUT! (termination notification would be lost)" << std::endl;
-                    }
-                    else {
-                        std::clog << __PRETTY_FUNCTION__ << ": sem_timedwait: " << strerror(errno) << std::endl;
-                    }
+                // reset the counter...
+                __global::instance().thread_cnt = 0;
 
-                    __global::instance().thread_p = NULL;
-                    continue;   // retry now
-                } 
-                
-                std::clog << __PRETTY_FUNCTION__ << ": __global::instance().thread_p slot busy!?!?" << std::endl;
-                usleep(1000);   // just to relax the CPU and retry... 
-            } 
+                // notify the thread terminating...
+                __global::instance().thread_p = that;
+
+                // broadcast the thread joining groups
+                __global::instance().term_cond.broadcast();
+
+                // set the thread in terminating state..
+                that->_M_run_state = thread::thread_terminating;            
+            }
+            
+            // wait on barrier...
+            __global::instance().term_barrier.wait();
+            __global::instance().thread_p =  NULL;
+
+           // wait for other groups to join...
+           // 
+           // since it's not possible to predict the actual number of joining thread_groups 
+           // a viable solution is to wait (a given period of time) to allow a number of them 
+           // to join() for the next termination -- Nicola 09/08/14
+
+            usleep(200000);
+
         }
 
     };
@@ -913,36 +946,67 @@ namespace more { namespace posix
 
             void join_all()
             {
-                for_each(_M_group.begin(), _M_group.end(), bind( mem_fn(&thread::join),_1, static_cast<void **>(NULL) ));
+                for_each(_M_group.begin(), _M_group.end(), 
+                         bind( mem_fn(&thread::join),_1, static_cast<void **>(NULL) ));
             }
 
             template <typename T>
-            void join_all(T cw)
+            struct scoped_wait 
             {
-                thread::__global::instance().thread_p  = NULL; 
-                thread::__global::instance().jgroup_enabled = true;
+                scoped_wait(T &elem)
+                : _M_elem(elem),
+                  _M_enabled(true)
+                {}
 
-                for(;;) {                    
-
-                    if (this->running()==0) {
-                        thread::__global::instance().jgroup_enabled = false;
-                        return;
-                    }
-
-                    if (thread::__global::instance().thread_p) {
-                        
-                        if ( _M_group.find(const_cast<thread *>(thread::__global::instance().thread_p)) != _M_group.end()) {
-
-                            cw(thread::__global::instance().thread_p);
-
-                            thread::__global::instance().thread_p  = NULL;
-                            sem_post(&thread::__global::instance().term_sem);
-
-                        }
-                        continue;
-                    }
-                    usleep(1000); // just to relax the cpu...
+                ~scoped_wait()
+                {
+                    if (_M_enabled)
+                        _M_elem.wait();
                 }
+
+                void set(bool value)
+                {
+                    _M_enabled = value;
+                }
+
+            private:
+                T & _M_elem;
+                bool _M_enabled;
+            };
+
+            template <typename T>
+            void join_any(T cw)
+            {
+                for(;;)                   
+                {
+                    {
+                        scoped_wait<barrier> _B_ (thread::__global::instance().term_barrier);
+                        scoped_lock<mutex>   _L_ (thread::__global::instance().term_cond_mutex);
+
+                        if (!this->running()) { 
+                            _B_.set(false); // disable wait on barrier
+                            return;
+                        }
+
+                        thread::__global::instance().thread_cnt++;
+
+                        // wait on condition...
+                        thread::__global::instance().term_cond.wait(_L_);
+
+                        if ( _M_group.find(
+                                const_cast<thread *>(thread::__global::instance().thread_p)
+                                          ) != _M_group.end()) 
+                        {
+                            // invoke the functor
+                            if (!cw(thread::__global::instance().thread_p) )
+                            {
+                               return; // exit... 
+                            }
+
+                        } 
+
+                    } // unlock & wait on barrier... 
+                } // go for the next termination...
             }
 
         private:

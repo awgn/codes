@@ -181,12 +181,62 @@ struct Restartable : public posix::thread
 };
 
 
-struct join_functor
+posix::barrier bar(1);
+
+struct BarrierThread : public posix::thread
 {
-    void operator()(more::posix::thread *t) const
+    BarrierThread(int n)
+    : _M_sleep(n)
+    {}
+
+    void *operator()()
     {
-        std::cout << __PRETTY_FUNCTION__ << " thread@ " << t << " finished! [ thread_id = " << t->get_id() << "]" << std::endl;
+        std::cout << "    [" << std::hex << this_thread::get_id() << "]  sleeping " << _M_sleep << " seconds..." << std::endl;
+        sleep(_M_sleep);
+        bar.wait();
+        std::cout << "    [" << std::hex << this_thread::get_id() << "]  sync done!" << std::endl;
     }
+
+    int _M_sleep;
+};
+
+
+struct join_all
+{
+    bool operator()(more::posix::thread *t) const
+    {
+        std::cout << __PRETTY_FUNCTION__ << " thread@ " << t << 
+            " finished! [ thread_id = " << t->get_id() << "]" << std::endl;
+        return true;    // stop condition on join
+    }
+};
+
+struct join_one
+{
+    bool operator()(more::posix::thread *t) const
+    {
+        std::cout << __PRETTY_FUNCTION__ << " thread@ " << t << 
+            " finished! [ thread_id = " << t->get_id() << "]" << std::endl;
+        return false;    // stop condition on join
+    }
+};
+
+struct Controller : public posix::thread
+{
+    void *operator()()
+    {
+        thread_group g;
+
+        g.add( new concrete_thread<Reader> );
+        g.add( new concrete_thread<Reader> );
+        g.add( new concrete_thread<Reader> );
+
+        g.start_all();
+        g.join_any(join_one()); 
+
+        std::cout << "-> one thread of this group is terminated!" << std::endl;
+        // terminate as soon as a thread of this group terminates
+    };
 };
 
 
@@ -364,7 +414,8 @@ int main(int argc, char *argv[])
 
         grp.start_all();
         
-        grp.join_all ( join_functor() );
+        grp.join_any( join_all() );
+        // grp.join_any ( join_one() );
 
         delete t1;
         delete t2;
@@ -374,6 +425,30 @@ int main(int argc, char *argv[])
         
     }
 
+    std::cout << "\n[*] "RED "complex thread_group..."RESET"\n";
+    {
+        thread * c1 = new concrete_thread<Controller>;
+        thread * c2 = new concrete_thread<Controller>;
+
+        c1->start();
+        c2->start();
+
+        c1->join();
+        c2->join();
+    } 
+
+    std::cout << "done." << std::endl;
+
+    std::cout << "\n[*] "RED "barrier..."RESET"\n";
+    {
+        bar.init(2);
+        concrete_thread<BarrierThread> b1(2);
+        concrete_thread<BarrierThread> b2(4);
+        b1.start();
+        b2.start();
+        b1.join();
+        b2.join();
+    }
     std::cout << "done." << std::endl;
 
     return 0;
