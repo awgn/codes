@@ -188,9 +188,7 @@ namespace more { namespace time {
         {}
 
         ~itimer_pulse_thread()
-        {
-            this->cancel();
-        }
+        {}
 
         void *operator()()
         {
@@ -385,10 +383,8 @@ namespace more { namespace time {
         : _M_rt_timer(sec,nsec)
         {}
 
-        virtual ~rt_timer_pulse_thread()
-        {
-            this->cancel();
-        }
+        ~rt_timer_pulse_thread()
+        {}
 
         void *operator()()
         {

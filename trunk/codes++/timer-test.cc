@@ -18,15 +18,13 @@ using namespace more::time;
 more::time::tick_type global_tick; // external linkage
 
 template <tick_type & Tc> 
-struct Thread_1 : public more::posix::thread, private ticker<Tc, itimer_trait<ITIMER_REAL>::signal_expiration > 
+struct Thread_1 : public more::posix::thread, private enable_tick<Tc, itimer_trait<ITIMER_REAL>::signal_expiration > 
 {    
     Thread_1()
     {}
 
     ~Thread_1()
-    {
-        this->cancel();
-    }
+    {}
 
     void *operator()()
     {
@@ -44,15 +42,13 @@ struct Thread_1 : public more::posix::thread, private ticker<Tc, itimer_trait<IT
 
 
 template <tick_type & Tc> 
-struct Thread_2 : public more::posix::thread, private ticker<Tc, SIGRT_MIN > 
+struct Thread_2 : public more::posix::thread, private enable_tick<Tc, SIGRT_MIN > 
 {    
     Thread_2()
     {}
 
     ~Thread_2()
-    {
-        this->cancel();
-    }
+    {}
 
     void *operator()()
     {
@@ -69,15 +65,13 @@ struct Thread_2 : public more::posix::thread, private ticker<Tc, SIGRT_MIN >
 };
 
 template <tick_type & Tc> 
-struct Thread_3 : public more::posix::thread, private ticker<Tc, SIGRT_MIN+1 > 
+struct Thread_3 : public more::posix::thread, private enable_tick<Tc, SIGRT_MIN+1 > 
 {    
     Thread_3()
     {}
 
     ~Thread_3()
-    {
-        this->cancel();
-    }
+    {}
 
     void *operator()()
     {

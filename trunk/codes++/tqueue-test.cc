@@ -33,10 +33,11 @@ struct action
 
 struct thread_push : public more::posix::thread
 {
+    thread_push()
+    {}
+
     ~thread_push()
-    {
-        this->cancel();
-    }
+    {}
 
     void *operator()()
     {
@@ -51,10 +52,11 @@ struct thread_push : public more::posix::thread
 
 struct thread_pop : public more::posix::thread
 {
+    thread_pop()
+    {}
+
     ~thread_pop()
-    {
-        this->cancel();
-    }
+    {}
 
     void *operator()()
     {        
