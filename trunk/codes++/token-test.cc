@@ -32,7 +32,9 @@ main(int argc, char *argv[])
 
         in >> one >> two >> three;
 
-        std::cout << static_cast<std::string>(one.get()) << ' ' << two.get() << ' ' << three.get() << " done!" << std::endl; 
+        const std::string & r_three = three;
+
+        std::cout << static_cast<std::string>(one) << ' ' << two.get() << ' ' << r_three << " done!" << std::endl; 
     }
 
     {
