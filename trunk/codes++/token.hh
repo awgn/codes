@@ -41,8 +41,10 @@ namespace more {
             return in;
         }
 
-        operator std::string() const
-        { return _M_value; }
+        operator const std::string &() const
+        { 
+            return _M_value; 
+        }
 
         const std::string &
         get() const 
