@@ -72,6 +72,7 @@ namespace more {
                 }
 
                 assert ( n <= obj._M_args.size() );
+
                 more::any_out & e = obj._M_args.at(n-1);
                 out << e;
 
@@ -82,10 +83,6 @@ namespace more {
     private:
         std::string _M_format;
         std::vector<any_out> _M_args;
-
-        // non-copyable idiom
-        format(const format &);
-        format & operator=(const format &);
     };
 
 } // namespace more
