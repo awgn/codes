@@ -29,7 +29,7 @@ struct Thread_1 : public more::posix::thread, private enable_tick<Tc, itimer_tra
     void *operator()()
     {
         uint32_t ts;
-        for(int i=0; i < 20; ++i) {
+        for(int i=0; i < 10; ++i) {
             this->wait_for_tick(ts);  // timer
 
             std::cout << std::hex << 
@@ -53,7 +53,7 @@ struct Thread_2 : public more::posix::thread, private enable_tick<Tc, SIGRT_MIN 
     void *operator()()
     {
         uint32_t ts;
-        for(int i=0; i < 20; ++i) {
+        for(int i=0; i < 10; ++i) {
             this->wait_for_tick(ts);  // timer
 
             std::cout << std::hex << 
@@ -76,7 +76,7 @@ struct Thread_3 : public more::posix::thread, private enable_tick<Tc, SIGRT_MIN+
     void *operator()()
     {
         uint32_t ts;
-        for(int i=0; i < 20; ++i) {
+        for(int i=0; i < 10; ++i) {
             this->wait_for_tick(ts);  // timer
 
             std::cout << std::hex << 
@@ -86,6 +86,35 @@ struct Thread_3 : public more::posix::thread, private enable_tick<Tc, SIGRT_MIN+
         return NULL;
     }
 };
+
+template <tick_type & Tc> 
+struct Thread_4 : public more::posix::thread, private enable_tick<Tc, SIGRT_MIN > 
+{    
+    Thread_4(more::time::rt_timer_pulse_thread<SIGRT_MIN,   global_tick > *ptr)
+    : _M_pulse(ptr)
+    {}
+
+    ~Thread_4()
+    {}
+
+    void *operator()()
+    {
+        uint32_t ts;
+        for(int i=1; i <= 10; ++i) {
+            this->wait_for_tick(ts);  // timer
+
+            _M_pulse->update(0,100000000*i);
+
+            std::cout << std::hex << 
+            "SIGRT_MIN+1: [" << this->get_id() << "] " << std::dec << i << " << tick = {" << std::dec << Tc.current << "}\n";
+        }
+
+        return NULL;
+    }
+
+    more::time::rt_timer_pulse_thread<SIGRT_MIN, global_tick > * _M_pulse;
+};
+
 
 
 
@@ -158,7 +187,7 @@ main(int argc, char *argv[])
     }
 
     {
-        std::cout << "rt_timer_thread test: " << std::endl;
+        std::cout << "rt_timer_thread test: ----------------------------------" << std::endl;
 
         concrete_thread< more::time::rt_timer_pulse_thread<SIGRT_MIN,   global_tick > > rt_1(&spec); 
         concrete_thread< more::time::rt_timer_pulse_thread<SIGRT_MIN+1, global_tick > > rt_2(&spec2); 
@@ -177,6 +206,22 @@ main(int argc, char *argv[])
 
         std::cout << "done." << std::endl;
     }
+
+    {
+        std::cout << "rt_timer_thread (update test): -------------------------" << std::endl;
+
+        concrete_thread< more::time::rt_timer_pulse_thread<SIGRT_MIN,  global_tick > > rt_1(&spec); 
+        
+        rt_1.start();
+
+        more::posix::thread * p = new concrete_thread< Thread_4<global_tick> >(&rt_1);
+
+        p->start(); 
+        p->join();
+
+        std::cout << "done." << std::endl;
+    }
+
 
     return 0;
 }

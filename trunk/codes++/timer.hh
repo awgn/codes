@@ -126,11 +126,10 @@ namespace more { namespace time {
             ::setitimer(WHICH, &stop, 0);
         }
         
-        void operator()()
+        int start()
         {
             // start the itimer
-            if ( ::setitimer(WHICH, &_M_itv, _M_itv_p) < 0 )
-                throw std::runtime_error(std::string("setitimer: ").append(strerror(errno)));
+            return ::setitimer(WHICH, &_M_itv, _M_itv_p);
         }
 
         void set(const itimerval * value, itimerval *ovalue = NULL)
@@ -152,13 +151,24 @@ namespace more { namespace time {
             _M_itv.it_interval.tv_sec  = sec;
             _M_itv.it_interval.tv_usec = usec;
             _M_itv.it_value.tv_sec     = sec;
-            _M_itv.it_value.tv_usec    =usec;
+            _M_itv.it_value.tv_usec    = usec;
         }
 
         int get(struct itimerval *value) const
         { 
             return ::getitimer(WHICH,value); 
         }
+
+        friend std::ostream &
+        operator<<(std::ostream &out, itimer &rhs)
+        {
+            out << "itimerval:{ value:{" << rhs._M_its.it_value.tv_sec  << ',' << 
+                                rhs._M_its.it_value.tv_usec << 
+                         "} interval:{" << rhs._M_its.it_interval.tv_sec << ',' <<
+                                           rhs._M_its.it_interval.tv_usec <<  "} }"; 
+            return out;
+        }
+
 
     private: 
         itimerval   _M_itv;
@@ -195,7 +205,8 @@ namespace more { namespace time {
             int sig;
 
             // start the timer
-            _M_itimer();
+            if ( _M_itimer.start() < 0 )
+                throw std::runtime_error(std::string("setitimer: ").append(strerror(errno)));
 
             sigset_t sigexp; 
             sigemptyset(&sigexp);
@@ -269,15 +280,14 @@ namespace more { namespace time {
 
         ~rt_timer()
         {
-            // stop the timer
+            // delete the timer
             ::timer_delete(_M_id); 
         }
 
-        void operator()()
+        int start()
         {
             // start the timer
-            if (::timer_settime(_M_id, FLAGS, &_M_its, _M_its_p) < 0)
-                throw std::runtime_error(std::string("timer_settime: ").append(strerror(errno)));
+            return ::timer_settime(_M_id, FLAGS, &_M_its, _M_its_p);
         }
 
         timer_t
@@ -339,7 +349,6 @@ namespace more { namespace time {
             // (to 34 or 35)
 
             static_assert< SIGNO >= SIGRT_MIN && SIGNO <= SIGRT_MAX > rt_sig_numer_not_allowed __attribute__((unused)); 
-
             static_assert< FLAGS == 0 || FLAGS == 1 > timer_settime_flags_not_allowed __attribute__((unused));
 
             struct sigevent ev;
@@ -351,7 +360,19 @@ namespace more { namespace time {
                 throw std::runtime_error(std::string("timer: ").append(strerror(errno)));
         }
 
+        friend std::ostream &
+        operator<<(std::ostream &out, rt_timer &rhs)
+        {
+            out << "itimerspec:{ value:{" << rhs._M_its.it_value.tv_sec  << ',' << 
+                                rhs._M_its.it_value.tv_nsec << 
+                         "} interval:{" << rhs._M_its.it_interval.tv_sec << ',' <<
+                                           rhs._M_its.it_interval.tv_nsec <<  "} }"; 
+            return out;
+        }
+
         timer_t      _M_id;
+
+    public:
 
         itimerspec   _M_its;
         itimerspec * _M_its_p;
@@ -368,19 +389,19 @@ namespace more { namespace time {
     public:
 
         rt_timer_pulse_thread()
-        : _M_rt_timer()
+        : _M_rt_timer(), _M_update(false)
         {}
 
         rt_timer_pulse_thread(const itimerspec *value, itimerspec *oldvalue = NULL)
-        : _M_rt_timer(value, oldvalue)
+        : _M_rt_timer(value, oldvalue), _M_update(false)
         {}
 
         rt_timer_pulse_thread(const timespec *value)
-        : _M_rt_timer(value)
+        : _M_rt_timer(value), _M_update(false)
         {}
 
         rt_timer_pulse_thread(time_t sec, long nsec)
-        : _M_rt_timer(sec,nsec)
+        : _M_rt_timer(sec,nsec), _M_update(false)
         {}
 
         ~rt_timer_pulse_thread()
@@ -391,7 +412,8 @@ namespace more { namespace time {
             int sig;
 
             // start the timer
-            _M_rt_timer();
+            if ( _M_rt_timer.start() < 0)
+                throw std::runtime_error(std::string("timer_settime: ").append(strerror(errno)));
 
             sigset_t sigexp;
             sigemptyset(&sigexp);
@@ -399,7 +421,17 @@ namespace more { namespace time {
 
             for(timeval now;;)
             {
-                sigwait(&sigexp, &sig); 
+                sigwait(&sigexp, &sig);
+
+                if (_M_update) {
+                    posix::scoped_lock<posix::mutex> _L_(_M_mutex_update);
+                        
+                    if (_M_rt_timer.start() < 0)
+                        throw std::runtime_error(std::string("timer_settime: ").append(strerror(errno)));
+
+                    _M_update = false;
+                }
+
                 assert( sig == SIGNO );
                 ::gettimeofday(&now, NULL);
         
@@ -411,9 +443,33 @@ namespace more { namespace time {
             return (void *)0;
         }
 
+        void update(const itimerspec *value)
+        {
+            posix::scoped_lock<posix::mutex> _L_(_M_mutex_update);
+            _M_rt_timer.set(value, NULL);
+            _M_update = true; 
+        } 
+
+        void update(const timespec *value)
+        {    
+            posix::scoped_lock<posix::mutex> _L_(_M_mutex_update);
+            _M_rt_timer.set(value);            
+            _M_update = true; 
+        } 
+
+        void update(time_t sec, long nsec)
+        {  
+            posix::scoped_lock<posix::mutex> _L_(_M_mutex_update);
+            _M_rt_timer.set(sec,nsec);         
+            _M_update = true; 
+        } 
+
     private:
         rt_timer<CID, SIGEV_SIGNAL, SIGNO>  _M_rt_timer;        
-        
+
+        posix::mutex _M_mutex_update;
+        bool _M_update;
+
         // non-copyable idiom
         rt_timer_pulse_thread(const rt_timer_pulse_thread &);
         rt_timer_pulse_thread & operator=(const rt_timer_pulse_thread &);
