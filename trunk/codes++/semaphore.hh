@@ -18,7 +18,7 @@
 #include <iostream>
 
 #include <semaphore.h>
-#include <errno.h>
+#include <error.hh>
 
 namespace more { namespace posix {
 
@@ -29,14 +29,13 @@ namespace more { namespace posix {
                 : _M_sem()
                 {
                     if ( this->init(value, pshared) < 0 )
-                        throw std::runtime_error(
-                                std::string("sem_init: ").append(strerror(errno)));
+                        throw more::syscall_error("sem_init", errno);
                 }
 
                 ~semaphore()
                 {
                     if( sem_destroy(&_M_sem) < 0)
-                       std::clog << "sem_destroy: " << strerror(errno) << std::endl; 
+                       std::clog << "sem_destroy: " << pretty_strerror(errno) << std::endl; 
                 }
 
                 int init(unsigned int value, int pshared)          
@@ -47,7 +46,7 @@ namespace more { namespace posix {
                 int wait() const
                 {
                     if ( sem_wait(&_M_sem) < 0 ) {
-                        std::clog << "sem_wait: " << strerror(errno) << std::endl;
+                        std::clog << "sem_wait: " << pretty_strerror(errno) << std::endl;
                         return -1;
                     } 
                     return 0;
@@ -56,7 +55,7 @@ namespace more { namespace posix {
                 int trywait() const
                 {
                     if ( sem_trywait(&_M_sem) < 0 ) {
-                        std::clog << "sem_wait: " << strerror(errno) << std::endl;
+                        std::clog << "sem_wait: " << pretty_strerror(errno) << std::endl;
                         return -1;
                     } 
                     return 0;
@@ -65,7 +64,7 @@ namespace more { namespace posix {
                 int timedwait(const struct timespec *abs_timeout) const
                 {
                     if ( sem_timedwait(&_M_sem, abs_timeout) < 0 ) {
-                        std::clog << "sem_timedwait: " << strerror(errno) << std::endl;
+                        std::clog << "sem_timedwait: " << pretty_strerror(errno) << std::endl;
                         return -1;
                     } 
                     return 0;
@@ -74,7 +73,7 @@ namespace more { namespace posix {
                 int post()
                 {
                     if ( sem_post(&_M_sem) < 0 ) {
-                        std::clog << "sem_post: " << strerror(errno) << std::endl;
+                        std::clog << "sem_post: " << pretty_strerror(errno) << std::endl;
                         return -1;
                     } 
                     return 0;
@@ -83,7 +82,7 @@ namespace more { namespace posix {
                 int get(int *value) const
                 {
                     if ( sem_getvalue(&_M_sem,value) < 0 ) {
-                        std::clog << "sem_getvalue: " << strerror(errno) << std::endl; 
+                        std::clog << "sem_getvalue: " << pretty_strerror(errno) << std::endl; 
                         return -1;
                     }
                     return 0;

@@ -16,7 +16,6 @@
 #include <sys/un.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <errno.h>
 
 #include <iostream>
 #include <string>
@@ -24,6 +23,7 @@
 #include <stdexcept>
 
 #include <enable_exception_if.hh>
+#include <error.hh>
 
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX 108
@@ -147,7 +147,7 @@ namespace more {
         {
             char buf[64];
             if (inet_ntop(AF_INET, &_M_addr.sin_addr, buf, sizeof(buf)) <= 0) {
-                throw_ ( std::runtime_error(std::string("inet_ntop: ").append(strerror(errno))), std::string() );
+                throw_ ( std::runtime_error(std::string("inet_ntop: ").append(pretty_strerror(errno))), std::string() );
             }
             return std::string(buf);
         }
@@ -217,7 +217,7 @@ namespace more {
                 return;
             }
             if (inet_pton(AF_INET6, host.c_str(), &_M_addr.sin6_addr.s6_addr) <= 0) {
-                throw_ ( std::runtime_error(std::string("inet_pton: ").append(strerror(errno))) );
+                throw_ ( std::runtime_error(std::string("inet_pton: ").append(pretty_strerror(errno))) );
             }
         }
 
@@ -253,7 +253,7 @@ namespace more {
                 return;
             }
             if (inet_pton(AF_INET6, h.c_str(), &_M_addr.sin6_addr.s6_addr) <= 0) {
-                throw_ ( std::runtime_error(std::string("inet_pton: ").append(strerror(errno))) );
+                throw_ ( std::runtime_error(std::string("inet_pton: ").append(pretty_strerror(errno))) );
             }
         }
 
@@ -267,7 +267,7 @@ namespace more {
         {
             char buf[64];
             if (inet_ntop(AF_INET6, &_M_addr.sin6_addr, buf, sizeof(buf)) <= 0) {
-                throw_ ( std::runtime_error(std::string("inet_ntop: ").append(strerror(errno))), std::string() );
+                throw_ ( std::runtime_error(std::string("inet_ntop: ").append(pretty_strerror(errno))), std::string() );
             }
             return std::string(buf);
         }

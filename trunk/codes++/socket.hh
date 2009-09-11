@@ -14,12 +14,11 @@
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
 #include <sys/uio.h>
-#include <errno.h>
-#include <err.h>
 
 #include <sockaddress.hh>
 #include <atomicity-policy.hh>
 #include <enable_exception_if.hh>
+#include <error.hh>
 
 #include <tr1/array>
 
@@ -123,12 +122,12 @@ namespace more {
             typename ATOMICITY::scoped_lock sl(_M_mutex);
 
             if (_M_fd != -1) {
-                throw_ ( std::runtime_error("base_socket::init: socket already opened"), -1 );
+                throw_ ( std::runtime_error("base_socket::init : socket already opened"), -1 );
             }
 
             _M_fd = ::socket(FAMILY, type, protocol);
             if (_M_fd == -1) {
-                throw_ ( std::runtime_error(std::string("base_socket::init: ").append(strerror(errno))), -1 );
+                throw_ ( more::syscall_error(std::string("base_socket::init"),errno), -1 );
             }
             return 0;
         }
