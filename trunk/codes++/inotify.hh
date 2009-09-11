@@ -24,9 +24,9 @@
 
 #include <sys/inotify.h>
 #include <sys/select.h>
-#include <errno.h>
 
-#define ERR(x)      (std::string(x) + ": " + strerror(errno))
+#include <error.hh>
+
 #define EVENT_SIZE  (sizeof (struct inotify_event))     /* size of the event structure, not counting name */
 #define BUF_LEN     (1024 * (EVENT_SIZE + 16))          /* reasonable guess as to size of 1024 events */
 
@@ -76,7 +76,7 @@ namespace Linux {
                 _M_fd(inotify_init())
             {
                 if ( _M_fd < 0 )
-                    throw std::runtime_error(ERR("inotify_init")); 
+                    throw more::syscall_error("inotify_init"); 
             }
 
             ~Inotify() { ::close(_M_fd); }
@@ -97,7 +97,7 @@ namespace Linux {
                     if (len < 0 && errno == EINTR )
                         continue;
                     if (len < 0)
-                        throw std::runtime_error(ERR("wait_event"));
+                        throw more::syscall_error("wait_event");
 
                     break;
                 }

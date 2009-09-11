@@ -142,7 +142,7 @@ namespace more {
         {
             ssize_t b = cw();
             if (b < 0)
-                throw std::runtime_error(std::string("ext_buffer: ").append(strerror(errno)));
+                throw std::runtime_error(std::string("ext_buffer"));
 
             _M_iovec.iov_base = cw.data();
             _M_iovec.iov_len  = b;
@@ -156,7 +156,7 @@ namespace more {
 
             ssize_t c = cw();
             if (c < 0)
-                throw std::runtime_error(std::string("ext_buffer: ").append(strerror(errno)));
+                throw std::runtime_error(std::string("ext_buffer"));
 
             _M_iovec.iov_base = b;
             _M_iovec.iov_len  = c + (static_cast<char *>(cw.data()) - static_cast<char *>(b));
@@ -273,7 +273,7 @@ namespace more {
         {
             ssize_t b = cw();
             if (b < 0)
-                throw std::runtime_error(std::string("ext_const_buffer: ").append(strerror(errno)));
+                throw std::runtime_error(std::string("ext_const_buffer"));
 
             _M_iovec.iov_base = cw.data();
             _M_iovec.iov_len  = b;
@@ -287,7 +287,7 @@ namespace more {
 
             ssize_t c = cw();
             if (c < 0)
-                throw std::runtime_error(std::string("ext_const_buffer: ").append(strerror(errno)));
+                throw std::runtime_error(std::string("ext_const_buffer"));
 
             _M_iovec.iov_base = const_cast<void *>(b);
             _M_iovec.iov_len  = c + (static_cast<char *>(cw.data()) - static_cast<char *>(b));

@@ -12,10 +12,9 @@
 #define FLOCK_HH
 
 #include <sys/file.h>
-#include <errno.h>
-
 #include <iostream>
 #include <cstring>
+#include <error.hh>
 
 namespace more 
 {
@@ -35,11 +34,11 @@ namespace more
         {
             _M_fd = open(filelock, O_RDONLY|O_CREAT);
             if (_M_fd == -1) {
-                std::clog << "open: " << strerror(errno) << std::endl;
+                std::clog << "open: " << pretty_strerror(errno) << std::endl;
                 return;
             }
             if (flock(_M_fd, flock_operation<MODE>::value) < 0 ) {
-                std::clog << "flock: " << strerror(errno) << std::endl;
+                std::clog << "flock: " << pretty_strerror(errno) << std::endl;
                 return;
             }
             _M_status = true;
@@ -48,7 +47,7 @@ namespace more
         ~scoped_flock()
         {
             if (flock(_M_fd, LOCK_UN) < 0 ) {
-                std::clog << "flock(...,LOCK_UN: " << strerror(errno) << std::endl;
+                std::clog << "flock(...,LOCK_UN: " << pretty_strerror(errno) << std::endl;
                 return;
             }
             close(_M_fd);
