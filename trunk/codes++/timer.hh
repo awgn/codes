@@ -15,9 +15,9 @@
 #include <tr1/type_traits>
 #include <tr1/array>
 #include <cstring>
+#include <error.hh>
 
 #include <sys/time.h>
-#include <errno.h>
 
 namespace more { namespace time {
 
@@ -206,7 +206,7 @@ namespace more { namespace time {
 
             // start the timer
             if ( _M_itimer.start() < 0 )
-                throw std::runtime_error(std::string("setitimer: ").append(strerror(errno)));
+                throw more::syscall_error(std::string("setitimer",errno));
 
             sigset_t sigexp; 
             sigemptyset(&sigexp);
@@ -357,7 +357,7 @@ namespace more { namespace time {
             ev.sigev_value.sival_ptr = &_M_id;
 
             if ( ::timer_create(CID, &ev, &_M_id) <  0 )
-                throw std::runtime_error(std::string("timer: ").append(strerror(errno)));
+                throw more::syscall_error(std::string("timer",errno));
         }
 
         friend std::ostream &
@@ -413,7 +413,7 @@ namespace more { namespace time {
 
             // start the timer
             if ( _M_rt_timer.start() < 0)
-                throw std::runtime_error(std::string("timer_settime: ").append(strerror(errno)));
+                throw more::syscall_error(std::string("timer_settime"));
 
             sigset_t sigexp;
             sigemptyset(&sigexp);
@@ -427,7 +427,7 @@ namespace more { namespace time {
                     posix::scoped_lock<posix::mutex> _L_(_M_mutex_update);
                         
                     if (_M_rt_timer.start() < 0)
-                        throw std::runtime_error(std::string("timer_settime: ").append(strerror(errno)));
+                        throw more::syscall_error(std::string("timer_settime"));
 
                     _M_update = false;
                 }
