@@ -20,13 +20,13 @@
 #include <algorithm>
 #include <set>
 
+#include <error.hh>
 #include <noncopyable.hh>
 
 #include <sys/time.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <signal.h>
-#include <errno.h>
 
 namespace more { namespace posix 
 {    
@@ -183,9 +183,9 @@ namespace more { namespace posix
     public:
         explicit mutex(pthread_mutexattr_t *attr = NULL) 
         : _M_pm()
-        { 
-            if (::pthread_mutex_init(&_M_pm,attr) != 0) {
-                throw std::runtime_error("pthread_mutex_init");
+        {
+            if (int err =::pthread_mutex_init(&_M_pm,attr)) {
+                throw more::syscall_error("pthread_mutex_init",err);
             }
         }
 
@@ -202,17 +202,17 @@ namespace more { namespace posix
 
             pthread_mutexattr_t attr; 
 
-            if (::pthread_mutexattr_init(&attr) != 0 ) {
-                throw std::runtime_error("pthread_mutexattr_init");
+            if (int err = ::pthread_mutexattr_init(&attr)) {
+                throw more::syscall_error("pthread_mutexattr_init",err);
             }
-            if (::pthread_mutexattr_settype (&attr, type) != 0) {
-                throw std::runtime_error("pthread_mutexattr_settype");
+            if (int err = ::pthread_mutexattr_settype (&attr, type)) {
+                throw more::syscall_error("pthread_mutexattr_settype", err);
             }
-            if (::pthread_mutex_init(&_M_pm,&attr) != 0) {
-                throw std::runtime_error("pthread_mutex_init");
+            if (int err = ::pthread_mutex_init(&_M_pm,&attr)) {
+                throw more::syscall_error("pthread_mutex_init", err);
             }
-            if (::pthread_mutexattr_destroy (&attr) != 0) {
-                throw std::runtime_error("pthread_mutexattr_destroy");
+            if (int err = ::pthread_mutexattr_destroy (&attr)) {
+                throw more::syscall_error("pthread_mutexattr_destroy", err);
             }
         }
 
@@ -221,7 +221,7 @@ namespace more { namespace posix
             if (int err = ::pthread_mutex_destroy(&_M_pm)) { 
                 if (err != EBUSY)
                     std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy: " << 
-                    strerror(err) << std::endl;  
+                    pretty_strerror(err) << std::endl;  
             }
         }
 
@@ -230,7 +230,7 @@ namespace more { namespace posix
             this->use_incr(); 
             if (int err = ::pthread_mutex_lock(&_M_pm)) { 
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_lock: " << 
-                    strerror(err) << std::endl;
+                    pretty_strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -241,7 +241,7 @@ namespace more { namespace posix
         { 
             if ( int err = ::pthread_mutex_unlock(&_M_pm)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_unlock: " << 
-                    strerror(err) << std::endl;
+                    pretty_strerror(err) << std::endl;
                 return false;
             }
             this->use_decr();
@@ -260,8 +260,8 @@ namespace more { namespace posix
         explicit rw_mutex(pthread_rwlockattr_t *attr = NULL) 
         : _M_pm()
         { 
-            if (::pthread_rwlock_init(&_M_pm, attr) != 0 ) { 
-                throw std::runtime_error("pthread_rwlock_init");
+            if (int err = ::pthread_rwlock_init(&_M_pm, attr)) { 
+                throw more::syscall_error("pthread_rwlock_init",err);
             }
         }
 
@@ -269,7 +269,7 @@ namespace more { namespace posix
         { 
             if (int err = ::pthread_rwlock_destroy(&_M_pm)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_rw_mutex_destroy: " << 
-                        strerror(err) << std::endl; 
+                        pretty_strerror(err) << std::endl; 
             }
         }
 
@@ -278,7 +278,7 @@ namespace more { namespace posix
             this->use_incr(); 
             if (int err = ::pthread_rwlock_rdlock(&_M_pm)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_rdlock: " << 
-                        strerror(err) << std::endl;
+                        pretty_strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -290,7 +290,7 @@ namespace more { namespace posix
             this->use_incr(); 
             if (int err = ::pthread_rwlock_wrlock(&_M_pm)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_wrlock: " << 
-                            strerror(err) << std::endl;
+                            pretty_strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -301,7 +301,7 @@ namespace more { namespace posix
         { 
             if (int err = ::pthread_rwlock_unlock(&_M_pm)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_wr_ulock: " << 
-                            strerror(err) << std::endl;
+                            pretty_strerror(err) << std::endl;
                 return false;
             }
             this->use_decr();
@@ -387,8 +387,8 @@ namespace more { namespace posix
         cond(pthread_condattr_t *attr = NULL)
         : _M_cond()
         {
-            if (::pthread_cond_init(&_M_cond, attr) != 0) {
-                throw std::runtime_error("pthread_cond_init");
+            if (int err = ::pthread_cond_init(&_M_cond, attr)) {
+                throw more::syscall_error("pthread_cond_init",err);
             }
         }
 
@@ -406,7 +406,7 @@ namespace more { namespace posix
             sl.get_mutex().use_decr();
             if (int err = ::pthread_cond_wait(&_M_cond, & sl.get_mutex()._M_pm)) {
                  std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_wait: " << 
-                    strerror(err) << std::endl;
+                    pretty_strerror(err) << std::endl;
             }
             sl.get_mutex().use_incr();
             return 0; 
@@ -418,7 +418,7 @@ namespace more { namespace posix
             sl.get_mutex().use_decr();
             if (int err = ::pthread_cond_timedwait(&_M_cond, &sl.get_mutex()._M_pm, abstime)){
                  std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_timedwait: " << 
-                    strerror(err) << std::endl;
+                    pretty_strerror(err) << std::endl;
             }
             sl.get_mutex().use_incr();
             return 0;
@@ -429,7 +429,7 @@ namespace more { namespace posix
             if (int err = ::pthread_cond_destroy(&_M_cond)) {
                 if (err != EBUSY)
                     std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy: " << 
-                        strerror(err) << std::endl;
+                        pretty_strerror(err) << std::endl;
             }
         }
 
@@ -447,27 +447,21 @@ namespace more { namespace posix
         barrier(int count, const pthread_barrierattr_t * attr = NULL)
         : _M_barrier()
         {
-            if (this->init(count,attr)) {
-                throw std::runtime_error("pthread_barrier_init");
-            }
+            this->init(count,attr);
         }
 
         ~barrier()
         {
             if (int err=pthread_barrier_destroy(&_M_barrier)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_barrier_destroy: " << 
-                    strerror(err) << std::endl;
+                    pretty_strerror(err) << std::endl;
             }
         }
 
-        int init(int count, const pthread_barrierattr_t * attr = NULL)
+        void init(int count, const pthread_barrierattr_t * attr = NULL)
         {
-            if (int err=pthread_barrier_init(&_M_barrier, attr, count)) {
-                std::clog << __PRETTY_FUNCTION__  << ": pthread_barrier_init: " << 
-                    strerror(err) << std::endl;
-                return err;
-            }
-            return 0; 
+            if (int err = pthread_barrier_init(&_M_barrier, attr, count)) 
+                throw more::syscall_error("pthread_barrier_init",err);
         }
 
         void wait() 
@@ -643,7 +637,7 @@ namespace more { namespace posix
 
             if (int err = ::pthread_create(&_M_thread,&(*_M_attr),thread_routine<false>, this)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << 
-                    strerror(err) << std::endl;
+                    pretty_strerror(err) << std::endl;
                 return false;
             }
             _M_run_state = thread_running;
@@ -822,7 +816,7 @@ namespace more { namespace posix
 
             if (int err = ::pthread_create(&that->_M_thread, &(*that->_M_attr), thread_routine<true>, that )) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << 
-                    strerror(err) << std::endl;
+                    pretty_strerror(err) << std::endl;
                 return false;
             }
             that->_M_run_state = thread_running;
