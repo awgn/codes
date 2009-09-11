@@ -2,6 +2,7 @@
 #define _ERRCODE_H_
 
 #include <errno.h>
+#include <stdexcept>
 
 namespace more {
 
@@ -405,6 +406,17 @@ namespace more {
         errcode<131>::value,
         errcode<132>::value,
     };
+    // threadsafe pretty_strerror
+    //
+
+    static inline
+    const char *
+    strerrcode(int num)
+    {
+        if (num < 0 || num > 132)
+            throw std::out_of_range("more::strerrorcode");
+        return errcode_str[num];
+    }
 
 
 } // namespace more

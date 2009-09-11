@@ -19,7 +19,7 @@
 
 namespace more { 
 
-    // threadsafe strerror_r
+    // threadsafe strerror
     //
 
     static inline
@@ -34,14 +34,8 @@ namespace more {
 #endif
     }
 
-    static inline
-    const char *
-    strerrorcode(int num)
-    {
-        if (num < 0 || num > 132)
-            throw std::out_of_range("more::strerrorcode"); 
-        return errcode_str[num];       
-    }
+    // threadsafe pretty_strerror
+    //
 
     static inline
     std::string
@@ -55,7 +49,6 @@ namespace more {
 #endif
     }
 
-
     // syscall_error exception
     //
 
@@ -66,12 +59,14 @@ namespace more {
 
     public:
         explicit syscall_error(const std::string &m, int e = errno)
-        : _M_msg( more::strerror(e).append(pretty_strerror(e)).append(" : ").append(m) ),
+        : _M_msg(m), 
           _M_err(e)
-        {}
+        {
+            _M_msg.append(": ").append(pretty_strerror(e));
+        }
 
         syscall_error(int e = errno)
-        : _M_msg( more::strerror(e).append(pretty_strerror(e))),
+        : _M_msg( pretty_strerror(e) ),
           _M_err(e)
         {}
 
