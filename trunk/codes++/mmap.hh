@@ -19,7 +19,7 @@
 #include <fcntl.h>
 
 #include <stdexcept>
-#include <exception.hh>
+#include <error.hh>
 
 #include <static_assert.hh>
 #include <mtp.hh>
@@ -155,7 +155,7 @@ namespace more {
         operator()() const
         {
             if ( !mapping_traits<P>::const_map )
-                throw std::runtime_error("PROT_WRITE on const object");
+                throw more::syscall_error("PROT_WRITE on const object");
 
             return const_cast<mmap *>(this)->operator()(); 
         }
