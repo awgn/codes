@@ -19,6 +19,8 @@ main(int argc, char *argv[])
         std::cout << more::pretty_strerror(i) << std::endl; 
     }
 
+    std::cout << "strerrorcode(EINVAL) = " << more::strerrorcode(-4) << std::endl;
+
     throw more::syscall_error("prova",EINVAL);
 
     return 0;

@@ -26,16 +26,33 @@ namespace more {
     std::string
     strerror(int num)
     {
+#ifdef _REENTRANT
         char store[80];
-        return ( strerror_r(num, store, sizeof(store)/sizeof(store[0])) );
+        return ::strerror_r(num, store, sizeof(store)/sizeof(store[0]));
+#else
+        return ::strerror(num);
+#endif
+    }
+
+    static inline
+    const char *
+    strerrorcode(int num)
+    {
+        if (num < 0 || num > 132)
+            throw std::out_of_range("more::strerrorcode"); 
+        return errcode_str[num];       
     }
 
     static inline
     std::string
     pretty_strerror(int num)
     {
+#ifdef _REENTRANT
         char store[80];
-        return ( std::string(strerror_r(num, store, sizeof(store)/sizeof(store[0]))).append(" [").append(more::errcode_str[num]).append("]") );
+        return std::string(::strerror_r(num, store, sizeof(store)/sizeof(store[0]))).append(" [").append(more::errcode_str[num]).append("]");
+#else
+        return std::string(::strerror(num)).append(" [").append(more::errcode_str[num]).append("]");
+#endif
     }
 
 
