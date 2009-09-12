@@ -43,9 +43,9 @@ namespace more {
     {
 #ifdef _REENTRANT
         char store[80];
-        return std::string(::strerror_r(num, store, sizeof(store)/sizeof(store[0]))).append(" [").append(more::errcode_str[num]).append("]");
+        return std::string(::strerror_r(num, store, sizeof(store)/sizeof(store[0]))).append(" [").append(more::strerrcode(num)).append("]");
 #else
-        return std::string(::strerror(num)).append(" [").append(more::errcode_str[num]).append("]");
+        return std::string(::strerror(num)).append(" [").append(more::strerrcode(num)).append("]");
 #endif
     }
 

@@ -17,7 +17,6 @@
 int
 main(int argc, char *argv[])
 {
-    assert( std::string("ENOTRECOVERABLE") == more::errcode_str[ENOTRECOVERABLE] );
     assert( std::string("ENOTRECOVERABLE") == more::strerrcode(ENOTRECOVERABLE) );
 
     try {
