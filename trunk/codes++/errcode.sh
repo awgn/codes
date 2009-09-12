@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # $Id$/
 # 
@@ -21,27 +21,15 @@ echo -e "    template <int E> const char *errcode<E>::value = \"UNKNOWN\";\n"
 echo "#include <errno.h>" | gcc -E -dM - | grep -E "#define E.*[0-9].*" | sort -u -n -k 3 | 
         awk '{printf "    template <> struct errcode<%s> { static const char * value; };\n    const char *errcode<%s>::value = \"%s\";\n", $2, $2, $2}'
 
-echo -e "\n    const char * errcode_str[] = {"
+echo  -e "\n    } // unammed namespace\n"
+echo  -e "    extern const char * errcode_str[];\n"
+echo  -e "    static inline"
+echo  -e "    const char *"
+echo  -e "    strerrcode(int num)"
+echo  -e "    {"
+echo  -e "        if (num < 0 || num > 132)"
+echo  -e "            throw std::out_of_range(\"more::strerrorcode\");"
+echo  -e "        return errcode_str[num];"
+echo  -e "    }"
 
-i=0
-while [ $i -le "132" ]
-do
-        echo "        errcode<$i>::value,"
-        i=$(($i+1))
-done        
-
-echo -e "    };"    
-
-echo -e "    } // unammed namespace\n"
-echo -e "    // threadsafe pretty_strerror"
-echo -e "    //\n"
-echo -e "    static inline"
-echo -e "    const char *"
-echo -e "    strerrcode(int num)"
-echo -e "    {"
-echo -e "        if (num < 0 || num > 132)"
-echo -e "            throw std::out_of_range(\"more::strerrorcode\");"
-echo -e "        return errcode_str[num];"
-echo -e "    }"
-
-echo -e "\n\n} // namespace more\n\n#endif /* _ERRCODE_H_ */"
+echo  -e "\n} // namespace more\n\n#endif /* _ERRCODE_H_ */"
