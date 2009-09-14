@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 # $Id$/
 # 
 # ----------------------------------------------------------------------------
@@ -17,20 +17,67 @@ usage()
 
 version()
 {
-        ret=$(cat $1 | grep "\$Id.*\$" | awk '{print $4}')
+        if [ -f $1 ];
+        then
+                ret=$(cat $1 | grep "\$Id.*\$" | awk '{print $4}')
+        else
+                ret=-1
+        fi
         return $ret 
+}
+
+diff()
+{
+        bdir=$1
+        fname=$2
+
+        version $fname 
+        ver=$?
+
+        version $bdir/$fname
+        base_ver=$?
+
+        if [ $ver -eq $base_ver ];
+        then
+                /usr/bin/diff $bdir/$fname $fname >& /dev/null
+                return $?        
+        fi
+
+        url=`svn info $bdir/$fname | grep URL | awk '{print $2}'`
+        cd /tmp
+        svn export -r $ver $url >& /dev/null
+        cd - >& /dev/null
+
+        /usr/bin/diff /tmp/$fname $fname >& /dev/null
+        return $?
 }
 
 update() 
 {
         bdir=$1
-        echo -n "Updating from $bdir "
+        echo "Updating from $bdir:"
         for i in *.hh
-        do
-                echo -n "."
-                cp -f $bdir/$i $i 
+        do                
+                version $i
+                ver=$?
+                version $bdir/$i
+                base_ver=$?
+
+                diff $bdir $i
+                case "$?" in
+                        0)
+                        if [ $base_ver -gt $ver ];
+                        then 
+                                echo "U $i"
+                                cp -f $bdir/$i $i > /dev/null
+                        fi
+                        ;;
+                        1)
+                        echo "M $i (update not possible)"
+                        ;;
+                esac
         done
-        echo " done."
+        echo "done."
 }
 
 status_()
@@ -40,22 +87,22 @@ status_()
         do
                 version $i
                 ver=$?
-
                 version $bdir/$i
                 base_ver=$?
-
-                /usr/bin/diff $bdir/$i $i > /dev/null
+                
+                diff $bdir $i
                 case "$?" in
                         0)
-                        echo ". $i" 
-                        ;;
-                        1)
+
                         if [ $ver -eq $base_ver ];
                         then
-                                echo "M $i"
+                                echo ". $i" 
                         else
                                 echo "U $i"
-                        fi 
+                        fi
+                        ;;
+                        1)
+                        echo "M $i"
                         ;;
                         2)
                         echo "D $i"
