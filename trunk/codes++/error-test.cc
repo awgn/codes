@@ -19,6 +19,10 @@ main(int argc, char *argv[])
         std::cout << more::pretty_strerror(i) << std::endl; 
     }
 
+    for(int i=0; i > -15; i--) {
+        std::cout << more::pretty_gai_strerror(i) << std::endl; 
+    }
+
     throw more::syscall_error("test",EINVAL);
 
     return 0;

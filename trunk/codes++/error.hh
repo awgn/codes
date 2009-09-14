@@ -17,6 +17,10 @@
 
 #include <errcode.h>
 
+#ifdef _REENTRANT
+#include <atomicity-policy.hh>
+#endif
+
 namespace more { 
 
     // threadsafe strerror
@@ -47,6 +51,31 @@ namespace more {
 #else
         return std::string(::strerror(num)).append(" [").append(more::strerrcode(num)).append("]");
 #endif
+    }
+
+    // threadsafe gai_strerror
+    //
+
+    static inline
+    std::string
+    gai_strerror(int num)
+    {
+#ifdef _REENTRANT
+        static atomicity::GNU_CXX::mutex m;
+        atomicity::GNU_CXX::scoped_lock _lock_(m);
+#endif
+        return ::gai_strerror(num);
+    }
+
+    static inline
+    std::string
+    pretty_gai_strerror(int num)
+    {
+#ifdef _REENTRANT
+        static atomicity::GNU_CXX::mutex m;
+        atomicity::GNU_CXX::scoped_lock _lock_(m);
+#endif
+        return std::string(::gai_strerror(num)).append(" [").append(more::gai_strerrcode(num)).append("]");
     }
 
     // syscall_error exception

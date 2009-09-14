@@ -18,11 +18,14 @@ int
 main(int argc, char *argv[])
 {
     assert( std::string("ENOTRECOVERABLE") == more::strerrcode(ENOTRECOVERABLE) );
-
-    try {
+    assert( std::string("EAI_AGAIN") == more::gai_strerrcode(EAI_AGAIN) );
+    
+    try 
+    {
         more::strerrcode(180);
     }
-    catch(...) {
+    catch(...) 
+    {
         std::cout << "ok." << std::endl;
     }
 

@@ -2,6 +2,7 @@
 #define _ERRCODE_H_
 
 #include <errno.h>
+#include <netdb.h>
 #include <stdexcept>
 
 namespace more { namespace { 
@@ -271,6 +272,34 @@ namespace more { namespace {
     template <> struct errcode<ENOTRECOVERABLE> { static const char * value; };
     const char *errcode<ENOTRECOVERABLE>::value = "ENOTRECOVERABLE";
 
+    template <int E> struct gai_errcode { static const char * value; };
+    template <int E> const char *gai_errcode<E>::value = "UNKNOWN";
+
+    template <> struct gai_errcode<-EAI_OVERFLOW> { static const char * value; };
+    const char *gai_errcode<-EAI_OVERFLOW>::value = "EAI_OVERFLOW";
+    template <> struct gai_errcode<-EAI_SYSTEM> { static const char * value; };
+    const char *gai_errcode<-EAI_SYSTEM>::value = "EAI_SYSTEM";
+    template <> struct gai_errcode<-EAI_MEMORY> { static const char * value; };
+    const char *gai_errcode<-EAI_MEMORY>::value = "EAI_MEMORY";
+    template <> struct gai_errcode<-EAI_ADDRFAMILY> { static const char * value; };
+    const char *gai_errcode<-EAI_ADDRFAMILY>::value = "EAI_ADDRFAMILY";
+    template <> struct gai_errcode<-EAI_SERVICE> { static const char * value; };
+    const char *gai_errcode<-EAI_SERVICE>::value = "EAI_SERVICE";
+    template <> struct gai_errcode<-EAI_SOCKTYPE> { static const char * value; };
+    const char *gai_errcode<-EAI_SOCKTYPE>::value = "EAI_SOCKTYPE";
+    template <> struct gai_errcode<-EAI_FAMILY> { static const char * value; };
+    const char *gai_errcode<-EAI_FAMILY>::value = "EAI_FAMILY";
+    template <> struct gai_errcode<-EAI_NODATA> { static const char * value; };
+    const char *gai_errcode<-EAI_NODATA>::value = "EAI_NODATA";
+    template <> struct gai_errcode<-EAI_FAIL> { static const char * value; };
+    const char *gai_errcode<-EAI_FAIL>::value = "EAI_FAIL";
+    template <> struct gai_errcode<-EAI_AGAIN> { static const char * value; };
+    const char *gai_errcode<-EAI_AGAIN>::value = "EAI_AGAIN";
+    template <> struct gai_errcode<-EAI_NONAME> { static const char * value; };
+    const char *gai_errcode<-EAI_NONAME>::value = "EAI_NONAME";
+    template <> struct gai_errcode<-EAI_BADFLAGS> { static const char * value; };
+    const char *gai_errcode<-EAI_BADFLAGS>::value = "EAI_BADFLAGS";
+
     } // unammed namespace
 
     static inline
@@ -417,6 +446,35 @@ namespace more { namespace {
             throw std::out_of_range("more::strerrorcode");
         return errcode_str[num];
     }
+
+    static inline
+    const char *
+    gai_strerrcode(int num)
+    {
+        static const char * gai_errcode_str[] = {
+            gai_errcode<0>::value,
+            gai_errcode<1>::value,
+            gai_errcode<2>::value,
+            gai_errcode<3>::value,
+            gai_errcode<4>::value,
+            gai_errcode<5>::value,
+            gai_errcode<6>::value,
+            gai_errcode<7>::value,
+            gai_errcode<8>::value,
+            gai_errcode<9>::value,
+            gai_errcode<10>::value,
+            gai_errcode<11>::value,
+            gai_errcode<12>::value,
+            gai_errcode<13>::value,
+            gai_errcode<14>::value,
+            gai_errcode<15>::value,
+        };
+
+        if (num > 0 || num < -15)
+            throw std::out_of_range("more::gai_strerrorcode");
+        return gai_errcode_str[-num];
+    }
+
 
 } // namespace more
 
