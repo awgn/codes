@@ -82,7 +82,7 @@ namespace more {
             hints.ai_flags    = 0;
 
             if (getaddrinfo(host.c_str(), NULL, &hints, &res) < 0) {
-                throw_ ( std::runtime_error( std::string("getaddrinfo: ").append(gai_strerror(errno))) );
+                throw_ ( std::runtime_error( std::string("getaddrinfo: ").append(pretty_gai_strerror(errno))) );
             }
 
             _M_addr.sin_addr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr)->sin_addr;
@@ -130,7 +130,7 @@ namespace more {
             hints.ai_flags    = 0;
 
             if (getaddrinfo(h.c_str(), NULL, &hints, &res) < 0) {
-                throw_ ( std::runtime_error(std::string("getaddrinfo: ").append(gai_strerror(errno))) );
+                throw_ ( std::runtime_error(std::string("getaddrinfo: ").append(pretty_gai_strerror(errno))) );
             }
 
             _M_addr.sin_addr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr)->sin_addr;
@@ -147,7 +147,7 @@ namespace more {
         {
             char buf[64];
             if (inet_ntop(AF_INET, &_M_addr.sin_addr, buf, sizeof(buf)) <= 0) {
-                throw_ ( std::runtime_error(std::string("inet_ntop: ").append(pretty_strerror(errno))), std::string() );
+                throw_ ( more::syscall_error("inet_ntop"), std::string() );
             }
             return std::string(buf);
         }
@@ -217,7 +217,7 @@ namespace more {
                 return;
             }
             if (inet_pton(AF_INET6, host.c_str(), &_M_addr.sin6_addr.s6_addr) <= 0) {
-                throw_ ( std::runtime_error(std::string("inet_pton: ").append(pretty_strerror(errno))) );
+                throw_ ( more::syscall_error("inet_pton") );
             }
         }
 
@@ -253,7 +253,7 @@ namespace more {
                 return;
             }
             if (inet_pton(AF_INET6, h.c_str(), &_M_addr.sin6_addr.s6_addr) <= 0) {
-                throw_ ( std::runtime_error(std::string("inet_pton: ").append(pretty_strerror(errno))) );
+                throw_ ( more::syscall_error("inet_pton") );
             }
         }
 
@@ -267,7 +267,7 @@ namespace more {
         {
             char buf[64];
             if (inet_ntop(AF_INET6, &_M_addr.sin6_addr, buf, sizeof(buf)) <= 0) {
-                throw_ ( std::runtime_error(std::string("inet_ntop: ").append(pretty_strerror(errno))), std::string() );
+                throw_ ( more::syscall_error("inet_ntop"), std::string() );
             }
             return std::string(buf);
         }
