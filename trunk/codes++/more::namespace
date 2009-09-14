@@ -1,0 +1,89 @@
+#!/bin/bash
+# $Id$/
+# 
+# ----------------------------------------------------------------------------
+# "THE BEER-WARE LICENSE" (Revision 42):
+# <bonelli@antifork.org> wrote this file. As long as you retain this notice you
+# can do whatever you want with this stuff. If we meet some day, and you think
+# this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
+# ----------------------------------------------------------------------------
+
+MORE_BASEDIR=/opt/nicola-bonelli-repo/codes++
+
+usage()
+{
+        echo "$0 more::namespace {status|update}"
+}
+
+version()
+{
+        ret=$(cat $1 | grep "\$Id.*\$" | awk '{print $4}')
+        return $ret 
+}
+
+update() 
+{
+        bdir=$1
+        echo -n "Updating from $bdir "
+        for i in *.hh
+        do
+                echo -n "."
+                cp -f $bdir/$i $i 
+        done
+        echo " done."
+}
+
+status_()
+{
+        bdir=$1
+        for i in *.hh
+        do
+                version $i
+                ver=$?
+
+                version $bdir/$i
+                base_ver=$?
+
+                /usr/bin/diff $bdir/$i $i > /dev/null
+                case "$?" in
+                        0)
+                        echo ". $i" 
+                        ;;
+                        1)
+                        if [ $ver -eq $base_ver ];
+                        then
+                                echo "M $i"
+                        else
+                                echo "U $i"
+                        fi 
+                        ;;
+                        2)
+                        echo "D $i"
+                        ;;
+                        *)
+                        echo "? $i"
+                        ;;
+                esac
+        done
+}
+
+
+if [ -z "$1" ];
+then
+        usage
+        exit 1
+fi
+
+
+case "$1" in
+        status)
+        status_ $MORE_BASEDIR
+        ;;
+        update)
+        update $MORE_BASEDIR
+        ;;
+        *)
+        usage
+        exit 1
+        ;;
+esac
