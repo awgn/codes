@@ -203,24 +203,24 @@ namespace mtp {
             enum { value = 1 + size<N>::value };
         };
 
-        // indexof<key>::value
+        // index_of<key>::value
         //
 
-        template <typename K, typename M> struct indexof;
+        template <typename K, typename M> struct index_of;
         template <typename K>
-        struct indexof<K, null>
+        struct index_of<K, null>
         { 
             enum { value = -1 };
         };
         template <typename K, typename V, typename N>
-        struct indexof<K, typemap<K, V, N> >
+        struct index_of<K, typemap<K, V, N> >
         {
             enum { value = 0 };
         };
         template <typename K, typename H, typename V, typename N>
-        struct indexof<K, typemap<H, V, N> >
+        struct index_of<K, typemap<H, V, N> >
         {
-            enum { value = indexof<K,N>::value == -1 ? -1 : 1 + indexof<K,N>::value  };
+            enum { value = index_of<K,N>::value == -1 ? -1 : 1 + index_of<K,N>::value  };
         };
      
         // get_key<int i, typemap>::type

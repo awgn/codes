@@ -37,9 +37,9 @@ main(int argc, char *argv[])
     std::cout << "size<map_1>::value  = " << mtp::TM::size<map_1>::value << std::endl;
     std::cout << "size<map_2>::value  = " << mtp::TM::size<map_2>::value << std::endl;
 
-    std::cout << "indexof<size,map_2> = " << mtp::TM::indexof<size, map_2>::value << std::endl;
-    std::cout << "indexof<age, map_2> = " << mtp::TM::indexof<age, map_2>::value << std::endl;
-    std::cout << "indexof<name,map_2> = " << mtp::TM::indexof<name, map_2>::value << std::endl;
+    std::cout << "index_of<size,map_2> = " << mtp::TM::index_of<size, map_2>::value << std::endl;
+    std::cout << "index_of<age, map_2> = " << mtp::TM::index_of<age, map_2>::value << std::endl;
+    std::cout << "index_of<name,map_2> = " << mtp::TM::index_of<name, map_2>::value << std::endl;
 
     std::cout << "get_key<0, map_2> = " << typeid(mtp::TM::get_key<0, map_2>::type).name() << std::endl; 
     std::cout << "get_key<1, map_2> = " << typeid(mtp::TM::get_key<1, map_2>::type).name() << std::endl; 

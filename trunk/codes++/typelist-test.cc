@@ -92,11 +92,11 @@ int main()
 
     std::cout << "    string:" << h << std::endl;
 
-    // indexof
-    std::cout << "{*} indexof...\n";
-    std::cout << "    double:" << TL::indexof<g_list, double>::value << std::endl;
-    std::cout << "    string:" << TL::indexof<g_list, std::string>::value << std::endl;
-    std::cout << "    int   :" << TL::indexof<g_list, int>::value << std::endl;
+    // index_of
+    std::cout << "{*} index_of...\n";
+    std::cout << "    double:" << TL::index_of<g_list, double>::value << std::endl;
+    std::cout << "    string:" << TL::index_of<g_list, std::string>::value << std::endl;
+    std::cout << "    int   :" << TL::index_of<g_list, int>::value << std::endl;
 
     typedef TL::apply1<g_list, example::sizeof_f>::type h_list;
 
