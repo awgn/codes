@@ -203,7 +203,7 @@ namespace more { namespace kv {
              template <typename K>
              typename std::tr1::add_reference< typename mtp::TM::get<K, T>::type>::type
              get() 
-             { return __get<K>(int2type< mtp::TM::indexof<K, T>::value >()); }
+             { return __get<K>(int2type< mtp::TM::index_of<K, T>::value >()); }
 
              template <typename K, int n>
              typename std::tr1::add_reference<typename mtp::TM::get<K, T>::type>::type
