@@ -8,8 +8,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef _LNISTEAMBUF_HH_
-#define _LNISTEAMBUF_HH_ 
+#ifndef _LNISTREAMBUF_HH_
+#define _LNISTREAMBUF_HH_ 
 
 #include <iostream>
 
@@ -56,4 +56,4 @@ namespace more {
 } // namespace more
 
 
-#endif /* _LNISTEAMBUF_HH_ */
+#endif /* _LNISTREAMBUF_HH_ */

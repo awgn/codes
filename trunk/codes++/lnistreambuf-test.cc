@@ -9,7 +9,7 @@
  */
 
 #include <sstream>
-#include <lnisteambuf.hh>
+#include <lnistreambuf.hh>
 
 int
 main(int argc, char *argv[])
