@@ -9,14 +9,14 @@
  */
 
 
-#ifndef _NULLSTREAMBUF_HH_
-#define _NULLSTREAMBUF_HH_ 
+#ifndef _DUMMYSTREAMBUF_HH_
+#define _DUMMYSTREAMBUF_HH_ 
 
 #include <iostream>
 
 namespace more { 
     
-    class nullstreambuf : public std::streambuf
+    class dummystreambuf : public std::streambuf
     {
     protected:
 
@@ -40,4 +40,4 @@ namespace more {
 
 } // namespace more
 
-#endif /* _NULLSTREAMBUF_HH_ */
+#endif /* _DUMMYSTREAMBUF_HH_ */

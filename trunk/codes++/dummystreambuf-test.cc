@@ -8,16 +8,16 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <nullstreambuf.hh>
+#include <dummystreambuf.hh>
 
 int
 main(int argc, char *argv[])
 {
-    std::ostream null(new more::nullstreambuf);
+    std::ostream dummy(new more::dummystreambuf);
 
     for(int i=0; i<1000000; i++)
     {
-        null << "this string is sent to null";
+        dummy << "this string is sent to null";
     }
 
     return 0;
