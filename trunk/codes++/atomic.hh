@@ -18,12 +18,12 @@
 #include <tr1/memory>
 #include <tr1/type_traits>
 #else
-#error "this compiler is not supported"
+#error "compiler not supported"
 #endif
 
 namespace more {
 
-#ifdef USE_X86_FEATURE_XMM2
+#ifndef DONT_USE_X86_XMM2
     static inline
     void mb()   { asm volatile("mfence" ::: "memory"); }
     static inline
@@ -31,7 +31,6 @@ namespace more {
     static inline
     void wmb()  { asm volatile("sfence" ::: "memory"); }
 #else
-#warning "compile with -DUSE_X86_FEATURE_XMM2 to have optimized memory barriers"
     static inline
     void mb()  { asm volatile("lock; addl $0,0(%%esp)" ::: "memory"); }
     static inline
