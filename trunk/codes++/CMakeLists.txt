@@ -61,6 +61,7 @@ add_executable(tuple-test tuple-test.cc)
 add_executable(type_traits_test type_traits_test.cc)
 add_executable(typelist-test typelist-test.cc)
 add_executable(typemap-test typemap-test.cc)
+add_executable(variant-test variant-test.cc)
 
 target_link_libraries(atomic_test -pthread)
 target_link_libraries(fast_deque-test -pthread)
