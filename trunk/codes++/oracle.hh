@@ -19,6 +19,7 @@
 #include <stdexcept>
 #include <tr1/memory>
 #include <algorithm>
+#include <iterator>
 #include <set>
 
 #include <cxxabi.h>
@@ -43,10 +44,17 @@ namespace std   \
     if (oracle_helper::throw_point::is_enabled()) \
         throw std::runtime_error(std::string("oracle<").append(name()).append(">"));
 
-#define __oracle_header(c, var, color_type)  \
+#define __oracle_header(c, var, color)  \
     std::setw(2) << oracle_helper::throw_point::counter()++ << ':' << \
-    ' ' << c << std::setw(2) << var << ' ' << *this << ' ' << color_type() << __PRETTY_FUNCTION__ << reset_color()
+    ' ' << c << std::setw(2) << var << ' ' << *this << ' ' << \
+        more::colorful< TYPELIST(more::ecma::bold,more::ecma::color) >() << __PRETTY_FUNCTION__ << \
+        more::colorful< TYPELIST(more::ecma::reset) >()
 
+#define __oracle_header_static(c, var, color)  \
+    std::setw(2) << oracle_helper::throw_point::counter()++ << ':' << \
+    ' ' << c << std::setw(2) << var << ' ' << \
+        more::colorful< TYPELIST(more::ecma::bold,more::ecma::color) >() << __PRETTY_FUNCTION__ << \
+        more::colorful< TYPELIST(more::ecma::reset) >()
 
 namespace more { 
 
@@ -113,6 +121,14 @@ namespace more {
                             _M_set.insert(n);
                         }
                     }
+                    
+                    if (_M_set.empty())
+                        return;
+
+                    std::cout << more::colorful< TYPELIST(more::ecma::bold)>() << "oracle throw points: " <<
+                                 more::colorful< TYPELIST(more::ecma::reset) >();
+                    std::copy(_M_set.begin(), _M_set.end(), std::ostream_iterator<int>(std::cout, " "));
+                    std::cout << std::endl;
                 } 
 
                 ~tp()
@@ -139,14 +155,96 @@ namespace more {
     public:
         typedef oracle<E>   oracle_base;
         
-        typedef more::colorful< TYPELIST(more::ecma::bold,more::ecma::fg_red) >         red_color;
-        typedef more::colorful< TYPELIST(more::ecma::bold,more::ecma::fg_green) >       green_color;
-        typedef more::colorful< TYPELIST(more::ecma::bold,more::ecma::fg_light_grey) >  grey_color;
-        typedef more::colorful< TYPELIST(more::ecma::bold,more::ecma::fg_magenta) >     magenta_color;
-        typedef more::colorful< TYPELIST(more::ecma::bold,more::ecma::fg_cyan) >        cyan_color;
-        typedef more::colorful< TYPELIST(more::ecma::bold,more::ecma::fg_blue) >        blue_color;
-        typedef more::colorful< TYPELIST(more::ecma::bold)  >                           bold_color;
-        typedef more::colorful< TYPELIST(more::ecma::reset) >                           reset_color;
+        // normal new/delete
+        //
+
+        static void * operator new(std::size_t size) throw (std::bad_alloc)
+        {
+#ifdef _REENTRANT
+            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+#endif
+            __oracle_tp_check();
+            std::cerr << __oracle_header_static('N', ++_S_new, fg_blue) << std::endl;
+            return ::operator new(size);
+        }
+
+        static void operator delete(void *mem) throw()
+        {
+#ifdef _REENTRANT
+            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+#endif
+            std::cerr << __oracle_header_static('D', ++_S_del, fg_red) << std::endl;
+            ::operator delete(mem);
+        }
+
+        // normal new[]/delete[]
+        //
+
+         static void * operator new[](std::size_t size) throw (std::bad_alloc)
+         {
+ #ifdef _REENTRANT
+             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+ #endif
+             __oracle_tp_check();
+             std::cerr << __oracle_header_static('N', ++_S_new, fg_blue) << std::endl;
+             return ::operator new(size);
+         }
+ 
+         static void operator delete[](void *mem) throw()
+         {
+ #ifdef _REENTRANT
+             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+ #endif
+             std::cerr << __oracle_header_static('D', ++_S_del, fg_red) << std::endl;
+             ::operator delete(mem);
+         }
+
+        // placement new/delete
+        //
+
+         void * operator new(std::size_t size, char *ptr) throw()
+         {
+ #ifdef _REENTRANT
+             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+ #endif
+             __oracle_tp_check();
+             std::cerr << __oracle_header_static('N', ++_S_new, fg_blue) << std::endl;
+             return ::operator new(size,ptr);
+         }
+ 
+        void operator delete(void *mem, char *ptr) throw()
+         {
+ #ifdef _REENTRANT
+             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+ #endif
+             std::cerr << __oracle_header_static('D', ++_S_del, fg_red) << std::endl;
+             ::operator delete(mem,ptr);
+         }
+
+        // placement new[]/delete[]
+        //
+
+         void * operator new[](std::size_t size, char *ptr) throw()
+         {
+ #ifdef _REENTRANT
+             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+ #endif
+             __oracle_tp_check();
+             std::cerr << __oracle_header_static('N', ++_S_new, fg_blue) << std::endl;
+             return ::operator new(size,ptr);
+         }
+ 
+        void operator delete[](void *mem, char *ptr) throw()
+         {
+ #ifdef _REENTRANT
+             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+ #endif
+             std::cerr << __oracle_header_static('D', ++_S_del, fg_red) << std::endl;
+             ::operator delete(mem,ptr);
+         }
+
+        // constructors, copy constructor, operator= and destructor
+        //
 
         oracle()
         : _M_value(oracle_helper::throw_point::counter())
@@ -155,7 +253,7 @@ namespace more {
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, blue_color) << std::endl;
+            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
             _S_set.insert(this);
         }
 
@@ -166,7 +264,7 @@ namespace more {
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, cyan_color) << std::endl;
+            std::cerr << __oracle_header('+', ++_S_ctor, fg_cyan) << std::endl;
             _S_set.insert(this);
         } 
 
@@ -178,7 +276,7 @@ namespace more {
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, blue_color) << std::endl;
+            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
             _S_set.insert(this);
         } 
 
@@ -190,7 +288,7 @@ namespace more {
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, blue_color) << std::endl;
+            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
             _S_set.insert(this);
         }
 
@@ -202,7 +300,7 @@ namespace more {
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, blue_color) << std::endl;
+            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
             _S_set.insert(this);
         }
 
@@ -214,7 +312,7 @@ namespace more {
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, blue_color) << std::endl;
+            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
             _S_set.insert(this);
         }
 
@@ -226,7 +324,7 @@ namespace more {
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, blue_color) << std::endl;
+            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
             _S_set.insert(this);
         }        
 
@@ -237,7 +335,7 @@ namespace more {
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('=', ++_S_opeq, green_color) << std::endl;
+            std::cerr << __oracle_header('=', ++_S_opeq, fg_green) << std::endl;
             _M_value = rhs._M_value;
             return *this;
         }
@@ -247,7 +345,7 @@ namespace more {
 #ifdef _REENTRANT
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
-            std::cerr << __oracle_header('-', ++_S_dtor, red_color) << std::endl;
+            std::cerr << __oracle_header('-', ++_S_dtor, fg_red) << std::endl;
             _S_set.erase(this);
         }
 
@@ -256,12 +354,12 @@ namespace more {
 #ifdef _REENTRANT
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
-            std::cerr << __oracle_header( 'x', ++_S_swap, magenta_color) << std::endl;
+            std::cerr << __oracle_header( 'x', ++_S_swap, fg_magenta) << std::endl;
             std::swap(_M_value, rhs._M_value);
         }
 
-        /////////////////////////
         // for STL algorithms...
+        //
 
         bool 
         operator<(const oracle &rhs) const
@@ -269,7 +367,7 @@ namespace more {
             return _M_value < rhs._M_value;
         }
 
-        // static ///////////////
+        // other static methods
         //
 
         static int
@@ -291,6 +389,16 @@ namespace more {
         swaps()
         {
             return _S_swap;
+        }
+        static int
+        op_new()
+        {
+            return _S_new;
+        }
+        static int
+        op_del()
+        {
+            return _S_del;
         }
 
         static
@@ -319,6 +427,8 @@ namespace more {
         static int _S_dtor;
         static int _S_opeq;
         static int _S_swap;
+        static int _S_new;
+        static int _S_del;
     };
 
     template<typename E>
@@ -345,6 +455,12 @@ namespace more {
     int oracle<E>::_S_swap(0);
 
     template <typename E>
+    int oracle<E>::_S_new(0);
+
+    template <typename E>
+    int oracle<E>::_S_del(0);
+
+    template <typename E>
     std::set<oracle<E> *> oracle<E>::_S_set;
 
     struct oracle_set_dump
@@ -368,10 +484,16 @@ namespace more {
         void 
         printon(std::ostream &out) const
         {
-            out << "oracle<" << oracle_helper::demangle(typeid(E).name()) << "> { ctors:" << oracle<E>::ctors() << 
+            out << more::colorful< TYPELIST(more::ecma::bold)>() << 
+                  "oracle<" << oracle_helper::demangle(typeid(E).name()) << "> stats" <<
+                   more::colorful< TYPELIST(more::ecma::reset)>() << 
+                   " { ctors:" << oracle<E>::ctors() << 
                    " dtors:" << oracle<E>::dtors() << 
                    " oper=:" << oracle<E>::opeqs() << 
-                   " swaps:" << oracle<E>::swaps() << " } "; 
+                   " swaps:" << oracle<E>::swaps() <<
+                   " new:" << oracle<E>::op_new() <<
+                   " del:" << oracle<E>::op_del() <<
+                   " } "; 
 
             std::for_each( oracle<E>::_S_set.begin(), oracle<E>::_S_set.end(), oracle_set_dump(std::cout) ); 
         }
