@@ -11,10 +11,11 @@
 #ifndef _TRAITS_INFO_HH_
 #define _TRAITS_INFO_HH_ 
 
-#include <iostream>
-#include <iomanip>
 #include <tr1/type_traits>
 #include <tr1/memory>
+
+#include <iostream>
+#include <iomanip>
 #include <string>
 #include <cstdlib>
 #include <stdexcept>
@@ -34,7 +35,7 @@ namespace more {
         template <bool B>
         struct color_trait 
         {
-            typedef more::colorful< TYPELIST(ecma::fg_green) > type;
+            typedef more::colorful< TYPELIST(ecma::fg_blue) > type;
         };
 
         template <>
@@ -46,15 +47,15 @@ namespace more {
     }
 
 #ifdef USE_COLORS
-#define __dump_trait_type(x,y)  std::setw(42) << "std::tr1::" #x "<" #y ">: " << \
+#define __dump_trait_type(x,y)   std::setw(42) << "std::tr1::" #x "<" #y ">: " << \
             typename traits_info_helper::color_trait< std::tr1::x<y>::value >::type() << \
             std::tr1::x<y>::value << \
             "_type" << more::colorful< TYPELIST(ecma::reset) > ()  
 #else
-#define __dump_trait_type(x,y)  std::setw(42) << "std::tr1::" #x "<" #y ">: " << std::tr1::x<y>::value << "_type"  
+#define __dump_trait_type(x,y)   std::setw(42) << "std::tr1::" #x "<" #y ">: " << std::tr1::x<y>::value << "_type"  
 #endif
 
-#define __dump_trait_value(x,y)   std::setw(42) << "std::tr1::" #x "<" #y ">: " << std::tr1::x<y>::value  
+#define __dump_trait_value(x,y)  std::setw(42) << "std::tr1::" #x "<" #y ">: " << std::tr1::x<y>::value  
 
     template <typename T>
     struct traits_info
