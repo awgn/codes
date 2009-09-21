@@ -34,6 +34,7 @@ oracle_std_swap(world);
 
 int
 main(int argc, char *argv[])
+try
 {    
     more::oracle_trace<hello>::enable();
     more::oracle_trace<world>::enable();
@@ -50,7 +51,17 @@ main(int argc, char *argv[])
 
     hello abc,x,y;
 
-    new world(10,20); 
+    char buf[16];
+
+    world * p = new world(10,20); 
+    world * q = new (buf) world();
+
+    delete p; 
+    delete q;
+
     return 0;
 }
- 
+catch(std::exception &e)
+{
+    std::cout << "std::runtime_error().what() = " << e.what() << std::endl;
+}
