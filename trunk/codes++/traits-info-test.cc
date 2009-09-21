@@ -11,7 +11,11 @@
 #include <iostream>
 #include <traits-info.hh>
 
-struct null {};
+struct null 
+{
+    null(const null &) throw()
+    {}
+};
 
 int
 main(int argc, char *argv[])
