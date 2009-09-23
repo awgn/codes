@@ -104,9 +104,6 @@ status_()
                         1)
                         echo "M $i"
                         ;;
-                        2)
-                        echo "D $i"
-                        ;;
                         *)
                         echo "? $i"
                         ;;
