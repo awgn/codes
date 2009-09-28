@@ -114,7 +114,11 @@ namespace more {
                  std::tr1::is_same<W,IO_nonblocking>::value )
             {
                 this->set_nonblock(_M_flags);    
-            }                
+            } 
+            else 
+            {
+                this->set_block(_M_flags);    
+            }               
         }
 
         async_base(int fd)
@@ -124,22 +128,22 @@ namespace more {
                  std::tr1::is_same<W,IO_nonblocking>::value )
             {
                 this->set_nonblock(_M_flags);    
+            } 
+            else 
+            {
+                this->set_block(_M_flags);    
             }                
         }
 
         ~async_base()
         {
-            if ( std::tr1::is_same<R,IO_nonblocking>::value || 
-                 std::tr1::is_same<W,IO_nonblocking>::value ) 
-            { 
-                try 
-                {
-                    this->set_flags(_M_flags);
-                }
-                catch(std::exception &e)
-                {
-                    std::clog << "set_flags: " << e.what() << std::endl;
-                }
+            try 
+            {
+                this->set_flags(_M_flags);
+            }
+            catch(std::exception &e)
+            {
+                std::clog << "set_flags: " << e.what() << std::endl;
             }
         }
 
