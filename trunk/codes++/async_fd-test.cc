@@ -22,6 +22,15 @@ main(int argc, char *argv[])
 
     async_fd<IO_blocking, IO_nonblocking> out(fd);
 
+    try 
+    {
+        async_fd<IO_blocking, IO_nonblocking> out2(fd);
+    }
+    catch(std::exception &e)
+    {
+        std::cout << "exception: " << e.what() << std::endl;
+    }
+
     {
         std::cout << "---------- write ----------" << std::endl;
         std::cout << "(" << write(out,"test\n",5) << ")" << std::endl;    

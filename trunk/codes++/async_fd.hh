@@ -24,9 +24,11 @@
 #include <iterator>
 #include <vector>
 #include <cassert>
+#include <set>
 
 #include <error.hh>
-
+#include <noncopyable.hh>
+#include <atomicity-policy.hh>
 
 namespace more { 
 
@@ -101,15 +103,50 @@ namespace more {
         }
     }
 
+    //////////////////////////////// async_root class...
+
+    template <typename ATOM>
+    class async_root : protected atomicity::emptybase_mutex<ATOM>, private noncopyable
+    {
+    public:
+        int fd() const
+        { return _M_fd; }
+
+    protected:
+        async_root(int fd)
+        : _M_fd(fd)
+        {                
+            typename ATOM::scoped_lock S( this->static_mutex() );
+
+            if ( _S_set.find(fd) != _S_set.end())
+                throw std::logic_error("async_fd<>: fd already in use");
+
+            _S_set.insert(fd); 
+        } 
+
+        ~async_root()
+        {  
+            _S_set.erase(_M_fd);
+        }
+
+        int _M_fd;
+
+    private:
+        static std::set<int> _S_set;   
+    };
+
+    template <typename ATOM> 
+    std::set<int> async_root<ATOM>::_S_set; 
+
     //////////////////////////////// async_base class...
 
     template <typename R, typename W> 
-    class async_base
+    class async_base : public async_root<atomicity::DEFAULT> 
     {     
     protected: 
         async_base()
-        : _M_fd(-1)
-        {            
+        : async_root<atomicity::DEFAULT>(-1)
+        { 
             if ( std::tr1::is_same<R,IO_nonblocking>::value ||
                  std::tr1::is_same<W,IO_nonblocking>::value )
             {
@@ -122,7 +159,7 @@ namespace more {
         }
 
         async_base(int fd)
-        : _M_fd(fd)
+        : async_root<atomicity::DEFAULT>(fd)
         {
             if ( std::tr1::is_same<R,IO_nonblocking>::value || 
                  std::tr1::is_same<W,IO_nonblocking>::value )
@@ -152,13 +189,13 @@ namespace more {
         ssize_t
         buffered_write(writev_type, const struct iovec *iov, unsigned int iovcnt, const struct msghdr *, int)
         {
-            return ::writev(_M_fd, iov, iovcnt);
+            return ::writev(this->_M_fd, iov, iovcnt);
         }
 
         ssize_t
         buffered_write(sendmsg_type, const struct iovec *, unsigned int, const struct msghdr *msg, int flags)
         {
-            return ::sendmsg(_M_fd, msg, flags);
+            return ::sendmsg(this->_M_fd, msg, flags);
         }
 
         template <typename F>
@@ -208,7 +245,7 @@ namespace more {
             }
 
 #ifdef ASYNC_DEBUG 
-            int bytes = writev_interactive(_M_fd, _iov, _iovlen);
+            int bytes = writev_interactive(this->_M_fd, _iov, _iovlen);
 #else
             int bytes = this->buffered_write(F(), _iov, _iovlen, &_hdr, flags);
 #endif
@@ -218,8 +255,12 @@ namespace more {
 
             if ( bytes == (bufsize + count) )   // the whole buffer has been flushed...
             {
-                if (bufsize)
+                if (bufsize) {
                     _M_buffer.clear();
+#ifndef NDEBUG
+                    std::cout << "async_fd<" << this->_M_fd << "> #buffer:0" << std::endl;
+#endif
+                }
                 return count;
             }
 
@@ -242,7 +283,7 @@ namespace more {
             swap(_M_buffer,new_buffer);
 
 #ifndef NDEBUG
-            std::cout << "async_fd<" << _M_fd << "> #buffer:" << this->buffer_size() << std::endl;
+            std::cout << "async_fd<" << this->_M_fd << "> #buffer:" << this->buffer_size() << std::endl;
 #endif
             return count; 
         }  
@@ -253,10 +294,6 @@ namespace more {
         int
         buffer_size() const
         { return _M_buffer.size(); }
-
-        int
-        fd() const
-        { return _M_fd; }
 
         void 
         dump_buffer(std::ostream &out)
@@ -272,7 +309,7 @@ namespace more {
         short  
         poll(int timeo_msec = 0)
         {
-            pollfd pfd = { _M_fd, EVENTS, 0 };
+            pollfd pfd = { this->_M_fd, EVENTS, 0 };
 
             if ( int r = ::poll(&pfd, 1, timeo_msec) >=  0 )
             {
@@ -295,25 +332,25 @@ namespace more {
         void set_nonblock(int & old_flags)
         {
             // std::cout << __PRETTY_FUNCTION__ << std::endl;
-            if ((old_flags = fcntl(_M_fd, F_GETFL, 0)) == -1)
+            if ((old_flags = fcntl(this->_M_fd, F_GETFL, 0)) == -1)
                 old_flags = 0;
-            if ( fcntl(_M_fd, F_SETFL, old_flags | O_NONBLOCK) < 0 )
+            if ( fcntl(this->_M_fd, F_SETFL, old_flags | O_NONBLOCK) < 0 )
                 throw more::syscall_error(__FUNCTION__);
         }
 
         void set_block(int &old_flags)
         {
             // std::cout << __PRETTY_FUNCTION__ << std::endl;
-            if ((old_flags = fcntl(_M_fd, F_GETFL, 0)) == -1)
+            if ((old_flags = fcntl(this->_M_fd, F_GETFL, 0)) == -1)
                 old_flags = 0;
-            if ( fcntl(_M_fd, F_SETFL, old_flags & ~O_NONBLOCK) < 0 )
+            if ( fcntl(this->_M_fd, F_SETFL, old_flags & ~O_NONBLOCK) < 0 )
                 throw more::syscall_error(__FUNCTION__);
         }
 
         void set_flags(int flags)
         {
             // std::cout << __PRETTY_FUNCTION__ << std::endl;
-            if ( fcntl(_M_fd, F_SETFL, flags) < 0 )
+            if ( fcntl(this->_M_fd, F_SETFL, flags) < 0 )
                 throw more::syscall_error(__FUNCTION__);
         }
 
@@ -321,7 +358,7 @@ namespace more {
         {
             // std::cout << __PRETTY_FUNCTION__ << std::endl;
             int flags;
-            if ((flags=fcntl(_M_fd, F_GETFL, 0)) == -1)
+            if ((flags=fcntl(this->_M_fd, F_GETFL, 0)) == -1)
                 throw more::syscall_error(__FUNCTION__);
             return flags;
         }
@@ -331,11 +368,11 @@ namespace more {
         void flush();
 
     protected:
-        int _M_fd;
         int _M_flags;
 
         std::vector<char> _M_buffer;
     };
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////
     namespace {   /////////////////////////////////////////////////////////////////////////////
@@ -438,7 +475,7 @@ namespace more {
         size_t res, pos = 0;
 
         while (n > pos) {
-            res = ::write(_M_fd, p + pos, n - pos);
+            res = ::write(this->_M_fd, p + pos, n - pos);
             switch(res) {
             case -1:
                 if ( errno == EINTR || errno == EAGAIN )
