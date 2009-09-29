@@ -139,6 +139,14 @@ namespace more { namespace atomicity {
     {
         typename POLICY::mutex & mutex()
         { return _M_mutex; }
+
+        static 
+        typename POLICY::mutex & static_mutex()
+        {
+            static typename POLICY::mutex one; 
+            return one; 
+        }
+
     private:
         typename POLICY::mutex _M_mutex;
     };
@@ -147,9 +155,15 @@ namespace more { namespace atomicity {
     struct emptybase_mutex<NONE>
     {
         null mutex()
-        { return null(); }
+        { return null(); }        
+        
+        static 
+        null & static_mutex()
+        {
+            static null one; 
+            return one; 
+        }
     };
-
 }}
 
 #endif /* ATOMICITY_HH */
