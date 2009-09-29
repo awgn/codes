@@ -78,11 +78,11 @@ namespace more {
     { enum { value = v }; };
 
     template < template <typename Tp, typename Alloc = std::allocator<Tp> > 
-               class Cont,                          /* container template */ 
-               typename P = void,                   /* update parameter */      
-               bool observerOwnership = false       /* onwership policy: false = raw pointers, true = shared_ptr<> */ ,
-               typename Atomicity = atomicity::NONE /* for multithread set to GNU_CXX */ >
-    class subject
+               class Cont,                              /* container template */ 
+               typename P = void,                       /* update parameter */      
+               bool observerOwnership = false           /* onwership policy: false = raw pointers, true = shared_ptr<> */ ,
+               typename Atomicity = atomicity::DEFAULT  /* for multithread set to GNU_CXX */ >
+    class subject : private atomicity::emptybase_mutex<atomicity::DEFAULT>
     { 
     public:
         typedef typename select_type<observerOwnership, 
@@ -90,32 +90,31 @@ namespace more {
                 observer<P> * >::type ptr_type; 
 
         subject()
-        : _M_observers(),
-          _M_mutex()
+        : _M_observers()
         {}
 
         void notify()
         {
-            typename Atomicity::scoped_lock lock(_M_mutex);
+            typename Atomicity::scoped_lock lock(this->mutex());
             std::for_each(_M_observers.begin(),  _M_observers.end(), mem_fn(&observer<P>::updatex)); 
         }
 
         template<typename T>
         void notify(T n)
         {
-            typename Atomicity::scoped_lock lock(_M_mutex);
+            typename Atomicity::scoped_lock lock(this->mutex());
             std::for_each(_M_observers.begin(),  _M_observers.end(), bind( mem_fn(&observer<P>::updatex), _1, n) ); 
         }
 
         void attach(ptr_type o)
         {
-            typename Atomicity::scoped_lock lock(_M_mutex);
+            typename Atomicity::scoped_lock lock(this->mutex());
             if ( std::find( _M_observers.begin(), _M_observers.end(), o ) == _M_observers.end())
                 _M_observers.push_back(o);
         }
         void detach(ptr_type o)
         {
-            typename Atomicity::scoped_lock lock(_M_mutex);
+            typename Atomicity::scoped_lock lock(this->mutex());
             typename Cont<ptr_type>::iterator it = std::find(_M_observers.begin(), _M_observers.end(), o);
             if ( it != _M_observers.end())
                 _M_observers.erase(it);
@@ -128,7 +127,6 @@ namespace more {
     private:  
         
         Cont< ptr_type >  _M_observers;
-        typename Atomicity::mutex  _M_mutex;
     };
 
 } // namespace more

@@ -19,7 +19,7 @@
 #include <boost/thread.hpp>
 #endif
 
-namespace atomicity {
+namespace more { namespace atomicity {
 
     struct null {};
 
@@ -67,7 +67,6 @@ namespace atomicity {
 #endif
     };
 
-
     template <int, int> struct gnu_cxx;
     template <>
     struct gnu_cxx<4,0> {
@@ -105,19 +104,52 @@ namespace atomicity {
     struct gnu_cxx_recursive<4,2> {
 #if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 2 
         typedef __gnu_cxx::__recursive_mutex mutex;
-        typedef ::atomicity::__scoped_lock<mutex> scoped_lock; // not yet sopported in gnu_cxx 
+        typedef atomicity::__scoped_lock<mutex> scoped_lock; // not yet sopported in gnu_cxx 
 #endif
     };
     template <>
     struct gnu_cxx_recursive<4,3> {
 #if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 3 
         typedef __gnu_cxx::__recursive_mutex mutex;
-        typedef ::atomicity::__scoped_lock<mutex> scoped_lock; // not yet supported in gnu_cxx
+        typedef atomicity::__scoped_lock<mutex> scoped_lock; // not yet supported in gnu_cxx
 #endif
     };
 
     typedef gnu_cxx<__GNUC__, __GNUC_MINOR__> GNU_CXX; 
     typedef gnu_cxx_recursive<__GNUC__, __GNUC_MINOR__> GNU_CXX_RECURSIVE; 
-}
+
+    /////////////////////////////////////////////////////////
+    // default policy... atomicity::DEFAULT
+
+#ifdef _REENTRANT
+#warning "atomicity::DEFAULT set to GNU_CXX"
+    typedef GNU_CXX DEFAULT;
+    typedef GNU_CXX_RECURSIVE DEFAULT_RECURSIVE;
+#else
+#warning "atomicity::DEFAULT set to NONE"
+    typedef NONE DEFAULT;
+    typedef NONE DEFAULT_RECURSIVE;
+#endif
+
+    /////////////////////////////////////////
+    // empty-base omptimization (for mutex)
+
+    template <typename POLICY>
+    struct emptybase_mutex 
+    {
+        typename POLICY::mutex & mutex()
+        { return _M_mutex; }
+    private:
+        typename POLICY::mutex _M_mutex;
+    };
+
+    template <>
+    struct emptybase_mutex<NONE>
+    {
+        null mutex()
+        { return null(); }
+    };
+
+}}
 
 #endif /* ATOMICITY_HH */

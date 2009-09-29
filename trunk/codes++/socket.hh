@@ -28,20 +28,16 @@
 
 namespace more {
 
-#ifdef _REENTRANT
-    typedef atomicity::GNU_CXX  default_socket_atomicity_policy;    
-#else
-    typedef atomicity::NONE  default_socket_atomicity_policy;    
-#endif
-
     template <int FAMILY, typename ATOMICITY>
-    class base_socket  : public more::enable_exception_if<ENABLE_EXCEPTION> 
+    class base_socket  : public more::enable_exception_if<ENABLE_EXCEPTION>, private atomicity::emptybase_mutex<atomicity::DEFAULT> 
     {
     public:
 
         int 
         send(const void *buf, size_t len, int flags) const
-        { return ::send(_M_fd, buf, len, flags); }
+        { 
+            return ::send(_M_fd, buf, len, flags); 
+        }
 
         template <std::size_t N>
         int send(const std::tr1::array<iovec,N> &iov, int flags) const
@@ -63,28 +59,36 @@ namespace more {
 
         int 
         sendto(const void *buf, size_t len, int flags, const sockaddress<FAMILY> &to) const 
-        { return ::sendto(_M_fd, buf, len, flags, 
-                          reinterpret_cast<const struct sockaddr *>(&to), to.len()); }
+        { 
+            return ::sendto(_M_fd, buf, len, flags, 
+                          reinterpret_cast<const struct sockaddr *>(&to), to.len()); 
+        }
 
         int 
         recvfrom(void *buf, size_t len, int flags, sockaddress<FAMILY> &from) const
-        { return ::recvfrom(_M_fd, buf, len, flags, 
-                            reinterpret_cast<struct sockaddr *>(&from), &from.len()); }
+        { 
+            return ::recvfrom(_M_fd, buf, len, flags, 
+                            reinterpret_cast<struct sockaddr *>(&from), &from.len()); 
+        }
 
         virtual int 
         connect(const sockaddress<FAMILY> &addr)
-        { return ::connect(_M_fd, reinterpret_cast<const struct sockaddr *>(&addr), addr.len()); }
+        { 
+            return ::connect(_M_fd, reinterpret_cast<const struct sockaddr *>(&addr), addr.len()); 
+        }
 
         virtual int 
         bind(const sockaddress<FAMILY> &my_addr)
-        { return ::bind(_M_fd,reinterpret_cast<const struct sockaddr *>(&my_addr), my_addr.len()); }
+        { 
+            return ::bind(_M_fd,reinterpret_cast<const struct sockaddr *>(&my_addr), my_addr.len()); 
+        }
 
         int 
         accept(sockaddress<FAMILY> &addr, base_socket<FAMILY, ATOMICITY> &ret) 
         {
             int r = ::accept(_M_fd,reinterpret_cast<struct sockaddr *>(&addr), &addr.len());
             if (r != -1) { 
-                typename ATOMICITY::scoped_lock sl(_M_mutex);
+                typename ATOMICITY::scoped_lock L(this->mutex());
                 if (ret._M_fd != -1)
                     ::close(ret._M_fd);
                 ret._M_fd = r;
@@ -119,7 +123,7 @@ namespace more {
         int 
         init(int type,int protocol=0) 
         {
-            typename ATOMICITY::scoped_lock sl(_M_mutex);
+            typename ATOMICITY::scoped_lock L(this->mutex());
 
             if (_M_fd != -1) {
                 throw_ ( std::runtime_error("base_socket::init : socket already opened"), -1 );
@@ -135,16 +139,13 @@ namespace more {
     protected:
 
         mutable int _M_fd;
-        typename ATOMICITY::mutex  _M_mutex;
 
         base_socket() 
-        : _M_fd(-1),
-          _M_mutex()
+        : _M_fd(-1)
         {}
 
         base_socket(__socket_type type, int protocol=0)
-        : _M_fd(::socket(FAMILY, type, protocol)),
-          _M_mutex()
+        : _M_fd(::socket(FAMILY, type, protocol))
         {
             if ( _M_fd == -1) {
                 throw_ ( std::runtime_error(std::string("base_socket: bad file descriptor")));
@@ -152,10 +153,9 @@ namespace more {
         }
 
         base_socket(const base_socket &rhs)
-        : _M_fd(),
-          _M_mutex()
+        : _M_fd()
         {
-            typename ATOMICITY::scoped_lock sl(_M_mutex);
+            typename ATOMICITY::scoped_lock L(this->mutex());
             _M_fd = rhs._M_fd;
             if ( _M_fd == -1 )
                 throw_ ( std::runtime_error(std::string("base_socket(base_socket &): bad file descriptor")));
@@ -166,7 +166,7 @@ namespace more {
         base_socket &
         operator=(const base_socket &rhs)
         {
-            typename ATOMICITY::scoped_lock sl(_M_mutex);
+            typename ATOMICITY::scoped_lock L(this->mutex());
             if (this != &rhs) {
                 _M_fd = rhs._M_fd;            
                 if ( _M_fd == -1 )
@@ -179,7 +179,7 @@ namespace more {
 
         virtual ~base_socket()
         {
-            typename ATOMICITY::scoped_lock sl(_M_mutex);
+            typename ATOMICITY::scoped_lock L(this->mutex());
             if ( _M_fd != -1 ) {
                 ::close(_M_fd);
             }
@@ -190,7 +190,7 @@ namespace more {
     // generic socket PF_INET/PF_INET6
     //
 
-    template <int FAMILY, typename ATOMICITY = default_socket_atomicity_policy> 
+    template <int FAMILY, typename ATOMICITY = atomicity::DEFAULT > 
     struct socket : public base_socket<FAMILY, ATOMICITY> 
     {
         socket()
@@ -205,7 +205,7 @@ namespace more {
 
     // PF_UNIX specializations...
     //
-    template <typename ATOMICITY>
+    template <typename ATOMICITY> 
     struct socket<PF_UNIX, ATOMICITY> : public base_socket<PF_UNIX, ATOMICITY>   
     {
         socket()
