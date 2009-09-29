@@ -122,11 +122,15 @@ namespace more { namespace atomicity {
     // default policy... atomicity::DEFAULT
 
 #ifdef _REENTRANT
-#warning "atomicity::DEFAULT set to GNU_CXX"
+#  ifndef NDEBUG
+#  warning "atomicity::DEFAULT set to GNU_CXX"
+#  endif
     typedef GNU_CXX DEFAULT;
     typedef GNU_CXX_RECURSIVE DEFAULT_RECURSIVE;
 #else
-#warning "atomicity::DEFAULT set to NONE"
+#  ifndef NDEBUG
+#  warning "atomicity::DEFAULT set to NONE"
+#  endif
     typedef NONE DEFAULT;
     typedef NONE DEFAULT_RECURSIVE;
 #endif

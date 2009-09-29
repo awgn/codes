@@ -25,7 +25,9 @@
     { direct[ #s ] = v; reverse[v ] = #s; }
 
 #else
+    #ifndef NDEBUG
     #warning "with this compiler enumap_init() and enumap_entry() macros must be used in contiguous lines"
+    #endif
 #define enumap_init(ctor, n) \
     ctor() \
     { more::enumap_line<__LINE__+1, __LINE__+ n>::init(this); }
