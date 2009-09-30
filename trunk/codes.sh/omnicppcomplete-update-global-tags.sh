@@ -1,4 +1,5 @@
 #!/bin/bash 
+# $Id$/
 # ----------------------------------------------------------------------------
 # "THE BEER-WARE LICENSE" (Revision 42):
 # <bonelli@antifork.org> wrote this file. As long as you retain this notice you
