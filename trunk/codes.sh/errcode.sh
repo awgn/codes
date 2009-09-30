@@ -64,5 +64,4 @@ echo  -e "        return gai_errcode_str[-num];"
 echo  -e "    }\n"
 
 
-
 echo  -e "\n} // namespace more\n\n#endif /* _ERRCODE_H_ */"
