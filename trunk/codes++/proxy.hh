@@ -14,6 +14,7 @@
 #include <tr1/functional>
 #include <stdexcept>
 #include <typeinfo>
+#include <string>
 
 namespace more 
 {
@@ -185,7 +186,7 @@ namespace more
         _M_checklock()
         {
             if (_M_locked)
-                throw std::logic_error( std::string(typeid(T).name()).apppend(" object locked") );
+                throw std::logic_error( std::string(typeid(T).name()).append(" object locked") );
         }
 
         T _M_value;
