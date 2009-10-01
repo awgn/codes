@@ -34,9 +34,13 @@ namespace more {
 #endif
         int status;
         std::tr1::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
-        if (status < 0)
+        if (status < 0) {
+#ifdef __EXCEPTIONS
             throw std::runtime_error("__cxa_demangle");
-
+#else
+            return std::string("?");
+#endif
+        }
         return std::string(ret.get());
     }
 
