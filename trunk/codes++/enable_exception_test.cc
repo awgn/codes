@@ -18,14 +18,15 @@
 class test_class : public more::enable_exception_if<EXCEPTION_ENABLED> {
 
 public:
+
     test_class()
     {
-        throw_ ( std::runtime_error("optional exception") );
+        throw_or_return ( std::runtime_error("exception") );
     }
 
     int hello()
     {
-        throw_ ( std::runtime_error("optional exception"), -1 );
+        throw_or_return ( std::runtime_error("exception"), -1 );
     }
 
 };
@@ -45,7 +46,7 @@ main(int argc, char *argv[])
         }
     }
     catch(std::exception &e) {
-        throw;
+        // throw;
     }
 
     return 0;

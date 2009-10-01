@@ -16,6 +16,7 @@
 #include <typeinfo>
 #include <cassert>
 #include <mtp.hh>
+#include <cxa_demangle.hh>
 
 #ifndef PP_NARG
 /* the so-called __VA_NARG__ (PP_NARG) macro from the thread at 
@@ -48,19 +49,19 @@ PP_ARG_N(__VA_ARGS__)
 
 #endif
 
-#ifndef throw_
+#ifndef throw_or_return
 
-#define throw_1(x) do { \
+#define throw_or_return_1(x) do { \
     this->throw_exception(x); \
     return; \
 } while (0)
 
-#define throw_2(x,r) do { \
+#define throw_or_return_2(x,r) do { \
     this->throw_exception(x); \
     return r; \
 } while(0)
 
-#define throw_(...)     XPASTE(throw_, PP_NARG(__VA_ARGS__))(__VA_ARGS__)         
+#define throw_or_return(...)     XPASTE(throw_or_return_, PP_NARG(__VA_ARGS__))(__VA_ARGS__)         
 
 #endif
 
@@ -97,14 +98,18 @@ namespace more {
         typename mtp::disable_if<std::tr1::is_base_of<std::exception, typename std::tr1::remove_reference<T>::type > ,void>::type  
         throw_exception(const T &e) const
         {
-            std::clog << "enable_exception_if<false>: an exception of type '" << typeid(T).name() << "' could have been thrown!" << std::endl;
+#ifndef NDEBUG
+            std::clog << "enable_exception_if<false>: exception type '" << cxa_demangle(typeid(T).name()) << "'" << std::endl;
+#endif
             _M_value = false;        
         }
 
         void 
         throw_exception(const std::exception &e) const
         {
-            std::clog << "enable_exception_if<false>: an exception of type '" << typeid(e).name() << "' could have been thrown: " << e.what() << "!" << std::endl;
+#ifndef NDEBUG
+            std::clog << "enable_exception_if<false>: exception type '" << cxa_demangle(typeid(e).name()) << "' what: " << e.what() << "!" << std::endl;
+#endif
             _M_value = false;        
         }
 
@@ -128,7 +133,7 @@ namespace more {
 #ifdef __EXCEPTIONS
             throw e;
 #else
-            ct_assert<false> exception_enabled_while_fno_exceptions_option_is_set;
+            ct_assert<false> enable_exception_if_true_while___EXCEPTIONS_undefined;
 #endif
         }
 

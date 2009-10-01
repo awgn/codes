@@ -126,12 +126,12 @@ namespace more {
             typename ATOMICITY::scoped_lock L(this->mutex());
 
             if (_M_fd != -1) {
-                throw_ ( std::runtime_error("base_socket::init : socket already opened"), -1 );
+                throw_or_return ( std::runtime_error("base_socket::init : socket already opened"), -1 );
             }
 
             _M_fd = ::socket(FAMILY, type, protocol);
             if (_M_fd == -1) {
-                throw_ ( more::syscall_error(std::string("base_socket::init"),errno), -1 );
+                throw_or_return ( more::syscall_error(std::string("base_socket::init"),errno), -1 );
             }
             return 0;
         }
@@ -148,7 +148,7 @@ namespace more {
         : _M_fd(::socket(FAMILY, type, protocol))
         {
             if ( _M_fd == -1) {
-                throw_ ( std::runtime_error(std::string("base_socket: bad file descriptor")));
+                throw_or_return ( std::runtime_error(std::string("base_socket: bad file descriptor")));
             }
         }
 
@@ -158,7 +158,7 @@ namespace more {
             typename ATOMICITY::scoped_lock L(this->mutex());
             _M_fd = rhs._M_fd;
             if ( _M_fd == -1 )
-                throw_ ( std::runtime_error(std::string("base_socket(base_socket &): bad file descriptor")));
+                throw_or_return ( std::runtime_error(std::string("base_socket(base_socket &): bad file descriptor")));
 
             rhs._M_fd = -1;
         }
@@ -170,7 +170,7 @@ namespace more {
             if (this != &rhs) {
                 _M_fd = rhs._M_fd;            
                 if ( _M_fd == -1 )
-                    throw_ ( std::runtime_error(std::string("base_socket::operator=(base_socket &): bad file descriptor")), *this);
+                    throw_or_return ( std::runtime_error(std::string("base_socket::operator=(base_socket &): bad file descriptor")), *this);
 
                 rhs._M_fd = -1;
             }
