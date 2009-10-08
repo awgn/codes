@@ -44,8 +44,7 @@ namespace more {
             int ticket = __sync_fetch_and_add(&t, 1);
             busywait:
             if ( v != ticket) {
-                // sched_yield();
-                usleep(10);
+                sched_yield();
                 goto busywait;
             }
         }
