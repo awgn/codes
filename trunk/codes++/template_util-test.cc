@@ -69,8 +69,6 @@ struct test_6
 };
 
 
-
-
 int
 main(int argc, char *argv[])
 {
@@ -118,8 +116,6 @@ main(int argc, char *argv[])
         test_6<int,int,int,int,int> a5;
         test_6<int,int,int,int,int,int> a6;
     }
-
-
 
     return 0;
 }

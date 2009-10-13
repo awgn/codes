@@ -179,7 +179,5 @@ namespace more {
             enum { value = 0 }; 
         };
 
-
-
     }
 } 
