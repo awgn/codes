@@ -9,6 +9,9 @@
  */
 
 #include <iostream>
+#include <vector>
+#include <algorithm>
+
 #include <lazy_object.hh>
 
 struct base 
@@ -48,23 +51,37 @@ struct derived : public base
 };
 
 
+typedef more::lazy_object<derived,std::string> lazy_derived;
+
+#include <tr1/functional>
+
 int
 main(int argc, char *argv[])
 {
+
+    std::vector<lazy_derived> vec;
+
     std::cout << "[*] building the lazy_object<>..." << std::endl;
-    more::lazy_object<derived,std::string> x("hello world");
-   
+
+    more::lazy_object<derived,std::string> x("hello");
+    more::lazy_object<derived,std::string> y("world");
+  
+    vec.push_back(x);
+    vec.push_back(y);
+
     sleep(2);
      
-    std::cout << "[*] building the real object..." << std::endl;
-    x(); // build the object
+    std::cout << "[*] building real objects..." << std::endl;
+    std::for_each(vec.begin(), vec.end(), std::tr1::mem_fn(&more::lazy_object<derived,std::string>::operator()) );
 
     sleep(2);
 
-    std::tr1::shared_ptr<derived> p = x.shared_from_this();
+    std::tr1::shared_ptr<derived> p = vec[0].shared_from_this();
+    std::tr1::shared_ptr<derived> q = vec[1].shared_from_this();
         
     std::cout << "[*] invoking methods on real object..." << std::endl;
     p->say();
+    q->say();
 
     sleep(2);
 

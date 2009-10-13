@@ -67,8 +67,10 @@ namespace more {
 
     template <typename T, typename T1 = null_type, typename T2 = null_type, typename T3 = null_type, 
                           typename T4 = null_type, typename T5 = null_type, typename T6 = null_type >
-    struct lazy_object
+    class lazy_object
     {
+    public:
+
         lazy_object(const T1 & t1 = T1(), const T2 & t2 = T2(), const T3 & t3 = T3(), 
                     const T4 & t4 = T4(), const T5 & t5 = T5(), const T6 & t6 = T6())
 
@@ -82,7 +84,8 @@ namespace more {
 
         void operator()()
         {
-            _M_obj = typename more::shared_ptr<T>::type(object_allocator<T,T1,T2,T3,T4,T5,T6>::alloc(_M_t1, _M_t2, _M_t3, _M_t4, _M_t5, _M_t6) );
+            _M_obj = typename more::shared_ptr<T>::type
+                             (object_allocator<T,T1,T2,T3,T4,T5,T6>::alloc(_M_t1, _M_t2, _M_t3, _M_t4, _M_t5, _M_t6));
         }
 
         typename more::shared_ptr<T>::type
@@ -90,6 +93,8 @@ namespace more {
         {
             return typename more::shared_ptr<T>::type(_M_obj);
         }
+
+    private:
 
         typename more::shared_ptr<T>::type _M_obj; // read why more::shared_prt<> in shared_ptr.hh 
 
