@@ -56,19 +56,19 @@ main(int argc, char *argv[])
    
     sleep(2);
      
-    std::cout << "[*] building the real objects..." << std::endl;
+    std::cout << "[*] building the real object..." << std::endl;
     x(); // build the object
 
     sleep(2);
 
     std::tr1::shared_ptr<derived> p = x.shared_from_this();
         
-    std::cout << "[*] invoking methods on real objects..." << std::endl;
+    std::cout << "[*] invoking methods on real object..." << std::endl;
     p->say();
 
     sleep(2);
 
-    std::cout << "[*] destructing objects..." << std::endl;
+    std::cout << "[*] destructing the object (by means of shared_ptr)..." << std::endl;
     return 0;
 }
  

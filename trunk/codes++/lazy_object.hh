@@ -82,7 +82,7 @@ namespace more {
 
         void operator()()
         {
-            _M_obj = typename more::shared_ptr<T>::type (object_allocator<T,T1,T2,T3,T4,T5,T6>::alloc(_M_t1, _M_t2, _M_t3, _M_t4, _M_t5, _M_t6) );
+            _M_obj = typename more::shared_ptr<T>::type(object_allocator<T,T1,T2,T3,T4,T5,T6>::alloc(_M_t1, _M_t2, _M_t3, _M_t4, _M_t5, _M_t6) );
         }
 
         typename more::shared_ptr<T>::type
