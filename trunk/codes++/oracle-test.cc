@@ -57,7 +57,7 @@ try
     world * q = new (buf) world();
 
     delete p; 
-    delete q;
+    // delete q;
 
     return 0;
 }
