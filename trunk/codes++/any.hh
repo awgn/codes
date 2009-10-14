@@ -123,7 +123,7 @@ namespace more {
     };
 
     template <typename T>
-    T * any_cast(any *rhs_p)
+    inline T * any_cast(any *rhs_p)
     {
         return ( rhs_p ?  
                     (dynamic_cast< any::storage<T> *>(rhs_p->_M_base) ? 
@@ -141,7 +141,7 @@ namespace more {
     }
 
     template <typename T>
-    T any_cast(any &rhs)
+    inline T any_cast(any &rhs)
     {
         typedef typename std::tr1::remove_const< typename std::tr1::remove_reference<T>::type >::type Type;
 

@@ -18,6 +18,7 @@ main(int argc, char *argv[])
     const more::any b(std::string("hello world!"));
 
     more::any c; c = b;
+    more::any d(c);
 
     std::cout << "int a = " << more::any_cast<int>(a) << std::endl;
     
