@@ -22,10 +22,22 @@ namespace more {
     class lazy_object
     {
     public:
-
         lazy_object()
         : _M_obj()
         {}
+
+        template <typename U>
+        lazy_object(const lazy_object<U> &rhs)        
+        : _M_obj (rhs.obj()),
+          _M_arg1(rhs.arg1()),
+          _M_arg2(rhs.arg2()),
+          _M_arg3(rhs.arg3()),
+          _M_arg4(rhs.arg4()),
+          _M_arg5(rhs.arg5()),
+          _M_arg6(rhs.arg6())
+        {}
+
+        // other constructors...
 
         template <typename T1>
         lazy_object(const T1 &t1)
@@ -68,18 +80,18 @@ namespace more {
         }
 
         template <typename P1>
-        void ctor()
+        void ctor() 
         {
             _M_obj = typename more::shared_ptr<T>::type( new T(more::any_cast<P1>(_M_arg1)) );
         }
         template <typename P1, typename P2>
-        void ctor()
+        void ctor() 
         {
             _M_obj = typename more::shared_ptr<T>::type( new T(more::any_cast<P1>(_M_arg1),
                                                                more::any_cast<P2>(_M_arg2)) );
         }
         template <typename P1, typename P2, typename P3>
-        void ctor()
+        void ctor() 
         {
             _M_obj = typename more::shared_ptr<T>::type( new T(more::any_cast<P1>(_M_arg1),
                                                                more::any_cast<P2>(_M_arg2),
@@ -114,7 +126,7 @@ namespace more {
         }
 
         typename more::shared_ptr<T>::type
-        shared_from_this()
+        shared_from_this() const 
         {
             if (!_M_obj)
                 throw std::logic_error("object not yet constructed");
@@ -122,8 +134,52 @@ namespace more {
             return typename more::shared_ptr<T>::type(_M_obj);
         }
 
-    private:
+        // enable upcast...
+        template <typename U> 
+        operator lazy_object<U>()
+        {
+            return lazy_object<U>(*this);
+        }
 
+        // internals readers...
+        const typename more::shared_ptr<T>::type &
+        obj() const
+        {
+            return _M_obj;
+        }
+       
+        const more::any &
+        arg1() const
+        {
+           return _M_arg1;
+        } 
+        const more::any &
+        arg2() const
+        {
+           return _M_arg2;
+        } 
+        const more::any &
+        arg3() const
+        {
+           return _M_arg3;
+        } 
+        const more::any &
+        arg4() const
+        {
+           return _M_arg4;
+        } 
+        const more::any &
+        arg5() const
+        {
+           return _M_arg5;
+        } 
+        const more::any &
+        arg6() const
+        {
+           return _M_arg6;
+        } 
+
+    private:
         typename more::shared_ptr<T>::type _M_obj; // read why more::shared_prt<> in shared_ptr.hh 
 
         more::any  _M_arg1;  

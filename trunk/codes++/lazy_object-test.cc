@@ -27,7 +27,7 @@ struct base
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
 
-    virtual void say() = 0;
+    virtual void say() const = 0;
 };
 
 struct derived : public base
@@ -44,7 +44,7 @@ struct derived : public base
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
 
-    virtual void say()
+    virtual void say() const
     {
         std::cout << _M_msg << "!" << std::endl;
     }
@@ -57,6 +57,13 @@ struct derived : public base
 
 typedef more::lazy_object<derived> lazy_derived;
 
+void test_upcast(const more::lazy_object<base> & lo)
+{
+    std::tr1::shared_ptr<base> p = lo.shared_from_this();
+    p->say();
+}
+
+
 int
 main(int argc, char *argv[])
 {
@@ -67,7 +74,7 @@ main(int argc, char *argv[])
 
     more::lazy_object<derived> x(std::string("hello"));
     more::lazy_object<derived> y(std::string("world"));
-  
+
     vec.push_back(x);
     vec.push_back(y);
 
@@ -86,10 +93,19 @@ main(int argc, char *argv[])
 
     sleep(2);
 
-    std::tr1::shared_ptr<derived> p = vec[0].shared_from_this();
-    std::tr1::shared_ptr<derived> q = vec[1].shared_from_this();
-        
+    std::cout << "[*] test upcast lazy_objects..." << std::endl;
+
+    x.ctor<std::string>();
+    y.ctor<std::string>();
+
+    test_upcast(x);
+    test_upcast(y);
+
     std::cout << "[*] invoking methods on real object..." << std::endl;
+
+    std::tr1::shared_ptr<base> p = vec[0].shared_from_this();
+    std::tr1::shared_ptr<base> q = vec[1].shared_from_this();
+        
     p->say();
     q->say();
 
