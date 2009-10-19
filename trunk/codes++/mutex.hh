@@ -79,6 +79,8 @@ namespace more {
         struct is_qt    : public details::false_type {};
         struct is_gnu   : public details::false_type {};
 
+        struct has_try_lock : public details::true_type {};
+
 #elif defined(MORE_USE_QT_MUTEX)
         struct type : public QMutex
         {
@@ -87,6 +89,11 @@ namespace more {
 
             ~type()
             {}
+
+            bool try_lock()
+            {
+                return this->tryLock();
+            }
         };
 
         struct scoped_lock : public QMutexLocker
@@ -101,6 +108,8 @@ namespace more {
         struct is_boost : public details::false_type {};
         struct is_qt    : public details::true_type {};
         struct is_gnu   : public details::false_type {};
+
+        struct has_try_lock : public details::true_type {};
 
 #elif defined(MORE_USE_GNU_MUTEX)
     #if __GNUC__ == 4 && __GNUC_MINOR__ == 0  
@@ -123,6 +132,8 @@ namespace more {
         struct is_boost : public details::false_type {};
         struct is_qt    : public details::false_type {};
         struct is_gnu   : public details::true_type {};
+
+        struct has_try_lock : public details::false_type {};
 #endif
     };
 
@@ -136,6 +147,8 @@ namespace more {
         struct is_qt    : public details::false_type {};
         struct is_gnu   : public details::false_type {};
 
+        struct has_try_lock : public details::true_type {};
+
 #elif defined(MORE_USE_QT_MUTEX)
         struct type : public QMutex
         {
@@ -144,6 +157,11 @@ namespace more {
 
             ~type()
             {}
+
+            bool try_lock()
+            {
+                return this->tryLock();
+            }
         };
 
         struct scoped_lock : public QMutexLocker
@@ -158,6 +176,8 @@ namespace more {
         struct is_boost : public details::false_type {};
         struct is_qt    : public details::true_type {};
         struct is_gnu   : public details::false_type {};
+
+        struct has_try_lock : public details::true_type {};
 
 #elif defined(MORE_USE_GNU_MUTEX)
     #if __GNUC__ == 4 && __GNUC_MINOR__ == 0  
@@ -178,6 +198,8 @@ namespace more {
         struct is_boost : public details::false_type {};
         struct is_qt    : public details::false_type {};
         struct is_gnu   : public details::true_type {};
+
+        struct has_try_lock : public details::false_type {};
 #endif
     };
 
