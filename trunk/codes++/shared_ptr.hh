@@ -11,6 +11,8 @@
 #ifndef _SHARED_PTR_H_
 #define _SHARED_PTR_H_ 
 
+#include <integral.hh>
+
 #if defined(MORE_USE_QT_SHARED_PTR)
 #include <QSharedPointer>
 #   ifndef NDEBUG
@@ -29,29 +31,6 @@
 #endif
 
 namespace more { 
-
-    namespace {     // TR1 helper classes [4.3]
-
-        template <typename Tp, Tp _v>
-        struct integral_constant
-        {
-            typedef Tp  value_type;
-            typedef integral_constant<Tp,_v> type;
-
-            static const Tp     value = _v;
-        }; 
-
-        typedef integral_constant<bool, true > true_type;
-        typedef integral_constant<bool, false> false_type;
-    } 
-
-    // shared_ptr traits:
-
-    struct std_type {}; 
-
-    struct qt_type {};
-    struct tr1_type   : public std_type {};
-    struct boost_type : public std_type {};
 
     template <typename Tp>
     struct shared_ptr

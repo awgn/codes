@@ -15,18 +15,17 @@
 #include <mutex.hh>
 
 template <typename M>
-void trylock_test(M &m, bool expected, more::details::true_type)
+void trylock_test(M &m, bool expected, more::true_type)
 {
     std::cout << "testing try_lock()..." << std::endl;
     bool e;
     assert( (e = m.try_lock()) == expected);
     if (e)
         m.unlock();
-
 }
 
 template <typename M>
-void trylock_test(M &, bool, more::details::false_type)
+void trylock_test(M &, bool, more::false_type)
 {
     std::cout << "this mutex LACKS try_lock() method!!!" << std::endl;
 }

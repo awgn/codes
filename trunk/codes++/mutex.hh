@@ -11,6 +11,8 @@
 #ifndef _MUTEX_HH_
 #define _MUTEX_HH_ 
 
+#include <integral.hh>
+
 #if defined (MORE_USE_BOOST_MUTEX)
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -34,19 +36,7 @@
 
 namespace more { 
 
-    namespace details {     // TR1 helper classes [4.3]
-
-        template <typename Tp, Tp _v>
-        struct integral_constant
-        {
-            typedef Tp  value_type;
-            typedef integral_constant<Tp,_v> type;
-
-            static const Tp     value = _v;
-        }; 
-
-        typedef integral_constant<bool, true > true_type;
-        typedef integral_constant<bool, false> false_type;
+    namespace {   
 
         template <class M>
         class __scoped_lock
@@ -67,7 +57,8 @@ namespace more {
             ~__scoped_lock() 
             { _M_device.unlock(); }
         };
-    } 
+
+    }
 
     struct mutex 
     {
@@ -75,11 +66,11 @@ namespace more {
         typedef boost::mutex type;
         typedef boost::mutex::scoped_lock scoped_lock;
 
-        struct is_boost : public details::true_type {};
-        struct is_qt    : public details::false_type {};
-        struct is_gnu   : public details::false_type {};
+        struct is_boost : public true_type {};
+        struct is_qt    : public false_type {};
+        struct is_gnu   : public false_type {};
 
-        struct has_try_lock : public details::true_type {};
+        struct has_try_lock : public true_type {};
 
 #elif defined(MORE_USE_QT_MUTEX)
         struct type : public QMutex
@@ -105,11 +96,11 @@ namespace more {
             {}
         };
 
-        struct is_boost : public details::false_type {};
-        struct is_qt    : public details::true_type {};
-        struct is_gnu   : public details::false_type {};
+        struct is_boost : public false_type {};
+        struct is_qt    : public true_type {};
+        struct is_gnu   : public false_type {};
 
-        struct has_try_lock : public details::true_type {};
+        struct has_try_lock : public true_type {};
 
 #elif defined(MORE_USE_GNU_MUTEX)
     #if __GNUC__ == 4 && __GNUC_MINOR__ == 0  
@@ -129,11 +120,11 @@ namespace more {
         typedef __gnu_cxx::__scoped_lock scoped_lock;
     #endif
 
-        struct is_boost : public details::false_type {};
-        struct is_qt    : public details::false_type {};
-        struct is_gnu   : public details::true_type {};
+        struct is_boost : public false_type {};
+        struct is_qt    : public false_type {};
+        struct is_gnu   : public true_type {};
 
-        struct has_try_lock : public details::false_type {};
+        struct has_try_lock : public false_type {};
 #endif
     };
 
@@ -143,11 +134,11 @@ namespace more {
         typedef boost::recursive_mutex type;
         typedef boost::recursive_mutex::scoped_lock scoped_lock;
 
-        struct is_boost : public details::true_type {};
-        struct is_qt    : public details::false_type {};
-        struct is_gnu   : public details::false_type {};
+        struct is_boost : public true_type {};
+        struct is_qt    : public false_type {};
+        struct is_gnu   : public false_type {};
 
-        struct has_try_lock : public details::true_type {};
+        struct has_try_lock : public true_type {};
 
 #elif defined(MORE_USE_QT_MUTEX)
         struct type : public QMutex
@@ -173,11 +164,11 @@ namespace more {
             {}
         };
 
-        struct is_boost : public details::false_type {};
-        struct is_qt    : public details::true_type {};
-        struct is_gnu   : public details::false_type {};
+        struct is_boost : public false_type {};
+        struct is_qt    : public true_type {};
+        struct is_gnu   : public false_type {};
 
-        struct has_try_lock : public details::true_type {};
+        struct has_try_lock : public true_type {};
 
 #elif defined(MORE_USE_GNU_MUTEX)
     #if __GNUC__ == 4 && __GNUC_MINOR__ == 0  
@@ -188,18 +179,18 @@ namespace more {
     #endif
     #if __GNUC__ == 4 && __GNUC_MINOR__ == 2  
         typedef __gnu_cxx::__recursive_mutex type;
-        typedef details::__scoped_lock<type> scoped_lock;
+        typedef __scoped_lock<type> scoped_lock;
     #endif
     #if __GNUC__ == 4 && __GNUC_MINOR__ == 3  
         typedef __gnu_cxx::__recursive_mutex type;
-        typedef details::__scoped_lock<type> scoped_lock;
+        typedef __scoped_lock<type> scoped_lock;
     #endif
 
-        struct is_boost : public details::false_type {};
-        struct is_qt    : public details::false_type {};
-        struct is_gnu   : public details::true_type {};
+        struct is_boost : public false_type {};
+        struct is_qt    : public false_type {};
+        struct is_gnu   : public true_type {};
 
-        struct has_try_lock : public details::false_type {};
+        struct has_try_lock : public false_type {};
 #endif
     };
 
