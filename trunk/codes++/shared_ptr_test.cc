@@ -10,6 +10,8 @@
 
 #include <shared_ptr.hh>
 #include <iostream>
+#include <cassert>
+#include <cstdlib>
 
 #include <tr1/memory>
 
@@ -36,13 +38,37 @@ void shared_ptr_std_test(more::qt_type)
     std::cout << "more::shared_ptr<> is a qt_type" << std::endl;
 }
 
+void my_free(char *x)
+{
+    std::cout << "costom deleter ok!" << std::endl;
+    free(x);
+}
+
 //////////////////////////////////////////////////
 // cross-library shared_pointer example: 
 
 more::shared_ptr<int>::type
 make_zero()
 {
-    return more::shared_ptr<int>::type(new int(0));
+    std::tr1::shared_ptr<int> null;
+    assert(!null);
+
+    if (!null) {
+        std::cout << "conversion-to-bool test passed! (null-test)" << std::endl;
+    }
+
+    more::shared_ptr<int>::type ret(new int(1));
+    assert(ret);
+
+    ret.reset(new int(0));
+    assert(*ret == 0);
+
+    // custom deleter test:
+
+    more::shared_ptr<char>::type cd((char *)malloc(1024), my_free);
+
+    std::cout << "zero is not null but " << *ret << " @" << (void *)ret.get() << std::endl;
+    return ret;
 }
 
 
@@ -63,7 +89,9 @@ main(int, char *[])
     std::tr1::shared_ptr<int> zero = make_zero();
 #endif
 
-    std::cout << "zero is " << *zero << std::endl;
+
+
+
 
     return 0;
 }

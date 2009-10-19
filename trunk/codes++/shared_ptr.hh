@@ -58,7 +58,53 @@ namespace more {
     {
 #if defined(MORE_USE_QT_SHARED_PTR)
 
-        typedef QSharedPointer<Tp> type;
+        struct type : public QSharedPointer<Tp> 
+        {
+            type()
+            : QSharedPointer<Tp>()
+            {}
+
+            type(Tp *p)
+            : QSharedPointer<Tp>(p)
+            {}
+
+            template <typename D>
+            type(Tp *p, D d)
+            : QSharedPointer<Tp>(p,d)
+            {}
+
+            ~type()
+            {}
+
+            // reset wrappers...
+
+            void reset()
+            {
+                this->clear();
+            }
+
+            void reset(Tp * ptr)
+            {
+                type x(ptr);
+                this->operator=(x);
+            }
+
+            template <typename D>
+            void reset(Tp * ptr, D d)
+            {
+                type x(ptr,d);
+                this->operator=(x);
+            }
+
+            // get wrapper:
+
+            Tp * get() const
+            {
+                return this->data();
+            }
+
+        };
+
         typedef qt_type shared_ptr_type;
 
         struct is_tr1   : public false_type {};
