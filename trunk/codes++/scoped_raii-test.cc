@@ -12,36 +12,33 @@
 #include <iostream>
 #include <string>
 
-struct device 
+struct fake_mutex
 {
-    void hello(const std::string &name)
+    void lock()
     {
-        // std::cout << __PRETTY_FUNCTION__ << std::endl;
-        std::cout << "Hello " << name << "!" << std::endl;
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
 
-    void bye()
+    void unlock()
     {
-        // std::cout << __PRETTY_FUNCTION__ << std::endl;
-        std::cout << "Goodbye." << std::endl;
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
-};
 
-template <typename T>
-class scoped_greeting : public more::scoped_raii_1<T, const std::string &, &T::hello, &T::bye> 
-{
-public:
-    scoped_greeting(T &dev, const std::string &whom)
-    : scoped_greeting<T>::base_type(dev,whom)
-    {}
+    bool try_lock()
+    {
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
+        return true;
+    }
 };
 
 
 int
 main(int argc, char *argv[])
 {
-    device x;
-    scoped_greeting<device> abc(x, "world");
+    fake_mutex m;
+
+    more::raii::scoped_lock<fake_mutex> lock(m);
+    more::raii::scoped_try_lock<fake_mutex> trylock(m);
 
     return 0;
 }
