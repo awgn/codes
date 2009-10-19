@@ -12,8 +12,10 @@
 #define _MUTEX_HH_ 
 
 #include <integral.hh>
+#include <scoped_raii.hh>
 
 #if defined (MORE_USE_BOOST_MUTEX)
+#include <boost/version.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #   ifndef NDEBUG
@@ -36,30 +38,6 @@
 
 namespace more { 
 
-    namespace {   
-
-        template <class M>
-        class __scoped_lock
-        {
-        public:
-            typedef M __mutex_type;
-
-        private:
-            __mutex_type& _M_device;
-
-            __scoped_lock(const __scoped_lock&);
-            __scoped_lock& operator=(const __scoped_lock&);
-
-        public:
-            explicit __scoped_lock(__mutex_type& __name) : _M_device(__name)
-            { _M_device.lock(); }
-
-            ~__scoped_lock() 
-            { _M_device.unlock(); }
-        };
-
-    }
-
     struct mutex 
     {
 #if defined(MORE_USE_BOOST_MUTEX)
@@ -70,7 +48,11 @@ namespace more {
         struct is_qt    : public false_type {};
         struct is_gnu   : public false_type {};
 
+#if BOOST_VERSION >= 103500
         struct has_try_lock : public true_type {};
+#else
+        struct has_try_lock : public false_type {};
+#endif
 
 #elif defined(MORE_USE_QT_MUTEX)
         struct type : public QMutex
@@ -138,7 +120,11 @@ namespace more {
         struct is_qt    : public false_type {};
         struct is_gnu   : public false_type {};
 
+#if BOOST_VERSION >= 103500
         struct has_try_lock : public true_type {};
+#else
+        struct has_try_lock : public false_type {};
+#endif
 
 #elif defined(MORE_USE_QT_MUTEX)
         struct type : public QMutex
@@ -179,11 +165,11 @@ namespace more {
     #endif
     #if __GNUC__ == 4 && __GNUC_MINOR__ == 2  
         typedef __gnu_cxx::__recursive_mutex type;
-        typedef __scoped_lock<type> scoped_lock;
+        typedef more::raii::scoped_lock<type> scoped_lock;
     #endif
     #if __GNUC__ == 4 && __GNUC_MINOR__ == 3  
         typedef __gnu_cxx::__recursive_mutex type;
-        typedef __scoped_lock<type> scoped_lock;
+        typedef more::raii::scoped_lock<type> scoped_lock;
     #endif
 
         struct is_boost : public false_type {};

@@ -32,7 +32,7 @@ namespace more {
         virtual ~scoped_raii()
         {
             if (static_cast<D &>(*this).release_cond())
-            (_M_device.*release)();
+                (_M_device.*release)();
         }
 
         operator R()
