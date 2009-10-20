@@ -34,7 +34,6 @@ void shared_ptr_std_test(more::std_type)
 
 void shared_ptr_std_test(more::qt_type)
 {
-
     std::cout << "more::shared_ptr<> is a qt_type" << std::endl;
 }
 
@@ -63,11 +62,27 @@ make_zero()
     ret.reset(new int(0));
     assert(*ret == 0);
 
+    // copy
+
+    more::shared_ptr<int>::type copy(ret);
+    assert(ret.get() == copy.get());
+
     // custom deleter test:
 
     more::shared_ptr<char>::type cd((char *)malloc(1024), my_free);
-
     std::cout << "zero is not null but " << *ret << " @" << (void *)ret.get() << std::endl;
+
+    // const_cast:
+
+    more::shared_ptr<const char>::type q = more::const_pointer_cast<const char>(cd);
+    assert(q.get() == cd.get());
+
+    // assignment:
+
+    more::shared_ptr<char>::type xyz;
+    xyz = more::static_pointer_cast<char>(cd);
+    assert(xyz.get() == cd.get());
+
     return ret;
 }
 
@@ -88,7 +103,6 @@ main(int, char *[])
 #else
     std::tr1::shared_ptr<int> zero = make_zero();
 #endif
-
 
 
 
