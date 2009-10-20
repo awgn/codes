@@ -33,9 +33,11 @@ void trylock_test(M &, bool, more::false_type)
 int
 main(int, char *[])
 {
+    std::cout << "testing mutex..." << std::endl;
     more::mutex::type m1;
     more::mutex::scoped_lock l1(m1);
 
+    std::cout << "testing recursive_mutex..." << std::endl;
     more::recursive_mutex::type m2;
     more::recursive_mutex::scoped_lock l2_a(m2);
     more::recursive_mutex::scoped_lock l2_b(m2);
@@ -43,7 +45,25 @@ main(int, char *[])
     trylock_test(m1, false, more::mutex::has_try_lock());
     trylock_test(m2, true , more::mutex::has_try_lock() );
 
-    std::cout << "test ok!" << std::endl;
+    // owner_mutex test:
+#if defined(MORE_USE_BOOST_MUTEX) || defined(MORE_USE_QT_MUTEX)
+
+    std::cout << "testing owner_mutex..." << std::endl;
+    more::owner_mutex::type m3;
+    m3.lock();
+    
+    assert( m3.owner() == more::this_thread::get_id());
+
+    m3.lock();
+    m3.lock();
+    m3.lock();
+
+    m3.unlock();
+
+    assert( m3.owner() == more::this_thread::id());
+
+#endif
+    std::cout << "done!" << std::endl;
     return 0;
 }
  
