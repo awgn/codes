@@ -96,7 +96,7 @@ factory()
     vec.push_back( more::shared_ptr<int>::type( new int(2) ) );
     vec.push_back( more::shared_ptr<int>::type( new int(3) ) );
 
-    return more::native_shared_ptr_container_adapter(vec); 
+    return more::native_shared_ptr_container_cast(vec); 
 }
 
 //////////////////////////////////////////////////

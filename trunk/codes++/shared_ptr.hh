@@ -156,7 +156,7 @@ namespace more {
     template < template <typename El, typename Al> class Ct, typename El, typename Al>
     static inline
     Ct<typename shared_ptr<typename El::value_type>::native_type, std::allocator<typename El::native_type> >
-    native_shared_ptr_container_adapter(const Ct<El, Al> &rhs)
+    native_shared_ptr_container_cast(const Ct<El, Al> &rhs)
     {
         Ct<typename shared_ptr<typename El::value_type>::native_type, std::allocator<typename El::native_type> > ret;
         std::copy(rhs.begin(), rhs.end(), std::back_inserter(ret));
@@ -189,7 +189,7 @@ namespace more {
     template < template <typename El, typename Al> class Ct, typename El, typename Al>
     static inline
     Ct<El, std::allocator<El> >
-    native_shared_ptr_container_adapter(const Ct<El, Al> &rhs)
+    native_shared_ptr_container_cast(const Ct<El, Al> &rhs)
     {
         return rhs;
     }
@@ -220,7 +220,7 @@ namespace more {
     template < template <typename El, typename Al> class Ct, typename El, typename Al>
     static inline
     Ct<El, std::allocator<El> >
-    native_shared_ptr_container_adapter(const Ct<El, Al> &rhs)
+    native_shared_ptr_container_cast(const Ct<El, Al> &rhs)
     {
         return rhs;
     }
