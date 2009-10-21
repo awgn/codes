@@ -12,6 +12,8 @@
 #define _SHARED_PTR_H_ 
 
 #include <integral.hh>
+#include <algorithm>
+#include <iterator>
 
 #if defined(MORE_USE_QT_SHARED_PTR)
 #include <QSharedPointer>
@@ -37,7 +39,9 @@ namespace more {
     template <typename Tp>
     struct shared_ptr : public QSharedPointer<Tp>
     {
-        typedef shared_ptr<Tp> type;
+        typedef shared_ptr<Tp>  type;
+        typedef Tp              value_type;
+        typedef QSharedPointer<Tp> native_type;
 
         shared_ptr()
         : QSharedPointer<Tp>()
@@ -102,8 +106,8 @@ namespace more {
     template <typename Tp>
     struct shared_ptr
     {
- 
         typedef boost::shared_ptr<Tp> type;
+        typedef boost::shared_ptr<Tp> native_type;
         typedef boost_type shared_ptr_type;
 
         struct is_tr1   : public false_type {};
@@ -115,8 +119,8 @@ namespace more {
     template <typename Tp>
     struct shared_ptr 
     {
- 
         typedef std::tr1::shared_ptr<Tp> type;
+        typedef std::tr1::shared_ptr<Tp> native_type;
         typedef tr1_type shared_ptr_type;        
         
         struct is_tr1   : public true_type {};
@@ -149,6 +153,16 @@ namespace more {
         return typename more::shared_ptr<O>( static_cast<QSharedPointer<Ty> >(sp).template constCast<O>() );    
     }
 
+    template < template <typename El, typename Al> class Ct, typename El, typename Al>
+    static inline
+    Ct<typename shared_ptr<typename El::value_type>::native_type, std::allocator<typename El::native_type> >
+    native_shared_ptr_container_adapter(const Ct<El, Al> &rhs)
+    {
+        Ct<typename shared_ptr<typename El::value_type>::native_type, std::allocator<typename El::native_type> > ret;
+        std::copy(rhs.begin(), rhs.end(), std::back_inserter(ret));
+        return ret;
+    }
+
 #elif defined(MORE_USE_BOOST_SHARED_PTR)
 
     template <class O, class Ty>
@@ -172,6 +186,14 @@ namespace more {
         return boost::const_pointer_cast<O>(sp);    
     }
 
+    template < template <typename El, typename Al> class Ct, typename El, typename Al>
+    static inline
+    Ct<El, std::allocator<El> >
+    native_shared_ptr_container_adapter(const Ct<El, Al> &rhs)
+    {
+        return rhs;
+    }
+
 #elif defined(MORE_USE_TR1_SHARED_PTR)
 
     template <class O, class Ty>
@@ -193,6 +215,14 @@ namespace more {
     std::tr1::shared_ptr<O> const_pointer_cast(const std::tr1::shared_ptr<Ty> &sp)
     {
         return std::tr1::const_pointer_cast<O>(sp);    
+    }
+
+    template < template <typename El, typename Al> class Ct, typename El, typename Al>
+    static inline
+    Ct<El, std::allocator<El> >
+    native_shared_ptr_container_adapter(const Ct<El, Al> &rhs)
+    {
+        return rhs;
     }
 
 #endif

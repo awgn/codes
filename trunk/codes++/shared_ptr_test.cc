@@ -12,6 +12,7 @@
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
+#include <vector>
 
 #include <tr1/memory>
 
@@ -49,7 +50,7 @@ void my_free(char *x)
 more::shared_ptr<int>::type
 make_zero()
 {
-    std::tr1::shared_ptr<int> null;
+    more::shared_ptr<int>::type null;
     assert(!null);
 
     if (!null) {
@@ -86,6 +87,17 @@ make_zero()
     return ret;
 }
 
+std::vector< more::shared_ptr<int>::native_type >
+factory()
+{
+    std::vector< more::shared_ptr<int>::type > vec;
+
+    vec.push_back( more::shared_ptr<int>::type( new int(1) ) );
+    vec.push_back( more::shared_ptr<int>::type( new int(2) ) );
+    vec.push_back( more::shared_ptr<int>::type( new int(3) ) );
+
+    return more::native_shared_ptr_container_adapter(vec); 
+}
 
 //////////////////////////////////////////////////
 // cross-library test
@@ -98,15 +110,33 @@ main(int, char *[])
 
 #if defined(MORE_USE_BOOST_SHARED_PTR)
     boost::shared_ptr<int> zero = make_zero();
+
+    std::vector<boost::shared_ptr<int> > vec = factory();
+    std::vector<boost::shared_ptr<int> >::iterator it = vec.begin();
+    std::vector<boost::shared_ptr<int> >::iterator it_end = vec.end();
+
 #elif defined(MORE_USE_QT_SHARED_PTR)
     QSharedPointer<int> zero = make_zero();
+
+    std::vector<QSharedPointer<int> > vec = factory();
+    std::vector<QSharedPointer<int> >::iterator it = vec.begin();
+    std::vector<QSharedPointer<int> >::iterator it_end = vec.end();
+
 #else
-    std::tr1::shared_ptr<int> zero = make_zero();
+    std::tr1::shared_ptr<int> zero = make_zero();    
+    
+    std::vector<std::tr1::shared_ptr<int> > vec = factory();
+    std::vector<std::tr1::shared_ptr<int> >::iterator it = vec.begin();
+    std::vector<std::tr1::shared_ptr<int> >::iterator it_end = vec.end();
+
 #endif
 
+    for(int n=0; it != it_end; ++it, ++n)
+    {
+        std::cout << "vec[" << n << "]-> " << *(*it) << std::endl;
+    }
 
-
-
+    std::cout << "done!" << std::endl;
     return 0;
 }
  
