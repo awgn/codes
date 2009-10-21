@@ -1,5 +1,7 @@
 include_directories(.)
 
+add_definitions(-DMORE_USE_TR1_SHARED_PTR -DMORE_USE_GNU_MUTEX)
+
 add_executable(CTdispatcher CTdispatcher.cc)
 add_executable(any-test any-test.cc)
 add_executable(async_fd-test async_fd-test.cc)
