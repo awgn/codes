@@ -44,12 +44,14 @@ namespace more {
     {
 #if defined(MORE_USE_BOOST_MUTEX)
         typedef boost::thread::id   id;
+        static inline
         id get_id()
         {
             return boost::this_thread::get_id();
         } 
 #elif defined(MORE_USE_QT_MUTEX)
         typedef Qt::HANDLE          id;
+        static inline
         id get_id()
         {
             return QThread::currentThreadId();
