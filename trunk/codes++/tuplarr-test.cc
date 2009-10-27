@@ -8,14 +8,17 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <tuplarr.hh>
 
 #include <vector>
 #include <iostream>
 #include <iterator>
 #include <algorithm>
 
+#include <tuplarr.hh>
+
 using namespace std::tr1;
+
+struct test {};
 
 int
 main(int argc, char *argv[])
@@ -30,6 +33,9 @@ main(int argc, char *argv[])
 
     std::copy(vec.begin(), vec.end(), std::ostream_iterator<double>(std::cout, " "));
     std::cout << std::endl;
+
+    std::cout << t << std::endl;
+    std::cout << a << std::endl;
 
     return 0;
 }

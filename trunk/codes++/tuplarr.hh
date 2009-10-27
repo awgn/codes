@@ -13,6 +13,10 @@
 
 #include <tr1/tuple>
 #include <tr1/array>
+#include <iostream>
+
+#include <mtp.hh>
+#include <type_traits.hh>
 
 namespace more 
 {
@@ -31,9 +35,29 @@ namespace more
         template <typename C, typename T>
         struct pushback_policy<C,T,0> 
         {
-            static void apply(C &cnt, const T &tuple)
+            static void apply(C &, const T &)
             {}
         };
+
+        template <typename CharT, typename Traits, typename T, int N>
+        struct printon_policy
+        {
+            static void apply(std::basic_ostream<CharT,Traits> &out, const T &tupl)
+            {
+                out << std::tr1::get< std::tr1::tuple_size<T>::value - N>(tupl) << ' ';
+                printon_policy<CharT, Traits, T,N-1>::apply(out,tupl);
+            }
+
+        };
+        template <typename CharT, typename Traits, typename T>
+        struct printon_policy<CharT, Traits, T,0>
+        {
+            static void apply(std::basic_ostream<CharT, Traits> &out, const T &)
+            {
+                out << ">";
+            }
+        };
+
     }
 
     template <typename C, typename T>
@@ -44,5 +68,33 @@ namespace more
     }
 
 }
+
+namespace std { namespace tr1 {
+
+    /////////////////
+    // dump array...
+
+    template <typename CharT, typename Traits, typename T, std::size_t N>
+    std::basic_ostream<CharT,Traits> &
+    operator<<(std::basic_ostream<CharT,Traits> &out, const std::tr1::array<T,N> & rhs)
+    {
+        out << "< ";
+        more::tuplarr_utils::printon_policy<CharT, Traits, std::tr1::array<T,N>, N>::apply(out,rhs);
+        return out;
+    }
+
+    /////////////////////////////////////////////
+    // dump tuple (enabled if T is a tuple<>)... 
+
+    template <typename CharT, typename Traits, typename T>
+    typename mtp::enable_if< more::traits::is_tuple<T>, std::basic_ostream<CharT,Traits> >::type &
+    operator<<(std::basic_ostream<CharT,Traits> &out, const T & rhs)
+    {
+        out << "< ";
+        more::tuplarr_utils::printon_policy<CharT, Traits, T, std::tr1::tuple_size<T>::value>::apply(out,rhs);
+        return out;
+    }
+
+}}
 
 #endif /* _TUPLARR_HH_ */
