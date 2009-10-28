@@ -15,8 +15,8 @@
 #include <tr1/array>
 #include <iostream>
 
-#include <mtp.hh>
-#include <type_traits.hh>
+#include <mtp.hh>           // mtp::enable_if
+#include <type_traits.hh>   // more::traits::is_tuple<>
 
 namespace more 
 {
@@ -53,9 +53,7 @@ namespace more
         struct printon_policy<CharT, Traits, T,0>
         {
             static void apply(std::basic_ostream<CharT, Traits> &out, const T &)
-            {
-                out << ">";
-            }
+            {}
         };
 
     }
@@ -71,20 +69,20 @@ namespace more
 
 namespace std { namespace tr1 {
 
-    /////////////////
-    // dump array...
+    ///////////////////////////
+    // operator<< for array...
 
     template <typename CharT, typename Traits, typename T, std::size_t N>
     std::basic_ostream<CharT,Traits> &
     operator<<(std::basic_ostream<CharT,Traits> &out, const std::tr1::array<T,N> & rhs)
     {
-        out << "< ";
+        out << "[ ";
         more::tuplarr_utils::printon_policy<CharT, Traits, std::tr1::array<T,N>, N>::apply(out,rhs);
-        return out;
+        return out << "]";
     }
 
-    /////////////////////////////////////////////
-    // dump tuple (enabled if T is a tuple<>)... 
+    ////////////////////////////////////////////////////////
+    // operator<< for tuple: (enabled if T is a tuple<>)... 
 
     template <typename CharT, typename Traits, typename T>
     typename mtp::enable_if< more::traits::is_tuple<T>, std::basic_ostream<CharT,Traits> >::type &
@@ -92,7 +90,7 @@ namespace std { namespace tr1 {
     {
         out << "< ";
         more::tuplarr_utils::printon_policy<CharT, Traits, T, std::tr1::tuple_size<T>::value>::apply(out,rhs);
-        return out;
+        return out << ">";
     }
 
 }}
