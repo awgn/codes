@@ -77,7 +77,10 @@ namespace more
     template <typename T>
     class __is_tuple_helper : public __sfinae_types
     {
-        template <typename C> static __one test(typename std::tr1::tuple_element<0,C>::type *);
+        template <int N>
+        struct int2type {};
+
+        template <typename C> static __one test(int2type< std::tr1::tuple_size<C>::value > *);
         template <typename C> static __two test(...);
 
     public:
