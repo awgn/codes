@@ -863,11 +863,12 @@ main(int argc, char *argv[]) {
         argc -= (optind-1);
         argv += (optind-1);
 
-        Class::pushClass(x);
+        if (!x)
+            break;
 
+        Class::pushClass(x);
     }
     
     Class::dumpClasses();
-
     return 0;
 }
