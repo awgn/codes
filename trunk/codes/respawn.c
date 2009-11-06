@@ -127,7 +127,7 @@ void exit_rt(int i)
         if ( kill(pid,res_ksignal) == -1 && errno == ESRCH)
                 log("the pid does not exist (zombie?!?)");
 
-	log("%s exits (goodbye)", __progname); 
+	log("%s exited.", __progname); 
 	exit (0);
 }
 
@@ -180,10 +180,28 @@ int save_pid(const char *filename) {
 }
 
 
+int
+waitpid_timeout(pid_t pid, int *status, int options, size_t msec)
+{
+    size_t i;
+    int ret;
+    for (i=0; i<= msec; i+=100){
+        ret = waitpid(pid, status, options | WNOHANG);
+        if (ret > 0) return ret;
+        if (ret < 0) return ret;
+        usleep(100 * 1000);     /* Sleep 100 ms */
+    }
+    return 0;
+}
+
+
 void respawn(int argc, char *argv[], char *envp[])
 {
-    int status;
-    int t=0, cf=0, tf=0;
+
+    int status = 0;
+    int t=1, cf=0, tf=0;
+
+	log("%s started.", __progname); 
 
     for(;; sleep(res_sec),t++) {
 
@@ -191,63 +209,112 @@ void respawn(int argc, char *argv[], char *envp[])
         if (pid==-1)
             err(1,"fork");
 
-        if (pid==0) {
+        if (pid==0) { 
+            /* child */
             if (execve (argv[0],argv,envp) == -1) {
                 warn("execve(%s,...",argv[0]);
                 exit(-1);	
             }
         }
 
-        log("process %d created.", pid);
-        waitpid(pid,&status,0);	
+        /* parent */
+
+        log("child process[%d] created.", pid);
+
+        int r; 
+        while( (r=waitpid(pid,&status,0)) < 0 )
+            if (errno != EINTR)
+                break;
+
+        /* ERROR */
+
+        if ( r != pid) {
+
+            log("ERROR: waitpid() -> %s. Sending kill -%d...", strerror(errno), res_ksignal);
+
+            kill(pid,res_ksignal);  // send the kill signal to child...             
+            if ( waitpid_timeout(pid,&status,0, 1000 /* sec */) <= 0) {
+                log("child was not killed in 1 sec. (defunct ?)");
+            }
+
+            log("restart scheduled.", WSTOPSIG(status));
+            goto schedule_restart;           
+        }
+
+        /* WIFSTOPPED */
+
+        if ( WIFSTOPPED(status) ) {
+
+            log("child[%d] STOPPED. Sending kill -%d...", pid, res_ksignal);
+
+            int sigstop = WSTOPSIG(status);
+
+            kill(pid,res_ksignal);  // send the kill signal to child...             
+            if ( waitpid_timeout(pid,&status,0, 1000 /* sec */) <= 0) {
+                log("child was not killed in 1 sec. (defunct ?)");
+            }
+
+            if ( sigstop == SIGRTMIN || signal_list[sigstop].exit) {
+                log("%s exited.", __progname); 
+                exit(0);
+            }
+
+            log("child stopped by signal %d [restart scheduled]", sigstop);
+            goto schedule_restart;           
+        }
+
+        /* WIFEXITED */
 
         if (WIFEXITED(status)) {
-            log("*** Child exited with: %d", WEXITSTATUS(status));
+            log("*** child exited with: %d", WEXITSTATUS(status));
+
+            if (WEXITSTATUS(status)==0) {
+                cf = 0;
+                if (res_ex) {
+                    log("child-exit-status=0; bye.");
+                    exit(0);
+                }
+            } 
+
 			if (res_ex_any) {
 				log("child-exit-quit; bye.");
 				exit(0);
 			}
-        }
 
-        if (WIFEXITED(status) && WEXITSTATUS(status)==0) {
-            cf = 0;
-            if (res_ex) {
-                log("child-exit-status=0; bye.");
-                exit(0);
-            }
-            goto restart;
+            goto schedule_restart;
         }
-        else {
-            cf++; tf++;
-        }	
+        
+        /* WIFSIGNALED */
 
         if (WIFSIGNALED(status)) {
 
-            log("Child killed by signal %d", WTERMSIG(status));
+            log("child killed by signal %d", WTERMSIG(status));
 
             if (WTERMSIG(status) == SIGRTMIN || signal_list[WTERMSIG(status)].exit) {
-                log("%s exits (goodbye)", __progname); 
+                log("%s exited.", __progname); 
                 exit(0);
             }
-
         }
+        
+    schedule_restart:
+
+        tf++;
+        cf++;
 
         if (res_tf && (res_tf < tf)) {
-            log("Max. total failures reached; exit forced.");
+            log("max. total failures reached; exit forced.");
             exit(1);
         }
 
         if (res_cf && (res_cf < cf)) {
-            log("Max. consec. failures reached; exit forced.");		
+            log("max. consec. failures reached; exit forced.");		
             exit(2);
         }
-
-restart:
 
         if (res_helper) 
             system(res_helper);
 
-        log("#%d/%d/%d: Running %s in %d sec...",cf,tf,t,argv[0],res_sec);
+        log("#%d/%d/%d: running %s in %d sec...",cf,tf,t,argv[0],res_sec);
 
     }
 
