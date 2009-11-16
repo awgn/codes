@@ -9,6 +9,7 @@
 # ----------------------------------------------------------------------------
 #
 
+
 module XXX
     
     def self.included(base)
@@ -18,24 +19,42 @@ module XXX
     end
 
     module ClassMethods
-        def class_method 
-            puts "-> #{__method__}"
+        def class_method(out) 
+            out.print "-> #{__method__}"
         end
     end
 
     module InstanceMethods
-        def instance_method 
-            puts "-> #{__method__}"
+        def instance_method(out) 
+            out.print "-> #{__method__}"
         end
     end
 
 end
 
-class Test 
-    include XXX
-end
-
 if __FILE__ == $0
-    Test.class_method
-    Test.new.instance_method
+
+    require 'stringio'
+    require 'test/unit'
+
+    class TestMixin
+        include XXX
+    end
+
+    class TC_test < Test::Unit::TestCase 
+        include XXX
+
+        def test_class_method
+            out = StringIO.new
+            TestMixin.class_method(out)
+            assert(out.string == "-> class_method",'instance method error');
+        end
+
+        def test_instance_method
+            out = StringIO.new
+            TestMixin.new.instance_method(out)
+            assert(out.string == "-> instance_method",'instance method error');
+        end
+    end
+
 end
