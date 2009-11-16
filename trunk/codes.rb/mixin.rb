@@ -20,13 +20,13 @@ module XXX
 
     module ClassMethods
         def class_method(out) 
-            out.print "-> #{__method__}"
+            out.print "#{__method__}"
         end
     end
 
     module InstanceMethods
         def instance_method(out) 
-            out.print "-> #{__method__}"
+            out.print "#{__method__}"
         end
     end
 
@@ -47,13 +47,13 @@ if __FILE__ == $0
         def test_class_method
             out = StringIO.new
             TestMixin.class_method(out)
-            assert(out.string == "-> class_method",'instance method error');
+            assert(out.string == "class_method",'instance method error');
         end
 
         def test_instance_method
             out = StringIO.new
             TestMixin.new.instance_method(out)
-            assert(out.string == "-> instance_method",'instance method error');
+            assert(out.string == "instance_method",'instance method error');
         end
     end
 
