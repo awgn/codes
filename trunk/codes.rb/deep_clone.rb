@@ -23,3 +23,37 @@ class Object
         deep_cloning_obj
     end
 end
+
+if __FILE__ == $0
+
+    require 'stringio'
+    require 'test/unit'
+
+    class Deep
+        attr_accessor :val
+        def initialize(*val)
+            @val = val
+        end
+        def inspect 
+            @val.join(",")
+        end
+    end
+
+    class TC_clone < Test::Unit::TestCase
+
+        def test_shallow_copy
+            a = Deep.new(1,2)
+            b = a.clone
+            b.val << 3 
+            assert( a.inspect == b.inspect, 'shallow copy error?!?')
+        end
+
+        def test_deep_clone
+            a = Deep.new(1,2)
+            b = a.deep_clone
+            b.val << 3 
+            assert( a.inspect == "1,2", 'deep_clone error!')
+            assert( b.inspect == "1,2,3", 'deep_clone error!')
+        end
+    end
+end
