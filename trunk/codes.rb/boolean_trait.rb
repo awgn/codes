@@ -62,6 +62,15 @@ if __FILE__ == $0
        def initialize
            @property = false
        end
+
+       def method_missing(method, *arg)
+           # this missing logic 
+           # ... 
+           # return
+            
+           # call the BooleanTrait's method_missing otherwise
+           super
+       end
    end
 
    class TC_test < Test::Unit::TestCase
