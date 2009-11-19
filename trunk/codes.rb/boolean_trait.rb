@@ -10,16 +10,16 @@
 #
 
 #
-# Attribute Setter
+# Boolean Trait
 
-module AttrSetter
+module BooleanTrait
     def self.included(base)
         base.extend(ClassMethods)
         base.send(:include, InstaceMethod)
     end
 
     module ClassMethods
-        def attr_setter(*met)
+        def boolean_trait(*met)
             met.each do |m|
                 code = %Q{
                 def set_#{m}(value)
@@ -56,8 +56,8 @@ if __FILE__ == $0
    require 'test/unit'
 
    class Klass        
-       include AttrSetter
-       attr_setter :property
+       include BooleanTrait
+       boolean_trait :property
 
        def initialize
            @property = false
