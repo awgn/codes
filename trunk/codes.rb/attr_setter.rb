@@ -25,6 +25,9 @@ module AttrSetter
                 def set_#{m}(value)
                     @#{m} = value    
                 end
+                def is_#{m}?
+                    @#{m}
+                end
                 }
                 class_eval(code)
             end
@@ -39,7 +42,7 @@ module AttrSetter
                 return self
             end
             if (m[0]=='set')
-                raise "undefined method `#{m[1]}' for #{self}..."
+                raise NoMethodError, "undefined method `#{m[1]}' for #{self}"
             end
             self.send("set_#{method}", true)
             self
@@ -54,41 +57,46 @@ if __FILE__ == $0
 
    class Klass        
        include AttrSetter
-       attr_setter :attr
+       attr_setter :property
 
        def initialize
-           @attr = false
+           @property = false
        end
-
-       def to_s
-           "#{@attr}"
-       end 
    end
 
    class TC_test < Test::Unit::TestCase
         def test_false
             x = Klass.new
-            x.non_attr
-            assert_equal(x.to_s,'false')
+            x.non_property
+            assert_equal(x.is_property?, false)
         end        
         def test_true
             x = Klass.new
-            x.attr
-            assert_equal(x.to_s,'true')
+            x.property
+            assert_equal(x.is_property?, true)
         end
         def test_false_true
             x = Klass.new
-            x.non_attr.attr
-            assert_equal(x.to_s,'true')
+            x.non_property.property
+            assert_equal(x.is_property?, true)
         end
         def test_true_false
             x = Klass.new
-            x.attr.non_attr
-            assert_equal(x.to_s,'false')
+            x.property.non_property
+            assert_equal(x.is_property?, false)
         end
-        def test_missing
+
+        def test_missing_property_1
             x = Klass.new
-            assert_raise(RuntimeError) { x.missing }
+            assert_raise(NoMethodError) { x.missing_property }
+        end        
+        def test_missing_property_2
+            x = Klass.new
+            assert_raise(NoMethodError) { x.non_missing_property }
+        end
+        def test_missing_property_3
+            x = Klass.new
+            assert_raise(NoMethodError) { x.is_missing_property? }
         end
    end 
 end
