@@ -13,17 +13,22 @@
 # Boolean Trait
 
 module BooleanTrait
+
     def self.included(base)
         base.extend(ClassMethods)
-        base.send(:include, InstaceMethod)
     end
 
     module ClassMethods
         def boolean_trait(*met)
             met.each do |m|
                 code = %Q{
-                def set_#{m}(value)
-                    @#{m} = value    
+                def non_#{m}
+                    @#{m} = false
+                    self    
+                end
+                def #{m}
+                    @#{m} =  true
+                    self    
                 end
                 def is_#{m}?
                     @#{m}
@@ -31,21 +36,6 @@ module BooleanTrait
                 }
                 class_eval(code)
             end
-        end
-    end
-
-    module InstaceMethod
-        def method_missing(method, *)
-            m = method.to_s.split('_')
-            if (m[0]=='non')
-                self.send("set_#{m[1]}", false)
-                return self
-            end
-            if (m[0]=='set')
-                raise NoMethodError, "undefined method `#{m[1]}' for #{self}"
-            end
-            self.send("set_#{method}", true)
-            self
         end
     end
 end
@@ -62,51 +52,43 @@ if __FILE__ == $0
        def initialize
            @property = false
        end
-
-       def method_missing(method, *arg)
-           # this missing logic 
-           # ... 
-           # return
-            
-           # call the BooleanTrait's method_missing otherwise
-           super
-       end
    end
 
    class TC_test < Test::Unit::TestCase
-        def test_false
-            x = Klass.new
-            x.non_property
-            assert_equal(x.is_property?, false)
-        end        
-        def test_true
-            x = Klass.new
-            x.property
-            assert_equal(x.is_property?, true)
-        end
-        def test_false_true
-            x = Klass.new
-            x.non_property.property
-            assert_equal(x.is_property?, true)
-        end
-        def test_true_false
-            x = Klass.new
-            x.property.non_property
-            assert_equal(x.is_property?, false)
-        end
+       def test_false
+           x = Klass.new
+           x.non_property
+           assert_equal(x.is_property?, false)
+       end        
+       def test_true
+           x = Klass.new
+           x.property
+           assert_equal(x.is_property?, true)
+       end
+       def test_false_true
+           x = Klass.new
+           x.non_property.property
+           assert_equal(x.is_property?, true)
+       end
+       def test_true_false
+           x = Klass.new
+           x.property.non_property
+           assert_equal(x.is_property?, false)
+       end
 
-        def test_missing_property_1
-            x = Klass.new
-            assert_raise(NoMethodError) { x.missing_property }
-        end        
-        def test_missing_property_2
-            x = Klass.new
-            assert_raise(NoMethodError) { x.non_missing_property }
-        end
-        def test_missing_property_3
-            x = Klass.new
-            assert_raise(NoMethodError) { x.is_missing_property? }
-        end
+       # def test_missing_1
+       #     x = Klass.new
+       #     assert_raise(NoMethodError) { x.missing }
+       # end        
+       # def test_missing_2
+       #     x = Klass.new
+       #     assert_raise(NoMethodError) { x.non_missing }
+       # end
+       # def test_missing_3
+       #     x = Klass.new
+       #     assert_raise(NoMethodError) { x.is_missing? }
+       # end
    end 
+
 end
 
