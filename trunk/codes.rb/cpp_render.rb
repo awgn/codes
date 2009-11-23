@@ -453,7 +453,7 @@ class CppModule
 
     def body
         out = Indenter.new(@out)
-        @headers.each { |h| out.puts "#include <#{h}>" }
+        @headers.uniq.each { |h| out.puts "#include <#{h}>" }
         @out.puts if @headers.size > 0
 
         @namespaces.each { |n| print "namespace #{n} { " }
