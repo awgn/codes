@@ -454,16 +454,16 @@ class CppModule
     def body
         out = Indenter.new(@out)
         @headers.each { |h| out.puts "#include <#{h}>" }
-        puts if @headers.size > 0
+        @out.puts if @headers.size > 0
 
         @namespaces.each { |n| print "namespace #{n} { " }
-        (puts; puts) if @namespaces.size > 0
+        (@out.puts; @out.puts) if @namespaces.size > 0
 
             out.level += 1 if @namespaces.size > 0 
             @elements.each { |c| out.puts c }
-        
-        @namespaces.reverse.each { |n| print "} // #{n}\n" }
 
+        @out.puts if @namespaces.size > 0
+        @namespaces.reverse.each { |n| print "} // #{n}\n" }
     end
 
     def epilog
