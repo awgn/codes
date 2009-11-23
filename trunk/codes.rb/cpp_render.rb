@@ -34,7 +34,8 @@ class LazyReader
     
     private
 
-    def meta_reader(tag,arg)    
+    def meta_reader(tag,arg)   
+
         code = 
         %Q{
             if @#{tag}.class == Proc
@@ -49,6 +50,28 @@ class LazyReader
 
 end
 
+#
+###################################### AccessMap 
+
+class AccessMap < Hash
+    def initialize
+        self.update( { public: [], protected: [], private: [] } )
+    end
+
+    def <<(hash)
+        hash.each_pair do |k,v| 
+            if(v.class == Array) 
+                v.each { |e| self[k] << e }
+            else
+                self[k] << v 
+            end
+        end 
+    end
+    
+    def clear
+        self.update( { public: [], protected: [], private: [] } )
+    end
+end
 
 #
 ###################################### Indenter 
@@ -324,10 +347,13 @@ class CppClass
 
     def initialize(name)
         @name = name
-        @members = { :public => [], :protected => [], :private =>[] }
+        @members = AccessMap.new
     end
     
     def <<(members)
+    
+        # members must be qualifed...
+
         members.each_pair do |k,v| 
             if(v.class == Array) 
                 v.each { |e| @members[k] << qualify(e) }
@@ -337,20 +363,26 @@ class CppClass
         end 
     end
 
-    def qualify(e)
-        if (e.respond_to?(:method_of))
-            e.method_of(@name)
-        end
-        e
-    end
-
     def template
         @template ||= T::Template.new
     end
 
+    def inherit
+        @inheritance ||= AccessMap.new
+    end
+
+    def full_name
+        @template||= nil
+        ret = @name
+        ret += @template.spec if (@template)
+    end
+
     def to_s()
+
         %Q{\
-#{ (@template ||= nil) ? "#{@template}\n" : "" }class #{@name}#{ @template ? (@template.specialized? ? @template.spec : "") : "" }
+#{ (@template ||= nil) ? "#{@template}\n" : "" }class #{@name}\
+#{ @template ? (@template.specialized? ? @template.spec : "") : "" }\
+#{ (@inheritance ||=nil) ? inheritance_header : "" }
 {
 #{  
     str = StringIO.new 
@@ -359,6 +391,23 @@ class CppClass
     @members.each_pair { |k,v| out.puts "#{k}:\n\n#{v.collect { |l| "#{l}\n" }.join }" unless v.empty? }
     out.out.string
 }};}
+    end
+
+    private
+
+    def qualify(e)
+        if (e.respond_to?(:method_of))
+            e.method_of(@name)
+        end
+        e
+    end
+
+    def inheritance_header
+        hdr = []
+        @inheritance.each_pair do |k,v|
+            v.each { |e| hdr << " #{k} #{e.respond_to?(:full_name) ? e.full_name : e}" }                       
+        end
+        hdr.empty? ? "" : " :" + hdr.join(",")        
     end
 
 end
@@ -474,12 +523,19 @@ if __FILE__ == $0
             sub = cpp_class('subclass')
             sub << { public: x.dup }
 
+            b = cpp_class('base')
+            b.template << T.typename('T')
+
+            c.inherit << { public: ['hello'], protected: b }
+
             c << { public: sub }
             c << { public: typedef('int', 'value_type') }
 
             c.template << T.typename('Q') << T.typename('T')
             m << c
 
+            c.inherit.clear
+            
             c.template.specialize('Q','int')
             m << c
 
