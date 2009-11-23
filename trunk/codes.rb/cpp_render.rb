@@ -14,7 +14,7 @@ require 'deep_clone'
 require 'boolean_trait'
 
 #
-# LazyReader base class
+###################################### LazyReader base class
 
 class LazyReader
 
@@ -51,7 +51,7 @@ end
 
 
 #
-# Indenter facility 
+###################################### Indenter 
 
 class Indenter
     attr_accessor :level
@@ -72,7 +72,7 @@ class Indenter
 end
 
 #
-# typedefs
+###################################### typedefs
 
 class Typedef
     def initialize(old,new)
@@ -91,7 +91,7 @@ def typedef(type,new_type)
 end
 
 #
-# comment 
+###################################### comment 
 
 class Comment
     def initialize(text)
@@ -110,7 +110,7 @@ def comment(text)
 end
 
 #
-# CV Qualifier and Attributes
+###################################### CV Qualifier and Attributes
 
 module QualifiersAndAttributes
 
@@ -142,7 +142,7 @@ module QualifiersAndAttributes
 end
 
 #
-# Class Member
+###################################### Class Member
 
 class Member
     include QualifiersAndAttributes
@@ -165,7 +165,7 @@ class Member
 end
 
 #
-# Class MemberFunctionBase
+###################################### Class MemberFunctionBase
 
 class MemberFunctionBase < LazyReader
 
@@ -194,7 +194,7 @@ class MemberFunctionBase < LazyReader
 end
 
 #
-# Class MemberFunction
+###################################### Class MemberFunction
 
 class MemberFunction < MemberFunctionBase
 
@@ -245,7 +245,7 @@ def operator_eq(definition = nil)
 end
 
 #
-# Template Module
+###################################### Template Module
 
 module T 
 
@@ -316,7 +316,7 @@ module T
 end
 
 #
-# Cpp Class...
+###################################### CppClass...
 
 class CppClass
 
@@ -371,7 +371,7 @@ def cpp_class(name)
 end
 
 #
-# CppModules
+###################################### CppModules
 
 class CppModule 
 
@@ -395,8 +395,6 @@ class CppModule
         #raise "<< CppClass argumet expected" unless klass.kind_of?(CppClass)
         @elements << e.deep_clone 
     end
-
-    ###########################################################
 
     def prolog
         @out.puts "#ifndef _" + @guard + "_H_" 
@@ -426,8 +424,6 @@ class CppModule
 
     alias close epilog
 
-    ###########################################################
-
     def self.open(name, out = STDOUT)
         m = CppModule.new(name,out)
         if block_given?
@@ -444,7 +440,7 @@ def cpp_module(x, out = STDOUT, &b)
     CppModule.open(x,out,&b)
 end 
 
-###############################################
+################################################################
 
 if __FILE__ == $0 
 
