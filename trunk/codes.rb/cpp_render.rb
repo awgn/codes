@@ -270,7 +270,7 @@ end
 #
 ###################################### Template Module
 
-module T 
+module T # template module 
 
     class Param 
         attr_reader :id
@@ -285,57 +285,61 @@ module T
     end
 
     #
-    # helper factory 
-
-    def T.typename(i=nil, v=nil)
-        Param.new("typename", i, v)
-    end
-
-    def T.nontype(t='bool', i=nil, v=nil)
-        Param.new(t, i, v)
-    end
-
-    def T.template(t=nil, i=nil, v=nil)
-        Param.new("#{t} class", i, v)
-    end
-
-    #
     # template class
+    #
 
     class Template
 
         def initialize
-            @template = []
-            @spec = {} 
+            @param_list = []
+            @spec_list  = {} 
         end
 
-        def <<(e)
-            raise "template parameter '#{e.id}' already in use" if ( @template.any? {|x| e.id == x.id } )
-            @template << e
+        def parameter(*p)
+            p.each do |par|
+                raise "template parameter '#{p.id}' already in use" if ( @param_list.any? {|x| par.id == x.id } )
+                @param_list << par 
+            end 
             self
         end
 
         def specialize(id,value)
-            raise "template paramenter '#{id}' not found" unless (@template.find { |o| o.id == id } )
-            @spec[id] = value
+            raise "template paramenter '#{id}' not found" unless (@param_list.find { |o| o.id == id } )
+            @spec_list[id] = value
         end
 
         def template
-            "template <#{ @template.join(", ") }>"
+            "template <#{ @param_list.join(", ") }>"
         end
 
         def to_s
-            "template <#{ @template.select { |e| !@spec.has_key?(e.id)  } .join(", ") }>"
+            "template <#{ @param_list.select { |e| !@spec_list.has_key?(e.id)  } .join(", ") }>"
         end
 
         def spec 
-            "<#{ @template.collect { |e| @spec.has_key?(e.id) ? @spec[e.id] : e.id  } .join(", ") }>"
+            "<#{ @param_list.collect { |e| @spec_list.has_key?(e.id) ? @spec_list[e.id] : e.id  } .join(", ") }>"
         end
 
-        def specialized?
-            !@spec.empty?
+        def is_specialized?
+            !@spec_list.empty?
         end
     end
+
+end
+
+#
+# template helper factory 
+
+def typename(i=nil, v=nil)
+    T::Param.new("typename", i, v)
+end
+
+def nontype(t='bool', i=nil, v=nil)
+    T::Param.new(t, i, v)
+end
+
+def template(t=nil, i=nil, v=nil)
+    T::Param.new("#{t} class", i, v)
 end
 
 #
@@ -350,10 +354,8 @@ class CppClass
         @members = AccessMap.new
     end
     
-    def <<(members)
-    
+    def member(members)
         # members must be qualifed...
-
         members.each_pair do |k,v| 
             if(v.class == Array) 
                 v.each { |e| @members[k] << qualify(e) }
@@ -367,8 +369,9 @@ class CppClass
         @template ||= T::Template.new
     end
 
-    def inherit
-        @inheritance ||= AccessMap.new
+    def inherit(c=nil)
+        return (@inheritance ||= AccessMap.new) unless c
+        (@inheritance ||= AccessMap.new) << c
     end
 
     def full_name
@@ -381,7 +384,7 @@ class CppClass
 
         %Q{\
 #{ (@template ||= nil) ? "#{@template}\n" : "" }class #{@name}\
-#{ @template ? (@template.specialized? ? @template.spec : "") : "" }\
+#{ @template ? (@template.is_specialized? ? @template.spec : "") : "" }\
 #{ (@inheritance ||=nil) ? inheritance_header : "" }
 {
 #{  
@@ -413,7 +416,7 @@ class CppClass
 end
 
 #
-# factory:
+# class factory:
 
 def cpp_class(name)
     CppClass.new(name)
@@ -506,32 +509,31 @@ if __FILE__ == $0
             y = x.dup
             y.virtual.non_static
 
-            c << { 
-                private: 
-                    [ comment("this is a simple class"), 
-                    x,
-                    y, 
-                    dtor("") 
-                    ], 
-                public: 
-                    [ ctor(), 
-                    copy_ctor(), 
-                    operator_eq("return *this;") 
-                    ] 
-            }
+            c.member({ private: 
+                        [ comment("this is a simple class"), 
+                          x,
+                          y, 
+                         dtor("") 
+                        ], 
+                        public: 
+                        [ ctor(), 
+                          copy_ctor(), 
+                          operator_eq("return *this;") 
+                        ] 
+                     })
 
             sub = cpp_class('subclass')
-            sub << { public: x.dup }
+            sub.member public: x.dup 
 
             b = cpp_class('base')
-            b.template << T.typename('T')
+            b.template.parameter typename('T')
 
-            c.inherit << { public: ['hello'], protected: b }
+            c.inherit(public: ['hello', 'test'], protected: b) 
 
-            c << { public: sub }
-            c << { public: typedef('int', 'value_type') }
+            c.member(public: sub)
+            c.member(public: typedef('int', 'value_type') ) 
 
-            c.template << T.typename('Q') << T.typename('T')
+            c.template.parameter typename('Q'), typename('T'), nontype('int', 'N')
             m << c
 
             c.inherit.clear
