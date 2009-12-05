@@ -12,8 +12,8 @@
 #include <observer.hh>
 #include <vector>
 
-struct sub1 : public more::subject<std::vector> {};
-struct sub2 : public more::subject<std::vector, void, true> 
+struct sub1 : public more::subject<> {};
+struct sub2 : public more::subject<void, true /* use shared_ptr */ > 
 {
     sub2()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
@@ -22,7 +22,7 @@ struct sub2 : public more::subject<std::vector, void, true>
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
 };
 
-struct sub3 : public more::subject<std::vector, int> 
+struct sub3 : public more::subject<int> 
 {
     sub3()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
@@ -93,7 +93,7 @@ main(int argc, char *argv[])
     std::cout << "    notify()" << std::endl;
     general.notify(); 
 
-    std::cout << "\n[*] subject/observer: subject with observer's ownership\n\n"; 
+    std::cout << "\n[*] subject/observer: subject with shared_ptr<>\n\n"; 
 
     {
         sub2 owner;
@@ -115,11 +115,15 @@ main(int argc, char *argv[])
         std::cout << "    destruct the subect [and all attached observers]" << std::endl;
     }
     
+    std::cout << "\n[*] subject/observer: notify() with parameter\n\n"; 
+
     {
         sub3 general;
         obs3 soldier;
 
         general.attach(&soldier);
+        
+        std::cout << "    notify(10)" << std::endl;
         general.notify(10);
     }
 

@@ -16,6 +16,7 @@
 #include <tr1/functional>
 #include <tr1/memory>
 #include <algorithm>
+#include <vector>
 #include <cassert>
 
 using std::tr1::mem_fn;
@@ -23,6 +24,20 @@ using std::tr1::bind;
 using namespace std::tr1::placeholders;
 
 namespace more { 
+
+    namespace observer_helper {
+
+        template <bool v, typename U, typename V>
+        struct select_type
+        {
+            typedef U type;
+        };
+        template <typename U, typename V>
+        struct select_type<false, U, V>
+        {
+            typedef V type;
+        };
+    }
 
     template <typename T = void>
     class observer
@@ -62,30 +77,13 @@ namespace more {
         virtual void update()=0;
     };
 
-    template <bool v, typename U, typename V>
-    struct select_type
-    {
-        typedef U type;
-    };
-    template <typename U, typename V>
-    struct select_type<false, U, V>
-    {
-        typedef V type;
-    };
-
-    template <bool v>
-    struct bool2type
-    { enum { value = v }; };
-
-    template < template <typename Tp, typename Alloc = std::allocator<Tp> > 
-               class Cont,                              /* container template */ 
-               typename P = void,                       /* update parameter */      
-               bool observerOwnership = false           /* onwership policy: false = raw pointers, true = shared_ptr<> */ ,
+    template < typename P = void,                       /* update parameter */      
+               bool use_shared_ptr = false              /* pointer policy: false = raw pointers, true = shared_ptr<> */ ,
                typename Atomicity = atomicity::DEFAULT  /* for multithread set to GNU_CXX */ >
-    class subject : private atomicity::emptybase_mutex<atomicity::DEFAULT>
+    class subject : private atomicity::emptybase_mutex<Atomicity>
     { 
     public:
-        typedef typename select_type<observerOwnership, 
+        typedef typename observer_helper::select_type<use_shared_ptr, 
                 std::tr1::shared_ptr<observer<P> >,
                 observer<P> * >::type ptr_type; 
 
@@ -115,7 +113,7 @@ namespace more {
         void detach(ptr_type o)
         {
             typename Atomicity::scoped_lock lock(this->mutex());
-            typename Cont<ptr_type>::iterator it = std::find(_M_observers.begin(), _M_observers.end(), o);
+            typename std::vector<ptr_type>::iterator it = std::find(_M_observers.begin(), _M_observers.end(), o);
             if ( it != _M_observers.end())
                 _M_observers.erase(it);
         }
@@ -125,8 +123,7 @@ namespace more {
         {}
 
     private:  
-        
-        Cont< ptr_type >  _M_observers;
+        std::vector<ptr_type>  _M_observers;
     };
 
 } // namespace more
