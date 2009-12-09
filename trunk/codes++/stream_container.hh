@@ -12,6 +12,7 @@
 #define STREAM_CONTAINER_HH
 
 #include <iostream>
+#include <cstdio>
 #include <string>
 #include <mtp.hh>
 

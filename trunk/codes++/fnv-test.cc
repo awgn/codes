@@ -10,6 +10,7 @@
 
 #include "fnv.hh"
 #include <iostream>
+#include <cstdio>
 
 #define msg(format,...) fprintf(stdout,"%s=(" format ")\n" ,#__VA_ARGS__,## __VA_ARGS__)
 #define string_len(x)   (sizeof(x)-1)

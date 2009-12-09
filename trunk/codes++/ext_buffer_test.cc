@@ -13,6 +13,7 @@
 #include <iostream>
 #include <algorithm>
 #include <iterator>
+#include <cstdio>
 
 #include <tr1/array>
 

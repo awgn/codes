@@ -14,6 +14,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <cstdio>
 
 template <bool val> struct CTassert;
 template <>

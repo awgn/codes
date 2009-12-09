@@ -12,6 +12,7 @@
 #define GETOPT_HH
 
 #include <iostream>
+#include <cstdio>
 #include <stdexcept>
 
 #include <unistd.h>

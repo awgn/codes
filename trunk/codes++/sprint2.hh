@@ -13,6 +13,7 @@
 #include <string>
 #include <iostream>
 #include <cstdlib>
+#include <cstdio>
 #include <macro_template.h>
 
 #ifndef likely

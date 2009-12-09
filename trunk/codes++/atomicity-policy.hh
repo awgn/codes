@@ -99,6 +99,14 @@ namespace more { namespace atomicity {
 #endif
     };
 
+    template <>
+    struct gnu_cxx<4,4> {
+#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 4 
+        typedef __gnu_cxx::__mutex mutex;
+        typedef __gnu_cxx::__scoped_lock scoped_lock;
+#endif
+    };
+
     template <int, int> struct gnu_cxx_recursive;
     template <>
     struct gnu_cxx_recursive<4,2> {
@@ -114,6 +122,14 @@ namespace more { namespace atomicity {
         typedef atomicity::__scoped_lock<mutex> scoped_lock; // not yet supported in gnu_cxx
 #endif
     };
+    template <>
+    struct gnu_cxx_recursive<4,4> {
+#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 4 
+        typedef __gnu_cxx::__recursive_mutex mutex;
+        typedef atomicity::__scoped_lock<mutex> scoped_lock; // not yet supported in gnu_cxx
+#endif
+    };
+
 
     typedef gnu_cxx<__GNUC__, __GNUC_MINOR__> GNU_CXX; 
     typedef gnu_cxx_recursive<__GNUC__, __GNUC_MINOR__> GNU_CXX_RECURSIVE; 
