@@ -292,7 +292,7 @@ namespace more {
         }
 
         // direct version... 
-        int dispatch(int cnt, pcap_handler h, u_char *u)
+        int dispatch(int cnt, pcap_handler h, u_char *u = 0)
         {
             int n;
             if (  (n = pcap_dispatch(_M_handle, cnt, h, u)) == -1)
@@ -309,7 +309,7 @@ namespace more {
         }
 
         // direct version...
-        int loop(int cnt, pcap_handler h, u_char *u)
+        int loop(int cnt, pcap_handler h, u_char *u = 0)
         {
             int n;
             if (  (n = pcap_loop(_M_handle, cnt, h, u)) == -1)

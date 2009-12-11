@@ -81,7 +81,7 @@ main(int argc, char *argv[])
 
     handle.loop(10);        
     
-    // handle.loop(10, simple_handler, 0);  // use direct loop
+    // handle.loop(10, simple_handler);  // use direct loop
 
     std::cout << "dumping 10 icmp to file..." << std::endl;
 
