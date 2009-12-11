@@ -456,80 +456,6 @@ namespace more {
             return pcap_datalink_val_to_description(dlt);
         }
 
-    protected:
-        void 
-        clear_errbuf() const
-        {
-            _M_errbuf[0]='\0';
-        }
-
-        bool 
-        warning() const
-        {
-            return strlen(_M_errbuf) > 0;
-        } 
-
-        mutable char _M_errbuf[PCAP_ERRBUF_SIZE];
-        pcap_t * _M_handle;
-    };
-
-    ///////////////////////////////////////////////
-    // pcap_live class
-    ///////////////////////////////////////////////
-
-    class pcap_live : public pcap
-    {   
-    public:     
-        pcap_live(const std::string &dev, int snaplen, bool promisc, int to_ms)
-        : pcap(),
-          _M_device(dev),
-          _M_snaplen(snaplen),
-          _M_promisc(promisc),
-          _M_to_ms(to_ms)
-        {
-            this->clear_errbuf();
-
-            _M_handle = pcap_open_live(_M_device.c_str(), _M_snaplen, _M_promisc, _M_to_ms, _M_errbuf);
-            if (_M_handle == NULL)
-                throw std::runtime_error(std::string("pcap: ").append(_M_errbuf));
-
-            if ( this->warning() )
-                std::clog << "pcap warning: " << _M_errbuf << std::endl;
-        }
-        
-        const std::string
-        device() const
-        { 
-            return _M_device;
-        }
-
-        int 
-        snaplen() const
-        {
-            return _M_snaplen;
-        }
-
-        bool
-        promisc() const
-        { 
-            return _M_promisc;
-        }
-
-        int 
-        timeo_ms() const
-        {
-            return _M_to_ms;
-        }
-
-        ///////////////////////////////////////////////
-
-        void
-        stats(struct pcap_stat *ps)
-        {
-            if (pcap_stats(_M_handle, ps) == -1)
-                throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(_M_handle))); 
-        }
-
         int datalink() const
         {
             return pcap_datalink(const_cast<pcap_t *>(_M_handle));
@@ -605,6 +531,80 @@ namespace more {
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(_M_handle))); 
         }
 
+    protected:
+        void 
+        clear_errbuf() const
+        {
+            _M_errbuf[0]='\0';
+        }
+
+        bool 
+        warning() const
+        {
+            return strlen(_M_errbuf) > 0;
+        } 
+
+        mutable char _M_errbuf[PCAP_ERRBUF_SIZE];
+        pcap_t * _M_handle;
+    };
+
+    ///////////////////////////////////////////////
+    // pcap_live class
+    ///////////////////////////////////////////////
+
+    class pcap_live : public pcap
+    {   
+    public:     
+        pcap_live(const std::string &dev, int snaplen, bool promisc, int to_ms)
+        : pcap(),
+          _M_device(dev),
+          _M_snaplen(snaplen),
+          _M_promisc(promisc),
+          _M_to_ms(to_ms)
+        {
+            this->clear_errbuf();
+
+            _M_handle = pcap_open_live(_M_device.c_str(), _M_snaplen, _M_promisc, _M_to_ms, _M_errbuf);
+            if (_M_handle == NULL)
+                throw std::runtime_error(std::string("pcap: ").append(_M_errbuf));
+
+            if ( this->warning() )
+                std::clog << "pcap warning: " << _M_errbuf << std::endl;
+        }
+        
+        const std::string
+        device() const
+        { 
+            return _M_device;
+        }
+
+        int 
+        snaplen() const
+        {
+            return _M_snaplen;
+        }
+
+        bool
+        promisc() const
+        { 
+            return _M_promisc;
+        }
+
+        int 
+        timeo_ms() const
+        {
+            return _M_to_ms;
+        }
+
+        ///////////////////////////////////////////////
+
+        void
+        stats(struct pcap_stat *ps)
+        {
+            if (pcap_stats(_M_handle, ps) == -1)
+                throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(_M_handle))); 
+        }
+
     private:
         std::string _M_device;
         int  _M_snaplen;
@@ -647,7 +647,6 @@ namespace more {
             return _M_linktype;
         }
 
-        
     private:
         int  _M_linktype;
         int  _M_snaplen;
