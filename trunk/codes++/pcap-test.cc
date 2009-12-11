@@ -30,11 +30,11 @@ public:
 };
 
 
-// freefunction handler
+// simple handler
 
-void direct_handler(u_char *user, const struct pcap_pkthdr * h, const u_char *bytes)
+void simple_handler(u_char *user, const struct pcap_pkthdr * h, const u_char *bytes)
 {
-    std::cout << "direct handler: " << *h << std::endl;
+    std::cout << "simple handler: " << *h << std::endl;
 }
 
 int
@@ -75,8 +75,19 @@ main(int argc, char *argv[])
         handle.filter(icmp_only);
     }
 
-    // handle.loop(10);
-    handle.loop(10, direct_handler, 0);  // use direct loop
+    more::pcap_dumper test(handle, "test.pcap");
+
+    std::cout << "dumping 10 icmp to cout..." << std::endl;
+
+    handle.loop(10);        
+    
+    // handle.loop(10, simple_handler, 0);  // use direct loop
+
+    std::cout << "dumping 10 icmp to file..." << std::endl;
+
+    handle.loop(10, more::pcap_dumper::handler, reinterpret_cast<u_char *>(&test) );  // use direct loop
+
+    test.flush();
 
     return 0;
 }

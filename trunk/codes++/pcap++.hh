@@ -211,6 +211,8 @@ namespace more {
 
     class pcap : private noncopyable
     {
+        friend class pcap_dumper;
+
     protected:
 
         virtual ~pcap()
@@ -222,6 +224,19 @@ namespace more {
         : _M_errbuf(),
           _M_handle()
         {} 
+
+        /////////////////////////////////////////////////////////////////////////
+        // get pcap_t * handle...
+ 
+        operator pcap_t *()
+        { 
+            return _M_handle;
+        }
+
+        operator const pcap_t *() const
+        {
+            return  _M_handle;
+        }
 
     public:
 
@@ -700,6 +715,50 @@ namespace more {
 
     private:
         std::string _M_device;
+    };
+
+    ///////////////////////////////////////////////
+    // pcap_dumper class (write to a pcap file)
+    ///////////////////////////////////////////////
+
+    class pcap_dumper
+    {
+    public:
+        pcap_dumper(pcap & source, const char *fname)
+        : _M_dumper(0)
+        {
+            pcap_t * h = static_cast<pcap_t *>(source);
+            if ( (_M_dumper = pcap_dump_open(h, fname)) == NULL )
+                throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(h)));
+        }
+
+        ~pcap_dumper()
+        {
+            pcap_dump_close(_M_dumper);
+        }
+
+        void
+        dump(const struct pcap_pkthdr *h, const u_char *sp)
+        {
+            pcap_dump(reinterpret_cast<u_char *>(_M_dumper), h, sp);
+        }
+
+        void
+        flush()
+        {
+            if ( pcap_dump_flush(_M_dumper) == -1 )
+                throw std::runtime_error(std::string("pcap: pcap_dump_flush")); 
+        }
+
+        static
+        void handler(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
+        {
+            pcap_dumper * that = reinterpret_cast<pcap_dumper *>(user);
+            that->dump(h,sp);
+        }
+
+    private:
+        pcap_dumper_t * _M_dumper;
     };
 
 } // namespace more
