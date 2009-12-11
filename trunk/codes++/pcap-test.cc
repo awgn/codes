@@ -30,6 +30,20 @@ public:
 };
 
 
+struct replay : public more::pcap_offline
+{
+    replay(const std::string &fname)
+    : more::pcap_offline(fname)
+    {}
+
+    virtual
+    void packet_handler(const struct pcap_pkthdr *h, const u_char *p)
+    {
+        std::cout << "replay: " << *h << std::endl;
+    }
+
+};
+
 // simple handler
 
 void simple_handler(u_char *user, const struct pcap_pkthdr * h, const u_char *bytes)
@@ -75,19 +89,23 @@ main(int argc, char *argv[])
         handle.filter(icmp_only);
     }
 
-    more::pcap_dumper test(handle, "test.pcap");
-
     std::cout << "dumping 10 icmp to cout..." << std::endl;
 
     handle.loop(10);        
-    
     // handle.loop(10, simple_handler);  // use direct loop
-
+ 
     std::cout << "dumping 10 icmp to file..." << std::endl;
+    {
+        more::pcap_dumper test(handle, "test.pcap");
+        handle.loop(10, more::pcap_dumper::handler, reinterpret_cast<u_char *>(&test) );  // use direct loop
+        test.flush();
+    }
 
-    handle.loop(10, more::pcap_dumper::handler, reinterpret_cast<u_char *>(&test) );  // use direct loop
-
-    test.flush();
+    std::cout << "dumping 10 icmp from file..." << std::endl;
+    {
+        replay r("test.pcap");
+        r.loop(10);
+    }
 
     return 0;
 }
