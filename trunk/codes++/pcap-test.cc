@@ -19,7 +19,7 @@ class mycap : public more::pcap_live
 {
 public:
     mycap()
-    : more::pcap_live("eth2", 64, true, 0)
+    : more::pcap_live("wlan0", 64, true, 0)
     {}
 
     virtual
@@ -32,9 +32,9 @@ public:
 
 // freefunction handler
 
-void ff_packet_handler(u_char *user, const struct pcap_pkthdr * h, const u_char *bytes)
+void direct_handler(u_char *user, const struct pcap_pkthdr * h, const u_char *bytes)
 {
-    std::cout << "static handler: " << *h << std::endl;
+    std::cout << "direct handler: " << *h << std::endl;
 }
 
 int
@@ -59,7 +59,7 @@ main(int argc, char *argv[])
     std::cout << std::endl;
 
     bpf_u_int32 net, mask;
-    std::tr1::tie(net,mask) = more::pcap::lookupnet("eth2");
+    std::tr1::tie(net,mask) = more::pcap::lookupnet("lo");
 
     std::cout << "lookupnet: " << more::pcap::ipv4_dotform(net) << " " << more::pcap::ipv4_dotform(mask) << std::endl;
     std::cout << "dispatch: " << std::endl;
@@ -76,7 +76,7 @@ main(int argc, char *argv[])
     }
 
     // handle.loop(10);
-    handle.loop(10, ff_packet_handler, 0);  // use direct loop
+    handle.loop(10, direct_handler, 0);  // use direct loop
 
     return 0;
 }

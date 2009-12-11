@@ -21,10 +21,9 @@
 
 #include <noncopyable.hh>
 
-#include <pcap.h>
 #include <sys/types.h>
-
 #include <arpa/inet.h>
+#include <pcap.h>
 
 namespace more { 
 
@@ -170,10 +169,10 @@ namespace more {
           _M_opt(optimize),
           _M_netmask(netmask)
         {
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
+            // std::cout << __PRETTY_FUNCTION__ << std::endl;
         }
     
-        int
+        void 
         operator()(pcap_t *p)  // the program is to be compiled by the pcap class...
         {
             if ( pcap_compile(p, &_M_prog, _M_str, _M_opt, _M_netmask) == -1)
@@ -182,7 +181,7 @@ namespace more {
 
         ~bpf_prog()
         {
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
+            // std::cout << __PRETTY_FUNCTION__ << std::endl;
             pcap_freecode(&_M_prog);
         }
 
