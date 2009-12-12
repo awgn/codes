@@ -48,8 +48,7 @@ namespace more {
         : _M_value( const_cast< 
                         typename more::remove_const_if< 
                             std::tr1::is_const<T>::value, P
-                            >::type * 
-                        >(p))
+                            >::type * >(p))
         {}
 
         T * 
@@ -95,7 +94,7 @@ namespace net {
         void
         dhost(const std::string &a)
         {
-            ether_aton_r(a.c_str(), reinterpret_cast<struct ether_addr *>(_M_h->ether_dhost) );
+            ether_aton_r(a.c_str(), reinterpret_cast<struct ether_addr *>(_M_h->ether_dhost));
         }
 
         std::string
@@ -109,7 +108,7 @@ namespace net {
         void
         shost(const std::string &a)
         {
-            ether_aton_r(a.c_str(), reinterpret_cast<struct ether_addr *>(_M_h->ether_shost) );
+            ether_aton_r(a.c_str(), reinterpret_cast<struct ether_addr *>(_M_h->ether_shost));
         }
 
         u_int16_t
@@ -124,14 +123,8 @@ namespace net {
             _M_h->ether_type = htons(value);
         }
 
-        static ssize_t
-        size()
-        {
-            return sizeof(ether_header);
-        }
-
         ssize_t
-        len() const
+        size() const
         {
             return sizeof(ether_header);
         }
@@ -144,9 +137,9 @@ namespace net {
     inline std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT, Traits> &out, const ethernet & h)
     {
-        return out << "ether[ dhost=" << h.dhost() << 
-                            " shost=" << h.shost() << 
-                            " type=0x" << std::hex << h.ether_type() << std::dec <<  " ]";
+        return out << "[dhost=" << h.dhost() << 
+                       " shost=" << h.shost() << 
+                       " type=0x" << std::hex << h.ether_type() << std::dec <<  "]";
     }
 
     class ipv4

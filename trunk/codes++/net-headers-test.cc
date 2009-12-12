@@ -16,14 +16,12 @@ main(int argc, char *argv[])
 {
     char buf[16];
     {
-        std::cout << "ethernet: " << net::ethernet::size() << " bytes" << std::endl;
-
         more::header<net::ethernet> h(buf);
-
+        
         h->dhost("0:1:2:3:4:5");
         h->shost("a:b:c:d:e:f");
         h->ether_type(0x800);
 
-        std::cout << *h << std::endl;
+        std::cout << "ethernet: " << h->size() << " bytes " << *h << std::endl;
     }
 }
