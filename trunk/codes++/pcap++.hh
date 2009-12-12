@@ -163,7 +163,7 @@ namespace more {
     class bpf_prog
     {
     public:
-        bpf_prog(const char *str, bool optimize = true, bpf_u_int32 netmask = 0)
+        bpf_prog(const std::string &str, bool optimize = true, bpf_u_int32 netmask = 0)
         : _M_prog(), 
           _M_str(str),
           _M_opt(optimize),
@@ -175,7 +175,7 @@ namespace more {
         void 
         operator()(pcap_t *p)  // the program is to be compiled by the pcap class...
         {
-            if ( pcap_compile(p, &_M_prog, _M_str, _M_opt, _M_netmask) == -1)
+            if ( pcap_compile(p, &_M_prog, _M_str.c_str(), _M_opt, _M_netmask) == -1)
                throw std::runtime_error( std::string("pcap: ").append(pcap_geterr(p))); 
         }
 
@@ -198,7 +198,7 @@ namespace more {
     private:
         struct bpf_program _M_prog;
 
-        const char * _M_str;
+        const std::string _M_str;
         bool _M_opt;
         bpf_u_int32 _M_netmask;
     };
