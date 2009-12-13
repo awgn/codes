@@ -14,27 +14,43 @@
 #include <tr1/type_traits>
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 #include <netinet/ether.h>
+#include <netinet/ip.h>
+#include <netinet/udp.h>
+#include <netinet/tcp.h>
+#include <netinet/ip_icmp.h>
+
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
 namespace more {
 
-    //////////////////////////////////////////////////////////
-    // remove_const_if metafunction 
 
-    template <bool V, typename T>
-    struct remove_const_if
-    {
-        typedef typename std::tr1::remove_const<T>::type type;
-    };
+    namespace header_helper {
 
-    template <typename T>
-    struct remove_const_if<false, T>
-    {
-        typedef T type;
-    };
+        //////////////////////////////////////////////////////////
+        // remove_const_if metafunction 
+
+        template <bool V, typename T>
+        struct remove_const_if
+        {
+            typedef typename std::tr1::remove_const<T>::type type;
+        };
+
+        template <typename T>
+        struct remove_const_if<false, T>
+        {
+            typedef T type;
+        };
+
+        template <int N>
+        struct int2type
+        {
+            enum { value = N };
+        };
+    }
 
     //////////////////////////////////////////////////////////
     // generic network header
@@ -42,14 +58,41 @@ namespace more {
     template <typename T>
     class header
     {
+        ////////////////////////////////////////////////
+        // ctor for static size headers.. ie: ethernet
+
+        template <typename P, int N>
+        void ctor(P * &p, ssize_t &bytes, header_helper::int2type<N>)
+        {
+            if (bytes < N)
+                throw std::range_error("T::static_size");
+            p = reinterpret_cast<P *>(reinterpret_cast<char *>(p) + N);
+            bytes -= N;
+        }
+
+        ///////////////////////////////////////////
+        // ctor for dynamic size headers.. ie: ip 
+
+        template <typename P>
+        void ctor(P * &p, ssize_t &bytes, header_helper::int2type<0>)
+        {
+            ssize_t n = _M_value.size(bytes);
+            if (bytes < n)
+                throw std::range_error("T::size() [dynamic size]");
+            p = reinterpret_cast<P *>(reinterpret_cast<char *>(p) + n);
+            bytes -= n;
+        }
+
     public:
         template <typename P>
-        header(P *p)
+        header(P * &ptr, ssize_t &bytes)
         : _M_value( const_cast< 
-                        typename more::remove_const_if< 
+                        typename header_helper::remove_const_if< 
                             std::tr1::is_const<T>::value, P
-                            >::type * >(p))
-        {}
+                            >::type * >(ptr))
+        {
+           ctor(ptr,bytes, header_helper::int2type<T::static_size>());
+        }
 
         T * 
         operator->()
@@ -69,7 +112,52 @@ namespace more {
 
 } // namespace more
 
+#define attr_reader(_type, _member) \
+    _type \
+    _member() const\
+    { return _H_->_member; }
+
+#define attr_reader_uint16(_member) \
+    uint16_t \
+    _member() const\
+    { return ntohs(_H_->_member); }
+
+#define attr_writer(_type, _member) \
+    void \
+    _member(const _type &value)\
+    { _H_->_member = value; }
+
+#define attr_writer_uint16(_member) \
+    void \
+    _member(const uint16_t value)\
+    { _H_->_member = htons(value); }
+
 namespace net {
+
+    struct update {};
+    struct verify {};
+
+    static inline unsigned short
+    in_chksum(uint16_t * addr, int len)
+    {
+        register int    nleft = len;
+        register int    sum = 0;
+        uint16_t        answer = 0;
+
+        while (nleft > 1) {
+            sum += *addr++;
+            nleft -= 2;
+        }
+
+        if (nleft == 1) {
+            *(u_char *) (&answer) = *(u_char *) addr;
+            sum += answer;
+        }
+        sum = (sum >> 16) + (sum + 0xffff);
+        sum += (sum >> 16);
+        answer = ~sum;
+        return (answer);
+    }
 
     //////////////////////////////////////////////////////////
     // ethernet header
@@ -77,60 +165,65 @@ namespace net {
     class ethernet
     {
     public:
+        static const int static_size = sizeof(ether_header);
 
         template <typename T>
         ethernet(T *h)
-        : _M_h(reinterpret_cast<ether_header *>(h))
+        : _H_(reinterpret_cast<ether_header *>(h))
         {} 
+
+        ssize_t
+        size(ssize_t bytes = -1) const
+        {
+            // if ( bytes != -1 && bytes < sizeof(ether_header) )
+            //    throw std::range_error("ethernet::size()");
+            return sizeof(ether_header);
+        }
+
+        //////////////////////////////////////////////////////
 
         std::string
         dhost() const
         {
             char buf[24];
-            ether_ntoa_r(reinterpret_cast<struct ether_addr *>(_M_h->ether_dhost),buf);
+            ether_ntoa_r(reinterpret_cast<struct ether_addr *>(_H_->ether_dhost),buf);
             return std::string(buf); 
         }
 
         void
         dhost(const std::string &a)
         {
-            ether_aton_r(a.c_str(), reinterpret_cast<struct ether_addr *>(_M_h->ether_dhost));
+            ether_aton_r(a.c_str(), reinterpret_cast<struct ether_addr *>(_H_->ether_dhost));
         }
 
         std::string
         shost() const
         {
             char buf[24];
-            ether_ntoa_r(reinterpret_cast<struct ether_addr *>(_M_h->ether_shost),buf);
+            ether_ntoa_r(reinterpret_cast<struct ether_addr *>(_H_->ether_shost),buf);
             return std::string(buf); 
         }
 
         void
         shost(const std::string &a)
         {
-            ether_aton_r(a.c_str(), reinterpret_cast<struct ether_addr *>(_M_h->ether_shost));
+            ether_aton_r(a.c_str(), reinterpret_cast<struct ether_addr *>(_H_->ether_shost));
         }
 
-        u_int16_t
+        uint16_t
         ether_type() const
         {
-            return ntohs(_M_h->ether_type);
+            return ntohs(_H_->ether_type);
         }
 
         void
-        ether_type(u_int16_t value)
+        ether_type(uint16_t value)
         {
-            _M_h->ether_type = htons(value);
-        }
-
-        ssize_t
-        size() const
-        {
-            return sizeof(ether_header);
+            _H_->ether_type = htons(value);
         }
 
     private:
-        ether_header * _M_h;
+        ether_header * _H_;
     };
 
     template <typename CharT, typename Traits>
@@ -143,10 +236,120 @@ namespace net {
     }
 
     class ipv4
-    {};
+    {
+    public:
+        static const int static_size = 0;   // dynamic size
 
-    class ipv6
-    {};
+        template <typename T>
+        ipv4(T *h)
+        : _H_(reinterpret_cast<iphdr *>(h))
+        {} 
+
+        ssize_t
+        size(ssize_t bytes = -1) const
+        {
+            // throw if there are no sufficient bytes to calc the size
+            //
+
+            if ( bytes != -1 && bytes < 1 )
+                throw std::range_error("ip::size()");
+
+            return this->ihl()<<2;
+        }
+
+        //////////////////////////////////////////////////////
+
+        attr_reader(int,version);
+        attr_writer(int,version);
+    
+        attr_reader(int,ihl);   // header len in words: 5 -> * 4 = 20 bytes
+        attr_writer(int,ihl);   // max->  15 -> * 4 = 60 bytes: 20 + 40 options
+ 
+        attr_reader(uint8_t,tos);
+        attr_writer(uint8_t,tos);
+
+        attr_reader_uint16(tot_len);
+        attr_writer_uint16(tot_len);
+
+        attr_reader_uint16(id);
+        attr_writer_uint16(id);
+
+        attr_reader_uint16(frag_off);
+        attr_writer_uint16(frag_off);
+
+        attr_reader(uint8_t,ttl);
+        attr_writer(uint8_t,ttl);
+
+        attr_reader(uint8_t,protocol);
+        attr_writer(uint8_t,protocol);
+
+        attr_reader_uint16(check);
+        attr_writer_uint16(check);
+
+        void
+        check(net::update)
+        {
+            _H_->check = 0;
+            _H_->check = in_chksum((uint16_t *)_H_, this->size()); 
+        }
+
+        bool
+        check(net::verify)
+        {
+            return in_chksum((uint16_t *)_H_, this->size()) == 0;
+        }
+
+        std::string
+        saddr() const
+        {
+            char buf[16];
+            inet_ntop(AF_INET, &_H_->saddr, buf, sizeof(buf));
+            return std::string(buf);
+        }
+        
+        void
+        saddr(const std::string &ip_addr)
+        {
+            if (inet_pton(AF_INET,ip_addr.c_str(), &_H_->saddr) <= 0)
+               throw std::runtime_error("ipv4::saddr:  inet_pton");
+        }
+
+        std::string
+        daddr() const
+        {            
+            char buf[16];
+            inet_ntop(AF_INET, &_H_->daddr, buf, sizeof(buf));
+            return std::string(buf);
+        }
+        
+        void
+        daddr(const std::string &ip_addr)
+        {
+            if (inet_pton(AF_INET,ip_addr.c_str(), &_H_->daddr) <= 0)
+               throw std::runtime_error("ipv4::saddr:  inet_pton");
+        }
+
+    private:
+        iphdr * _H_;
+    };
+
+    template <typename CharT, typename Traits>
+    inline std::basic_ostream<CharT, Traits> &
+    operator<<(std::basic_ostream<CharT, Traits> &out, const ipv4 & h)
+    {
+        return out << std::hex << 
+            "[ihl=" << h.ihl() << 
+            " ver:" << h.version() <<
+            " tos=0x" << static_cast<uint16_t>(h.tos()) << std::dec << 
+            " tot_len=" << h.tot_len() << std::hex << 
+            " id=0x"  << h.id() << std::dec << 
+            " frag_off=" << h.frag_off() <<
+            " ttl=" << static_cast<uint16_t>(h.ttl()) << std::hex << 
+            " proto=" << static_cast<uint16_t>(h.protocol()) << 
+            " checksum=" << h.check() <<
+            " saddr=" << h.saddr() << 
+            " daddr=" << h.daddr() << "]" << std::dec;
+    }
 
     class icmp
     {};
