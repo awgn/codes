@@ -26,7 +26,7 @@ main(int argc, char *argv[])
         h->shost("a:b:c:d:e:f");
         h->ether_type(0x800);
 
-        std::cout << "ethernet: " << h->size() << " bytes " << *h << std::endl;
+        std::cout << "eth: " << h->size() << " bytes " << *h << std::endl;
     }
 
     {
@@ -39,8 +39,19 @@ main(int argc, char *argv[])
         h->daddr("192.168.0.100");
         h->check(net::update());
 
-        std::cout << "ip: " << h->size() << " bytes " << *h << std::endl;
-        std::cout << "checksum: " << h->check(net::verify()) << std::endl;
+        std::cout << " ip: " << h->size() << " bytes " << *h << std::endl;
+        // std::cout << "checksum: " << h->check(net::verify()) << std::endl;
+    }
+
+    {
+        more::header<net::udp> h(p,len);
+
+        h->source(1024);
+        h->dest(31337);
+        h->len(64);
+        h->check(0);
+
+        std::cout << "udp:  " << h->size() << " bytes " << *h << std::endl;
     }
 
 }

@@ -351,15 +351,62 @@ namespace net {
             " daddr=" << h.daddr() << "]" << std::dec;
     }
 
-    class icmp
-    {};
-
     class udp
+    {
+    public:
+        static const int static_size = sizeof(udphdr);   // static size
+
+        template <typename T>
+        udp(T *h)
+        : _H_(reinterpret_cast<udphdr *>(h))
+        {} 
+
+        ssize_t
+        size(ssize_t bytes = -1) const
+        {
+            return sizeof(udphdr);
+        }
+
+        //////////////////////////////////////////////////////
+
+        attr_reader_uint16(source);
+        attr_writer_uint16(source);
+
+        attr_reader_uint16(dest);
+        attr_writer_uint16(dest);
+
+        attr_reader_uint16(len);
+        attr_writer_uint16(len);
+
+        attr_reader_uint16(check);
+        attr_writer_uint16(check);
+
+    private:
+        udphdr * _H_;
+    };
+
+    template <typename CharT, typename Traits>
+    inline std::basic_ostream<CharT, Traits> &
+    operator<<(std::basic_ostream<CharT, Traits> &out, const udp & h)
+    {
+        return out << "[source=" << h.source() << 
+                       " dest=" << h.dest() << 
+                       " len=" << h.len() <<  
+                       " check=0x" << std::hex << h.check() << std::dec << "]";
+    }
+
+
+    class icmp
     {};
 
     class tcp
     {};
 
 } // namespace net 
+
+#undef attr_reader
+#undef attr_reader_uint16
+#undef attr_writer
+#undef attr_writer_uint16
 
 #endif /* _NET_HEADERS_HH_ */
