@@ -14,10 +14,12 @@
 int
 main(int argc, char *argv[])
 {
-    char buf[80] = "12alkjhflahdflakshfakldfhalkhdfalkdfhalkhdfalkdhfalhfd";
+    char buf[64]={ '\0' };
 
-    ssize_t len = 80;
+    ssize_t len = 64;
     char * p = buf;
+
+    std::cout << "len-> " << len << " bytes" << std::endl;
 
     {
         more::header<net::ethernet> h(p,len);
@@ -30,9 +32,8 @@ main(int argc, char *argv[])
     }
 
     {
-        more::header<net::ipv4> h(p,len);
+        more::header<net::ipv4> h(p,len,20);
 
-        h->ihl(5);
         h->version(4);
 
         h->saddr("192.168.0.1");
@@ -42,16 +43,34 @@ main(int argc, char *argv[])
         std::cout << " ip: " << h->size() << " bytes " << *h << std::endl;
         // std::cout << "checksum: " << h->check(net::verify()) << std::endl;
     }
+    
+    // {
+    //     more::header<net::udp> h(p,len);
+
+    //     h->source(1024);
+    //     h->dest(31337);
+    //     h->len(64);
+    //     h->check(0);
+
+    //     std::cout << "udp:  " << h->size() << " bytes " << *h << std::endl;
+    // }
+
 
     {
-        more::header<net::udp> h(p,len);
+        more::header<net::tcp> h(p,len,20);
 
         h->source(1024);
         h->dest(31337);
-        h->len(64);
         h->check(0);
 
-        std::cout << "udp:  " << h->size() << " bytes " << *h << std::endl;
+        h->flags_reset();
+
+        h->ece(true);
+        h->cwr(true);
+        h->syn(true);
+
+        std::cout << "tcp: " << h->size() << " bytes " << *h << std::endl;
     }
 
+    std::cout << "payload: " << len << " bytes" << ", offset: " << (p-buf) << std::endl;
 }
