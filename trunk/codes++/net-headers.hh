@@ -228,6 +228,7 @@ namespace net {
 
     //////////////////////////////////////////////////////////
     // ethernet header
+    //////////////////////////////////////////////////////////
 
     class ethernet
     {
@@ -305,6 +306,10 @@ namespace net {
                        " type=0x" << std::hex << h.ether_type() << std::dec <<  "]";
     }
 
+    //////////////////////////////////////////////////////////
+    // ipv4 header
+    //////////////////////////////////////////////////////////
+
     class ipv4
     {
     public:
@@ -344,8 +349,6 @@ namespace net {
         }
 
     public:
-        //////////////////////////////////////////////////////
-
         attr_reader(int,version);
         attr_writer(int,version);
     
@@ -452,6 +455,10 @@ namespace net {
             " daddr="    << h.daddr() << "]" << std::dec;
     }
 
+    //////////////////////////////////////////////////////////
+    // udp header
+    //////////////////////////////////////////////////////////
+
     class udp
     {
     public:
@@ -496,6 +503,10 @@ namespace net {
                        " len=" << h.len() <<  
                        " check=0x" << std::hex << h.check() << std::dec << "]";
     }
+
+    //////////////////////////////////////////////////////////
+    // tcp header
+    //////////////////////////////////////////////////////////
 
     class tcp
     {
@@ -546,8 +557,6 @@ namespace net {
         }
 
     public:
-        //////////////////////////////////////////////////////
-
         attr_reader_uint16(source);
         attr_writer_uint16(source);
 
@@ -635,6 +644,21 @@ namespace net {
         attr_reader_uint16(check);
         attr_writer_uint16(check);
 
+        void 
+        check(net::update, const ipv4 & ip) 
+        {
+            ssize_t tcp_data_len = ip.tot_len() - ip.size() - this->size();
+            check(net::update(), ip.saddr32(), ip.daddr32(), tcp_data_len); 
+        }
+
+        bool 
+        check(net::verify, const ipv4 & ip) const
+        {
+            ssize_t tcp_data_len = ip.tot_len() - ip.size() - this->size();
+            return check(net::verify(), ip.saddr32(), ip.daddr32(), tcp_data_len); 
+        }
+
+    private:
         void
         check(net::update, uint32_t src, uint32_t dst, int tcp_data_len)
         {
@@ -652,12 +676,6 @@ namespace net {
             _H_->check = csum_fold(csum_partial((uint16_t *)_H_, this->size() + tcp_data_len, sum) ); 
         }
 
-        bool 
-        check(net::verify, const ipv4 & ip) const
-        {
-            ssize_t tcp_data_len = ip.tot_len() - ip.size() - this->size();
-            return check(net::verify(), ip.saddr32(), ip.daddr32(), tcp_data_len); 
-        }
 
         bool
         check(net::verify, uint32_t src, uint32_t dst, int tcp_data_len) const
@@ -674,6 +692,7 @@ namespace net {
             return csum_fold(csum_partial((uint16_t *)_H_, this->size() + tcp_data_len, sum) ) == 0; 
         }
 
+    public:
         attr_reader_uint16(urg_ptr);
         attr_writer_uint16(urg_ptr);
 
@@ -704,7 +723,6 @@ namespace net {
                        " check=0x" << std::hex << h.check() << std::dec << 
                        " urg_ptr=" << h.urg_ptr() << "]";
     }
-
 
 } // namespace net 
 

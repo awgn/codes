@@ -33,8 +33,9 @@ public:
         more::header<const net::ipv4> ip_h(p,l);
         more::header<const net::tcp> tcp_h(p,l);
 
-
-        std::cout << *h << ' ' <<  *tcp_h << " cksum_correct:" << std::boolalpha << tcp_h->check(net::verify(), *ip_h) << std::endl;
+        std::cout << *h << "\n    " <<  *eth_h << 
+                           "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check(net::verify()) << 
+                           "\n    " <<  *tcp_h << " csum_correct:" << std::boolalpha << tcp_h->check(net::verify(), *ip_h) << std::endl;
     }
 };
 
