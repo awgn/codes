@@ -21,7 +21,7 @@ class mycap : public more::pcap_live
 {
 public:
     mycap()
-    : more::pcap_live("eth0", 1024, true, 0)
+    : more::pcap_live("wlan0", 2048, true, 0)
     {}
 
     virtual
@@ -34,7 +34,7 @@ public:
         more::header<const net::tcp> tcp_h(p,l);
 
 
-        std::cout << *h << ' ' <<  *tcp_h << " cksum:" << tcp_h->check(net::verify(), *ip_h) << std::endl;
+        std::cout << *h << ' ' <<  *tcp_h << " cksum_correct:" << std::boolalpha << tcp_h->check(net::verify(), *ip_h) << std::endl;
     }
 };
 

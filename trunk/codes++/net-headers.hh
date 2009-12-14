@@ -44,11 +44,24 @@ namespace more {
             typedef T type;
         };
 
+        template <bool V, typename T>
+        struct add_const_if
+        {
+            typedef typename std::tr1::add_const<T>::type type;
+        };
+
+        template <typename T>
+        struct add_const_if<false, T>
+        {
+            typedef T type;
+        };
+
         template <int N>
         struct int2type
         {
             enum { value = N };
         };
+    
     }
 
     //////////////////////////////////////////////////////////
@@ -61,6 +74,16 @@ namespace more {
         // ctor for static size headers.. ie: ethernet
 
         template <typename P, int N>
+        void ctor(P * &p, ssize_t &bytes, header_helper::int2type<N>)
+        {
+            if (bytes < N)
+                throw std::range_error("T::static_size");
+            
+            p = reinterpret_cast<P *>(reinterpret_cast<typename header_helper::add_const_if< std::tr1::is_const<P>::value, char>::type *>(p) + N);
+            bytes -= N;
+        }
+
+        template <typename P, int N>
         void ctor(P * &p, ssize_t &bytes, ssize_t size, header_helper::int2type<N>)
         {
             if (bytes < N)
@@ -69,7 +92,7 @@ namespace more {
             if ( size  && size != N )
                 throw std::range_error("size != T::static_size");
 
-            p = reinterpret_cast<P *>(reinterpret_cast<char *>(p) + N);
+            p = reinterpret_cast<P *>(reinterpret_cast<typename header_helper::add_const_if< std::tr1::is_const<P>::value, char>::type *>(p) + N);
             bytes -= N;
         }
 
@@ -77,27 +100,48 @@ namespace more {
         // ctor for dynamic size headers.. ie: ip 
 
         template <typename P>
+        void ctor(P * &p, ssize_t &bytes, header_helper::int2type<0>)
+        {
+            
+            ssize_t n = _M_value.size(bytes);
+            if (bytes < n)
+                throw std::range_error("T::size() [dynamic size]");
+            p = reinterpret_cast<P *>(reinterpret_cast<typename header_helper::add_const_if< std::tr1::is_const<P>::value, char>::type *>(p) + n);
+            bytes -= n;
+        }
+
+        template <typename P>
         void ctor(P * &p, ssize_t &bytes, ssize_t size, header_helper::int2type<0>)
         {
             
-            ssize_t n = size ? _M_value.size(bytes, size) :
-                               _M_value.size(bytes);
+            ssize_t n = _M_value.size(bytes, size);
             if (bytes < n)
                 throw std::range_error("T::size() [dynamic size]");
-            p = reinterpret_cast<P *>(reinterpret_cast<char *>(p) + n);
+            p = reinterpret_cast<P *>(reinterpret_cast<typename header_helper::add_const_if< std::tr1::is_const<P>::value, char>::type *>(p) + n);
             bytes -= n;
         }
 
     public:
         template <typename P>
-        header(P * &ptr, ssize_t &bytes, ssize_t size = 0 /* != 0 means force the size */ )
+        header(P * &ptr, ssize_t &bytes)
         : _M_value( const_cast< 
                         typename header_helper::remove_const_if< 
                             std::tr1::is_const<T>::value, P
                             >::type * >(ptr))
         {
-           ctor(ptr, bytes, size, header_helper::int2type<T::static_size>());
+            ctor(ptr, bytes, header_helper::int2type<T::static_size>());
         }
+
+        template <typename P>
+        header(P * &ptr, ssize_t &bytes, ssize_t size /* force the header size */ )
+        : _M_value( const_cast< 
+                        typename header_helper::remove_const_if< 
+                            std::tr1::is_const<T>::value, P
+                            >::type * >(ptr))
+        {
+            ctor(ptr, bytes, size, header_helper::int2type<T::static_size>());
+        }
+
 
         T * 
         operator->()
@@ -153,26 +197,33 @@ namespace net {
     struct update {};
     struct verify {};
 
-    static inline unsigned short
-    in_chksum(uint16_t * addr, int len)
+    //  slightly modified version cksum from TCP/IP Illustrated Vol. 2(1995) 
+    //  by Gary R. Wright and W. Richard Stevens.  
+
+    static inline
+    uint32_t csum_partial(void *buf, int len, uint32_t sum) 
     {
-        register int    nleft = len;
-        register int    sum = 0;
-        uint16_t        answer = 0;
+        uint16_t *p = static_cast<uint16_t *>(buf);
 
-        while (nleft > 1) {
-            sum += *addr++;
-            nleft -= 2;
+        while(len > 1){
+            sum += *(p)++;
+            if(sum & 0x80000000)   /* if high order bit set, fold */
+                sum = (sum & 0xFFFF) + (sum >> 16);
+            len -= 2;
         }
 
-        if (nleft == 1) {
-            *(u_char *) (&answer) = *(u_char *) addr;
-            sum += answer;
-        }
-        sum = (sum >> 16) + (sum + 0xffff);
-        sum += (sum >> 16);
-        answer = ~sum;
-        return (answer);
+        if(len) /* take care of left over byte */
+            sum += *(unsigned char *)p;
+
+        return sum;
+    }
+
+    static inline
+    uint16_t csum_fold(uint32_t sum)
+    {
+        while(sum>>16)
+            sum = (sum & 0xFFFF) + (sum >> 16);
+        return ~sum;
     }
 
     //////////////////////////////////////////////////////////
@@ -258,7 +309,7 @@ namespace net {
     {
     public:
         static const int static_size = 0;   // dynamic size
-        friend class more::header<ipv4>;
+        friend class ::more::header<ipv4>;
 
         template <typename T>
         ipv4(T *h)
@@ -328,13 +379,13 @@ namespace net {
         check(net::update)
         {
             _H_->check = 0;
-            _H_->check = in_chksum((uint16_t *)_H_, this->size()); 
+            _H_->check = csum_fold(csum_partial((uint16_t *)_H_, this->size(),0)); 
         }
 
         bool
-        check(net::verify)
+        check(net::verify) const
         {
-            return in_chksum((uint16_t *)_H_, this->size()) == 0;
+            return csum_fold(csum_partial((uint16_t *)_H_, this->size(),0)) == 0;
         }
 
         std::string
@@ -345,6 +396,12 @@ namespace net {
             return std::string(buf);
         }
         
+        uint32_t
+        saddr32() const
+        {
+            return _H_->saddr;
+        }
+
         void
         saddr(const std::string &ip_addr)
         {
@@ -359,7 +416,13 @@ namespace net {
             inet_ntop(AF_INET, &_H_->daddr, buf, sizeof(buf));
             return std::string(buf);
         }
-        
+ 
+        uint32_t
+        daddr32() const
+        {
+            return _H_->daddr;
+        }
+       
         void
         daddr(const std::string &ip_addr)
         {
@@ -376,17 +439,17 @@ namespace net {
     operator<<(std::basic_ostream<CharT, Traits> &out, const ipv4 & h)
     {
         return out << std::hex << 
-            "[ihl=" << h.ihl() << 
-            " ver:" << h.version() <<
-            " tos=0x" << static_cast<uint16_t>(h.tos()) << std::dec << 
-            " tot_len=" << h.tot_len() << std::hex << 
-            " id=0x"  << h.id() << std::dec << 
+            "[ihl="      << h.ihl() << 
+            " ver:"      << h.version() <<
+            " tos=0x"    << static_cast<uint16_t>(h.tos()) << std::dec << 
+            " tot_len="  << h.tot_len() << std::hex << 
+            " id=0x"     << h.id() << std::dec << 
             " frag_off=" << h.frag_off() <<
-            " ttl=" << static_cast<uint16_t>(h.ttl()) << std::hex << 
-            " proto=" << static_cast<uint16_t>(h.protocol()) << 
+            " ttl="      << static_cast<uint16_t>(h.ttl()) << std::hex << 
+            " proto="    << static_cast<uint16_t>(h.protocol()) << 
             " checksum=" << h.check() <<
-            " saddr=" << h.saddr() << 
-            " daddr=" << h.daddr() << "]" << std::dec;
+            " saddr="    << h.saddr() << 
+            " daddr="    << h.daddr() << "]" << std::dec;
     }
 
     class udp
@@ -437,6 +500,16 @@ namespace net {
     class tcp
     {
     public:
+
+        struct pseudo_header
+        {
+            uint32_t saddr;
+            uint32_t daddr;
+            uint8_t  zero;
+            uint8_t  protocol;
+            uint16_t length;
+        } __attribute__((packed));
+
         static const int static_size = 0;   // dynamic size
         friend class more::header<tcp>;
 
@@ -562,6 +635,45 @@ namespace net {
         attr_reader_uint16(check);
         attr_writer_uint16(check);
 
+        void
+        check(net::update, uint32_t src, uint32_t dst, int tcp_data_len)
+        {
+            pseudo_header ph;
+            
+            ph.saddr = src;
+            ph.daddr = dst;
+            ph.zero  = 0;
+            ph.protocol = IPPROTO_TCP;
+            ph.length = htons(this->size() + tcp_data_len); // tcp header + tcp_data 
+           
+            uint32_t sum = csum_partial((uint16_t *)& ph, sizeof(pseudo_header), 0); 
+
+            _H_->check = 0;
+            _H_->check = csum_fold(csum_partial((uint16_t *)_H_, this->size() + tcp_data_len, sum) ); 
+        }
+
+        bool 
+        check(net::verify, const ipv4 & ip) const
+        {
+            ssize_t tcp_data_len = ip.tot_len() - ip.size() - this->size();
+            return check(net::verify(), ip.saddr32(), ip.daddr32(), tcp_data_len); 
+        }
+
+        bool
+        check(net::verify, uint32_t src, uint32_t dst, int tcp_data_len) const
+        {
+            pseudo_header ph;
+            
+            ph.saddr = src;
+            ph.daddr = dst;
+            ph.zero  = 0;
+            ph.protocol = IPPROTO_TCP;
+            ph.length = htons(this->size() + tcp_data_len); // tcp header + tcp_data 
+           
+            uint32_t sum = csum_partial((uint16_t *)& ph, sizeof(pseudo_header), 0); 
+            return csum_fold(csum_partial((uint16_t *)_H_, this->size() + tcp_data_len, sum) ) == 0; 
+        }
+
         attr_reader_uint16(urg_ptr);
         attr_writer_uint16(urg_ptr);
 
@@ -579,8 +691,7 @@ namespace net {
                        " seq=" << h.seq() << 
                        " ack_seq=" << h.ack_seq() << 
                        " doff=" << h.doff() <<
-                       " flags=" << 
-                                    ( h.cwr() ? "W" : "" ) <<
+                       " flags=" << ( h.cwr() ? "W" : "" ) <<
                                     ( h.ece() ? "E" : "" ) <<
                                     ( h.urg() ? "U" : "" ) <<
                                     ( h.ack() ? "A" : "" ) <<
