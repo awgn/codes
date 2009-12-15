@@ -509,7 +509,7 @@ namespace net {
         return out << "[source=" << h.source() << 
                        " dest=" << h.dest() << 
                        " len=" << h.len() <<  
-                       " check=0x" << std::hex << h.check() << std::dec << "]";
+                       " csum=0x" << std::hex << h.check() << std::dec << "]";
     }
 
     //////////////////////////////////////////////////////////
@@ -740,9 +740,56 @@ namespace net {
                                     ( h.fin() ? "F" : "" ) <<
 
                        " window=" << h.window() << 
-                       " check=0x" << std::hex << h.check() << std::dec << 
+                       " csum=0x" << std::hex << h.check() << std::dec << 
                        " urg_ptr=" << h.urg_ptr() << "]";
     }
+
+    //////////////////////////////////////////////////////////
+    // basic icmp header
+    //////////////////////////////////////////////////////////
+
+    class icmp 
+    {
+    public:
+        static const int static_size = sizeof(icmphdr);   // static size
+        friend class more::header<icmp>;
+
+        template <typename T>
+        icmp(T *h)
+        : _H_(reinterpret_cast<icmphdr *>(h))
+        {} 
+
+        ssize_t
+        size(ssize_t bytes = -1, ssize_t s = 0) const
+        {
+            return sizeof(icmphdr);
+        }
+
+        //////////////////////////////////////////////////////
+
+        attr_reader(uint8_t,type);
+        attr_writer(uint8_t,type);
+
+        attr_reader(uint8_t,code);
+        attr_writer(uint8_t,code);
+
+        attr_reader_uint16(checksum);
+        attr_writer_uint16(checksum);
+
+    private:
+        icmphdr * _H_;
+    };
+
+    template <typename CharT, typename Traits>
+    inline std::basic_ostream<CharT, Traits> &
+    operator<<(std::basic_ostream<CharT, Traits> &out, const icmp & h)
+    {
+        return out << std::hex << 
+                       "[type=" << static_cast<int>(h.type()) << 
+                       " code=" << static_cast<int>(h.code()) << 
+                       " csum=0x" << h.checksum() << std::dec << "]";
+    }
+
 
 } // namespace net 
 
