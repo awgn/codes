@@ -32,7 +32,7 @@ namespace more {
     namespace header_helper {
 
         //////////////////////////////////////////////////////////
-        // remove_const_if metafunction 
+        // useful metafunctions...
 
         template <bool V, typename T>
         struct remove_const_if
@@ -63,7 +63,14 @@ namespace more {
         {
             enum { value = N };
         };
-    
+
+        template <bool> struct compile_time_assert;
+        template <>
+        struct compile_time_assert<true>
+        {
+            enum { value = true };
+        };
+
     }
 
     //////////////////////////////////////////////////////////
@@ -128,6 +135,7 @@ namespace more {
                             std::tr1::is_const<T>::value, P
                             >::type * >(cur.cur()))
         {
+            header_helper::compile_time_assert<sizeof(P) == 1> multi_bytes_cursor_not_allowed __attribute__((unused));
             ctor(cur, header_helper::int2type<T::static_size>());
         }
 
@@ -138,6 +146,7 @@ namespace more {
                             std::tr1::is_const<T>::value, P
                             >::type * >(cur.cur()))
         {
+            header_helper::compile_time_assert<sizeof(P) == 1> multi_bytes_cursor_not_allowed __attribute__((unused));
             ctor(cur, size, header_helper::int2type<T::static_size>());
         }
 

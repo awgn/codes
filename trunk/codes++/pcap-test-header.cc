@@ -35,7 +35,7 @@ public:
 
         std::cout << *h << "\n    " <<  *eth_h << 
                            "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check(net::verify()) << 
-                           "\n    " <<  *tcp_h << " csum_correct:" << std::boolalpha << tcp_h->check(net::verify(), *ip_h) << std::endl;
+                           "\n    " <<  *tcp_h << " csum_correct:" << std::boolalpha << tcp_h->check(net::verify(), *ip_h, cur.size()) << std::endl;
     }
 };
 
