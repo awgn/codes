@@ -315,7 +315,7 @@ namespace net {
     {
         return out << "[dhost=" << h.dhost() << 
                        " shost=" << h.shost() << 
-                       " type=0x" << std::hex << h.ether_type() << std::dec <<  "]";
+                       " type="  << std::hex << h.ether_type() << std::dec <<  "]";
     }
 
     //////////////////////////////////////////////////////////
@@ -456,13 +456,13 @@ namespace net {
         return out << std::hex << 
             "[ihl="      << h.ihl() << 
             " ver:"      << h.version() <<
-            " tos=0x"    << static_cast<uint16_t>(h.tos()) << std::dec << 
+            " tos="      << static_cast<uint16_t>(h.tos()) << std::dec << 
             " tot_len="  << h.tot_len() << std::hex << 
-            " id=0x"     << h.id() << std::dec << 
+            " id="       << h.id() << std::dec << 
             " frag_off=" << h.frag_off() <<
             " ttl="      << static_cast<uint16_t>(h.ttl()) << std::hex << 
             " proto="    << static_cast<uint16_t>(h.protocol()) << 
-            " checksum=" << h.check() <<
+            " csum="     << h.check() <<
             " saddr="    << h.saddr() << 
             " daddr="    << h.daddr() << "]" << std::dec;
     }
@@ -511,9 +511,9 @@ namespace net {
     operator<<(std::basic_ostream<CharT, Traits> &out, const udp & h)
     {
         return out << "[source=" << h.source() << 
-                       " dest=" << h.dest() << 
-                       " len=" << h.len() <<  
-                       " csum=0x" << std::hex << h.check() << std::dec << "]";
+                       " dest="  << h.dest() << 
+                       " len="   << h.len() <<  
+                       " csum="  << std::hex << h.check() << std::dec << "]";
     }
 
     //////////////////////////////////////////////////////////
@@ -743,9 +743,9 @@ namespace net {
                                     ( h.syn() ? "S" : "" ) <<
                                     ( h.fin() ? "F" : "" ) <<
 
-                       " window=" << h.window() << 
-                       " csum=0x" << std::hex << h.check() << std::dec << 
-                       " urg_ptr=" << h.urg_ptr() << "]";
+                       " window="  << h.window() << 
+                       " csum="    << std::hex << h.check() << std::dec << 
+                       " urg=" << h.urg_ptr() << "]";
     }
 
     //////////////////////////////////////////////////////////
@@ -791,7 +791,7 @@ namespace net {
         return out << std::hex << 
                        "[type=" << static_cast<int>(h.type()) << 
                        " code=" << static_cast<int>(h.code()) << 
-                       " csum=0x" << h.checksum() << std::dec << "]";
+                       " csum=" << h.checksum() << std::dec << "]";
     }
 
 
