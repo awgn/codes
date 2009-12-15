@@ -16,13 +16,10 @@ main(int argc, char *argv[])
 {
     char buf[64]={ '\0' };
 
-    ssize_t len = 64;
-    char * p = buf;
-
-    std::cout << "len-> " << len << " bytes" << std::endl;
+    more::cursor<char> cur(buf, buf+64);
 
     {
-        more::header<net::ethernet> h(p,len);
+        more::header<net::ethernet> h(cur);
 
         h->dhost("0:1:2:3:4:5");
         h->shost("a:b:c:d:e:f");
@@ -32,7 +29,7 @@ main(int argc, char *argv[])
     }
 
     {
-        more::header<net::ipv4> h(p,len,20);
+        more::header<net::ipv4> h(cur,20);
 
         h->version(4);
 
@@ -45,7 +42,7 @@ main(int argc, char *argv[])
     }
     
     // {
-    //     more::header<net::udp> h(p,len);
+    //     more::header<net::udp> h(cur);
 
     //     h->source(1024);
     //     h->dest(31337);
@@ -57,7 +54,7 @@ main(int argc, char *argv[])
 
 
     {
-        more::header<net::tcp> h(p,len,20);
+        more::header<net::tcp> h(cur,20);
 
         h->source(1024);
         h->dest(31337);
@@ -72,5 +69,5 @@ main(int argc, char *argv[])
         std::cout << "tcp: " << h->size() << " bytes " << *h << std::endl;
     }
 
-    std::cout << "payload: " << len << " bytes" << ", offset: " << (p-buf) << std::endl;
+    std::cout << "payload: " << cur.size() << " bytes" << ", offset: " << (cur.cur()-cur.begin()) << std::endl;
 }

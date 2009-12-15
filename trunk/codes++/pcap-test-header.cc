@@ -21,17 +21,17 @@ class mycap : public more::pcap_live
 {
 public:
     mycap()
-    : more::pcap_live("wlan0", 2048, true, 0)
+    : more::pcap_live("eth2", 2048, true, 0)
     {}
 
     virtual
     void packet_handler(const struct pcap_pkthdr *h, const u_char *p)
     {
-        ssize_t l = h->caplen;
+        more::cursor<const char> cur(p, p + h->caplen);
 
-        more::header<const net::ethernet> eth_h (p,l);
-        more::header<const net::ipv4> ip_h(p,l);
-        more::header<const net::tcp> tcp_h(p,l);
+        more::header<const net::ethernet> eth_h (cur);
+        more::header<const net::ipv4> ip_h(cur);
+        more::header<const net::tcp> tcp_h(cur);
 
         std::cout << *h << "\n    " <<  *eth_h << 
                            "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check(net::verify()) << 

@@ -25,6 +25,8 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
+#include <cursor.hh>
+
 namespace more {
 
     namespace header_helper {
@@ -74,72 +76,69 @@ namespace more {
         // ctor for static size headers.. ie: ethernet
 
         template <typename P, int N>
-        void ctor(P * &p, ssize_t &bytes, header_helper::int2type<N>)
+        void ctor( more::cursor<P> &cur, header_helper::int2type<N>)
         {
-            if (bytes < N)
+            if (cur.size() < N)
                 throw std::range_error("T::static_size");
-            
-            p = reinterpret_cast<P *>(reinterpret_cast<typename header_helper::add_const_if< std::tr1::is_const<P>::value, char>::type *>(p) + N);
-            bytes -= N;
+           
+            cur += N; 
         }
 
         template <typename P, int N>
-        void ctor(P * &p, ssize_t &bytes, ssize_t size, header_helper::int2type<N>)
+        void ctor( more::cursor<P> &cur, ssize_t size, header_helper::int2type<N>)
         {
-            if (bytes < N)
+            if ( cur.size() < N)
                 throw std::range_error("T::static_size");
             
-            if ( size  && size != N )
+            if ( size && size != N )
                 throw std::range_error("size != T::static_size");
 
-            p = reinterpret_cast<P *>(reinterpret_cast<typename header_helper::add_const_if< std::tr1::is_const<P>::value, char>::type *>(p) + N);
-            bytes -= N;
+            cur += N;
         }
 
         ///////////////////////////////////////////
         // ctor for dynamic size headers.. ie: ip 
 
         template <typename P>
-        void ctor(P * &p, ssize_t &bytes, header_helper::int2type<0>)
+        void ctor(more::cursor<P> &cur, header_helper::int2type<0>)
         {
-            
-            ssize_t n = _M_value.size(bytes);
-            if (bytes < n)
+            ssize_t n = _M_value.size(cur.size());
+
+            if ( cur.size() < n)
                 throw std::range_error("T::size() [dynamic size]");
-            p = reinterpret_cast<P *>(reinterpret_cast<typename header_helper::add_const_if< std::tr1::is_const<P>::value, char>::type *>(p) + n);
-            bytes -= n;
+            
+            cur += n;
         }
 
         template <typename P>
-        void ctor(P * &p, ssize_t &bytes, ssize_t size, header_helper::int2type<0>)
+        void ctor(more::cursor<P> &cur, ssize_t size, header_helper::int2type<0>)
         {
-            
-            ssize_t n = _M_value.size(bytes, size);
-            if (bytes < n)
+            ssize_t n = _M_value.size(cur.size(), size);
+            if (cur.size() < n)
                 throw std::range_error("T::size() [dynamic size]");
-            p = reinterpret_cast<P *>(reinterpret_cast<typename header_helper::add_const_if< std::tr1::is_const<P>::value, char>::type *>(p) + n);
-            bytes -= n;
+
+            cur += n;
         }
 
     public:
         template <typename P>
-        header(P * &ptr, ssize_t &bytes)
+        header(more::cursor<P> &cur)
         : _M_value( const_cast< 
                         typename header_helper::remove_const_if< 
                             std::tr1::is_const<T>::value, P
-                            >::type * >(ptr))
+                            >::type * >(cur.cur()))
         {
-            ctor(ptr, bytes, header_helper::int2type<T::static_size>());
+            ctor(cur, header_helper::int2type<T::static_size>());
         }
 
         template <typename P>
-        header(P * &ptr, ssize_t &bytes, ssize_t size /* force the header size */ )
+        header(more::cursor<P> & cur, ssize_t size /* force the header size */ )
         : _M_value( const_cast< 
                         typename header_helper::remove_const_if< 
                             std::tr1::is_const<T>::value, P
-                            >::type * >(ptr))
+                            >::type * >(cur.cur()))
         {
-            ctor(ptr, bytes, size, header_helper::int2type<T::static_size>());
+            ctor(cur, size, header_helper::int2type<T::static_size>());
         }
 
 
