@@ -21,7 +21,7 @@ class mycap : public more::pcap_live
 {
 public:
     mycap()
-    : more::pcap_live("eth2", 2048, true, 0)
+    : more::pcap_live("eth0", 2048, true, 0)
     {}
 
     virtual

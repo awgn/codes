@@ -110,7 +110,6 @@ namespace more {
         void ctor(more::cursor<P> &cur, header_helper::int2type<0>)
         {
             ssize_t n = _M_value.size(cur.size());
-
             if ( cur.size() < n)
                 throw std::range_error("T::size() [dynamic size]");
             
@@ -135,7 +134,9 @@ namespace more {
                             std::tr1::is_const<T>::value, P
                             >::type * >(cur.cur()))
         {
-            header_helper::compile_time_assert<sizeof(P) == 1> multi_bytes_cursor_not_allowed __attribute__((unused));
+            header_helper::compile_time_assert<sizeof(P) == 1> 
+                multi_bytes_cursor_not_allowed __attribute__((unused));
+
             ctor(cur, header_helper::int2type<T::static_size>());
         }
 
@@ -146,7 +147,9 @@ namespace more {
                             std::tr1::is_const<T>::value, P
                             >::type * >(cur.cur()))
         {
-            header_helper::compile_time_assert<sizeof(P) == 1> multi_bytes_cursor_not_allowed __attribute__((unused));
+            header_helper::compile_time_assert<sizeof(P) == 1> 
+                multi_bytes_cursor_not_allowed __attribute__((unused));
+
             ctor(cur, size, header_helper::int2type<T::static_size>());
         }
 
@@ -213,7 +216,8 @@ namespace net {
     {
         uint16_t *p = static_cast<uint16_t *>(buf);
 
-        while(len > 1){
+        while(len > 1)
+        {
             sum += *(p)++;
             if(sum & 0x80000000)   /* if high order bit set, fold */
                 sum = (sum & 0xFFFF) + (sum >> 16);
@@ -417,7 +421,7 @@ namespace net {
         saddr(const std::string &ip_addr)
         {
             if (inet_pton(AF_INET,ip_addr.c_str(), &_H_->saddr) <= 0)
-               throw std::runtime_error("ipv4::saddr:  inet_pton");
+               throw std::runtime_error("ipv4::saddr: inet_pton");
         }
 
         std::string
@@ -438,7 +442,7 @@ namespace net {
         daddr(const std::string &ip_addr)
         {
             if (inet_pton(AF_INET,ip_addr.c_str(), &_H_->daddr) <= 0)
-               throw std::runtime_error("ipv4::saddr:  inet_pton");
+               throw std::runtime_error("ipv4::saddr: inet_pton");
         }
 
     private:
