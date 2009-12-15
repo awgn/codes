@@ -32,10 +32,15 @@ public:
         more::header<const net::ethernet> eth_h (cur);
         more::header<const net::ipv4> ip_h(cur);
         more::header<const net::tcp> tcp_h(cur);
+        // more::header<const net::icmp> icmp_h(cur);
 
         std::cout << *h << "\n    " <<  *eth_h << 
                            "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check(net::verify()) << 
                            "\n    " <<  *tcp_h << " csum_correct:" << std::boolalpha << tcp_h->check(net::verify(), *ip_h, cur.size()) << std::endl;
+
+        // std::cout << *h << "\n    " <<  *eth_h << 
+        //                   "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check(net::verify()) << 
+        //                   "\n    " <<  *icmp_h << std::endl;
     }
 };
 
