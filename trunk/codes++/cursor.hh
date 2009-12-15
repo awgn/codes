@@ -32,6 +32,10 @@ namespace more {
         }
 
     public:
+        typedef T           value_type;
+        typedef T *         iterator;
+        typedef const T *   const_iterator;
+
         template <typename P>
         cursor(P *beg, P *end)
         : _M_beg(reinterpret_cast<T *>(beg)),
@@ -153,19 +157,37 @@ namespace more {
             return _M_end-_M_cur;
         }
 
-        T *
-        begin() const
+        iterator 
+        begin() 
         {
             return _M_beg;
         }
+        
+        const_iterator
+        begin() const
+        { 
+            return _M_beg;
+        }
 
-        T *
-        end() const
+        iterator
+        end() 
         {
             return _M_end;
         }
 
-        T *
+        const_iterator
+        end() const 
+        {
+            return _M_end;
+        }
+
+        iterator 
+        cur() 
+        { 
+            return _M_cur;
+        }
+
+        const_iterator 
         cur() const
         { 
             return _M_cur;

@@ -24,6 +24,19 @@ main(int argc, char *argv[])
 
     std::cout << "size: " << cur.size() << " bytes left." << std::endl;
 
+    const char c_buffer[4] = { '\0' };
+
+    // more::cursor<short> c_cur(c_buffer, c_buffer+4);  ok, error detected.
+    more::cursor<const short> c_cur(c_buffer, c_buffer+4);
+
+    // * c_cur = 10; ok, error detected.
+
+    std::cout << "*c_cur++ = " << * c_cur++ << std::endl;
+    std::cout << "*c_cur++ = " << * c_cur++ << std::endl;
+
+    // std::cout << "*c_cur++ = " << * c_cur++ << std::endl; range error, detected.
+
+    std::cout << "done." << std::endl;
     return 0;
 }
  
