@@ -644,17 +644,29 @@ namespace net {
         attr_writer_uint16(check);
 
         void 
-        check(net::update, const ipv4 & ip) 
+        check(net::update, const ipv4 & ip, ssize_t data_len) 
         {
             ssize_t tcp_data_len = ip.tot_len() - ip.size() - this->size();
+            if (tcp_data_len < 0)
+                throw std::runtime_error("tcp::checksum: tcp_data_len");
+
+            if (data_len < tcp_data_len)
+                throw std::runtime_error("tcp::checksum: missing bytes");
+
             check(net::update(), ip.saddr32(), ip.daddr32(), tcp_data_len); 
         }
 
         bool 
-        check(net::verify, const ipv4 & ip) const
+        check(net::verify, const ipv4 & ip, ssize_t data_len) const
         {
             ssize_t tcp_data_len = ip.tot_len() - ip.size() - this->size();
-            return check(net::verify(), ip.saddr32(), ip.daddr32(), tcp_data_len); 
+            if (tcp_data_len < 0)
+                throw std::runtime_error("tcp::checksum: tcp_data_len");
+
+            if (data_len < tcp_data_len)
+                std::clog << "tcp::checksum: missing bytes, checksum unverifiable" << std::endl;
+
+            return check(net::verify(), ip.saddr32(), ip.daddr32(), std::min(data_len,tcp_data_len)); 
         }
 
     private:
