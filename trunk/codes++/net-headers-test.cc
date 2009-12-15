@@ -69,11 +69,7 @@ main(int argc, char *argv[])
         h->cwr(true);
         h->syn(true);
 
-        h->check(net::update(), 0, 0, 0);
-
         std::cout << "tcp: " << h->size() << " bytes " << *h << std::endl;
-        std::cout << "checksum: " << h->check(net::verify(),0, 0, 0) << std::endl;
-    
     }
 
     std::cout << "payload: " << len << " bytes" << ", offset: " << (p-buf) << std::endl;
