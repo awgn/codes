@@ -122,6 +122,11 @@ namespace more {
         typedef __gnu_cxx::__mutex type;
         typedef __gnu_cxx::__scoped_lock scoped_lock;
     #endif
+    #if __GNUC__ == 4 && __GNUC_MINOR__ == 4  
+        typedef __gnu_cxx::__mutex type;
+        typedef __gnu_cxx::__scoped_lock scoped_lock;
+    #endif
+
 
         struct is_boost : public false_type {};
         struct is_qt    : public false_type {};
@@ -192,6 +197,11 @@ namespace more {
         typedef __gnu_cxx::__recursive_mutex type;
         typedef more::raii::scoped_lock<type> scoped_lock;
 #endif
+#if __GNUC__ == 4 && __GNUC_MINOR__ == 4  
+        typedef __gnu_cxx::__recursive_mutex type;
+        typedef more::raii::scoped_lock<type> scoped_lock;
+#endif
+
 
         struct is_boost : public false_type {};
         struct is_qt    : public false_type {};
