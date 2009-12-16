@@ -22,10 +22,16 @@ main(int argc, char *argv[])
         std::cout << "error: couldn't open file.\n";
         return 1;
     }
-    std::vector<char> mfile;
-    std::copy(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(),
-              std::back_inserter(mfile));
+    
+    // construct the vector by means of istreambuf_iterator...
+    //
 
+    std::vector<char> mfile( std::istreambuf_iterator<char>(file.rdbuf()),
+                             std::istreambuf_iterator<char>());
+    // copy file to stdout
+    //
+
+    std::copy(mfile.begin(), mfile.end(), std::ostream_iterator<char>(std::cout, ""));
     return 0;
 }
  
