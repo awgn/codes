@@ -35,8 +35,8 @@ public:
         // more::header<const net::icmp> icmp_h(cur);
 
         std::cout << *h << "\n    " <<  *eth_h << 
-                           "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check(net::verify()) << 
-                           "\n    " <<  *tcp_h << " csum_correct:" << std::boolalpha << tcp_h->check(net::verify(), *ip_h, cur.size()) << std::endl;
+                           "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check_verify() << 
+                           "\n    " <<  *tcp_h << " csum_correct:" << std::boolalpha << tcp_h->check_verify(*ip_h, cur.size()) << std::endl;
 
         // std::cout << *h << "\n    " <<  *eth_h << 
         //                   "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check(net::verify()) << 

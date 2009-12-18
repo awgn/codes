@@ -33,12 +33,12 @@ main(int argc, char *argv[])
 
     h_ip->saddr("192.168.0.1");
     h_ip->daddr("192.168.0.100");
-    h_ip->check(net::update());
+    h_ip->check_update();
 
     h_ip->tot_len(50);
 
     std::cout << " ip: " << h_ip->size() << " bytes " << *h_ip << std::endl;
-    std::cout << "ip_checksum: " << h_ip->check(net::verify()) << std::endl;
+    std::cout << "ip_checksum: " << h_ip->check_verify() << std::endl;
     
     // {
     //     more::header<net::udp> h(cur);
@@ -64,10 +64,10 @@ main(int argc, char *argv[])
     h_tcp->cwr(true);
     h_tcp->syn(true);
 
-    h_tcp->check(net::update(), *h_ip, cur.size() /* bytes of tcp segment */);
+    h_tcp->check_update(*h_ip, cur.size() /* bytes of tcp segment */);
 
     std::cout << "tcp: " << h_tcp->size() << " bytes " << *h_tcp << std::endl;
 
-    std::cout << "tcp_checksum: " << h_tcp->check(net::verify(), *h_ip, cur.size()) << std::endl;  
+    std::cout << "tcp_checksum: " << h_tcp->check_verify(*h_ip, cur.size()) << std::endl;  
     std::cout << "payload: " << cur.size() << " bytes" << ", offset: " << (cur.cur()-cur.begin()) << std::endl;
 }

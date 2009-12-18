@@ -205,9 +205,6 @@ namespace more {
 
 namespace net {
 
-    struct update {};
-    struct verify {};
-
     //  slightly modified version cksum from TCP/IP Illustrated Vol. 2(1995) 
     //  by Gary R. Wright and W. Richard Stevens.  
 
@@ -391,14 +388,14 @@ namespace net {
         attr_writer_uint16(check);
 
         void
-        check(net::update)
+        check_update()
         {
             _H_->check = 0;
             _H_->check = csum_fold(csum_partial((uint16_t *)_H_, this->size(),0)); 
         }
 
         bool
-        check(net::verify) const
+        check_verify() const
         {
             return csum_fold(csum_partial((uint16_t *)_H_, this->size(),0)) == 0;
         }
@@ -657,7 +654,7 @@ namespace net {
         attr_writer_uint16(check);
 
         void 
-        check(net::update, const ipv4 & ip, ssize_t data_len) 
+        check_update(const ipv4 & ip, ssize_t data_len) 
         {
             ssize_t tcp_data_len = ip.tot_len() - ip.size() - this->size();
             if (tcp_data_len < 0)
@@ -666,11 +663,11 @@ namespace net {
             if (data_len < tcp_data_len)
                 throw std::runtime_error("tcp::checksum: missing bytes");
 
-            check(net::update(), ip.saddr32(), ip.daddr32(), tcp_data_len); 
+            check_update(ip.saddr32(), ip.daddr32(), tcp_data_len); 
         }
 
         bool 
-        check(net::verify, const ipv4 & ip, ssize_t data_len) const
+        check_verify(const ipv4 & ip, ssize_t data_len) const
         {
             ssize_t tcp_data_len = ip.tot_len() - ip.size() - this->size();
             if (tcp_data_len < 0)
@@ -679,12 +676,12 @@ namespace net {
             if (data_len < tcp_data_len)
                 std::clog << "tcp::checksum: missing bytes, checksum unverifiable" << std::endl;
 
-            return check(net::verify(), ip.saddr32(), ip.daddr32(), std::min(data_len,tcp_data_len)); 
+            return check_verify(ip.saddr32(), ip.daddr32(), std::min(data_len,tcp_data_len)); 
         }
 
     private:
         void
-        check(net::update, uint32_t src, uint32_t dst, int tcp_data_len)
+        check_update(uint32_t src, uint32_t dst, int tcp_data_len)
         {
             pseudo_header ph;
             
@@ -702,7 +699,7 @@ namespace net {
 
 
         bool
-        check(net::verify, uint32_t src, uint32_t dst, int tcp_data_len) const
+        check_verify(uint32_t src, uint32_t dst, int tcp_data_len) const
         {
             pseudo_header ph;
             
