@@ -205,6 +205,8 @@ namespace more {
 
 namespace net {
 
+    struct raw {};  // to read raw fields
+
     //  slightly modified version cksum from TCP/IP Illustrated Vol. 2(1995) 
     //  by Gary R. Wright and W. Richard Stevens.  
 
@@ -269,6 +271,12 @@ namespace net {
             ether_ntoa_r(reinterpret_cast<struct ether_addr *>(_H_->ether_dhost),buf);
             return std::string(buf); 
         }
+    
+        const uint8_t *
+        dhost(raw) const
+        {
+            return _H_->ether_dhost;
+        }
 
         void
         dhost(const std::string &a)
@@ -282,6 +290,12 @@ namespace net {
             char buf[24];
             ether_ntoa_r(reinterpret_cast<struct ether_addr *>(_H_->ether_shost),buf);
             return std::string(buf); 
+        }
+
+        const uint8_t *
+        shost(raw) const
+        {
+            return _H_->ether_shost;
         }
 
         void
@@ -409,7 +423,7 @@ namespace net {
         }
         
         uint32_t
-        saddr32() const
+        saddr(raw) const
         {
             return _H_->saddr;
         }
@@ -430,7 +444,7 @@ namespace net {
         }
  
         uint32_t
-        daddr32() const
+        daddr(raw) const
         {
             return _H_->daddr;
         }
@@ -663,7 +677,7 @@ namespace net {
             if (data_len < tcp_data_len)
                 throw std::runtime_error("tcp::checksum: missing bytes");
 
-            check_update(ip.saddr32(), ip.daddr32(), tcp_data_len); 
+            check_update(ip.saddr(raw()), ip.daddr(raw()), tcp_data_len); 
         }
 
         bool 
@@ -676,7 +690,7 @@ namespace net {
             if (data_len < tcp_data_len)
                 std::clog << "tcp::checksum: missing bytes, checksum unverifiable" << std::endl;
 
-            return check_verify(ip.saddr32(), ip.daddr32(), std::min(data_len,tcp_data_len)); 
+            return check_verify(ip.saddr(raw()), ip.daddr(raw()), std::min(data_len,tcp_data_len)); 
         }
 
     private:
@@ -789,6 +803,77 @@ namespace net {
                        "[type=" << static_cast<int>(h.type()) << 
                        " code=" << static_cast<int>(h.code()) << 
                        " csum=" << h.checksum() << std::dec << "]";
+    }
+
+    //////////////////////////////////////////////////////////
+    // NP batch frame header
+    //////////////////////////////////////////////////////////
+
+    static const short int NP_PKT_TYPE = 0x9000;
+
+    class np_packet 
+    {
+        struct np_packet_hdr 
+        {
+            uint16_t reserved;
+            uint16_t flow_id;
+            uint16_t frag_len;
+            uint16_t pack_len;
+
+            uint32_t tstamp_lo;
+            uint32_t tstamp_hi;
+
+        } __attribute__((packed));
+
+    public:
+        static const int static_size = sizeof(np_packet_hdr);   // static size
+        friend class more::header<np_packet>;
+
+        template <typename T>
+        np_packet(T *h)
+        : _H_(reinterpret_cast<np_packet_hdr *>(h))
+        {} 
+
+        ssize_t
+        size(ssize_t bytes = -1, ssize_t s = 0) const
+        {
+            return sizeof(np_packet_hdr);
+        }
+
+        //////////////////////////////////////////////////////
+
+        attr_reader_uint16(reserved);
+        attr_writer_uint16(reserved);
+
+        attr_reader_uint16(flow_id);
+        attr_writer_uint16(flow_id);
+
+        attr_reader_uint16(frag_len);
+        attr_writer_uint16(frag_len);
+
+        attr_reader_uint16(pack_len);
+        attr_writer_uint16(pack_len);
+
+        attr_reader_uint32(tstamp_lo);
+        attr_writer_uint32(tstamp_lo);
+
+        attr_reader_uint32(tstamp_hi);
+        attr_writer_uint32(tstamp_hi);
+
+    private:
+        np_packet_hdr * _H_;
+    };
+
+    template <typename CharT, typename Traits>
+    inline std::basic_ostream<CharT, Traits> &
+    operator<<(std::basic_ostream<CharT, Traits> &out, const np_packet & h)
+    {
+        return out <<  "[flow_id="  << std::hex << static_cast<int>(h.flow_id()) << std::dec << 
+                       " frag_len=" << static_cast<int>(h.frag_len()) << 
+                       " pack_len=" << static_cast<int>(h.pack_len()) <<  
+                       " stamp_lo=" << h.tstamp_lo() << 
+                       " stamp_hi=" << h.tstamp_hi() << "]";
+
     }
 
 
