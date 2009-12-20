@@ -11,6 +11,7 @@
 #ifndef _CURSOR_HH_
 #define _CURSOR_HH_ 
 
+#include <tr1/type_traits>
 #include <stdexcept>
 
 namespace more { 
@@ -35,6 +36,8 @@ namespace more {
         typedef T           value_type;
         typedef T *         iterator;
         typedef const T *   const_iterator;
+
+        friend class cursor< typename std::tr1::add_const<T>::type >;
 
         template <typename P>
         cursor(P *beg, P *end)

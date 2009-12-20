@@ -17,7 +17,8 @@ main(int argc, char *argv[])
     char buffer[4];
 
     more::cursor<short> cur(buffer, buffer+4);
-
+    more::cursor<const short> cur2(cur);    // ok, cctor of CV-qualified type
+        
     * cur++ = 0;
     * cur++ = 1;
     // * cur++ = 2;
