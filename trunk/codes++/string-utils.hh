@@ -27,10 +27,8 @@ namespace more {
     {
         std::string::size_type b = lr > 0 ? std::string::npos : s.find_first_not_of(str);
         std::string::size_type e = lr < 0 ? s.size() : s.find_last_not_of(str);
-
         b = (b == std::string::npos ? 0 : b);
         e = (e == std::string::npos ? 0 : e + 1);
-
         return s.substr(b,e-b);
     }
 
@@ -50,23 +48,26 @@ namespace more {
     //
 
     static inline std::string &
-    trim_(std::string &s, const char *str = " \t\n\r") // in-place...
-    {
-        s.assign(trim(s,str));
-        return s;
-    }
-
-    static inline std::string &
     left_trim_(std::string &s, const char *str = " \t\n\r") // in-place...
     {
-        s.assign(trim(s,str, -1));
+        std::string::size_type b = s.find_first_not_of(str);
+        s.erase(0,b);
         return s;
     }
 
     static inline std::string &
     right_trim_(std::string &s, const char *str = " \t\n\r") // in-place...
     {
-        s.assign(trim(s,str, 1));
+        std::string::size_type e = s.find_last_not_of(str);
+        s.erase(e+1);
+        return s;
+    }
+
+    static inline std::string &
+    trim_(std::string &s, const char *str = " \t\n\r") // in-place...
+    {
+        right_trim_(s,str);
+        left_trim_(s,str);
         return s;
     }
 
