@@ -14,11 +14,8 @@
 #include <string>
 #include <cstring>
 #include <cctype>
-
 #include <algorithm>
 #include <iterator>
-
-#include <iostream>
 
 namespace more { 
 
@@ -184,7 +181,7 @@ namespace more {
     // reverse
     // 
 
-    std::string
+    static inline std::string
     reverse(const std::string &s)
     {
         std::string ret;
@@ -192,7 +189,7 @@ namespace more {
         return ret;      
     }
 
-    std::string &
+    static inline std::string &
     reverse_(std::string &s) // in-place...
     {
         std::reverse(s.begin(), s.end());
