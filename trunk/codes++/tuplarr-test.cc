@@ -8,7 +8,6 @@
  * ----------------------------------------------------------------------------
  */
 
-
 #include <vector>
 #include <iostream>
 #include <iterator>
@@ -26,7 +25,7 @@ main(int argc, char *argv[])
     std::vector<double> vec;
 
     std::tr1::tuple<int,double> t = make_tuple(0,1);
-    std::tr1::array<int,2> a = {2, 3};
+    std::tr1::array<int,2> a = { 2, 3 };
 
     more::container_backinsert_tuplarr(vec, t);
     more::container_backinsert_tuplarr(vec, a);

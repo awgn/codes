@@ -51,6 +51,7 @@ template <typename T>
 bool function( const T &x)
 {
     FUNCTION_REQUIRES_CONCEPT(T, IsIntegralConcept);
+    return true;
 }
 
 int main()

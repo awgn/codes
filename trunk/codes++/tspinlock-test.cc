@@ -30,6 +30,7 @@ void *thread_1(void *)
         // pthread_mutex_unlock(&mutex_lock);
         // pthread_spin_unlock(&spin_lock);
     }    
+    return 0;
 }
 
 void *thread_2(void *)
@@ -43,6 +44,7 @@ void *thread_2(void *)
         // pthread_mutex_unlock(&mutex_lock);
         //pthread_spin_unlock(&spin_lock);
     }    
+    return 0;
 }
 
 int

@@ -54,7 +54,7 @@ try
     char buf[16];
 
     world * p = new world(10,20); 
-    world * q = new (buf) world();
+    world * q __attribute__((unused)) = new (buf) world();
 
     delete p; 
     // delete q;

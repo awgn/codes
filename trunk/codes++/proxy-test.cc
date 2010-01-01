@@ -43,10 +43,10 @@ int main(int argc, char *argv[])
     val = write_enable<int>(val_1); // OK: write enabled
 
     // int * p = &val;              // not allowed
-    const int * p = &val;           // OK 
+    const int * p __attribute__((unused)) = &val;           // OK 
 
     // int & r = val;               // not allowed
-    const int & r = val;            // OK 
+    const int & r __attribute__((unused)) = val;            // OK 
 
     // ref(val);                    // not allowed
     const_ref(val);                 // OK
@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
     copy(val);                      // OK
     const_copy(val);                // OK
 
-    int c = val;                    // copy is enabled
-    const int d = val;              // copy is enabled
+    int c __attribute__((unused)) = val;                    // copy is enabled
+    const int d __attribute__((unused)) = val;              // copy is enabled
 
     std::cout << "write_enable<int> val: " << val << std::endl;
     
@@ -94,9 +94,9 @@ int main(int argc, char *argv[])
     lockable_one.unlock();
 
     lockable_one = 10;
-    int n = lockable_one;
+    int n __attribute__((unused)) = lockable_one;
 
-    const int & q = lockable_one;
+    const int & q __attribute__((unused)) = lockable_one;
 
     std::cout << "      : lockable_one = " << lockable_one << std::endl;
     std::cout << "      : lockable_two = " << lockable_two << std::endl;

@@ -42,18 +42,18 @@ public:
 
 void foo(const test_constness &r)
 {
-    int a  = r.get();
-    const int &b = r.ref();
+    int a __attribute__((unused)) = r.get();
+    const int &b __attribute__((unused))= r.ref();
 }
 
 int main(int argc, char *argv[])
 {
     test_constness object;
 
-    int a = object.get();
-    const int b = object.get();
-    int &c = object.ref();
-    const int &d = object.ref();
+    int a __attribute__((unused))= object.get();
+    const int b __attribute__((unused))= object.get();
+    int &c __attribute__((unused))= object.ref();
+    const int &d __attribute__((unused))= object.ref();
 
     foo(object);
 

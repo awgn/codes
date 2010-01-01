@@ -195,6 +195,7 @@ struct BarrierThread : public posix::thread
         sleep(_M_sleep);
         bar.wait();
         std::cout << "    [" << std::hex << this_thread::get_id() << "]  sync done!" << std::endl;
+        return 0;
     }
 
     int _M_sleep;
@@ -236,6 +237,7 @@ struct Controller : public posix::thread
 
         std::cout << "-> one thread of this group is terminated!" << std::endl;
         // terminate as soon as a thread of this group terminates
+        return 0;
     };
 };
 

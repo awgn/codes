@@ -22,7 +22,7 @@ main(int argc, char *argv[])
     typedef TYPEMAP(name, std::string, age, int) mymap;
 
     mtp::TM::get<name, mymap>::type me = "Nicola";
-    mtp::TM::get<age , mymap>::type a = 36;
+    mtp::TM::get<age , mymap>::type a __attribute__((unused)) = 36;
 
     typedef mtp::TM::null empty;
 
@@ -30,9 +30,9 @@ main(int argc, char *argv[])
     typedef mtp::TM::append<age, int, map_1>::type  map_2;
     // typedef mtp::TM::append<nickname, int, map_2>::type map_3;
 
-    mtp::TM::get<size, map_1>::type x = 1;
-    mtp::TM::get<size, map_2>::type c = 2;
-    mtp::TM::get<age,  map_2>::type d = 3;
+    mtp::TM::get<size, map_1>::type x __attribute__((unused))= 1;
+    mtp::TM::get<size, map_2>::type c __attribute__((unused))= 2;
+    mtp::TM::get<age,  map_2>::type d __attribute__((unused))= 3;
 
     std::cout << "size<map_1>::value  = " << mtp::TM::size<map_1>::value << std::endl;
     std::cout << "size<map_2>::value  = " << mtp::TM::size<map_2>::value << std::endl;

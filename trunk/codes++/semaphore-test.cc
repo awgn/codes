@@ -24,6 +24,7 @@ struct Wait : public posix::thread
         std::cout << "[WAIT] waiting..." << std::endl;
         sem.wait();
         std::cout << "[WAIT] done." << std::endl;
+        return 0;
     } 
 
 };
@@ -37,6 +38,7 @@ struct Post : public posix::thread
         std::cout << "[POST] post()" << std::endl;
         sem.post();
         std::cout << "[POST] done." << std::endl;
+        return 0;
     } 
 };
 

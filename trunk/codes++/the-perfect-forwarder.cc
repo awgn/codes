@@ -38,6 +38,7 @@ struct arg
     { 
         _M_value = rhs._M_value;
         std::cout << "    " << __PRETTY_FUNCTION__ << std::endl; 
+        return *this;
     }
     
     int get() const

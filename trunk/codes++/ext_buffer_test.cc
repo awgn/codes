@@ -28,9 +28,9 @@ main(int argc, char *argv[])
 
     const more::ext_buffer y_hello = x_hello;
 
-    const void * p_hello = y_hello.data();
+    const void * p_hello __attribute__((unused)) = y_hello.data();
 
-    const struct iovec * iov_hello = &x_hello;
+    const struct iovec * iov_hello __attribute__((unused))= &x_hello;
 
     struct iovec abc[2] = { more::ext_buffer(hello,6), more::ext_buffer(world,6) }; 
 
@@ -38,7 +38,7 @@ main(int argc, char *argv[])
     std::cout.flush();
     writev(fileno(stdout), abc, 2);
 
-    std::tr1::array<iovec,1> array_iovec_hello = {{ more::ext_buffer(hello,5) }};
+    std::tr1::array<iovec,1> array_iovec_hello __attribute__((unused)) = {{ more::ext_buffer(hello,5) }};
 
     std::cout << std::endl;
 
@@ -48,7 +48,7 @@ main(int argc, char *argv[])
     std::cout << "reverse iterator iterator test: -> " << rstr << std::endl; 
 
     more::ext_const_buffer const_hello (x_hello);
-    more::ext_const_buffer::const_iterator it = const_hello.begin();
+    more::ext_const_buffer::const_iterator it __attribute__((unused)) = const_hello.begin();
 
     more::ext_const_buffer copy_constructor_const_hello(const_hello);
     more::ext_const_buffer copy_constructor_const_world(x_world);
