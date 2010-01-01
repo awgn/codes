@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 2.8)
 include_directories(.)
 
 add_definitions(-DMORE_USE_TR1_SHARED_PTR -DMORE_USE_GNU_MUTEX)
