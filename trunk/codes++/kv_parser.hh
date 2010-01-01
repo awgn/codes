@@ -19,6 +19,7 @@
 #include <tr1/type_traits>
 
 #include <typemap.hh>
+#include <iomanip.hh>
 
 //////////////////////////////////
 //  key-value config file parser 
@@ -81,16 +82,6 @@ namespace more { namespace kv {
                 return ln->line();
             }
             return -1;
-        }
-
-        static inline
-        void skipline(std::istream &si) {
-            char c;
-            si >> std::noskipws;
-            while( si >> c && c != '\n') {
-                continue;
-            }
-            si >> std::skipws;
         }
 
         template <typename T, bool S> struct block;
@@ -253,7 +244,7 @@ namespace more { namespace kv {
                  // non-strict mode: skip this line
                  //
 
-                 skipline(in);
+                 in >> more::ignore_line;
                  return true;
              }
 
@@ -300,7 +291,7 @@ namespace more { namespace kv {
                      //
 
                      if (key.empty() || key[0] == COM ) {
-                         skipline(si);
+                         si >> more::ignore_line;
                          continue;
                      }
 
