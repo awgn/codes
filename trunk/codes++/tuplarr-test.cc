@@ -12,6 +12,7 @@
 #include <iostream>
 #include <iterator>
 #include <algorithm>
+#include <tr1/functional>
 
 #include <tuplarr.hh>
 
@@ -19,16 +20,27 @@ using namespace std::tr1;
 
 struct test {};
 
+struct print_on 
+{
+    template <typename T> 
+    void operator()(T &e)
+    {
+        std::cout << "->" << e << "<-" << std::endl;
+    }
+};
+
+using namespace std::tr1::placeholders;
+
 int
 main(int argc, char *argv[])
 {
     std::vector<double> vec;
 
-    std::tr1::tuple<int,double> t = make_tuple(0,1);
-    std::tr1::array<int,2> a = { 2, 3 };
+    std::tr1::tuple<int,double,int> t = make_tuple(0,1,2);
+    std::tr1::array<int,2> a = { 3, 4 };
 
-    more::container_backinsert_tuplarr(vec, t);
-    more::container_backinsert_tuplarr(vec, a);
+    more::tuplarr::copy(t, std::back_inserter(vec));
+    more::tuplarr::copy(a, std::back_inserter(vec));
 
     std::cout << "vec: ";
     std::copy(vec.begin(), vec.end(), std::ostream_iterator<double>(std::cout, " "));
@@ -42,6 +54,25 @@ main(int argc, char *argv[])
 
     std::cout << nt << std::endl;
     std::cout << na << std::endl;
+
+    // for_each...
+
+    std::cout << "for_each: " << std::endl;
+
+    more::tuplarr::for_each(t, print_on());
+
+    // count
+
+    std::cout << "count: " << 
+        more::tuplarr::count(t, 1) 
+        << std::endl;
+
+
+    // count_if
+
+    std::cout << "count_if: " << 
+        more::tuplarr::count_if(t, std::tr1::bind(std::greater<double>(), _1, 0)) 
+        << std::endl;
 
     return 0;
 }
