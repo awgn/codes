@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.4)
 include_directories(.)
 
 add_definitions(-DMORE_USE_TR1_SHARED_PTR -DMORE_USE_GNU_MUTEX)
@@ -74,7 +74,6 @@ add_executable(test-enable_if test-enable_if.cc)
 add_executable(the-perfect-forwarder the-perfect-forwarder.cc)
 add_executable(timer-test timer-test.cc)
 add_executable(timeval-test timeval-test.cc)
-add_executable(token-test token-test.cc)
 add_executable(tqueue-test tqueue-test.cc)
 add_executable(traits-info-test traits-info-test.cc)
 add_executable(tspinlock-test tspinlock-test.cc)
