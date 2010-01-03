@@ -10,6 +10,8 @@
 
 #include <string-utils.hh>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 int
 main(int argc, char *argv[])
@@ -136,6 +138,21 @@ main(int argc, char *argv[])
         std::cout << "reverse_ [" << more::reverse_(s3) << ']'<< std::endl;
     }
 
+    // extending getline...
+    //
+    {
+        std::string str("one:two: three \nfour");
+        std::istringstream sstr(str);
+
+        std::cout << std::endl;
+
+        std::string l;
+        while ( more::getline(sstr, l, std::string("\n: ") ) ) 
+        {
+            std::cout << "line: [" << l << "]" << std::endl;
+        }
+    }
+    
     return 0;
 }
  

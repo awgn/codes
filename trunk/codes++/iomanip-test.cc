@@ -8,15 +8,24 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <iomanip.hh>
 #include <iostream>
+#include <sstream>
+
+#include <iomanip.hh>
 
 int
 main(int argc, char *argv[])
 {
-    int a;
-    std::cin >> more::ignore_line >> a;
-    std::cout << more::spaces(42) << a;
+    std::string str("this line is ignored\none:two: three \nfour");
+    std::istringstream sstr(str);
+        
+    sstr >> more::ignore_line;  // <- ignore_line
+
+    more::token_string tok("\n: "); // <- token_string
+    while ( sstr >> tok)
+    {
+        std::cout << more::spaces(4) << "token_string: [" << tok.str() << "]" << std::endl;  // <- spaces
+    }
 
     return 0;
 }
