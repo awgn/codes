@@ -11,6 +11,7 @@
 #ifndef _STRING_UTILS_HH_
 #define _STRING_UTILS_HH_ 
 
+#include <fstream>
 #include <string>
 #include <cstring>
 #include <cctype>

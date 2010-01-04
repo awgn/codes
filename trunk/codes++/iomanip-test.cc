@@ -16,15 +16,30 @@
 int
 main(int argc, char *argv[])
 {
-    std::string str("this line is ignored\none:two: three \nfour");
-    std::istringstream sstr(str);
-        
-    sstr >> more::ignore_line;  // <- ignore_line
-
-    more::token_string tok("\n: "); // <- token_string
-    while ( sstr >> tok)
     {
-        std::cout << more::spaces(4) << "token_string: [" << tok.str() << "]" << std::endl;  // <- spaces
+        std::string str("this line is ignored\none:two: three \nfour");
+        std::istringstream sstr(str);
+
+        sstr >> more::ignore_line;  // <- ignore_line
+
+        more::token_string tok("\n: "); // <- token_string
+        while ( sstr >> tok)
+        {
+            std::cout << more::spaces(4) << "token_string: [" << tok.str() << "]" << std::endl;  // <- spaces
+        }
+    }
+
+    {
+        std::string str("this line is ignored\none:two: three \nfour");
+        std::istringstream sstr(str);
+
+        sstr >> more::ignore_line;  // <- ignore_line
+
+        more::token_line line; // <- token_line
+        while ( sstr >> line)
+        {
+            std::cout << more::spaces(4) << "token_line: [" << line.str() << "]" << std::endl;  // <- spaces
+        }
     }
 
     return 0;
