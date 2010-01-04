@@ -17,6 +17,7 @@
 #include <cctype>
 #include <algorithm>
 #include <iterator>
+#include <limits>
 
 namespace more { 
 
@@ -65,6 +66,33 @@ namespace more {
 
         return __in;
     }
+
+    // replace occurrence of __old with __new string
+    //
+
+    static inline std::string &
+    repl_(std::string &orig, const std::string &__old,
+          const std::string &__new, unsigned int m = std::numeric_limits<unsigned int>::max())
+    {
+        unsigned int n = 0;
+        std::string::size_type __osize = __old.size(), __nsize = __new.size(), __start = 0;
+
+        for(std::string::size_type p; n < m && (p=orig.find(__old, __start)) != std::string::npos; ++n)
+        {
+            orig.replace(p, __osize, __new);
+            __start = p + __nsize;
+        }
+        return orig;
+    }
+
+    static inline std::string
+    repl(std::string str, const std::string &__old,
+         const std::string &__new, unsigned int n = std::numeric_limits<unsigned int>::max())
+    {
+        repl_(str, __old, __new, n);
+        return str;
+    }
+
 
     // trim
     //

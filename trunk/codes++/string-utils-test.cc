@@ -137,6 +137,19 @@ main(int argc, char *argv[])
         std::cout << "reverse_ [" << more::reverse_(s3) << ']'<< std::endl;
     }
 
+    // replace test
+    //
+
+    {
+        std::string abc("1 2 3");
+   
+        std::cout << std::endl;
+        std::cout << "orig  [" << abc << "]" << std::endl;
+        std::cout << "repl: [" << more::repl(abc, " ", "  ")  << "]" << std::endl;
+        more::repl_(abc, " " , "__");
+        std::cout << "repl_ [" << abc << "]" << std::endl;
+    }    
+
     // extending getline...
     //
     {
@@ -151,7 +164,7 @@ main(int argc, char *argv[])
             std::cout << "line: [" << l << "]" << std::endl;
         }
     }
-    
+
     return 0;
 }
  
