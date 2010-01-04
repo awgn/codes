@@ -27,7 +27,6 @@
 
 #include <unistd.h>
 #include <signal.h>
-
 #include <error.hh>
 
 namespace more {
@@ -36,8 +35,10 @@ namespace more {
     {
     public:
         typedef std::tr1::function<int(const char *, char * const[])> exec_type;
+    
+        enum { STDIN, STDOUT, STDERR };
 
-        exec(const std::string &arg0 = std::string(), exec_type ex = ::execv)
+        exec(const std::string &arg0 = std::string(), exec_type ex = ::execv /* ::execvp */)
         : _M_arg(),
           _M_status(-1),
           _M_pipe(),
@@ -48,6 +49,22 @@ namespace more {
         { 
             if (!arg0.empty())
                 _M_arg.push_back(arg0); 
+        }
+
+        // build exec array by means of iterators
+        //
+
+        template <typename Iter>
+        exec(Iter beg, Iter end, exec_type ex = ::execv /* ::execvp */)
+        : _M_arg(),
+          _M_status(-1),
+          _M_pipe(),
+          _M_delay(0),
+          _M_wait(false),
+          _M_pid(getpid()),
+          _M_exec(ex)
+        {
+            std::copy(beg, end, std::back_inserter(_M_arg));  
         }
 
         ~exec()
@@ -61,7 +78,10 @@ namespace more {
 
         exec &
         arg(const std::string &arg)
-        { _M_arg.push_back(arg); return *this; }
+        { 
+            _M_arg.push_back(arg); 
+            return *this; 
+        }
 
         exec &
         cmdline(const std::string &cmd)
@@ -108,7 +128,7 @@ namespace more {
             }
 
             if (_M_pid == 0) { // child
-                run();
+                _M_run();
             }
            
             return true; 
@@ -139,7 +159,7 @@ namespace more {
                 close(fd);
 
                 dup2(_M_pipe[1], fd);
-                run();
+                _M_run();
             }
 
             close(_M_pipe[1]);
@@ -214,7 +234,6 @@ namespace more {
         { return _M_pid; }
 
     private:
-
         std::vector<std::string> _M_arg;
 
         int     _M_status;
@@ -225,7 +244,7 @@ namespace more {
 
         exec_type _M_exec;
 
-        void run()
+        void _M_run()
         {
             int n = _M_arg.size();
             const char *argv[n+1];

@@ -13,15 +13,23 @@
 int
 main(int argc, char *argv[])
 {
-    more::exec abc;
+    // 1)
+    // more::exec abc;
+    // abc.arg("/bin/ls").arg("/").arg("-la");
+    //
+    // 2)
+    // abc.cmdline("/bin/ls -la /");
 
-    abc.arg("/bin/ls").arg("/").arg("-la");
-    // or.. abc.cmdline("/bin/ls -la /");
+    // 3) by means of iterator...
+    //
+
+    const char * args[] = { "/bin/ls" , "/" , "-la" };
+    more::exec abc(args, args+3); 
 
     std::cout << "running: " << abc.cmdline() << std::endl;
 
     int n;
-    if ( !abc(more::exec::redirect_fd<1>(n)) ) {
+    if ( !abc(more::exec::redirect_fd<more::exec::STDOUT>(n)) ) {
         std::cout << "exec error!" << std::endl;
         exit(1);
     }
@@ -31,7 +39,7 @@ main(int argc, char *argv[])
     
     while ( (c = read(n,buffer, 1024)) > 0 ) {
         buffer[c]='\0';
-        std::cout << buffer << std::endl;
+        std::cout << buffer;
     }
 
     abc.wait();
