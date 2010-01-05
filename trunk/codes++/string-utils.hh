@@ -102,8 +102,8 @@ namespace more {
     // replace occurrence of __old with __new string
     //
 
-    static inline std::string &
-    repl_(std::string &orig, const std::string &__old,
+    static inline const std::string & 
+    repl(std::string &orig, const std::string &__old,
           const std::string &__new, unsigned int m = std::numeric_limits<unsigned int>::max())
     {
         unsigned int n = 0;
@@ -114,23 +114,23 @@ namespace more {
             orig.replace(p, __osize, __new);
             __start = p + __nsize;
         }
+
         return orig;
     }
 
     static inline std::string
-    repl(std::string str, const std::string &__old,
+    repl_copy(std::string str, const std::string &__old,
          const std::string &__new, unsigned int n = std::numeric_limits<unsigned int>::max())
     {
-        repl_(str, __old, __new, n);
+        repl(str, __old, __new, n);
         return str;
     }
-
 
     // trim
     //
 
     static inline std::string
-    trim(const std::string &s, const char *str = string_utils::white_space, int lr = 0)
+    trim_copy(const std::string &s, const char *str = string_utils::white_space, int lr = 0)
     {
         std::string::size_type b = lr > 0 ? std::string::npos : s.find_first_not_of(str);
         std::string::size_type e = lr < 0 ? s.size() : s.find_last_not_of(str);
@@ -140,41 +140,41 @@ namespace more {
     }
 
     static inline std::string 
-    left_trim(const std::string &s, const char *str = string_utils::white_space)
+    left_trim_copy(const std::string &s, const char *str = string_utils::white_space)
     {
-        return trim(s,str,-1);
+        return trim_copy(s,str,-1);
     }
 
     static inline std::string
-    right_trim(const std::string &s, const char *str = string_utils::white_space)
+    right_trim_copy(const std::string &s, const char *str = string_utils::white_space)
     {
-        return trim(s,str,1);
+        return trim_copy(s,str,1);
     }
     
     // in-place trim
     //
 
-    static inline std::string &
-    left_trim_(std::string &s, const char *str = string_utils::white_space) // in-place...
+    static inline const std::string & 
+    left_trim(std::string &s, const char *str = string_utils::white_space) // in-place...
     {
         std::string::size_type b = s.find_first_not_of(str);
         s.erase(0,b);
         return s;
     }
 
-    static inline std::string &
-    right_trim_(std::string &s, const char *str = string_utils::white_space) // in-place...
+    static inline const std::string & 
+    right_trim(std::string &s, const char *str = string_utils::white_space) // in-place...
     {
         std::string::size_type e = s.find_last_not_of(str);
         s.erase(e+1);
         return s;
     }
 
-    static inline std::string &
-    trim_(std::string &s, const char *str = string_utils::white_space) // in-place...
+    static inline const std::string & 
+    trim(std::string &s, const char *str = string_utils::white_space) // in-place...
     {
-        right_trim_(s,str);
-        left_trim_(s,str);
+        right_trim(s,str);
+        left_trim(s,str);
         return s;
     }
 
@@ -182,15 +182,15 @@ namespace more {
     //
 
     static inline std::string
-    upcase(const std::string &s)
+    upcase_copy(const std::string &s)
     {
         std::string ret;
         std::transform(s.begin(), s.end(), std::back_inserter(ret), ::toupper); 
         return ret;
     }
 
-    static inline std::string &
-    upcase_(std::string &s) // in-place...
+    static inline const std::string & 
+    upcase(std::string &s) // in-place...
     {
         std::transform(s.begin(), s.end(), s.begin(), ::toupper); 
         return s;
@@ -200,15 +200,15 @@ namespace more {
     //
 
     static inline std::string
-    downcase(const std::string &s)
+    downcase_copy(const std::string &s)
     {
         std::string ret;
         std::transform(s.begin(), s.end(), std::back_inserter(ret), ::tolower); 
         return ret;
     }
 
-    static inline std::string &
-    downcase_(std::string &s) // in-place...
+    static inline const std::string &
+    downcase(std::string &s) // in-place...
     {
         std::transform(s.begin(), s.end(), s.begin(), ::tolower); 
         return s;
@@ -225,15 +225,15 @@ namespace more {
     };
 
     static inline std::string
-    swapcase(const std::string &s)
+    swapcase_copy(const std::string &s)
     {
         std::string ret;
-        std::transform(s.begin(), s.end(), std::back_inserter(ret), swapcase_op() ); 
+        std::transform(s.begin(), s.end(), std::back_inserter(ret), swapcase_op()); 
         return ret;
     }
     
-    static inline std::string &
-    swapcase_(std::string &s) // in-place...
+    static inline const std::string & 
+    swapcase(std::string &s) // in-place...
     {
         std::transform(s.begin(), s.end(), s.begin(), swapcase_op() ); 
         return s;
@@ -272,15 +272,15 @@ namespace more {
     };
 
     static inline std::string
-    capitalize(const std::string &s)
+    capitalize_copy(const std::string &s)
     {
         std::string ret;
         std::transform(s.begin(), s.end(), std::back_inserter(ret), capitalize_op() ); 
         return ret;
     }
  
-    static inline std::string &
-    capitalize_(std::string &s) // in-place...
+    static inline const std::string & 
+    capitalize(std::string &s) // in-place...
     {
         std::transform(s.begin(), s.end(), s.begin(), capitalize_op() ); 
         return s;
@@ -290,18 +290,18 @@ namespace more {
     // 
 
     static inline std::string
-    reverse(const std::string &s)
+    reverse_copy(const std::string &s)
     {
         std::string ret;
         std::reverse_copy(s.begin(), s.end(), std::back_inserter(ret));
         return ret;      
     }
 
-    static inline std::string &
-    reverse_(std::string &s) // in-place...
+    static inline const std::string & 
+    reverse(std::string &s) // in-place...
     {
         std::reverse(s.begin(), s.end());
-        return s;      
+        return s;
     }
 
 

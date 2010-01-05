@@ -28,14 +28,15 @@ main(int argc, char *argv[])
         std::cout << "orig: [" << s3 << ']' << std::endl;
 
         std::cout << std::endl;
-        std::cout << "trim: [" << more::trim(s0) << ']' << std::endl;
-        std::cout << "trim: [" << more::trim(s1) << ']' << std::endl;
-        std::cout << "trim: [" << more::trim(s2) << ']' << std::endl;
-        std::cout << "trim: [" << more::trim(s3) << ']' << std::endl;
-        std::cout << "trim_ [" << more::trim_(s0) << ']' << std::endl;
-        std::cout << "trim_ [" << more::trim_(s1) << ']' << std::endl;
-        std::cout << "trim_ [" << more::trim_(s2) << ']' << std::endl;
-        std::cout << "trim_ [" << more::trim_(s3) << ']' << std::endl;
+        std::cout << "trim: [" << more::trim_copy(s0) << ']' << std::endl;
+        std::cout << "trim: [" << more::trim_copy(s1) << ']' << std::endl;
+        std::cout << "trim: [" << more::trim_copy(s2) << ']' << std::endl;
+        std::cout << "trim: [" << more::trim_copy(s3) << ']' << std::endl;
+
+        std::cout << "trim! [" << more::trim(s0) << ']' << std::endl;
+        std::cout << "trim! [" << more::trim(s1) << ']' << std::endl;
+        std::cout << "trim! [" << more::trim(s2) << ']' << std::endl;
+        std::cout << "trim! [" << more::trim(s3) << ']' << std::endl;
     }
 
     {
@@ -45,14 +46,15 @@ main(int argc, char *argv[])
         std::string s3("   aB Ab  ");
 
         std::cout << std::endl;
-        std::cout << "left_trim: [" << more::left_trim(s0) << ']' << std::endl;
-        std::cout << "left_trim: [" << more::left_trim(s1) << ']' << std::endl;
-        std::cout << "left_trim: [" << more::left_trim(s2) << ']' << std::endl;
-        std::cout << "left_trim: [" << more::left_trim(s3) << ']' << std::endl;
-        std::cout << "left_trim_ [" << more::left_trim_(s0) << ']' << std::endl;
-        std::cout << "left_trim_ [" << more::left_trim_(s1) << ']' << std::endl;
-        std::cout << "left_trim_ [" << more::left_trim_(s2) << ']' << std::endl;
-        std::cout << "left_trim_ [" << more::left_trim_(s3) << ']' << std::endl;
+        std::cout << "left_trim: [" << more::left_trim_copy(s0) << ']' << std::endl;
+        std::cout << "left_trim: [" << more::left_trim_copy(s1) << ']' << std::endl;
+        std::cout << "left_trim: [" << more::left_trim_copy(s2) << ']' << std::endl;
+        std::cout << "left_trim: [" << more::left_trim_copy(s3) << ']' << std::endl;
+
+        std::cout << "left_trim! [" << more::left_trim(s0) << ']' << std::endl;
+        std::cout << "left_trim! [" << more::left_trim(s1) << ']' << std::endl;
+        std::cout << "left_trim! [" << more::left_trim(s2) << ']' << std::endl;
+        std::cout << "left_trim! [" << more::left_trim(s3) << ']' << std::endl;
     }
 
     {
@@ -62,14 +64,15 @@ main(int argc, char *argv[])
         std::string s3("   aB Ab  ");
 
         std::cout << std::endl;
-        std::cout << "right_trim: [" << more::right_trim(s0) << ']' << std::endl;
-        std::cout << "right_trim: [" << more::right_trim(s1) << ']' << std::endl;
-        std::cout << "right_trim: [" << more::right_trim(s2) << ']' << std::endl;
-        std::cout << "right_trim: [" << more::right_trim(s3) << ']' << std::endl;
-        std::cout << "right_trim_ [" << more::right_trim_(s0) << ']' << std::endl;
-        std::cout << "right_trim_ [" << more::right_trim_(s1) << ']' << std::endl;
-        std::cout << "right_trim_ [" << more::right_trim_(s2) << ']' << std::endl;
-        std::cout << "right_trim_ [" << more::right_trim_(s3) << ']' << std::endl;
+        std::cout << "right_trim: [" << more::right_trim_copy(s0) << ']' << std::endl;
+        std::cout << "right_trim: [" << more::right_trim_copy(s1) << ']' << std::endl;
+        std::cout << "right_trim: [" << more::right_trim_copy(s2) << ']' << std::endl;
+        std::cout << "right_trim: [" << more::right_trim_copy(s3) << ']' << std::endl;
+
+        std::cout << "right_trim! [" << more::right_trim(s0) << ']' << std::endl;
+        std::cout << "right_trim! [" << more::right_trim(s1) << ']' << std::endl;
+        std::cout << "right_trim! [" << more::right_trim(s2) << ']' << std::endl;
+        std::cout << "right_trim! [" << more::right_trim(s3) << ']' << std::endl;
     }
 
     {
@@ -80,62 +83,62 @@ main(int argc, char *argv[])
 
 
         std::cout << std::endl;
-        std::cout << "swapcase: [" << more::swapcase(s0) << ']' << std::endl;
-        std::cout << "swapcase: [" << more::swapcase(s1) << ']' << std::endl;
-        std::cout << "swapcase: [" << more::swapcase(s2) << ']' << std::endl;
-        std::cout << "swapcase: [" << more::swapcase(s3) << ']' << std::endl;
+        std::cout << "swapcase: [" << more::swapcase_copy(s0) << ']' << std::endl;
+        std::cout << "swapcase: [" << more::swapcase_copy(s1) << ']' << std::endl;
+        std::cout << "swapcase: [" << more::swapcase_copy(s2) << ']' << std::endl;
+        std::cout << "swapcase: [" << more::swapcase_copy(s3) << ']' << std::endl;
 
-        std::cout << "swapcase_ [" << more::swapcase_(s0) <<']' <<  std::endl; // in-place version...
-        std::cout << "swapcase_ [" << more::swapcase_(s1) <<']' <<  std::endl;
-        std::cout << "swapcase_ [" << more::swapcase_(s2) <<']' <<  std::endl;
-        std::cout << "swapcase_ [" << more::swapcase_(s3) <<']' <<  std::endl;
-
-        std::cout << std::endl;
-        std::cout << "upcase: [" << more::upcase(s0) << ']' << std::endl;
-        std::cout << "upcase: [" << more::upcase(s1) << ']' << std::endl;
-        std::cout << "upcase: [" << more::upcase(s2) << ']' << std::endl;
-        std::cout << "upcase: [" << more::upcase(s3) << ']' << std::endl;
-
-        std::cout << "upcase_ [" << more::upcase_(s0) <<']' <<  std::endl;  // in-place version...
-        std::cout << "upcase_ [" << more::upcase_(s1) <<']' <<  std::endl;
-        std::cout << "upcase_ [" << more::upcase_(s2) <<']' <<  std::endl;
-        std::cout << "upcase_ [" << more::upcase_(s3) <<']' <<  std::endl;
+        std::cout << "swapcase! [" << more::swapcase(s0) <<']' <<  std::endl; // in-place version...
+        std::cout << "swapcase! [" << more::swapcase(s1) <<']' <<  std::endl;
+        std::cout << "swapcase! [" << more::swapcase(s2) <<']' <<  std::endl;
+        std::cout << "swapcase! [" << more::swapcase(s3) <<']' <<  std::endl;
 
         std::cout << std::endl;
-        std::cout << "downcase: [" << more::downcase(s0) << ']'<< std::endl;
-        std::cout << "downcase: [" << more::downcase(s1) << ']'<< std::endl;
-        std::cout << "downcase: [" << more::downcase(s2) << ']'<< std::endl;
-        std::cout << "downcase: [" << more::downcase(s3) << ']'<< std::endl;
+        std::cout << "upcase: [" << more::upcase_copy(s0) << ']' << std::endl;
+        std::cout << "upcase: [" << more::upcase_copy(s1) << ']' << std::endl;
+        std::cout << "upcase: [" << more::upcase_copy(s2) << ']' << std::endl;
+        std::cout << "upcase: [" << more::upcase_copy(s3) << ']' << std::endl;
 
-        std::cout << "downcase_ [" << more::downcase_(s0) <<']'<<  std::endl; // in-place version...
-        std::cout << "downcase_ [" << more::downcase_(s1) <<']'<<  std::endl;
-        std::cout << "downcase_ [" << more::downcase_(s2) <<']'<<  std::endl;
-        std::cout << "downcase_ [" << more::downcase_(s3) <<']'<<  std::endl;
+        std::cout << "upcase! [" << more::upcase(s0) <<']' <<  std::endl;  // in-place version...
+        std::cout << "upcase! [" << more::upcase(s1) <<']' <<  std::endl;
+        std::cout << "upcase! [" << more::upcase(s2) <<']' <<  std::endl;
+        std::cout << "upcase! [" << more::upcase(s3) <<']' <<  std::endl;
+
+        std::cout << std::endl;
+        std::cout << "downcase: [" << more::downcase_copy(s0) << ']'<< std::endl;
+        std::cout << "downcase: [" << more::downcase_copy(s1) << ']'<< std::endl;
+        std::cout << "downcase: [" << more::downcase_copy(s2) << ']'<< std::endl;
+        std::cout << "downcase: [" << more::downcase_copy(s3) << ']'<< std::endl;
+
+        std::cout << "downcase! [" << more::downcase(s0) <<']'<<  std::endl; // in-place version...
+        std::cout << "downcase! [" << more::downcase(s1) <<']'<<  std::endl;
+        std::cout << "downcase! [" << more::downcase(s2) <<']'<<  std::endl;
+        std::cout << "downcase! [" << more::downcase(s3) <<']'<<  std::endl;
 
         std::cout << std::endl;
         std::cout << "casecmp: " << std::boolalpha << more::casecmp("aB","Ab") << std::endl;
 
         std::cout << std::endl;
-        std::cout << "capitalize: [" << more::capitalize(s0) << ']'<< std::endl;
-        std::cout << "capitalize: [" << more::capitalize(s1) << ']'<< std::endl;
-        std::cout << "capitalize: [" << more::capitalize(s2) << ']'<< std::endl;
-        std::cout << "capitalize: [" << more::capitalize(s3) << ']'<< std::endl;
+        std::cout << "capitalize: [" << more::capitalize_copy(s0) << ']'<< std::endl;
+        std::cout << "capitalize: [" << more::capitalize_copy(s1) << ']'<< std::endl;
+        std::cout << "capitalize: [" << more::capitalize_copy(s2) << ']'<< std::endl;
+        std::cout << "capitalize: [" << more::capitalize_copy(s3) << ']'<< std::endl;
 
-        std::cout << "capitalize_ [" << more::capitalize_(s0) << ']'<< std::endl; // in-place version... 
-        std::cout << "capitalize_ [" << more::capitalize_(s1) << ']'<< std::endl;
-        std::cout << "capitalize_ [" << more::capitalize_(s2) << ']'<< std::endl;
-        std::cout << "capitalize_ [" << more::capitalize_(s3) << ']'<< std::endl;
+        std::cout << "capitalize! [" << more::capitalize(s0) << ']'<< std::endl; // in-place version... 
+        std::cout << "capitalize! [" << more::capitalize(s1) << ']'<< std::endl;
+        std::cout << "capitalize! [" << more::capitalize(s2) << ']'<< std::endl;
+        std::cout << "capitalize! [" << more::capitalize(s3) << ']'<< std::endl;
 
         std::cout << std::endl;
-        std::cout << "reverse: [" << more::reverse(s0) << ']'<< std::endl;
-        std::cout << "reverse: [" << more::reverse(s1) << ']'<< std::endl;
-        std::cout << "reverse: [" << more::reverse(s2) << ']'<< std::endl;
-        std::cout << "reverse: [" << more::reverse(s3) << ']'<< std::endl;
+        std::cout << "reverse: [" << more::reverse_copy(s0) << ']'<< std::endl;
+        std::cout << "reverse: [" << more::reverse_copy(s1) << ']'<< std::endl;
+        std::cout << "reverse: [" << more::reverse_copy(s2) << ']'<< std::endl;
+        std::cout << "reverse: [" << more::reverse_copy(s3) << ']'<< std::endl;
 
-        std::cout << "reverse_ [" << more::reverse_(s0) << ']'<< std::endl; // in-place version...
-        std::cout << "reverse_ [" << more::reverse_(s1) << ']'<< std::endl;
-        std::cout << "reverse_ [" << more::reverse_(s2) << ']'<< std::endl;
-        std::cout << "reverse_ [" << more::reverse_(s3) << ']'<< std::endl;
+        std::cout << "reverse! [" << more::reverse(s0) << ']'<< std::endl; // in-place version...
+        std::cout << "reverse! [" << more::reverse(s1) << ']'<< std::endl;
+        std::cout << "reverse! [" << more::reverse(s2) << ']'<< std::endl;
+        std::cout << "reverse! [" << more::reverse(s3) << ']'<< std::endl;
     }
 
     // replace test
@@ -147,7 +150,7 @@ main(int argc, char *argv[])
         std::cout << std::endl;
         std::cout << "orig  [" << abc << "]" << std::endl;
         std::cout << "repl: [" << more::repl(abc, " ", "  ")  << "]" << std::endl;
-        more::repl_(abc, " " , "__");
+        more::repl(abc, " " , "__");
         std::cout << "repl_ [" << abc << "]" << std::endl;
     }    
 
@@ -196,6 +199,15 @@ main(int argc, char *argv[])
         }
     }
 
+    // in-place versions return const reference to avoid misuse...
+    // example:
+
+    // std::string str(" one two ");
+    // more::upcase(more::trim(str));              // not allowed!
+    // more::upcase_copy(more::trim(str));         // ok! making an upcase copy of the trimmed str.
+    // more::upcase(more::trim_copy(str));         // not allowed: upcase() on temporary!
+    // more::upcase_copy(more::trim_copy(str));    // ok! 
+    
     return 0;
 }
  
