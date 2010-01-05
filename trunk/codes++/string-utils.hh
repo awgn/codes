@@ -12,9 +12,11 @@
 #define _STRING_UTILS_HH_ 
 
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <cstring>
 #include <cctype>
+
 #include <algorithm>
 #include <iterator>
 #include <limits>
@@ -67,6 +69,36 @@ namespace more {
         return __in;
     }
 
+    // split a string into a container 
+    //
+
+    template <typename Iter>
+    void 
+    split(const std::string &str, Iter out, const std::string &sep)
+    {
+        std::stringstream ss(str);
+        std::string token;
+        while(more::getline(ss, token, sep)) 
+            *out ++ = token;
+    };
+
+    // join a container of strings into a string
+    //
+
+    template <typename Iter>
+    inline 
+    std::string
+    join(Iter it, Iter end, const std::string & sep = std::string())
+    {
+        if (it == end)
+            return std::string();
+        std::string ret;
+        do {
+            ret.append(*it);
+        } while( ++it != end && (ret.append(sep), true) );
+        return ret;
+    }
+        
     // replace occurrence of __old with __new string
     //
 

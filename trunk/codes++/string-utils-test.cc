@@ -11,6 +11,7 @@
 #include <string-utils.hh>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 int
 main(int argc, char *argv[])
@@ -148,6 +149,36 @@ main(int argc, char *argv[])
         std::cout << "repl: [" << more::repl(abc, " ", "  ")  << "]" << std::endl;
         more::repl_(abc, " " , "__");
         std::cout << "repl_ [" << abc << "]" << std::endl;
+    }    
+
+    // split test
+    //
+
+    {
+        std::string abc("1 2, 3");
+        std::vector<std::string> vec;
+
+        std::cout << std::endl;
+        std::cout << "split: [";
+       
+        more::split(abc, std::back_inserter(vec), " ,"); 
+
+        std::copy(vec.begin(), vec.end(), std::ostream_iterator<std::string>(std::cout, " "));
+        std::cout << "]" << std::endl;
+    }    
+
+
+    // join test 
+    //
+    {
+        std::vector<std::string> abc;
+        abc.push_back("1");
+        abc.push_back("2");
+        abc.push_back("3");
+        
+        std::cout << std::endl;
+        std::cout << "join: [" << more::join(abc.begin(), abc.end()) << "]" << std::endl;
+        std::cout << "join: [" << more::join(abc.begin(), abc.end(), "_") << "]" << std::endl;
     }    
 
     // extending getline...
