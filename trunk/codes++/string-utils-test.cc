@@ -210,12 +210,11 @@ main(int argc, char *argv[])
         std::cout << std::endl;
 
         std::string l;
-        while ( more::getline_esc(sstr, l, std::string("\n: ") ) ) 
+        while ( more::getline(sstr, l, std::string("\n: "), more::string_utils::escape_enabled ) ) 
         {
             std::cout << "getline_esc: [" << l << "]" << std::endl;
         }
     }
-
 
     // in-place versions return const reference to avoid misuse...
     // example:

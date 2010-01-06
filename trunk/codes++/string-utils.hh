@@ -26,56 +26,19 @@ namespace more {
     namespace string_utils 
     {
         static const char white_space[] = " \f\n\r\t\v";
+
+        const bool escape_disabled = false;
+        const bool escape_enabled  = true;
     };
 
-    // extended getline with multiple-char separator
-    //   
-    template<typename CharT, typename Traits, typename Alloc>
-    inline std::basic_istream<CharT, Traits>&
-    getline(std::basic_istream<CharT, Traits>& __in,
-        std::basic_string<CharT, Traits, Alloc>& __str, const std::basic_string<CharT, Traits, Alloc>& __delim)
-    {
-        std::ios_base::iostate __err = std::ios_base::goodbit;
-
-        const std::string::size_type n = __str.max_size();
-        char c = __in.rdbuf()->sgetc();
-        unsigned int extracted = 0;
-
-        __str.erase();
-        while ( extracted < n && c != EOF &&
-                __delim.find(c) == std::string::npos ) 
-        {
-            __str += c;
-            ++extracted;
-            c = __in.rdbuf()->snextc();
-        }
-
-        while ( c != EOF &&
-                __delim.find(c) != std::string::npos )
-        {
-            ++extracted;
-            c = __in.rdbuf()->snextc();    
-        }            
-
-        if ( c == EOF )
-            __err |= std::ios_base::eofbit;
-
-        if (!extracted)
-            __err |= std::ios_base::failbit;
-
-        if (__err)
-            __in.setstate(__err);
-
-        return __in;
-    }
-
-    // extended getline with escape support for delimiters
+    // extended getline with optional escape support and multiple-char separator...
     //
 
     template<typename CharT, typename Traits, typename Alloc>
     inline std::basic_istream<CharT, Traits>&
-    getline_esc(std::basic_istream<CharT, Traits>& __in,
-        std::basic_string<CharT, Traits, Alloc>& __str, const std::basic_string<CharT, Traits, Alloc>& __delim)
+    getline(std::basic_istream<CharT, Traits>& __in,
+        std::basic_string<CharT, Traits, Alloc>& __str, 
+        const std::basic_string<CharT, Traits, Alloc>& __delim, bool do_escape = string_utils::escape_disabled)
     {
         std::ios_base::iostate __err = std::ios_base::goodbit;
 
@@ -84,27 +47,38 @@ namespace more {
         unsigned int extracted = 0;
 
         bool esc = false;
-        __str.erase();
-        while ( extracted < n && c != EOF &&
-                (__delim.find(c) == std::string::npos || esc) ) 
-        {
-            if ( c == '\\' && !esc) {
-                esc = true;
-                c = __in.rdbuf()->snextc();
-                continue;
-            }
+        __str.erase();        
 
-            if (esc) {
-                esc = false;
-                if (__delim.find(c) == std::string::npos && c !='\\') {
-                   __str += '\\'; 
-                   ++extracted;
+        if (do_escape) {   
+            while ( extracted < n && c != EOF &&
+                    (__delim.find(c) == std::string::npos || esc) ) 
+            {
+                if ( c == '\\' && !esc) {
+                    esc = true;
+                    c = __in.rdbuf()->snextc();
+                    continue;
                 }
-            }
 
-            __str += c;
-            ++extracted;
-            c = __in.rdbuf()->snextc();
+                if (esc) {
+                    esc = false;
+                    if (__delim.find(c) == std::string::npos && c !='\\') {
+                        __str += '\\'; 
+                        ++extracted;
+                    }
+                }
+
+                __str += c;
+                ++extracted;
+                c = __in.rdbuf()->snextc();
+            }
+        } else {
+            while ( extracted < n && c != EOF &&
+                    __delim.find(c) == std::string::npos ) 
+            {
+                __str += c;
+                ++extracted;
+                c = __in.rdbuf()->snextc();
+            }
         }
 
         while ( c != EOF &&
