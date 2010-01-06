@@ -69,6 +69,65 @@ namespace more {
         return __in;
     }
 
+    // extended getline with escape support for delimiters
+    //
+
+    template<typename CharT, typename Traits, typename Alloc>
+    inline std::basic_istream<CharT, Traits>&
+    getline_esc(std::basic_istream<CharT, Traits>& __in,
+        std::basic_string<CharT, Traits, Alloc>& __str, const std::basic_string<CharT, Traits, Alloc>& __delim)
+    {
+        std::ios_base::iostate __err = std::ios_base::goodbit;
+
+        const std::string::size_type n = __str.max_size();
+        char c = __in.rdbuf()->sgetc();
+        unsigned int extracted = 0;
+
+        bool esc = false;
+        __str.erase();
+        while ( extracted < n && c != EOF &&
+                (__delim.find(c) == std::string::npos || esc) ) 
+        {
+            if ( c == '\\' && !esc) {
+                esc = true;
+                c = __in.rdbuf()->snextc();
+                continue;
+            }
+
+            if (esc) {
+                esc = false;
+                if (__delim.find(c) == std::string::npos && c !='\\') {
+                   __str += '\\'; 
+                   ++extracted;
+                }
+            }
+
+            __str += c;
+            ++extracted;
+            c = __in.rdbuf()->snextc();
+        }
+
+        while ( c != EOF &&
+                __delim.find(c) != std::string::npos )
+        {
+            ++extracted;
+            c = __in.rdbuf()->snextc();    
+        }            
+
+        if ( c == EOF )
+            __err |= std::ios_base::eofbit;
+
+        if (!extracted)
+            __err |= std::ios_base::failbit;
+
+        if (__err)
+            __in.setstate(__err);
+
+        return __in;
+    }
+
+
+
     // split a string into a container 
     //
 

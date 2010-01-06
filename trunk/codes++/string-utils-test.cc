@@ -195,9 +195,27 @@ main(int argc, char *argv[])
         std::string l;
         while ( more::getline(sstr, l, std::string("\n: ") ) ) 
         {
-            std::cout << "line: [" << l << "]" << std::endl;
+            std::cout << "getline: [" << l << "]" << std::endl;
         }
     }
+
+    // extending getline with escape support for separator...
+    //
+    {
+        std::string str("one\\:two: \\three\\\\ \nfour \\  ");
+        std::istringstream sstr(str);
+
+        // std::ifstream sstr("test.cc");
+
+        std::cout << std::endl;
+
+        std::string l;
+        while ( more::getline_esc(sstr, l, std::string("\n: ") ) ) 
+        {
+            std::cout << "getline_esc: [" << l << "]" << std::endl;
+        }
+    }
+
 
     // in-place versions return const reference to avoid misuse...
     // example:
