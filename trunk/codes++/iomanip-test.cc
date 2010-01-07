@@ -30,7 +30,7 @@ main(int argc, char *argv[])
     }
 
     {
-        std::string str("this line is ignored\none:two: three \nfour");
+        std::string str("this line is ignored\none:two: three \nfour\nescaped\\\nnewline");
         std::istringstream sstr(str);
 
         sstr >> more::ignore_line;  // <- ignore_line
@@ -38,7 +38,7 @@ main(int argc, char *argv[])
         more::token_line line; // <- token_line
         while ( sstr >> line)
         {
-            std::cout << more::spaces(4) << "token_line: [" << line.str() << "]" << std::endl;  // <- spaces
+            std::cout << more::spaces(6) << "token_line: [" << line.str() << "]" << std::endl;  // <- spaces
         }
     }
 
