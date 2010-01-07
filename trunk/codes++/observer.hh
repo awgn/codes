@@ -11,13 +11,16 @@
 #ifndef _OBSERVER_HH_
 #define _OBSERVER_HH_ 
 
-#include <atomicity-policy.hh>
-
 #include <tr1/functional>
 #include <tr1/memory>
+#include <tr1/type_traits>
+
 #include <algorithm>
 #include <vector>
 #include <cassert>
+#include <stdexcept>
+
+#include <atomicity-policy.hh> // more
 
 using std::tr1::mem_fn;
 using std::tr1::bind;
@@ -25,9 +28,9 @@ using namespace std::tr1::placeholders;
 
 namespace more { 
 
-    namespace observer_helper {
+    namespace observer_opt {
 
-        template <bool v, typename U, typename V>
+        template <bool value, typename U, typename V>
         struct select_type
         {
             typedef U type;
@@ -37,9 +40,44 @@ namespace more {
         {
             typedef V type;
         };
+
+        struct null {};
+      
+        //////////////////////////////////////////////////////////////////// 
+        // enable shared_ptr...
+
+        struct enable_shared_ptr {};  
+        
+        template <typename T1, typename T2, typename T3,
+                  typename T4, typename T5, typename T6>
+        struct is_shared_ptr_enabled
+        {
+            enum { value = std::tr1::is_same<T1, enable_shared_ptr>::value ||
+                           std::tr1::is_same<T2, enable_shared_ptr>::value ||
+                           std::tr1::is_same<T3, enable_shared_ptr>::value ||
+                           std::tr1::is_same<T4, enable_shared_ptr>::value ||
+                           std::tr1::is_same<T5, enable_shared_ptr>::value ||
+                           std::tr1::is_same<T6, enable_shared_ptr>::value };
+        };
+
+        ////////////////////////
+        // restore null type...
+
+        template <typename T>
+        struct restore_type 
+        {
+            typedef T value_type;
+        };
+        template <>
+        struct restore_type<enable_shared_ptr>
+        {
+            typedef null value_type;
+        };
+
     }
 
-    template <typename T = void>
+    template <typename T1 = observer_opt::null, typename T2 = observer_opt::null, typename T3 = observer_opt::null,
+              typename T4 = observer_opt::null, typename T5 = observer_opt::null, typename T6 = observer_opt::null >
     class observer
     { 
     public:
@@ -49,43 +87,90 @@ namespace more {
         virtual ~observer()
         {}
 
-        void updatex(T x)
-        { 
-            this->update(x); 
-        }
-
-    protected:
-        virtual void update(T)=0;
-    };
-
-    template <>
-    class observer<void>
-    { 
-    public:
-        observer()
-        {}
-
-        virtual ~observer()
-        {}
-
         void updatex()
+        {
+            this->update();
+        }
+
+        void updatex(T1 x1)
         { 
-            this->update(); 
+            this->update(x1); 
+        }
+        
+        void updatex(T1 x1, T2 x2)
+        { 
+            this->update(x1,x2); 
+        }
+        
+        void updatex(T1 x1, T2 x2, T3 x3)
+        { 
+            this->update(x1,x2,x3); 
+        }
+        
+        void updatex(T1 x1, T2 x2, T3 x3, T4 x4)
+        { 
+            this->update(x1,x2,x3,x4); 
+        }
+        
+        void updatex(T1 x1, T2 x2, T3 x3, T4 x4, T5 x5)
+        { 
+            this->update(x1,x2,x3,x4,x5); 
+        }
+        
+        void updatex(T1 x1, T2 x2, T3 x3, T4 x4, T5 x5, T6 x6)
+        { 
+            this->update(x1,x2,x3,x4,x5,x6); 
         }
 
     protected:
-        virtual void update()=0;
+        virtual void update() 
+        {
+            throw std::runtime_error("subject/observer: slot not implemented");
+        }
+        virtual void update(T1 x1) 
+        {
+            throw std::runtime_error("subject/observer: slot not implemented");
+        }
+        virtual void update(T1 x1, T2 x2) 
+        {
+            throw std::runtime_error("subject/observer: slot not implemented");
+        }
+        virtual void update(T1 x1, T2 x2, T3 x3) 
+        {
+            throw std::runtime_error("subject/observer: slot not implemented");
+        }
+        virtual void update(T1 x1, T2 x2, T3 x3, T4 x4) 
+        {
+            throw std::runtime_error("subject/observer: slot not implemented");
+        }
+        virtual void update(T1 x1, T2 x2, T3 x3, T4 x4, T5 x5) 
+        {
+            throw std::runtime_error("subject/observer: slot not implemented");
+        }
+        virtual void update(T1 x1, T2 x2, T3 x3, T4 x4, T5 x5, T6 x6) 
+        {
+            throw std::runtime_error("subject/observer: slot not implemented");
+        }
     };
 
-    template < typename P = void,                       /* update parameter */      
-               bool use_shared_ptr = false              /* pointer policy: false = raw pointers, true = shared_ptr<> */ ,
-               typename Atomicity = atomicity::DEFAULT  /* for multithread set to GNU_CXX */ >
+    template < typename P1 = observer_opt::null, typename P2 = observer_opt::null, /* update parameters */  
+               typename P3 = observer_opt::null, typename P4 = observer_opt::null, /* update parameters */
+               typename P5 = observer_opt::null, typename P6 = observer_opt::null, /* update parameters */    
+               typename Atomicity = atomicity::DEFAULT                             /* for multithread set to GNU_CXX */ >
     class subject : private atomicity::emptybase_mutex<Atomicity>
     { 
     public:
-        typedef typename observer_helper::select_type<use_shared_ptr, 
-                std::tr1::shared_ptr<observer<P> >,
-                observer<P> * >::type ptr_type; 
+
+        typedef typename observer_opt::restore_type<P1>::value_type T1;
+        typedef typename observer_opt::restore_type<P2>::value_type T2;
+        typedef typename observer_opt::restore_type<P3>::value_type T3;
+        typedef typename observer_opt::restore_type<P4>::value_type T4;
+        typedef typename observer_opt::restore_type<P5>::value_type T5;
+        typedef typename observer_opt::restore_type<P6>::value_type T6;
+
+        typedef typename observer_opt::select_type< observer_opt::is_shared_ptr_enabled<P1,P2,P3,P4,P5,P6>::value, 
+                std::tr1::shared_ptr<observer<T1,T2,T3,T4,T5,T6> >,
+                observer<T1,T2,T3,T4,T5,T6> * >::type ptr_type; 
 
         subject()
         : _M_observers()
@@ -94,15 +179,69 @@ namespace more {
         void notify()
         {
             typename Atomicity::scoped_lock lock(this->mutex());
-            std::for_each(_M_observers.begin(),  _M_observers.end(), mem_fn(&observer<P>::updatex)); 
+            std::for_each(_M_observers.begin(),  _M_observers.end(), 
+                 mem_fn(static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(void)>
+                        (&observer<T1,T2,T3,T4,T5,T6>::updatex))); 
         }
-
-        template<typename T>
-        void notify(T n)
+        template<typename T1>
+        void notify(T1 n1)
         {
             typename Atomicity::scoped_lock lock(this->mutex());
-            std::for_each(_M_observers.begin(),  _M_observers.end(), bind( mem_fn(&observer<P>::updatex), _1, n) ); 
+            std::for_each(_M_observers.begin(),  _M_observers.end(), 
+                 bind( mem_fn(
+                      static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1)>
+                      (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1) ); 
         }
+        template<typename T1, typename T2>
+        void notify(T1 n1, T2 n2)
+        {
+            typename Atomicity::scoped_lock lock(this->mutex());
+            std::for_each(_M_observers.begin(),  _M_observers.end(), 
+                 bind( mem_fn(
+                       static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1,T2)>
+                       (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1, n2) ); 
+        }
+        template<typename T1, typename T2, typename T3>
+        void notify(T1 n1, T2 n2, T3 n3)
+        {
+            typename Atomicity::scoped_lock lock(this->mutex());
+            std::for_each(_M_observers.begin(),  _M_observers.end(), 
+                 bind( mem_fn(
+                       static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1,T2,T3)>
+                       (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1, n2, n3) ); 
+        }
+        template<typename T1, typename T2, typename T3,
+                 typename T4>
+        void notify(T1 n1, T2 n2, T3 n3, T4 n4)
+        {
+            typename Atomicity::scoped_lock lock(this->mutex());
+            std::for_each(_M_observers.begin(),  _M_observers.end(), 
+                 bind( mem_fn(
+                       static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1,T2,T3,T4)>
+                       (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1, n2, n3, n4) ); 
+        }
+        template<typename T1, typename T2, typename T3,
+                 typename T4, typename T5>
+        void notify(T1 n1, T2 n2, T3 n3, T4 n4, T5 n5)
+        {
+            typename Atomicity::scoped_lock lock(this->mutex());
+            std::for_each(_M_observers.begin(),  _M_observers.end(), 
+                 bind( mem_fn(
+                       static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1,T2,T3,T4,T5)>
+                       (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1, n2, n3, n4, n5) ); 
+        }
+        template<typename T1, typename T2, typename T3,
+                 typename T4, typename T5, typename T6>
+        void notify(T1 n1, T2 n2, T3 n3, T4 n4, T5 n5, T6 n6)
+        {
+            typename Atomicity::scoped_lock lock(this->mutex());
+            std::for_each(_M_observers.begin(),  _M_observers.end(), 
+                 bind( mem_fn(
+                       static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1,T2,T3,T4,T5,T6)>
+                       (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1, n2, n3, n4, n5, n6) ); 
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////
 
         void attach(ptr_type o)
         {

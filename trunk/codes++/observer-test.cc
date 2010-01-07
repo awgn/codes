@@ -9,11 +9,16 @@
  */
 
 #include <iostream>
-#include <observer.hh>
 #include <vector>
+#include <string>
 
-struct sub1 : public more::subject<> {};
-struct sub2 : public more::subject<void, true /* use shared_ptr */ > 
+#include <observer.hh>
+
+using namespace more;
+
+struct sub1 : public subject<> {};
+
+struct sub2 : public subject< observer_opt::enable_shared_ptr > 
 {
     sub2()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
@@ -22,7 +27,7 @@ struct sub2 : public more::subject<void, true /* use shared_ptr */ >
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
 };
 
-struct sub3 : public more::subject<int> 
+struct sub3 : public subject<int, const std::string &> 
 {
     sub3()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
@@ -31,17 +36,24 @@ struct sub3 : public more::subject<int>
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
 };
 
+//////////////////////////////////////////////////////
 
-struct obs1 : public more::observer<>
+struct obs1 : public observer<>
 {
+    obs1(int n)
+    : _M_value(n)
+    {}
+
     virtual void
     update()
     {
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
+        std::cout << __PRETTY_FUNCTION__  << " " << _M_value << std::endl;
     }
+
+    int _M_value;
 };
 
-struct obs2 : public more::observer<>
+struct obs2 : public observer<>
 {
     obs2()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
@@ -56,7 +68,7 @@ struct obs2 : public more::observer<>
     }
 };
 
-struct obs3 : public more::observer<int>
+struct obs3 : public observer<int, const std::string &>
 {
     obs3()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
@@ -65,9 +77,9 @@ struct obs3 : public more::observer<int>
     { std::cout << __PRETTY_FUNCTION__ << std::endl; } 
 
     virtual void
-    update(int n)
+    update(int n, const std::string & h)
     {
-        std::cout << __PRETTY_FUNCTION__ << ": param = " << n << std::endl;
+        std::cout << __PRETTY_FUNCTION__ << ": param = " << n << ", '" << h << "'" << std::endl;
     }
 };
 
@@ -77,9 +89,9 @@ main(int argc, char *argv[])
     std::cout << "\n[*] subject/observer: basic\n\n"; 
     sub1 general;
 
-    obs1 soldier_1;
-    obs1 soldier_2;
-    obs1 soldier_3;
+    obs1 soldier_1(1);
+    obs1 soldier_2(2);
+    obs1 soldier_3(3);
 
     std::cout << "    attach(3)" << std::endl;
     general.attach(&soldier_1);
@@ -88,7 +100,7 @@ main(int argc, char *argv[])
     std::cout << "    notify()" << std::endl;
     general.notify();
 
-    std::cout << "    detach(1)" << std::endl;
+    std::cout << "    detach() [3]" << std::endl;
     general.detach(&soldier_3);
     std::cout << "    notify()" << std::endl;
     general.notify(); 
@@ -98,8 +110,8 @@ main(int argc, char *argv[])
     {
         sub2 owner;
         {
-            std::tr1::shared_ptr<more::observer<> > obs_1(new obs2);
-            std::tr1::shared_ptr<more::observer<> > obs_2(new obs2);
+            std::tr1::shared_ptr<observer<> > obs_1(new obs2);
+            std::tr1::shared_ptr<observer<> > obs_2(new obs2);
 
             std::cout << "    attach(2)" << std::endl;
             owner.attach(obs_1);
@@ -115,16 +127,15 @@ main(int argc, char *argv[])
         std::cout << "    destruct the subect [and all attached observers]" << std::endl;
     }
     
-    std::cout << "\n[*] subject/observer: notify() with parameter\n\n"; 
-
+    std::cout << "\n[*] subject/observer: notify() with parameter(s)\n\n"; 
     {
         sub3 general;
         obs3 soldier;
 
         general.attach(&soldier);
         
-        std::cout << "    notify(10)" << std::endl;
-        general.notify(10);
+        std::cout << "    notify(42,\"hello world\")" << std::endl;
+        general.notify<int, const std::string &>(42, std::string("hello world") );
     }
 
     std::cout << "\n[*] done.\n";
