@@ -8,8 +8,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef STREAM_CONTAINER_HH
-#define STREAM_CONTAINER_HH
+#ifndef STREAMER_HH
+#define STREAMER_HH
 
 #include <iostream>
 #include <cstdio>
@@ -22,7 +22,7 @@ namespace more {
     // between different compilation units 
     //
 
-    struct stream_container 
+    struct streamer 
     {
         static int sep_index()
         {
@@ -56,7 +56,7 @@ namespace more {
     //
 
     template <typename T>
-    static inline typename std::tr1::add_const< typename sc_mangling_traits<T>::type >::type  sc_type_mangling(const T &t)
+    inline typename std::tr1::add_const< typename sc_mangling_traits<T>::type >::type sc_type_mangling(const T &t)
     { return t; }
 
     template <>
@@ -82,29 +82,32 @@ namespace more {
 
 namespace std {
     
-    // dumper
+    // streamer...
+    //
 
-    template <typename T>
-    typename mtp::enable_if_c< more::traits::is_container<T>::value && !tr1::is_same<T, std::string>::value, std::ostream>::type &
-    operator<<(std::ostream &out, const T &v)
+    template <typename CharT, typename Traits, typename T>
+    inline typename mtp::enable_if_c< more::traits::is_container<T>::value && 
+    !tr1::is_same<typename std::string,T>::value, 
+           std::basic_ostream<CharT,Traits> >::type &
+    operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
     {
         typename T::const_iterator it = v.begin();
         for(; it != v.end();) {
             out << more::sc_type_mangling(*it); 
-            if ( ++it != v.end() && out.iword(more::stream_container::sep_index()) ) {
-                out << reinterpret_cast<char *>(out.iword(more::stream_container::sep_index()));   
+            if ( ++it != v.end() && out.iword(more::streamer::sep_index()) ) {
+                out << reinterpret_cast<char *>(out.iword(more::streamer::sep_index()));   
             } 
         }
         return out;
     };
 
-    template <typename U, typename V>
-    inline std::ostream &
-    operator<< (std::ostream &out, const std::pair<U,V> &r)
+    template <typename CharT, typename Traits, typename U, typename V>
+    inline std::basic_ostream<CharT, Traits> &
+    operator<< (std::basic_ostream<CharT, Traits> &out, const std::pair<U,V> &r)
     {
         out << '<' << r.first << ':' << r.second << '>';
         return out;
     }
 }
 
-#endif /* STREAM_CONTAINER_HH */
+#endif /* STREAMER_HH */
