@@ -172,7 +172,20 @@ namespace more
 
 }
 
-namespace std { namespace tr1 {
+namespace std { 
+
+    //////////////////////////
+    // operator<< for pair...
+
+    template <typename CharT, typename Traits, typename U, typename V>
+    inline std::basic_ostream<CharT,Traits> &
+    operator<< (std::basic_ostream<CharT,Traits> &out, const std::pair<U,V> &r)
+    {
+        out << '<' << r.first << ':' << r.second << '>';
+        return out;
+    }
+
+    namespace tr1 {
 
     ///////////////////////////
     // operator<< for array...

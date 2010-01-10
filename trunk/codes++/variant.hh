@@ -203,8 +203,9 @@ namespace more {
     public:
         friend class variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>;
 
-        friend std::ostream & 
-        operator<<(std::ostream &out, const more::variant<T0,T1,T2,T3,T4,T5> & var)
+        template <typename CharT, typename Traits>
+        friend std::basic_ostream<CharT,Traits> &
+        operator<<(std::basic_ostream<CharT,Traits> &out, const more::variant<T0,T1,T2,T3,T4,T5> & var)
         {
             var.printon(out);
             return out; 

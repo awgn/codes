@@ -205,7 +205,7 @@ namespace more {
             return *this;
         }
 
-        friend std::ostream & operator<<(std::ostream &out, any_out &value)
+        friend std::ostream & operator<<(std::ostream &out, const any_out &value)
         {
             if (value._M_streamer) {
                 value._M_streamer->printon(out,value._M_value);
@@ -225,14 +225,14 @@ namespace more {
 
         struct streamer
         {
-            virtual void printon(std::ostream &out, any &arg)=0;
+            virtual void printon(std::ostream &out, const any &arg)=0;
             virtual streamer * clone()=0;
             virtual ~streamer() {};
         };
 
         template <typename T> struct streamer_impl : public streamer {
             
-            virtual void printon(std::ostream &out, any &arg)
+            virtual void printon(std::ostream &out, const any &arg)
             {
                 out << * any_cast<T>(&arg);
             }

@@ -91,13 +91,13 @@ namespace more { namespace kv {
         //      note: specializations do not partecipate to overloading
 
         template <typename E>
-        static inline bool lex_parse(std::istream &in, E &elem)
+        inline bool lex_parse(std::istream &in, E &elem)
         { 
             return (in >> elem);
         }        
 
         template <typename T, bool S>
-        static inline bool lex_parse(std::istream &in, block<T,S> &b)
+        inline bool lex_parse(std::istream &in, block<T,S> &b)
         { 
             return b.parse(in, "block");
         }
@@ -150,7 +150,7 @@ namespace more { namespace kv {
             return true;
         }
         template <typename E, template <typename _Tp, typename Alloc = std::allocator<_Tp> > class C >
-        static inline bool lex_parse(std::istream &in, C<E> &elems)
+        inline bool lex_parse(std::istream &in, C<E> &elems)
         {
             E tmp;
             if ( lex_parse(in,tmp) ) {

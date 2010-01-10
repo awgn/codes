@@ -133,28 +133,28 @@ namespace more {
 #if defined(MORE_USE_QT_SHARED_PTR)
 
     template <class O, class Ty>
-    static inline 
+    inline 
     typename more::shared_ptr<O> static_pointer_cast(const typename more::shared_ptr<Ty> &sp)
     {
         return typename more::shared_ptr<O>( static_cast<QSharedPointer<Ty> >(sp).template staticCast<O>() );    
     }
 
     template <class O, class Ty>
-    static inline 
+    inline 
     typename more::shared_ptr<O> dynamic_pointer_cast(const typename more::shared_ptr<Ty> &sp)
     {
         return typename more::shared_ptr<O>( static_cast<QSharedPointer<Ty> >(sp).template dynamicCast<O>() );    
     }
 
     template <class O, class Ty>
-    static inline 
+    inline 
     typename more::shared_ptr<O> const_pointer_cast(const typename more::shared_ptr<Ty> &sp)
     {
         return typename more::shared_ptr<O>( static_cast<QSharedPointer<Ty> >(sp).template constCast<O>() );    
     }
 
     template < template <typename El, typename Al> class Ct, typename El, typename Al>
-    static inline
+    inline
     Ct<typename shared_ptr<typename El::value_type>::native_type, std::allocator<typename El::native_type> >
     native_shared_ptr_container_cast(const Ct<El, Al> &rhs)
     {
@@ -166,28 +166,28 @@ namespace more {
 #elif defined(MORE_USE_BOOST_SHARED_PTR)
 
     template <class O, class Ty>
-    static inline 
+    inline 
     boost::shared_ptr<O> static_pointer_cast(const boost::shared_ptr<Ty> &sp)
     {
         return boost::static_pointer_cast<O>(sp);    
     }
 
     template <class O, class Ty>
-    static inline 
+    inline 
     boost::shared_ptr<O> dynamic_pointer_cast(const boost::shared_ptr<Ty> &sp)
     {
         return boost::dynamic_pointer_cast<O>(sp);    
     }
 
     template <class O, class Ty>
-    static inline 
+    inline 
     boost::shared_ptr<O> const_pointer_cast(const boost::shared_ptr<Ty> &sp)
     {
         return boost::const_pointer_cast<O>(sp);    
     }
 
     template < template <typename El, typename Al> class Ct, typename El, typename Al>
-    static inline
+    inline
     Ct<El, std::allocator<El> >
     native_shared_ptr_container_cast(const Ct<El, Al> &rhs)
     {
@@ -197,28 +197,28 @@ namespace more {
 #elif defined(MORE_USE_TR1_SHARED_PTR)
 
     template <class O, class Ty>
-    static inline 
+    inline 
     std::tr1::shared_ptr<O> static_pointer_cast(const std::tr1::shared_ptr<Ty> &sp)
     {
         return std::tr1::static_pointer_cast<O>(sp);    
     }
 
     template <class O, class Ty>
-    static inline 
+    inline 
     std::tr1::shared_ptr<O> dynamic_pointer_cast(const std::tr1::shared_ptr<Ty> &sp)
     {
         return std::tr1::dynamic_pointer_cast<O>(sp);    
     }
 
     template <class O, class Ty>
-    static inline 
+    inline 
     std::tr1::shared_ptr<O> const_pointer_cast(const std::tr1::shared_ptr<Ty> &sp)
     {
         return std::tr1::const_pointer_cast<O>(sp);    
     }
 
     template < template <typename El, typename Al> class Ct, typename El, typename Al>
-    static inline
+    inline
     Ct<El, std::allocator<El> >
     native_shared_ptr_container_cast(const Ct<El, Al> &rhs)
     {

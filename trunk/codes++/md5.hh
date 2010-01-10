@@ -230,7 +230,7 @@ namespace more {
     }
 
     template <typename T>
-    static inline
+    inline
     typename mtp::disable_if<
         std::tr1::is_base_of
             <

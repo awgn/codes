@@ -112,8 +112,9 @@ namespace more {
         port() const
         { return _M_port; }
 
-        friend 
-        std::ostream & operator<<(std::ostream &out, const url & obj)
+        template <typename CharT, typename Traits>
+        friend inline std::basic_ostream<CharT,Traits> &
+        operator<<(std::basic_ostream<CharT,Traits> &out, const url & obj)
         {
             out << obj._M_protocol << "://";
             if (!obj._M_user.empty()) {

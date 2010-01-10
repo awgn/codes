@@ -67,7 +67,7 @@ namespace mtp
     template <int n>
     struct log2
     {
-        enum { value = 1 + log2< n >> 1 >::value };
+        enum { value = 1 + log2< (n >> 1) >::value };
     };
     template <>
     struct log2<1>

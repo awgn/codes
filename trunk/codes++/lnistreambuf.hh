@@ -43,8 +43,9 @@ namespace more {
         { return _M_line; }
     };
 
-    static inline
-    int lineno(std::istream &in)
+
+    template <class charT, class Traits>
+    inline int lineno(std::basic_istream<charT,Traits> &in)
     {
         lnistreambuf * ln = dynamic_cast<lnistreambuf *>(in.rdbuf());
         if (ln) {

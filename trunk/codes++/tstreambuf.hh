@@ -12,6 +12,8 @@
 #define _TSTREAMBUF_HH_ 
 
 #include <iostream>
+#include <cstdio>
+
 #include <atomicity-policy.hh>
 #include <tspinlock.hh>
 #include <pthread.h>
@@ -139,15 +141,17 @@ namespace more {
 
         public:
 
-        friend 
-        std::ostream &operator<<(std::ostream &out, more::lock_stream::lock)
+        template <typename CharT, typename Traits>
+        friend inline std::basic_ostream<CharT,Traits> &
+        operator<<(std::basic_ostream<CharT, Traits> &out, more::lock_stream::lock)
         {
             more::lock_stream::_lock(out);
             return out;
         }    
 
-        friend 
-        std::ostream &operator<<(std::ostream &out, more::lock_stream::unlock)
+        template <typename CharT, typename Traits>
+        friend inline std::basic_ostream<CharT,Traits> &
+        operator<<(std::basic_ostream<CharT, Traits> &out, more::lock_stream::unlock)
         {
             more::lock_stream::_unlock(out);
             return out;

@@ -19,7 +19,7 @@
 namespace more {
 
     template <typename R, typename F, F fun>
-    static inline R strtox(const std::string &s, int base) 
+    inline R strtox(const std::string &s, int base) 
     throw(std::runtime_error,std::range_error) 
     {
         char *endptr;
@@ -42,7 +42,7 @@ namespace more {
     }
 
     template <typename R, typename F, F fun>
-    static inline R strtox(const std::string &s) 
+    inline R strtox(const std::string &s) 
     throw(std::runtime_error,std::range_error) 
     {
         char *endptr;

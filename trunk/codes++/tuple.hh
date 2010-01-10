@@ -155,21 +155,21 @@ namespace mtp
     class tuple<TL::null> {};
 
     template <typename T1>
-    static inline tuple<TYPELIST(T1)> 
+    inline tuple<TYPELIST(T1)> 
     make_tuple (const T1& a1) 
     { 
         return tuple<TYPELIST(T1)> (a1); 
     }    
     
     template <typename T1, typename T2>
-    static inline tuple<TYPELIST(T1,T2)> 
+    inline tuple<TYPELIST(T1,T2)> 
     make_tuple (const T1& a1, const T2& a2) 
     { 
         return tuple<TYPELIST(T1,T2)> (a1,a2); 
     }
 
     template <typename T1, typename T2, typename T3>
-    static inline tuple<TYPELIST(T1,T2,T3)> 
+    inline tuple<TYPELIST(T1,T2,T3)> 
     make_tuple (const T1& a1, const T2& a2, const T3& a3) 
     { 
         return tuple<TYPELIST(T1,T2,T3)> (a1,a2,a3); 
@@ -177,7 +177,7 @@ namespace mtp
 
     template <typename T1, typename T2, typename T3,
               typename T4>
-    static inline tuple<TYPELIST(T1,T2,T3,T4)> 
+    inline tuple<TYPELIST(T1,T2,T3,T4)> 
     make_tuple (const T1& a1, const T2& a2, const T3& a3, 
                 const T4& a4) 
     {
@@ -187,7 +187,7 @@ namespace mtp
     
     template <typename T1, typename T2, typename T3,
               typename T4, typename T5>
-    static inline tuple<TYPELIST(T1,T2,T3,T4,T5)> 
+    inline tuple<TYPELIST(T1,T2,T3,T4,T5)> 
     make_tuple (const T1& a1, const T2& a2, const T3& a3, 
                 const T4& a4, const T5& a5) 
     {
@@ -197,7 +197,7 @@ namespace mtp
 
     template <typename T1, typename T2, typename T3,
               typename T4, typename T5, typename T6>
-    static inline tuple<TYPELIST(T1,T2,T3,T4,T5,T6)> 
+    inline tuple<TYPELIST(T1,T2,T3,T4,T5,T6)> 
     make_tuple (const T1& a1, const T2& a2, const T3& a3, 
                 const T4& a4, const T5& a5, const T6& a6) 
     {
@@ -208,7 +208,7 @@ namespace mtp
     template <typename T1, typename T2, typename T3,
               typename T4, typename T5, typename T6,
               typename T7>
-    static inline tuple<TYPELIST(T1,T2,T3,T4,T5,T6,T7)> 
+    inline tuple<TYPELIST(T1,T2,T3,T4,T5,T6,T7)> 
     make_tuple (const T1& a1, const T2& a2, const T3& a3, 
                 const T4& a4, const T5& a5, const T6& a6,
                 const T7& a7) 
@@ -220,7 +220,7 @@ namespace mtp
     template <typename T1, typename T2, typename T3,
               typename T4, typename T5, typename T6,
               typename T7, typename T8>
-    static inline tuple<TYPELIST(T1,T2,T3,T4,T5,T6,T7,T8)> 
+    inline tuple<TYPELIST(T1,T2,T3,T4,T5,T6,T7,T8)> 
     make_tuple (const T1& a1, const T2& a2, const T3& a3, 
                 const T4& a4, const T5& a5, const T6& a6, 
                 const T7& a7, const T8& a8) 
@@ -232,7 +232,7 @@ namespace mtp
     template <typename T1, typename T2, typename T3,
               typename T4, typename T5, typename T6,
               typename T7, typename T8, typename T9>
-    static inline tuple<TYPELIST(T1,T2,T3,T4,T5,T6,T7,T8,T9)> 
+    inline tuple<TYPELIST(T1,T2,T3,T4,T5,T6,T7,T8,T9)> 
     make_tuple (const T1& a1, const T2& a2, const T3& a3, 
                 const T4& a4, const T5& a5, const T6& a6, 
                 const T7& a7, const T8& a8, const T9& a9) 

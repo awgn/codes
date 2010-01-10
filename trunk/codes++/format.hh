@@ -47,8 +47,9 @@ namespace more {
             return s.str();
         }
 
-        friend std::ostream & 
-        operator<<(std::ostream &out, format &obj)
+        template <typename CharT, typename Traits>
+        friend inline std::basic_ostream<CharT,Traits> &
+        operator<< (std::basic_ostream<CharT,Traits> &out, const format &obj)
         {
             for(unsigned int i=0; i < obj._M_format.size();) {
 
@@ -73,10 +74,9 @@ namespace more {
 
                 assert ( n <= obj._M_args.size() );
 
-                more::any_out & e = obj._M_args.at(n-1);
-                out << e;
-
+                out << obj._M_args.at(n-1);
             }
+
             return out;
         }
 

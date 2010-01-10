@@ -28,7 +28,7 @@ namespace more {
         return ret;
     }
     template <typename T1>
-    static inline std::string sprint(const char *fmt, T1 arg_1) 
+    inline std::string sprint(const char *fmt, T1 arg_1) 
     {
         char *strp;
         if ( asprintf(&strp, fmt, arg_1) == -1 )
@@ -38,7 +38,7 @@ namespace more {
         return ret;
     }
     template <typename T1, typename T2>
-    static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2) 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2) 
     {
         char *strp;
         if ( asprintf(&strp, fmt, arg_1, arg_2) == -1 )
@@ -48,7 +48,7 @@ namespace more {
         return ret;
     }
     template <typename T1, typename T2, typename T3>
-    static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3) 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3) 
     {
         char *strp;
         if ( asprintf(&strp, fmt, arg_1, arg_2, arg_3) == -1 )
@@ -59,7 +59,7 @@ namespace more {
     }
     template <typename T1, typename T2, typename T3, 
              typename T4>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4) 
              {
                  char *strp;
@@ -71,7 +71,7 @@ namespace more {
              }
     template <typename T1, typename T2, typename T3, 
              typename T4, typename T5>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5) 
              {
                  char *strp;
@@ -83,7 +83,7 @@ namespace more {
              }
     template <typename T1, typename T2, typename T3, 
              typename T4, typename T5, typename T6>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5, T6 arg_6) 
              {
                  char *strp;
@@ -96,7 +96,7 @@ namespace more {
     template <typename T1, typename T2, typename T3, 
              typename T4, typename T5, typename T6, 
              typename T7>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5, T6 arg_6, 
                                               T7 arg_7) 
              {
@@ -111,7 +111,7 @@ namespace more {
     template <typename T1, typename T2, typename T3, 
              typename T4, typename T5, typename T6, 
              typename T7, typename T8>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5, T6 arg_6, 
                                               T7 arg_7, T8 arg_8) 
              {
@@ -126,7 +126,7 @@ namespace more {
     template <typename T1, typename T2, typename T3, 
              typename T4, typename T5, typename T6, 
              typename T7, typename T8, typename T9>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5, T6 arg_6, 
                                               T7 arg_7, T8 arg_8, T9 arg_9) 
              {
@@ -142,7 +142,7 @@ namespace more {
              typename T4, typename T5, typename T6, 
              typename T7, typename T8, typename T9, 
              typename T10>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5, T6 arg_6, 
                                               T7 arg_7, T8 arg_8, T9 arg_9, 
                                               T10 arg_10) 
@@ -159,7 +159,7 @@ namespace more {
              typename T4, typename T5, typename T6, 
              typename T7, typename T8, typename T9, 
              typename T10, typename T11>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5, T6 arg_6, 
                                               T7 arg_7, T8 arg_8, T9 arg_9, 
                                               T10 arg_10, T11 arg_11) 
@@ -177,7 +177,7 @@ namespace more {
              typename T4, typename T5, typename T6, 
              typename T7, typename T8, typename T9, 
              typename T10, typename T11, typename T12>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5, T6 arg_6, 
                                               T7 arg_7, T8 arg_8, T9 arg_9, 
                                               T10 arg_10, T11 arg_11, T12 arg_12) 
@@ -196,7 +196,7 @@ namespace more {
              typename T7, typename T8, typename T9, 
              typename T10, typename T11, typename T12, 
              typename T13>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5, T6 arg_6, 
                                               T7 arg_7, T8 arg_8, T9 arg_9, 
                                               T10 arg_10, T11 arg_11, T12 arg_12, 
@@ -216,7 +216,7 @@ namespace more {
              typename T7, typename T8, typename T9, 
              typename T10, typename T11, typename T12, 
              typename T13, typename T14>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5, T6 arg_6, 
                                               T7 arg_7, T8 arg_8, T9 arg_9, 
                                               T10 arg_10, T11 arg_11, T12 arg_12, 
@@ -236,7 +236,7 @@ namespace more {
              typename T7, typename T8, typename T9, 
              typename T10, typename T11, typename T12, 
              typename T13, typename T14, typename T15>
-             static inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
+    inline std::string sprint(const char *fmt, T1 arg_1, T2 arg_2, T3 arg_3, 
                                               T4 arg_4, T5 arg_5, T6 arg_6, 
                                               T7 arg_7, T8 arg_8, T9 arg_9, 
                                               T10 arg_10, T11 arg_11, T12 arg_12, 

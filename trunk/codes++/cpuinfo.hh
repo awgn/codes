@@ -15,6 +15,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <string>
+#include <cstdlib>
 #include <map>
 
 namespace proc

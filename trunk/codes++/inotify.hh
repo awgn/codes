@@ -48,7 +48,8 @@ namespace Linux {
         {}
     }; 
 
-    std::ostream &operator<<(std::ostream &o, const Inotify_event &i){
+    static inline std::ostream &
+    operator<<(std::ostream &o, const Inotify_event &i){
 
         o << "inotify_event:\n";
         o << "  wd     :" << std::dec << i.wd     << std::endl;

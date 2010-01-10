@@ -213,9 +213,9 @@ namespace more {
     void swap (Timeval& x, Timeval& y) 
     { x.swap(y); }
 
-    static inline
-    std::ostream &
-    operator<<(std::ostream &out, const more::Timeval &value)
+    template <typename CharT, typename Traits>
+    inline std::basic_ostream<CharT,Traits> &
+    operator<<(std::basic_ostream<CharT,Traits> &out, const more::Timeval &value)
     {
         out << "{ .sec=" << value.tv_sec() << 
         " .usec=" << value.tv_usec() << " }";

@@ -23,7 +23,7 @@ main(int argc, char *argv[])
         sstr >> more::ignore_line;  // <- ignore_line
 
         more::token_string tok("\n: "); // <- token_string
-        while ( sstr >> tok)
+        while (sstr >> tok)
         {
             std::cout << more::spaces(4) << "token_string: [" << tok.str() << "]" << std::endl;  // <- spaces
         }
@@ -36,7 +36,7 @@ main(int argc, char *argv[])
         sstr >> more::ignore_line;  // <- ignore_line
 
         more::token_line line; // <- token_line
-        while ( sstr >> line)
+        while (sstr >> line)
         {
             std::cout << more::spaces(6) << "token_line: [" << line.str() << "]" << std::endl;  // <- spaces
         }

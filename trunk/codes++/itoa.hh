@@ -16,13 +16,13 @@
 
 namespace more {
     template <typename T>
-    static inline std::string itoa(const T &value, const char *format) {
+    inline std::string itoa(const T &value, const char *format) {
             char buff[32];
             snprintf(buff,32, format, value);
             return buff;
         }
     template <typename T> 
-    static inline std::string itoa(const T &value) {
+    inline std::string itoa(const T &value) {
         class template_not_fully_specified;
         template_not_fully_specified();
         return std::string();

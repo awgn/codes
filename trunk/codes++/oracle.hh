@@ -408,8 +408,9 @@ namespace more {
             return oracle_helper::demangle(typeid(E).name());
         }
 
-        friend std::ostream &
-        operator<< (std::ostream &out, const oracle &s)
+        template <typename CharT, typename Traits>
+        friend inline std::basic_ostream<CharT,Traits> &
+        operator<< (std::basic_ostream<CharT, Traits> &out, const oracle &s)
         {
             out << '(' << std::setw(3) << s._M_value << ' ' << std::setw(10) << &s << ')' << std::dec;
             return out;
@@ -516,9 +517,9 @@ namespace more {
         
     };
 
-    template <typename E> 
-    std::ostream &
-    operator<< (std::ostream &out, const oracle_trace<E> &s)
+    template <typename CharT, typename Traits, typename E>
+    inline std::basic_ostream<CharT,Traits> &
+    operator<< (std::basic_ostream<CharT, Traits> &out, const oracle_trace<E> &s)
     {
         s.printon(out); 
         return out;

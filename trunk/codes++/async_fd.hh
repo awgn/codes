@@ -20,10 +20,11 @@
 #include <poll.h>
 
 #include <tr1/type_traits>
+#include <iostream>
 #include <algorithm>
 #include <iterator>
-#include <vector>
 #include <cassert>
+#include <vector>
 #include <set>
 
 #include <error.hh>
@@ -670,70 +671,70 @@ namespace more {
     /////////////////////////// free function wrappers...
 
     template <typename R, typename W>
-    static inline
+    inline
     ssize_t read(async_fd<R,W> &bfd, void *buf, size_t count)
     {
         return bfd.read(buf,count);
     }
 
     template <typename R, typename W>
-    static inline
+    inline
     ssize_t write(async_fd<R,W> &bfd, const void *buf, size_t count)
     {
         return bfd.write(buf,count);
     }
 
     template <typename R, typename W>
-    static inline
+    inline
     ssize_t readv(async_fd<R,W> &bfd, const struct iovec *iov, int iovcnt)
     {
         return bfd.readv(iov, iovcnt);        
     }
 
     template <typename R, typename W>
-    static inline
+    inline
     ssize_t writev(async_fd<R,W> &bfd, const struct iovec *iov, int iovcnt)
     {
         return bfd.writev(iov, iovcnt);        
     }
 
     template <typename R, typename W>
-    static inline
+    inline
     ssize_t recv(async_fd<R,W> &bfd, void *buf, size_t len, int flags)
     {
         return bfd.recv(buf, len, flags);
     }
 
     template <typename R, typename W>
-    static inline
+    inline
     ssize_t recvfrom(async_fd<R,W> &bfd, void *buf, size_t len, int flags, struct sockaddr *from, socklen_t *fromlen)
     {
         return bfd.recvfrom(buf, len, flags, from, fromlen);
     }
 
     template <typename R, typename W>
-    static inline
+    inline
     ssize_t recvmsg(async_fd<R,W> &bfd, struct msghdr *msg, int flags)
     {
         return bfd.recvmsg(msg, flags);
     }
 
     template <typename R, typename W>
-    static inline
+    inline
     ssize_t send(async_fd<R,W> &bfd, const void *buf, size_t len, int flags)
     {
         return bfd.send(buf, len, flags);
     }
 
     template <typename R, typename W>
-    static inline
+    inline
     ssize_t sendto(async_fd<R,W> &bfd, const void *buf, size_t len, int flags, const struct sockaddr *to, socklen_t tolen)
     {
         return bfd.sendto(buf, len, flags, to, tolen);
     }
 
     template <typename R, typename W>
-    static inline
+    inline
     ssize_t sendmsg(async_fd<R,W> &bfd, const struct msghdr *msg, int flags)
     {
         return bfd.sendmsg(msg, flags);

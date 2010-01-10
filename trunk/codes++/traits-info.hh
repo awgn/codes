@@ -60,9 +60,9 @@ namespace more {
     template <typename T>
     struct traits_info
     {
-        friend
-        std::ostream &
-        operator<<(std::ostream &out, const traits_info<T> &)
+        template <typename CharT, typename Traits>
+        friend inline std::basic_ostream<CharT,Traits> &
+        operator<<(std::basic_ostream<CharT,Traits> &out, const traits_info<T> &)
         {
             out << std::boolalpha <<
             __dump_trait_type(is_void,T) << std::endl <<

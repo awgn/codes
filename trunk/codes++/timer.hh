@@ -159,8 +159,9 @@ namespace more { namespace time {
             return ::getitimer(WHICH,value); 
         }
 
-        friend std::ostream &
-        operator<<(std::ostream &out, itimer &rhs)
+        template <typename CharT, typename Traits>
+        friend inline std::basic_ostream<CharT,Traits> &
+        operator<<(std::basic_ostream<CharT, Traits> &out, const itimer &rhs)
         {
             out << "itimerval:{ value:{" << rhs._M_its.it_value.tv_sec  << ',' << 
                                 rhs._M_its.it_value.tv_usec << 
@@ -360,8 +361,9 @@ namespace more { namespace time {
                 throw more::syscall_error(std::string("timer",errno));
         }
 
-        friend std::ostream &
-        operator<<(std::ostream &out, rt_timer &rhs)
+        template <typename CharT, typename Traits>
+        friend inline std::basic_ostream<CharT,Traits> &
+        operator<<(std::basic_ostream<CharT,Traits> &out, const rt_timer &rhs)
         {
             out << "itimerspec:{ value:{" << rhs._M_its.it_value.tv_sec  << ',' << 
                                 rhs._M_its.it_value.tv_nsec << 
