@@ -109,10 +109,10 @@ namespace more {
         template <typename P>
         void ctor(more::cursor<P> &cur, header_helper::int2type<0>)
         {
+            if ( cur.size() < T::min_size )
+                throw std::range_error("T::size() [min_header size]");
+
             ssize_t n = _M_value.size(cur.size());
-            if ( cur.size() < n)
-                throw std::range_error("T::size() [dynamic size]");
-            
             cur += n;
         }
 
@@ -122,7 +122,6 @@ namespace more {
             ssize_t n = _M_value.size(cur.size(), size);
             if (cur.size() < n)
                 throw std::range_error("T::size() [dynamic size]");
-
             cur += n;
         }
 
@@ -141,7 +140,7 @@ namespace more {
         }
 
         template <typename P>
-        header(more::cursor<P> & cur, ssize_t size /* force the header size */ )
+        header(more::cursor<P> & cur, ssize_t size /* set the header size */ )
         : _M_value( const_cast< 
                         typename header_helper::remove_const_if< 
                             std::tr1::is_const<T>::value, P
@@ -244,7 +243,9 @@ namespace net {
     class ethernet
     {
     public:
-        static const int static_size = sizeof(ether_header);
+        static const int static_size = sizeof(ether_header);    // static size
+        static const int min_size = sizeof(ether_header);       // min size
+
         friend class more::header<ethernet>;
 
         template <typename T>
@@ -336,7 +337,9 @@ namespace net {
     class ipv4
     {
     public:
-        static const int static_size = 0;   // dynamic size
+        static const int static_size = 0;            // dynamic size
+        static const int min_size = sizeof(iphdr);   // min size
+
         friend class ::more::header<ipv4>;
 
         template <typename T>
@@ -486,6 +489,8 @@ namespace net {
     {
     public:
         static const int static_size = sizeof(udphdr);   // static size
+        static const int min_size = sizeof(udphdr);      // min size
+
         friend class more::header<udp>;
 
         template <typename T>
@@ -544,7 +549,9 @@ namespace net {
             uint16_t length;
         } __attribute__((packed));
 
-        static const int static_size = 0;   // dynamic size
+        static const int static_size = 0;                // dynamic size
+        static const int min_size = sizeof(tcphdr);      // min size
+
         friend class more::header<tcp>;
 
         template <typename T>
@@ -661,6 +668,13 @@ namespace net {
             // fin(false);
         }
 
+        uint8_t 
+        flags(raw) const 
+        {
+            return *(reinterpret_cast<char *>(_H_) + 13);
+        }
+
+
         attr_reader_uint16(window);
         attr_writer_uint16(window);
 
@@ -767,6 +781,8 @@ namespace net {
     {
     public:
         static const int static_size = sizeof(icmphdr);   // static size
+        static const int min_size = sizeof(icmphdr);      // min size
+
         friend class more::header<icmp>;
 
         template <typename T>
@@ -827,6 +843,8 @@ namespace net {
 
     public:
         static const int static_size = sizeof(np_packet_hdr);   // static size
+        static const int min_size = sizeof(np_packet_hdr);      // min size
+
         friend class more::header<np_packet>;
 
         template <typename T>
