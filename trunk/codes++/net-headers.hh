@@ -25,7 +25,7 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
-#include <cursor.hh>
+#include <cursor.hh>    // more
 
 namespace more {
 
@@ -86,7 +86,7 @@ namespace more {
         void ctor( more::cursor<P> &cur, header_helper::int2type<N>)
         {
             if (cur.size() < N)
-                throw std::range_error("T::static_size");
+                throw std::range_error(T::__name::str().append("::static_size"));
            
             cur += N; 
         }
@@ -95,10 +95,10 @@ namespace more {
         void ctor( more::cursor<P> &cur, ssize_t size, header_helper::int2type<N>)
         {
             if ( cur.size() < N)
-                throw std::range_error("T::static_size");
+                throw std::range_error(T::__name::str().append("::static_size"));
             
             if ( size && size != N )
-                throw std::range_error("size != T::static_size");
+                throw std::range_error(std::string("size != ").append(T::__name::str()).append("::static_size"));
 
             cur += N;
         }
@@ -109,8 +109,8 @@ namespace more {
         template <typename P>
         void ctor(more::cursor<P> &cur, header_helper::int2type<0>)
         {
-            if ( cur.size() < T::min_size )
-                throw std::range_error("T::size() [min_header size]");
+            if ( cur.size() < T::__min_size )
+                throw std::range_error(std::string(T::__name::str()).append("::size() [minimal size]"));
 
             ssize_t n = _M_value.size(cur.size());
             cur += n;
@@ -121,7 +121,7 @@ namespace more {
         {
             ssize_t n = _M_value.size(cur.size(), size);
             if (cur.size() < n)
-                throw std::range_error("T::size() [dynamic size]");
+                throw std::range_error(std::string(T::__name::str()).append("::size() [dynamic size]"));
             cur += n;
         }
 
@@ -136,7 +136,7 @@ namespace more {
             header_helper::compile_time_assert<sizeof(P) == 1> 
                 multi_bytes_cursor_not_allowed __attribute__((unused));
 
-            ctor(cur, header_helper::int2type<T::static_size>());
+            ctor(cur, header_helper::int2type<T::__static_size>());
         }
 
         template <typename P>
@@ -149,7 +149,7 @@ namespace more {
             header_helper::compile_time_assert<sizeof(P) == 1> 
                 multi_bytes_cursor_not_allowed __attribute__((unused));
 
-            ctor(cur, size, header_helper::int2type<T::static_size>());
+            ctor(cur, size, header_helper::int2type<T::__static_size>());
         }
 
 
@@ -243,8 +243,17 @@ namespace net {
     class ethernet
     {
     public:
-        static const int static_size = sizeof(ether_header);    // static size
-        static const int min_size = sizeof(ether_header);       // min size
+        static const int   __static_size = sizeof(ether_header);    // static size
+        static const int   __min_size = sizeof(ether_header);       // min size
+
+        struct __name
+        {
+            static inline
+            std::string str() 
+            {
+                return "ether";
+            }
+        };
 
         friend class more::header<ethernet>;
 
@@ -337,8 +346,17 @@ namespace net {
     class ipv4
     {
     public:
-        static const int static_size = 0;            // dynamic size
-        static const int min_size = sizeof(iphdr);   // min size
+        static const int __static_size = 0;            // dynamic size
+        static const int __min_size = sizeof(iphdr);   // min size
+
+        struct __name
+        {
+            static inline
+            std::string str() 
+            {
+                return "ipv4";
+            }
+        };
 
         friend class ::more::header<ipv4>;
 
@@ -488,8 +506,17 @@ namespace net {
     class udp
     {
     public:
-        static const int static_size = sizeof(udphdr);   // static size
-        static const int min_size = sizeof(udphdr);      // min size
+        static const int __static_size = sizeof(udphdr);   // static size
+        static const int __min_size = sizeof(udphdr);      // min size
+
+        struct __name
+        {
+            static inline
+            std::string str() 
+            {
+                return "udp";
+            }
+        };
 
         friend class more::header<udp>;
 
@@ -549,8 +576,17 @@ namespace net {
             uint16_t length;
         } __attribute__((packed));
 
-        static const int static_size = 0;                // dynamic size
-        static const int min_size = sizeof(tcphdr);      // min size
+        static const int __static_size = 0;                // dynamic size
+        static const int __min_size = sizeof(tcphdr);      // min size
+
+        struct __name
+        {
+            static inline
+            std::string str() 
+            {
+                return "tcp";
+            }
+        };
 
         friend class more::header<tcp>;
 
@@ -780,8 +816,18 @@ namespace net {
     class icmp 
     {
     public:
-        static const int static_size = sizeof(icmphdr);   // static size
-        static const int min_size = sizeof(icmphdr);      // min size
+        static const int __static_size = sizeof(icmphdr);   // static size
+        static const int __min_size = sizeof(icmphdr);      // min size
+
+        struct __name
+        {
+            static inline
+            std::string str() 
+            {
+                return "icmp";
+            }
+        };
+
 
         friend class more::header<icmp>;
 
@@ -842,8 +888,17 @@ namespace net {
         } __attribute__((packed));
 
     public:
-        static const int static_size = sizeof(np_packet_hdr);   // static size
-        static const int min_size = sizeof(np_packet_hdr);      // min size
+        static const int __static_size = sizeof(np_packet_hdr);   // static size
+        static const int __min_size = sizeof(np_packet_hdr);      // min size
+
+        struct __name
+        {
+            static inline
+            std::string str() 
+            {
+                return "np_mon";
+            }
+        };
 
         friend class more::header<np_packet>;
 
