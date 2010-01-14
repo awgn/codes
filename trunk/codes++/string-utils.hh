@@ -52,8 +52,8 @@ namespace more {
             const std::basic_string<CharT, Traits, Alloc>& __delim, bool do_escape = string_utils::escape_disabled)
     {
         std::ios_base::iostate __err = std::ios_base::goodbit;
-
-        const std::string::size_type n = __str.max_size();
+        
+        const typename std::basic_string<CharT, Traits, Alloc>::size_type n = __str.max_size();
         CharT c = __in.rdbuf()->sgetc();
         unsigned int extracted = 0;
 
@@ -62,7 +62,7 @@ namespace more {
 
         if (do_escape) {   
             while ( extracted < n && !Traits::eq(c,Traits::eof()) &&
-                    (__delim.find(c) == std::string::npos || esc) ) 
+                    (__delim.find(c) == std::basic_string<CharT,Traits,Alloc>::npos || esc) ) 
             {
                 if ( Traits::eq(c, '\\') && !esc) {
                     esc = true;
@@ -72,7 +72,7 @@ namespace more {
 
                 if (esc) {
                     esc = false;
-                    if (__delim.find(c) == std::string::npos && c !='\\') {
+                    if (__delim.find(c) == std::basic_string<CharT,Traits,Alloc>::npos && !Traits::eq(c,'\\') ) {
                         __str += '\\'; 
                         ++extracted;
                     }
@@ -84,7 +84,7 @@ namespace more {
             }
         } else {
             while ( extracted < n && !Traits::eq(c,Traits::eof()) &&
-                    __delim.find(c) == std::string::npos ) 
+                    __delim.find(c) == std::basic_string<CharT,Traits,Alloc>::npos ) 
             {
                 __str += c;
                 ++extracted;
@@ -93,7 +93,7 @@ namespace more {
         }
 
         while ( !Traits::eq(c, Traits::eof()) &&
-                __delim.find(c) != std::string::npos )
+                __delim.find(c) != std::basic_string<CharT,Traits,Alloc>::npos )
         {
             ++extracted;
             c = __in.rdbuf()->snextc();    
