@@ -14,7 +14,6 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <cstring>
 #include <cctype>
 
 #include <algorithm>
@@ -275,10 +274,18 @@ namespace more {
     // casecompare
     //
 
+    struct case_equal_op : public std::binary_function<std::string::value_type, std::string::value_type, bool>
+    {
+        bool operator()(std::string::value_type a, std::string::value_type b) const
+        {
+            return ::toupper(a) == ::toupper(b);
+        }
+    };
+
     static inline bool
     casecmp(const std::string &a, const std::string &b)
     {
-        return ::strcasecmp(a.c_str(), b.c_str()) == 0;
+        return std::equal(a.begin(), a.end(), b.begin(), case_equal_op());
     }
 
     // capitalize
