@@ -8,100 +8,74 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef CPUINFO_HH
-#define CPUINFO_HH
+#ifndef _CPUINFO_HH_
+#define _CPUINFO_HH_ 
 
-#include <iostream>
 #include <fstream>
 #include <stdexcept>
 #include <string>
-#include <cstdlib>
+#include <vector>
 #include <map>
 
-namespace proc
-{
-    template <int CPU_MAX=16>
+#include <iomanip.hh>       // more
+#include <string-utils.hh>  // more
+
+namespace more { namespace proc { 
+
     class cpuinfo
-    {
-        struct adaptor 
-        {
-            std::string _M_value;
-
-            adaptor(const std::string &x) 
-            : _M_value(x) 
-            {}
-
-            operator std::string()
-            {
-                return _M_value;
-            }
-            operator int()
-            {
-                int r = ::strtol(_M_value.c_str(), NULL, 0);
-                return r;
-            }
-            operator double()
-            {
-                double r = ::strtod(_M_value.c_str(), NULL);
-                return r;
-            }
-            operator long double()
-            {
-                long double r = ::strtold(_M_value.c_str(), NULL);
-                return r;
-            }
-        };
-
-        typedef std::map<std::string, adaptor> cpu_map;
-
-        cpu_map _M_map[CPU_MAX];
-        int _M_processor;
-
-        static std::string trim (const std::string &orig)
-        {
-            std::string::size_type p1=orig.find_first_not_of(" \t");
-            if (p1==std::string::npos) return "";
-            std::string::size_type p2=orig.find_last_not_of(" \t");
-            return orig.substr(p1,p2-p1+1);
-        }
+    { 
+    private:
+        typedef std::map<std::string, std::string> map_type;
+        std::vector<map_type> _M_maps;
 
     public:
-        cpuinfo()
-        : _M_processor(0)
+        cpuinfo(const char *p = "/proc/cpuinfo")
+        : _M_maps()
         {
-            std::ifstream fin("/proc/cpuinfo");
-            std::string s;
-            while ( std::getline(fin,s) ) {
-                std::string::size_type p = s.find(':',0);
-                if (p == std::string::npos) {
-                    _M_processor++;
-                    continue;
+            std::ifstream pin(p);
+            if (!p)
+                throw std::runtime_error(p);     
+
+            more::string_token key(":");
+            more::string_token value("\n");
+
+            std::map<std::string,std::string> m;
+
+            while(pin >> key)
+            {
+                pin >> value;
+                more::trim(static_cast<std::string &>(key));
+                more::trim(static_cast<std::string &>(value));
+
+                if ( !static_cast<std::string &>(key).compare("processor")) {
+                    if (m.size())
+                        _M_maps.push_back(m);
+                    m.clear();
                 }
-
-                std::string tag( trim(s.substr(0,p)) );
-                std::string val( trim(s.substr(p+1)) );
-
-                adaptor second(val);
-                _M_map[_M_processor].insert( std::make_pair(tag, second) );
+                m.insert(std::make_pair(key,value));
             }
+
+            _M_maps.push_back(m);
         }
 
-        adaptor operator()(int p, const std::string &v)
+        std::string
+        operator()(std::vector<map_type>::size_type p, const std::string &k) const
         {
-            if ( p >= CPU_MAX || p >= _M_processor )
+            if ( p >= _M_maps.size() )
                 throw std::out_of_range("bad index");
-
-            typename cpu_map::iterator it = _M_map[p].find(adaptor(v));
-            if ( it == _M_map[p].end() )
+            map_type::const_iterator it = _M_maps[p].find(k);
+            if ( it == _M_maps[p].end() )
                 throw std::runtime_error("bad key");
             return (*it).second;
         }
 
+        int
+        size() const
+        { return _M_maps.size(); }
+
     };
-}
 
-// proc::cpuinfo<> cpu;
-// std::cout << static_cast<std::string>(cpu(1,"flags")) << std::endl;
+} // namespace proc
+} // namespace more
 
-#endif /* CPUINFO_HH */
-
+#endif /* _CPUINFO_HH_ */

@@ -15,22 +15,20 @@
 #include <cstdio>
 #include <string>
 #include <stdexcept>
-#include <cpuinfo.hh>
 
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <limits.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <time.h>
-#include <err.h>
+#include <cpuinfo.hh>       // more
+#include <timeval.hh>       // more
+#include <lexical_cast.hh>  // more
 
 // arch policies taken from the linux kernel 2.6/include/arch-.../
 //
 
 #if !defined(ULLONG_MAX) && ( defined(ARCH_i386) || defined(ARCH_X86_64) || defined(ARCH_IA64) )    
 #define ULLONG_MAX 18446744073709551615ULL
+#endif
+
+#if !defined(ARCH_i386) && !defined(ARCH_X86_64) && !defined(ARCH_IA64) && !defined(ARCH_PARISC)
+#error "No arch defined (ie: -DARCH_i386)"
 #endif
 
 namespace arch
@@ -68,63 +66,63 @@ namespace arch
         typedef unsigned long long cycles_t;
         static const cycles_t max = ULLONG_MAX;
 
-        #define rdtscll(val) do { \
-            unsigned int __a,__d; \
-            asm volatile("rdtsc" : "=a" (__a), "=d" (__d)); \
-            (val) = ((unsigned long)__a) | (((unsigned long)__d)<<32); \
-        } while(0)
+#define rdtscll(val) do { \
+    unsigned int __a,__d; \
+    asm volatile("rdtsc" : "=a" (__a), "=d" (__d)); \
+    (val) = ((unsigned long)__a) | (((unsigned long)__d)<<32); \
+} while(0)
 
-        static const cycles_t get_cycles () 
-        {
-            cycles_t ret;
-            rdtscll(ret);
-            return ret;
-        }
+static const cycles_t get_cycles () 
+{
+    cycles_t ret;
+    rdtscll(ret);
+    return ret;
+}
 #endif
-    };
+};
 
-    template <>
-    struct type<ia64>
-    {
+template <>
+struct type<ia64>
+{
 #ifdef ARCH_IA64
-        typedef unsigned long long cycles_t;
-        static const cycles_t max = ULLONG_MAX;
+    typedef unsigned long long cycles_t;
+    static const cycles_t max = ULLONG_MAX;
 
 #define ia64_getreg(num) ({ \
-        cycles_t ia64_res; \
-        asm volatile ("mov %o=ar%1" : "=r" (ia64_res) : "i" (num)); \
-        ia64_res; \
-        })
-        static inline cycles_t get_cycles ()
-        {
-            cycles_t ret;
-            ret = ia64_getreg( 44 /* AR_ITC */);
-            return ret;
-        }
-#endif
-    };
-
-    template <>
-    struct type<parisc>
+    cycles_t ia64_res; \
+    asm volatile ("mov %o=ar%1" : "=r" (ia64_res) : "i" (num)); \
+    ia64_res; \
+    })
+    static inline cycles_t get_cycles ()
     {
+        cycles_t ret;
+        ret = ia64_getreg( 44 /* AR_ITC */);
+        return ret;
+    }
+#endif
+};
+
+template <>
+struct type<parisc>
+{
 #ifdef ARCH_PARISC
-        typedef unsigned long cycles_t;
-        static const cycles_t max = ULONG_MAX;
+    typedef unsigned long cycles_t;
+    static const cycles_t max = ULONG_MAX;
 
 #define mfctl(reg) ({ \
-        unsigned long cr;  \
-        __asm__ __volatile__( \
-                "mfctl " #reg ",%0" : \
-                 "=r" (cr) \
-        ); \
-        cr; \
-        })
-        static inline cycles_t get_cycles ()
-        {
-            return mfctl(16);
-        }
+    unsigned long cr;  \
+    __asm__ __volatile__( \
+            "mfctl " #reg ",%0" : \
+            "=r" (cr) \
+            ); \
+    cr; \
+    })
+    static inline cycles_t get_cycles ()
+    {
+        return mfctl(16);
+    }
 #endif
-    };
+};
 
 } // namespace arch
 
@@ -134,67 +132,73 @@ namespace arch
     {
 
 #if   defined(ARCH_i386)
-        static const int T = arch::ia386; 
+        static const int Ty = arch::ia386; 
 #elif defined(ARCH_X86_64)
-        static const int T = arch::x86_64;
+        static const int Ty = arch::x86_64;
 #elif defined(ARCH_IA64)
-        static const int T = arch::ia64;
+        static const int Ty = arch::ia64;
 #elif defined(ARCH_PARISC)
-        static const int T = arch::parisc;
+        static const int Ty = arch::parisc;
 #endif
-        arch::type<T>::cycles_t hz;
+        arch::type<Ty>::cycles_t _M_hz;
 
         cpu(int sec=0) :
-        hz()
+        _M_hz()
         {
-            proc::cpuinfo<> cpu;
-            long double mhz = cpu(0,"cpu MHz");
-            hz = static_cast<arch::type<T>::cycles_t>(mhz*1000000);
+            more::proc::cpuinfo cpu;
+            long double mhz = more::lexical_cast<long double>(cpu(0,"cpu MHz"));
 
+            _M_hz = static_cast<arch::type<Ty>::cycles_t>(mhz*1000000);
             if ( sec == 0 )  // no clock estimation, use the one read from proc
                 return;
 
             // clock estimation (to detect speedstep and cool 'n quiet)  
 
-            struct timeval g1, g2;
+            more::Timeval g1 = more::Timeval::now();
+            arch::type<Ty>::cycles_t c1 = arch::type<Ty>::get_cycles();
 
-            ::gettimeofday(&g1,NULL);
-            arch::type<T>::cycles_t c1 = arch::type<T>::get_cycles();
             sleep(sec);
-            ::gettimeofday(&g2,NULL);
-            arch::type<T>::cycles_t c2 = arch::type<T>::get_cycles();
 
-            unsigned long long usec = (g2.tv_sec - g1.tv_sec) * 1000000 + g2.tv_usec - g1.tv_usec;
+            more::Timeval g2 = more::Timeval::now();
+            arch::type<Ty>::cycles_t c2 = arch::type<Ty>::get_cycles();
+
+            unsigned long long usec = (g2-g1).to_usec();
+
             long double ehz  = (long double)(c2-c1)/(long double)(usec)*1000000;
 
-            if ( static_cast<int>(ehz/1000000) == static_cast<int>(hz/1000000) ) 
+            if ( static_cast<int>(ehz/1000000) == static_cast<int>(_M_hz/1000000) ) 
                 return;
 
-            warnx("cpu scalable-clock (speedstep/cool 'n quiet) detected!");
+            std::clog << "cpu scalable-clock (speedstep/cool 'n quiet) detected!" << std::endl;
         }
 
     public:
-        typedef arch::type<T>::cycles_t cycles_t;
+        typedef arch::type<Ty>::cycles_t cycles_t;
 
-        static arch::type<T>::cycles_t Hz(int n=0) 
+        static 
+        arch::type<Ty>::cycles_t Hz(int n=0) 
         {   
             static cpu mycpu(n);
-            return mycpu.hz; 
+            return mycpu._M_hz; 
         }
-        static const arch::type<T>::cycles_t get_cycles()
+
+        static 
+        arch::type<Ty>::cycles_t get_cycles()
         {
-            return arch::type<T>::get_cycles();
+            return arch::type<Ty>::get_cycles();
         }
-        static const int type() 
+
+        static int type() 
         {
-            return T;
+            return Ty;
         }        
-        static int wait_until(const arch::type<T>::cycles_t &t)
+
+        static int wait_until(const arch::type<Ty>::cycles_t &t)
         {
-            if (arch::type<T>::get_cycles() >= t)
+            if (arch::type<Ty>::get_cycles() >= t)
                 return -1;
 
-            while (arch::type<T>::get_cycles() < t);
+            while (arch::type<Ty>::get_cycles() < t);
             return 0;
         }
 
