@@ -35,7 +35,7 @@ namespace more { namespace yacpp {
 
     struct comment_type {};
 
-    // return true is pos is inside a literal string
+    // predicate that return true if pos is inside a literal
     //
 
     static inline
@@ -55,7 +55,7 @@ namespace more { namespace yacpp {
         return ret;
     }
 
-    // find a substring in source code (not in literals)
+    // find the substring in source code (and not in literals)
     //
 
     static inline
