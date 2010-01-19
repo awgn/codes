@@ -46,7 +46,7 @@ main(int argc, char *argv[])
 
         arch::cpu::cycles_t a2 = arch::cpu::get_cycles();
         
-        printf("%d\n", a2-a1);
+        printf("%llu\n", a2-a1);
     }
  
 
@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 
         arch::cpu::cycles_t a2 = arch::cpu::get_cycles();
         
-        printf("%d\n", a2-a1);
+        printf("%llu\n", a2-a1);
     }
     
     // test2...
@@ -75,7 +75,7 @@ main(int argc, char *argv[])
 
         arch::cpu::cycles_t a2 = arch::cpu::get_cycles();
 
-        printf("%d\n", a2-a1);
+        printf("%llu\n", a2-a1);
     }
 
     // test3
@@ -89,7 +89,7 @@ main(int argc, char *argv[])
 
         arch::cpu::cycles_t a2 = arch::cpu::get_cycles();
 
-        printf("%d\n", a2-a1);
+        printf("%llu\n", a2-a1);
     }
 
     return 0;
