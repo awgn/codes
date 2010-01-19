@@ -29,7 +29,7 @@ main(int argc, char *argv[])
     // load the heaps with 1000 random values:
 
     srand(0xcafebabe);
-    for(int i=0; i < 1000; ++i) {
+    for(int i=0; i < 5000; ++i) {
         int r = rand();
         test1.push(r, 0);
         test2.push(r, 0);
@@ -38,6 +38,7 @@ main(int argc, char *argv[])
 
     // test0: just the rand...
 
+    srand(0xdeadbeef);
     for(int i=0; i < 10000; ++i) 
     {
         arch::cpu::cycles_t a1 = arch::cpu::get_cycles();
@@ -52,6 +53,7 @@ main(int argc, char *argv[])
 
     // test1...
 
+    srand(0xdeadbeef);
     for(int i=0; i < 10000; ++i) 
     {
         arch::cpu::cycles_t a1 = arch::cpu::get_cycles();
@@ -61,11 +63,13 @@ main(int argc, char *argv[])
 
         arch::cpu::cycles_t a2 = arch::cpu::get_cycles();
         
+        // printf("%d\n", v.first );
         printf("%llu\n", a2-a1);
     }
     
     // test2...
     
+    srand(0xdeadbeef);
     for(int i=0; i < 10000; ++i) 
     {
         arch::cpu::cycles_t a1 = arch::cpu::get_cycles();
@@ -75,6 +79,7 @@ main(int argc, char *argv[])
 
         arch::cpu::cycles_t a2 = arch::cpu::get_cycles();
 
+        // printf("%d\n", v.first );
         printf("%llu\n", a2-a1);
     }
 
@@ -89,6 +94,7 @@ main(int argc, char *argv[])
 
         arch::cpu::cycles_t a2 = arch::cpu::get_cycles();
 
+        // printf("%d\n", v.first );
         printf("%llu\n", a2-a1);
     }
 
