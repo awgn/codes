@@ -81,6 +81,10 @@ namespace more {
             const std::pair<K,V> &
             next() const
             { return _M_cont.front(); }
+
+            bool
+            empty() const
+            { return _M_cont.empty(); } 
         };
 
     };
@@ -134,6 +138,10 @@ namespace more {
             next() const
             { return * _M_cont.begin(); }
 
+            bool
+            empty() const
+            { return _M_cont.empty(); } 
+ 
         };
     };
 
