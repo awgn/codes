@@ -11,8 +11,8 @@
 #ifndef NUMERIC_HH
 #define NUMERIC_HH
 
-namespace mtp 
-{
+namespace more { namespace mumeric {
+
     template <typename T, T a, T b>
     struct max 
     { 
@@ -187,5 +187,6 @@ namespace mtp
     };
 
 } // namespace numeric
+} // namespace more
 
 #endif /* NUMERIC_HH */

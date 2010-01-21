@@ -18,7 +18,7 @@
 #include <iostream>
 #include <string>
 
-namespace mtp {
+namespace more { namespace mtp {
 
     class null  {};
     struct empty {};
@@ -126,6 +126,7 @@ namespace mtp {
         typedef typename FalseType::type type;
     };
 
-}
+} // namepsace mtp
+} // namespace more
 
 #endif /* MTP_HH */

@@ -86,7 +86,7 @@ namespace std {
     //
 
     template <typename CharT, typename Traits, typename T>
-    inline typename mtp::enable_if_c< more::traits::is_container<T>::value && 
+    inline typename more::mtp::enable_if_c< more::traits::is_container<T>::value && 
     !tr1::is_same<typename std::string,T>::value, 
            std::basic_ostream<CharT,Traits> >::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)

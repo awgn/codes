@@ -87,7 +87,7 @@ namespace more {
                          unsigned long int, long int,
                          unsigned long long int, long long int) valid_tlist;
 
-        typename mtp::TL::has_type<valid_tlist, T>::type _M_data;
+        typename more::tl::has_type<valid_tlist, T>::type _M_data;
 
     };
 

@@ -61,7 +61,7 @@ namespace more {
     }
 
     static inline 
-    void ecma_parameter(std::ostream &, mtp::TL::null)
+    void ecma_parameter(std::ostream &, more::tl::null)
     {}
 
     template <typename T>

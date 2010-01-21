@@ -203,7 +203,7 @@ namespace std {
     // operator<< for tuple: (enabled if T is a tuple<>)... 
 
     template <typename CharT, typename Traits, typename T>
-    typename mtp::enable_if< more::traits::is_tuple<T>, std::basic_ostream<CharT,Traits> >::type &
+    typename more::mtp::enable_if< more::traits::is_tuple<T>, std::basic_ostream<CharT,Traits> >::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T & rhs)
     {
         out << "< ";
