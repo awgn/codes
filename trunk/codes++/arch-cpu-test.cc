@@ -21,9 +21,11 @@ main(int argc, char *argv[])
 
     std::tr1::shared_ptr<const cpufreq_policy> p = cpu0.policy();
 
-    std::cout << "min: " << p->min << std::endl;
-    std::cout << "max: " << p->max << std::endl;
-    std::cout << "gov: " << p->governor << std::endl;
+    if (p) {
+        std::cout << "min: " << p->min << std::endl;
+        std::cout << "max: " << p->max << std::endl;
+        std::cout << "gov: " << p->governor << std::endl;
+    }
 
     std::cout << "governors: ";
     const std::list<std::string> & govs = cpu0.available_governors();
