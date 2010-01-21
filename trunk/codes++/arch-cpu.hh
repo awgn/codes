@@ -175,6 +175,14 @@ namespace more { namespace arch {
             return Ty;
         }        
 
+        static
+        arch::asm_policy<Ty>::cycles_t 
+        Hz(int n = 0)
+        {
+            arch::asm_policy<Ty>::cycles_t hz = static_cast<arch::asm_policy<Ty>::cycles_t>(cpu(n).freq_hardware()) * 1000;
+            return hz;
+        }
+
         /************************************** 
                  cpufreq library wrapper 
          **************************************/       
