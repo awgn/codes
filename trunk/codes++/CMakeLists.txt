@@ -102,6 +102,7 @@ add_executable(type_traits_test type_traits-test.cc)
 add_executable(typelist-test typelist-test.cc)
 add_executable(typemap-test typemap-test.cc)
 add_executable(variant-test variant-test.cc)
+add_executable(yaccp-test yacpp-test.cc)
 
 target_link_libraries(arch-cpu-test -lcpufreq)
 target_link_libraries(pcap-test -lpcap)
