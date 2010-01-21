@@ -222,11 +222,11 @@ namespace more { namespace arch {
          * returns 0 on failure, else transition latency in 10^(-9) s = nanoseconds
          */
 
-        unsigned long
-        transition_latency() const
-        {
-            return cpufreq_get_transition_latency(_M_cpu);
-        }
+        // unsigned long
+        // transition_latency() const
+        // {
+        //     return cpufreq_get_transition_latency(_M_cpu);
+        // }
 
         /* determine hardware CPU frequency limits
          *
