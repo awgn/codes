@@ -1,4 +1,18 @@
 cmake_minimum_required(VERSION 2.4)
+
+include(CheckIncludeFiles)
+
+CHECK_INCLUDE_FILES(cpufreq.h HAVE_CPUFREQ_H)
+CHECK_INCLUDE_FILES(pcap.h HAVE_PCAP_H)
+
+if (NOT "${HAVE_CPUFREQ_H}" STREQUAL "1" )
+    message(FATAL_ERROR "libcpufreq-dev package not installed...")
+endif (NOT "${HAVE_CPUFREQ_H}" STREQUAL "1" )
+
+if (NOT ${HAVE_PCAP_H})
+    message(FATAL_ERROR "libpcap-dev package not installed...")
+endif(NOT ${HAVE_PCAP_H})
+
 include_directories(.)
 
 add_definitions(-DARCH_i386 -DMORE_USE_TR1_SHARED_PTR -DMORE_USE_GNU_MUTEX)
@@ -89,6 +103,7 @@ add_executable(typelist-test typelist-test.cc)
 add_executable(typemap-test typemap-test.cc)
 add_executable(variant-test variant-test.cc)
 
+target_link_libraries(arch-cpu-test -lcpufreq)
 target_link_libraries(pcap-test -lpcap)
 target_link_libraries(pcap-test-header -lpcap)
 target_link_libraries(semaphore-test -pthread)
