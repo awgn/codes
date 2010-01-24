@@ -25,11 +25,11 @@ int
 main(int argc, char *argv[])
 {
     more::random_access::vector_heap< int, int > test1;
-    more::random_access::deque_heap< int, int > test2;
-    more::redblack::heap<int, int> test3;
+    more::random_access::priority_queue_heap< int, int > test2;
+    more::random_access::deque_heap< int, int > test3;
+    more::redblack::heap<int, int> test4;
   
     int how_many = more::lexical_cast<int>(argv[1]);
-
 
     // load the heaps with 1000 random values:
 
@@ -39,6 +39,7 @@ main(int argc, char *argv[])
         test1.push(r, 0);
         test2.push(r, 0);
         test3.push(r, 0);
+        test4.push(r, 0);
     }
 
     // test0: just the rand...
@@ -102,6 +103,22 @@ main(int argc, char *argv[])
         // printf("%d\n", v.first );
         printf("%llu\n", a2-a1);
     }
+
+    // test4
+
+    for(int i=0; i < how_many/2; ++i) 
+    {
+        more::arch::cpu::cycles_type a1 = more::arch::cpu::get_cycles();
+
+        test4.push(rand(), 0);
+        std::pair<int, int> v = test4.pop();
+
+        more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
+
+        // printf("%d\n", v.first );
+        printf("%llu\n", a2-a1);
+    }
+
 
     return 0;
 }

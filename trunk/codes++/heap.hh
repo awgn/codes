@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <vector>
 #include <deque>
+#include <queue>
 #include <map>
 
 namespace more { 
@@ -82,11 +83,11 @@ namespace more {
             }
 
             value_type &
-            next() 
+            top() 
             { return _M_cont.front(); }
 
             const value_type &
-            next() const
+            top() const
             { return _M_cont.front(); }
 
             bool
@@ -103,6 +104,77 @@ namespace more {
 
         template <typename K, typename V>
         struct deque_heap : public base_heap<K, V, std::deque> {};
+
+
+        // std::priority_queue adapter...
+        //
+
+        template <typename K, typename V>
+        struct priority_queue_heap 
+        {        
+        public:
+            typedef K               key_type;
+            typedef V               mapped_type;
+            typedef std::pair<K,V>  value_type;
+
+        private:
+            // compare predicate...
+            //
+            struct comp : std::binary_function<value_type,value_type,bool>
+            {
+                bool operator()(const value_type &a, const value_type &b) const
+                {
+                    return a.first > b.first;
+                }
+            };
+
+            std::priority_queue<value_type, std::vector<value_type>, comp>  _M_pq;
+
+        public:
+            priority_queue_heap()
+            : _M_pq()
+            {
+                // std::make_heap()
+            }
+
+            ~priority_queue_heap()
+            {} 
+
+            void 
+            push(const key_type &key, const mapped_type &value)
+            {
+                _M_pq.push(std::make_pair(key,value));
+            }
+
+            value_type
+            pop()
+            {
+                const value_type ret = _M_pq.top(); 
+                _M_pq.pop();   
+                return ret; 
+            }
+
+            mapped_type 
+            pop_value()
+            {
+                V ret = _M_pq.top().second; 
+                _M_pq.pop();   
+                return ret; 
+            }
+
+            value_type &
+            top() 
+            { return _M_pq.top(); }
+
+            const value_type &
+            top() const
+            { return _M_pq.top(); }
+
+            bool
+            empty() const
+            { return _M_pq.empty(); } 
+
+        };
     }
 
     // SGI: A heap is a particular way of ordering the elements in a range [f, l)
@@ -152,11 +224,11 @@ namespace more {
             }
 
             value_type &
-            next() 
+            top() 
             { return * _M_cont.begin(); }
 
             const value_type &
-            next() const
+            top() const
             { return * _M_cont.begin(); }
 
             bool
