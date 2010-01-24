@@ -8,37 +8,23 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <arch-cpu.hh>
 
 #include <algorithm>
 #include <iterator>
+#include <iostream>
+
+#include <arch-cpu.hh>
 
 int
 main(int argc, char *argv[])
 {
-    more::arch::cpu cpu0(0);
-    std::cout << "tsc: " << more::arch::cpu::get_cycles() << std::endl;
+    std::cout << "current tsc: " << more::arch::cpu::get_cycles() << std::endl;
+    std::cout << "Hz : " << more::arch::cpu::Hz() << std::endl;
 
-    std::tr1::shared_ptr<const cpufreq_policy> p = cpu0.policy();
+    more::cpufreq(0).set_policy_governor("performance");
 
-    if (p) {
-        std::cout << "min: " << p->min << std::endl;
-        std::cout << "max: " << p->max << std::endl;
-        std::cout << "gov: " << p->governor << std::endl;
-    }
-
-    std::cout << "governors: ";
-    const std::list<std::string> & govs = cpu0.available_governors();
-    std::copy(govs.begin(), govs.end(), std::ostream_iterator<std::string>(std::cout, " "));
-    std::cout << std::endl;
-
-    std::cout << "frequencies: ";
-    const std::list<unsigned long> & freq = cpu0.available_frequencies();
-    std::copy(freq.begin(), freq.end(), std::ostream_iterator<unsigned long>(std::cout, " "));
-    std::cout << std::endl;
-
-    std::cout << "setting governor 'performance'..." << std::endl;
-    cpu0.set_policy_governor("performance");
+    std::cout << "...refresh Hz: " << more::arch::cpu::Hz(0) << std::endl; // recalc
+    std::cout << "Hz : " << more::arch::cpu::Hz() << std::endl;
 
     return 0;
 }

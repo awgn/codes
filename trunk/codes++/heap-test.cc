@@ -17,19 +17,24 @@
 
 #include <heap.hh>
 #include <tuplarr.hh>
+
 #include <arch-cpu.hh>
+#include <lexical_cast.hh>
 
 int
 main(int argc, char *argv[])
 {
-    more::random_access::heap< int, int, std::vector> test1;
-    more::random_access::heap< int, int, std::deque > test2;
+    more::random_access::vector_heap< int, int > test1;
+    more::random_access::deque_heap< int, int > test2;
     more::redblack::heap<int, int> test3;
-   
+  
+    int how_many = more::lexical_cast<int>(argv[1]);
+
+
     // load the heaps with 1000 random values:
 
     srand(0xcafebabe);
-    for(int i=0; i < 5000; ++i) {
+    for(int i=0; i < how_many/2; ++i) {
         int r = rand();
         test1.push(r, 0);
         test2.push(r, 0);
@@ -39,13 +44,13 @@ main(int argc, char *argv[])
     // test0: just the rand...
 
     srand(0xdeadbeef);
-    for(int i=0; i < 10000; ++i) 
+    for(int i=0; i < how_many/2; ++i) 
     {
-        more::arch::cpu::cycles_t a1 = more::arch::cpu::get_cycles();
+        more::arch::cpu::cycles_type a1 = more::arch::cpu::get_cycles();
         
         rand(); 
 
-        more::arch::cpu::cycles_t a2 = more::arch::cpu::get_cycles();
+        more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
         
         printf("%llu\n", a2-a1);
     }
@@ -54,14 +59,14 @@ main(int argc, char *argv[])
     // test1...
 
     srand(0xdeadbeef);
-    for(int i=0; i < 10000; ++i) 
+    for(int i=0; i < how_many/2; ++i) 
     {
-        more::arch::cpu::cycles_t a1 = more::arch::cpu::get_cycles();
+        more::arch::cpu::cycles_type a1 = more::arch::cpu::get_cycles();
         
         test1.push(rand(), 0);
         std::pair<int, int> v = test1.pop();
 
-        more::arch::cpu::cycles_t a2 = more::arch::cpu::get_cycles();
+        more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
         
         // printf("%d\n", v.first );
         printf("%llu\n", a2-a1);
@@ -70,14 +75,14 @@ main(int argc, char *argv[])
     // test2...
     
     srand(0xdeadbeef);
-    for(int i=0; i < 10000; ++i) 
+    for(int i=0; i < how_many/2; ++i) 
     {
-        more::arch::cpu::cycles_t a1 = more::arch::cpu::get_cycles();
+        more::arch::cpu::cycles_type a1 = more::arch::cpu::get_cycles();
 
         test2.push(rand(), 0);
         std::pair<int, int> v = test2.pop();
 
-        more::arch::cpu::cycles_t a2 = more::arch::cpu::get_cycles();
+        more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
 
         // printf("%d\n", v.first );
         printf("%llu\n", a2-a1);
@@ -85,14 +90,14 @@ main(int argc, char *argv[])
 
     // test3
 
-    for(int i=0; i < 10000; ++i) 
+    for(int i=0; i < how_many/2; ++i) 
     {
-        more::arch::cpu::cycles_t a1 = more::arch::cpu::get_cycles();
+        more::arch::cpu::cycles_type a1 = more::arch::cpu::get_cycles();
 
         test3.push(rand(), 0);
         std::pair<int, int> v = test3.pop();
 
-        more::arch::cpu::cycles_t a2 = more::arch::cpu::get_cycles();
+        more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
 
         // printf("%d\n", v.first );
         printf("%llu\n", a2-a1);

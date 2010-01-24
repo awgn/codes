@@ -23,13 +23,13 @@ namespace more {
     // A heap is a particular way of ordering the elements in a range of Random Access Iterators [f, l)
     // This heap implementation is based on the SGI algorithm make_heap/pop_heap/push_heap.
 
-    struct random_access {
+    namespace random_access {
 
-        template <typename K, typename V, template <typename Ty, typename Alloc = std::allocator<Ty> > class __cont = std::vector>
-        class heap
+        template <typename K, typename V, template <typename Ty, typename Alloc = std::allocator<Ty> > class _Cont>
+        class base_heap
         {
         private:
-            __cont< std::pair<K,V> >  _M_cont;
+            _Cont< std::pair<K,V> >  _M_cont;
 
             // compare predicate...
             struct comp : std::binary_function<std::pair<K,V>, std::pair<K,V>, bool>
@@ -41,13 +41,13 @@ namespace more {
             };
 
         public:
-            heap()
+            base_heap()
             : _M_cont()
             {
                 // make_heap()
             }
 
-            ~heap()
+            ~base_heap()
             {} 
 
             void 
@@ -85,15 +85,24 @@ namespace more {
             bool
             empty() const
             { return _M_cont.empty(); } 
+
         };
 
-    };
+        // template alias is not available...
+        //
+
+        template <typename K, typename V>
+        struct vector_heap : public  base_heap<K, V, std::vector> {};
+
+        template <typename K, typename V>
+        struct deque_heap : public base_heap<K, V, std::deque> {};
+    }
 
     // SGI: A heap is a particular way of ordering the elements in a range [f, l)
     // this heap implementation is based on std::map<>. Basically it's heap
     // implemented by means of a redblack tree. 
 
-    struct redblack {
+    namespace redblack {
 
         template <typename K, typename V>
         class heap
@@ -143,7 +152,7 @@ namespace more {
             { return _M_cont.empty(); } 
  
         };
-    };
+    }
 
 } // namespace more
 
