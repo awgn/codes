@@ -43,17 +43,17 @@ main(int argc, char *argv[])
 
     // test0: just the rand...
 
-    srand(0xdeadbeef);
-    for(int i=0; i < how_many/2; ++i) 
-    {
-        more::arch::cpu::cycles_type a1 = more::arch::cpu::get_cycles();
-        
-        rand(); 
+    // srand(0xdeadbeef);
+    // for(int i=0; i < how_many/2; ++i) 
+    // {
+    //     more::arch::cpu::cycles_type a1 = more::arch::cpu::get_cycles();
+    //     
+    //     rand(); 
 
-        more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
-        
-        printf("%llu\n", a2-a1);
-    }
+    //     more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
+    //     
+    //     printf("%llu\n", a2-a1);
+    // }
  
 
     // test1...
