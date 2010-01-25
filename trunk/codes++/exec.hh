@@ -20,6 +20,7 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
+#include <cstdio>
 #include <set>
 
 #include <sys/types.h>
@@ -36,31 +37,10 @@ namespace more {
         friend class exec_group;
 
     public:
+        enum fdnum { STDIN, STDOUT, STDERR };
+        
         typedef std::tr1::function<int(const char *, char * const[])> exec_type;
-    
-        enum { STDIN, STDOUT, STDERR };
-
-        struct child_fd
-        {
-            child_fd(int _fd, std::tr1::reference_wrapper<int> _ref)
-            : _M_fd(_fd),
-            _M_ref(_ref)
-            {}
-
-            int which() const
-            {
-                return _M_fd;
-            }
-
-            void to(int n)
-            {
-                _M_ref.get() = n;
-            }
-
-        private:
-            int _M_fd;
-            std::tr1::reference_wrapper<int> _M_ref;
-        };
+        typedef std::pair<enum fdnum, std::tr1::reference_wrapper<int> > redirect_type;
 
     public:
         exec(const std::string &arg0 = std::string(), exec_type ex = ::execv /* ::execvp */)
@@ -98,7 +78,7 @@ namespace more {
         {
             for(unsigned int i = 0; i < _M_redir.size(); i++)
             {
-                int fd = _M_redir[i].which();
+                int fd = _M_redir[i].first;
                 if ( _M_pipe.at(fd)[!fd] > fileno(stderr) )
                     ::close(_M_pipe.at(fd)[!fd]);
             }
@@ -141,7 +121,7 @@ namespace more {
             //
             for(unsigned int i = 0; i < _M_redir.size(); i++)
             {
-                int fd = _M_redir[i].which();
+                int fd = _M_redir[i].first;
                 if ( ::pipe( _M_pipe.at(fd) ) < 0 )
                     throw std::runtime_error(std::string("pipe: ").append(pretty_strerror(errno)));
             }
@@ -153,11 +133,9 @@ namespace more {
                 // 
                 for(unsigned int i=0; i < _M_redir.size(); i++)
                 {
-                    int fd = _M_redir[i].which();
-
+                    int fd = _M_redir[i].first;
                     ::close(_M_pipe.at(fd)[0]);
                     ::close(_M_pipe.at(fd)[1]);
-
                     _M_pipe.at(fd)[0] = 0;
                     _M_pipe.at(fd)[1] = 0;
                 }
@@ -169,7 +147,7 @@ namespace more {
 
                 for(unsigned int i=0; i < _M_redir.size(); i++)
                 {
-                    int fd = _M_redir[i].which();
+                    int fd = _M_redir[i].first;
                     ::close(_M_pipe.at(fd)[!fd]);
                     ::close(fd);
                     ::dup2(_M_pipe.at(fd)[!!fd], fd); 
@@ -182,45 +160,17 @@ namespace more {
             
             for(unsigned int i = 0; i < _M_redir.size(); i++)
             {
-                int fd = _M_redir[i].which();
+                int fd = _M_redir[i].first;
                 ::close(_M_pipe.at(fd)[!!fd]);
-                _M_redir[i].to(_M_pipe.at(fd)[!fd]);
+                _M_redir[i].second.get() = _M_pipe.at(fd)[!fd];
             }
 
         }
 
-        void redirect(const child_fd &x)
+        void redirect(const redirect_type &x)
         {
             _M_redir.push_back(x);
         }
-
-        // old routine...
-        //
-        // template <int fd>
-        // void operator()( redirect_fd<fd> nf )
-        // {            
-        //     _M_wait = true;
-        //     if ( ::pipe(_M_pipe) < 0 ) 
-        //     {
-        //         throw std::runtime_error(std::string("pipe: ").append(pretty_strerror(errno)));
-        //     }
-        //     _M_pid = ::fork();
-        //     if (_M_pid == -1) {
-        //         ::close(_M_pipe[0]);
-        //         ::close(_M_pipe[1]);
-        //         _M_pipe[0] = 0;
-        //         _M_pipe[1] = 0;
-        //         throw std::runtime_error(std::string("fork: ").append(pretty_strerror(errno)));
-        //     }
-        //     if (_M_pid == 0) { // child
-        //         ::close(_M_pipe[0]);
-        //         ::close(fd);
-        //         dup2(_M_pipe[1], fd);
-        //         _M_run();
-        //     }
-        //     ::close(_M_pipe[1]);
-        //     nf.set(_M_pipe[0]);
-        // }
 
         int kill(int sig)
         { 
@@ -301,11 +251,10 @@ namespace more {
 
     private:
         std::vector<std::string>    _M_arg;
-        std::vector<child_fd>       _M_redir;
+        std::vector<redirect_type>  _M_redir;
         std::tr1::array< int[2], 3> _M_pipe;
 
         int     _M_status;
-        
         int     _M_delay;
         bool    _M_wait;
         pid_t   _M_pid;
@@ -316,10 +265,10 @@ namespace more {
         {
             int n = _M_arg.size();
             const char *argv[n+1];
-
+            argv[n] = 0;
+            
             for(int i=0; i < n;i++) 
                 argv[i]=_M_arg[i].c_str();
-            argv[n] = 0;
 
             if (_M_delay)
                 usleep(_M_delay*1000);
@@ -337,7 +286,6 @@ namespace more {
     class exec_group 
     {
     public:
-
         typedef std::set<exec *>::iterator          iterator;
         typedef std::set<exec *>::const_iterator    const_iterator;
 
@@ -409,7 +357,6 @@ namespace more {
 
     private:
         std::set<exec *> _M_group;
-
     };
 
 } // namespace more
