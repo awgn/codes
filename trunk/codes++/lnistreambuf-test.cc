@@ -14,14 +14,13 @@
 int
 main(int argc, char *argv[])
 {
-    std::stringstream sstr("this is\n a test\nhello world!");
-
-    std::istream in( new more::lnistreambuf(sstr.rdbuf()) );
+    std::stringstream str("this is\n a test\nhello world!");
+    std::istream in( new more::lnistreambuf(str.rdbuf()) );
 
     std::string s; 
-    while( in >> s)
+    while(in >> s)
     {
-        std::cout << more::lineno(in) << ": " << s << std::endl;
+        std::cout << more::line_number(in) << ": " << s << std::endl;
     }
 
     return 0;

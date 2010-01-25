@@ -135,114 +135,113 @@
 #define TYPEMAP_KEY(...)              XPASTE(TYPEMAP_KEY_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
 
 
-namespace mtp {
+namespace mtp { namespace TM {
 
-    namespace TM {
+    struct null 
+    {
+        static const char * value() { return NULL; };
+    };
 
-        struct null 
-        {
-            static const char * value() { return NULL; };
-        };
+    template <typename K, typename V, typename N>
+    struct typemap 
+    {  
+        typedef K key; 
+        typedef V value;
+        typedef N next; 
+    };
 
-        template <typename K, typename V, typename N>
-        struct typemap 
-        {  
-            typedef K key; 
-            typedef V type;
-            typedef N next; 
-        };
+    // get<key, typemap>::type
+    //
 
-        // get<key, typemap>::type
-        //
+    template <typename K, typename M> struct get; 
+    template <typename K, typename T, typename N>
+    struct get<K, typemap<K, T, N> >
+    {
+        typedef T type;
+    }; 
+    template <typename K, typename H, typename T, typename N>
+    struct get<K, typemap<H,T,N> >
+    {
+        typedef typename get<K,N>::type type;
+    };
 
-        template <typename K, typename M> struct get; 
-        template <typename K, typename T, typename N>
-        struct get<K, typemap<K, T, N> >
-        {
-            typedef T type;
-        }; 
-        template <typename K, typename H, typename T, typename N>
-        struct get<K, typemap<H,T,N> >
-        {
-            typedef typename get<K,N>::type type;
-        };
+    // append<key, type_value, typemap>::type
+    //
 
-        // append<key, type_value, typemap>::type
-        //
+    template <typename K, typename V, typename N> struct append;
+    template <typename K, typename V>
+    struct append<K, V, null>
+    {
+        typedef typemap<K,V,null> type;
+    };
 
-        template <typename K, typename V, typename N> struct append;
-        template <typename K, typename V>
-        struct append<K, V, null>
-        {
-            typedef typemap<K,V,null> type;
-        };
+    template <typename K, typename V, typename U,typename N>
+    struct append<K, V, typemap<K,U,N> >
+    {
+        // fail to compile: key already present
+    };
+    template <typename K, typename H, typename V, typename U, typename N>
+    struct append<K, V, typemap<H,U,N> >
+    {
+        typedef typemap<H,U, typename append<K,V,N >::type> type;
+    };       
 
-        template <typename K, typename V, typename U,typename N>
-        struct append<K, V, typemap<K,U,N> >
-        {
-            // fail to compile: key is already present
-        };
-        template <typename K, typename H, typename V, typename U, typename N>
-        struct append<K, V, typemap<H,U,N> >
-        {
-            typedef typemap<H,U, typename append<K,V,N >::type> type;
-        };       
-        
-        // size<typemap>::value
-        //
+    // size<typemap>::value
+    //
 
-        template <class M> struct size;
-        template <>
-        struct size<null>
-        {
-            enum { value = 0 };
-        };
-        template <typename K, typename V, typename N>
-        struct size<typemap<K,V,N> >
-        {
-            enum { value = 1 + size<N>::value };
-        };
+    template <class M> struct size;
+    template <>
+    struct size<null>
+    {
+        enum { value = 0 };
+    };
+    template <typename K, typename V, typename N>
+    struct size<typemap<K,V,N> >
+    {
+        enum { value = 1 + size<N>::value };
+    };
 
-        // index_of<key>::value
-        //
+    // index_of<key>::value
+    //
 
-        template <typename K, typename M> struct index_of;
-        template <typename K>
-        struct index_of<K, null>
-        { 
-            enum { value = -1 };
-        };
-        template <typename K, typename V, typename N>
-        struct index_of<K, typemap<K, V, N> >
-        {
-            enum { value = 0 };
-        };
-        template <typename K, typename H, typename V, typename N>
-        struct index_of<K, typemap<H, V, N> >
-        {
-            enum { value = index_of<K,N>::value == -1 ? -1 : 1 + index_of<K,N>::value  };
-        };
-     
-        // get_key<int i, typemap>::type
-        //
+    template <typename K, typename M> struct index_of;
+    template <typename K>
+    struct index_of<K, null>
+    { 
+        enum { value = -1 };
+    };
+    template <typename K, typename V, typename N>
+    struct index_of<K, typemap<K, V, N> >
+    {
+        enum { value = 0 };
+    };
+    template <typename K, typename H, typename V, typename N>
+    struct index_of<K, typemap<H, V, N> >
+    {
+        enum { value = index_of<K,N>::value == -1 ? -1 : 1 + index_of<K,N>::value  };
+    };
 
-        template <int i, typename M> struct get_key;
-        template <int i, typename K, typename V, typename N>
-        struct get_key< i, typemap<K,V,N> >
-        {
-            typedef typename get_key<i-1, N>::type type;
-        };
-        template <typename K, typename V, typename N>
-        struct get_key<0, typemap<K,V,N> >
-        {
-            typedef K type;
-        };
-        template <int i>
-        struct get_key<i, null>
-        {
-            typedef null type;
-        };
-    }
-}
+    // get_key<int i, typemap>::type
+    //
+
+    template <int i, typename M> struct get_key;
+    template <int i, typename K, typename V, typename N>
+    struct get_key< i, typemap<K,V,N> >
+    {
+        typedef typename get_key<i-1, N>::type type;
+    };
+    template <typename K, typename V, typename N>
+    struct get_key<0, typemap<K,V,N> >
+    {
+        typedef K type;
+    };
+    template <int i>
+    struct get_key<i, null>
+    {
+        typedef null type;
+    };
+
+}   // namespace TM
+}   // namespace more
 
 #endif /* _TYPEMAP_HH_ */

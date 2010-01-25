@@ -45,10 +45,11 @@ namespace more {
 
 
     template <class charT, class Traits>
-    inline int lineno(std::basic_istream<charT,Traits> &in)
+    inline int line_number(std::basic_istream<charT,Traits> &in)
     {
         lnistreambuf * ln = dynamic_cast<lnistreambuf *>(in.rdbuf());
-        if (ln) {
+        if (ln) 
+        {
             return ln->line(); 
         }   
         return -1;
