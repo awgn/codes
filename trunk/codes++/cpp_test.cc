@@ -199,16 +199,11 @@ public:
         }
 
         if ( _M_verbose_compile ) {
-            if ( ! cc() ) {
-                std::cout << __FUNCTION__ << ": compile error: " << strerror(errno) << std::endl;
-                return;
-            }
+            cc();
         } else {
             int n;
-            if ( ! cc( more::exec::redirect_fd<2>(n) ) ) {
-                std::cout << __FUNCTION__ << ": compile error: " << strerror(errno) << std::endl;
-                return;
-            }
+            cc.redirect( more::exec::child_fd(2, std::tr1::ref(n) ) );
+            cc();
         }
 
         cc.wait();
@@ -237,10 +232,7 @@ public:
         timeval a, b;
 
         gettimeofday(&a, NULL);
-        if (!target()) {
-            std::cout << std::endl << __FUNCTION__<< ": couldn't run " << target.cmdline() 
-                      << ": " << strerror(errno) << std::endl;
-        }
+        target();
         target.wait();
         gettimeofday(&b, NULL);
 

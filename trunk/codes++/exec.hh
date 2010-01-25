@@ -12,15 +12,15 @@
 #define _EXEC_HH_
 
 #include <tr1/functional>
+#include <tr1/array>
+
 #include <iostream>
 #include <sstream>
-#include <algorithm>
 #include <vector>
 #include <string>
-#include <cstring>
-#include <cstdio>
+#include <algorithm>
 #include <iterator>
-#include <cassert>
+#include <set>
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -33,15 +33,41 @@ namespace more {
 
     class exec
     {
+        friend class exec_group;
+
     public:
         typedef std::tr1::function<int(const char *, char * const[])> exec_type;
     
         enum { STDIN, STDOUT, STDERR };
 
+        struct child_fd
+        {
+            child_fd(int _fd, std::tr1::reference_wrapper<int> _ref)
+            : _M_fd(_fd),
+            _M_ref(_ref)
+            {}
+
+            int which() const
+            {
+                return _M_fd;
+            }
+
+            void to(int n)
+            {
+                _M_ref.get() = n;
+            }
+
+        private:
+            int _M_fd;
+            std::tr1::reference_wrapper<int> _M_ref;
+        };
+
+    public:
         exec(const std::string &arg0 = std::string(), exec_type ex = ::execv /* ::execvp */)
         : _M_arg(),
-          _M_status(-1),
+          _M_redir(),
           _M_pipe(),
+          _M_status(-1),
           _M_delay(0),
           _M_wait(false),
           _M_pid(getpid()),
@@ -57,8 +83,9 @@ namespace more {
         template <typename Iter>
         exec(Iter beg, Iter end, exec_type ex = ::execv /* ::execvp */)
         : _M_arg(),
-          _M_status(-1),
+          _M_redir(),
           _M_pipe(),
+          _M_status(-1),
           _M_delay(0),
           _M_wait(false),
           _M_pid(getpid()),
@@ -69,9 +96,13 @@ namespace more {
 
         ~exec()
         {
-            if (_M_pipe[0] > fileno(stderr)) {
-                close(_M_pipe[0]);
+            for(unsigned int i = 0; i < _M_redir.size(); i++)
+            {
+                int fd = _M_redir[i].which();
+                if ( _M_pipe.at(fd)[!fd] > fileno(stderr) )
+                    ::close(_M_pipe.at(fd)[!fd]);
             }
+
             if (_M_wait)
                 this->wait();
         }
@@ -102,77 +133,99 @@ namespace more {
             return tmp.str();
         }
 
-        template <int fd>
-        struct redirect_fd 
-        {
-            enum { value = fd };
-
-            redirect_fd(int &nfd)
-            : _M_nfd(nfd)
-            {}
-
-            void set(int n)
-            { _M_nfd = n; }
-
-        private:
-            int & _M_nfd;
-        };
-
-        bool operator()()
+        void operator()()
         {
             _M_wait = true;
-            _M_pid = fork();
-            if (_M_pid == -1) {
-                std::clog << "exec::fork: " << pretty_strerror(errno) << std::endl;
-                return false;
+    
+            // create pipes...
+            //
+            for(unsigned int i = 0; i < _M_redir.size(); i++)
+            {
+                int fd = _M_redir[i].which();
+                if ( ::pipe( _M_pipe.at(fd) ) < 0 )
+                    throw std::runtime_error(std::string("pipe: ").append(pretty_strerror(errno)));
             }
 
-            if (_M_pid == 0) { // child
-                _M_run();
-            }
-           
-            return true; 
-        }
+            _M_pid = ::fork();
+            if (_M_pid == -1) 
+            {
+                // close open pipes...
+                // 
+                for(unsigned int i=0; i < _M_redir.size(); i++)
+                {
+                    int fd = _M_redir[i].which();
 
-        template <int fd>
-        bool operator()( redirect_fd<fd> nf )
-        {            
-            _M_wait = true;
-            if ( pipe(_M_pipe) < 0 ) {
-                std::clog << "exec::pipe: " << pretty_strerror(errno) << std::endl;
-                return false;
-            }
+                    ::close(_M_pipe.at(fd)[0]);
+                    ::close(_M_pipe.at(fd)[1]);
 
-            _M_pid = fork();
-            if (_M_pid == -1) {
-                std::clog << "exec::fork: " << pretty_strerror(errno) << std::endl;
-                close(_M_pipe[0]);
-                close(_M_pipe[1]);
-                _M_pipe[0] = 0;
-                _M_pipe[1] = 0;
-                return false;
+                    _M_pipe.at(fd)[0] = 0;
+                    _M_pipe.at(fd)[1] = 0;
+                }
+                
+                throw std::runtime_error(std::string("fork: ").append(pretty_strerror(errno)));
             }
 
             if (_M_pid == 0) { // child
 
-                close(_M_pipe[0]);
-                close(fd);
+                for(unsigned int i=0; i < _M_redir.size(); i++)
+                {
+                    int fd = _M_redir[i].which();
+                    ::close(_M_pipe.at(fd)[!fd]);
+                    ::close(fd);
+                    ::dup2(_M_pipe.at(fd)[!!fd], fd); 
+                }
 
-                dup2(_M_pipe[1], fd);
                 _M_run();
             }
 
-            close(_M_pipe[1]);
-            nf.set(_M_pipe[0]);
+            // parent...
+            
+            for(unsigned int i = 0; i < _M_redir.size(); i++)
+            {
+                int fd = _M_redir[i].which();
+                ::close(_M_pipe.at(fd)[!!fd]);
+                _M_redir[i].to(_M_pipe.at(fd)[!fd]);
+            }
 
-            return true; 
         }
+
+        void redirect(const child_fd &x)
+        {
+            _M_redir.push_back(x);
+        }
+
+        // old routine...
+        //
+        // template <int fd>
+        // void operator()( redirect_fd<fd> nf )
+        // {            
+        //     _M_wait = true;
+        //     if ( ::pipe(_M_pipe) < 0 ) 
+        //     {
+        //         throw std::runtime_error(std::string("pipe: ").append(pretty_strerror(errno)));
+        //     }
+        //     _M_pid = ::fork();
+        //     if (_M_pid == -1) {
+        //         ::close(_M_pipe[0]);
+        //         ::close(_M_pipe[1]);
+        //         _M_pipe[0] = 0;
+        //         _M_pipe[1] = 0;
+        //         throw std::runtime_error(std::string("fork: ").append(pretty_strerror(errno)));
+        //     }
+        //     if (_M_pid == 0) { // child
+        //         ::close(_M_pipe[0]);
+        //         ::close(fd);
+        //         dup2(_M_pipe[1], fd);
+        //         _M_run();
+        //     }
+        //     ::close(_M_pipe[1]);
+        //     nf.set(_M_pipe[0]);
+        // }
 
         int kill(int sig)
         { 
-            if ( getpid() == _M_pid ) {
-                std::clog << "exec::kill: INTERNAL ERROR (pid unitialized!)" << std::endl;
-                return -1; 
+            if ( ::getpid() == _M_pid ) {
+                throw std::runtime_error("exec::kill: (pid unitialized!)");
             } 
             
             if (_M_pid > 0) // this kill is not meant to kill the world!
@@ -184,16 +237,20 @@ namespace more {
         bool wait()
         {
             _M_wait = false;
-            if ( getpid() == _M_pid) {
-                std::clog << "exec::kill: INTERNAL ERROR (pid unitialized!)" << std::endl;
-                return -1; 
+            if (::getpid() == _M_pid) {
+                throw std::runtime_error("exec::wait: (pid unitialized!)");
             }
 
-            if ( waitpid(_M_pid,&_M_status,0) < 0 ) {
+            if (::waitpid(_M_pid,&_M_status,0) < 0 ) {
                 std::clog << "exec::waitpid: " << pretty_strerror(errno) << std::endl;
                 return false;
             }   
             return true;
+        }
+
+        void detach()
+        {
+            _M_wait = false;
         }
 
         void delay(int value_msec)
@@ -206,8 +263,11 @@ namespace more {
         { return WIFEXITED(_M_status); }
 
         int exit_status() const
-        { assert(WIFEXITED(_M_status));
-            return WEXITSTATUS(_M_status); }
+        { 
+            if (!WIFEXITED(_M_status))
+                throw std::runtime_error("exec::exit_status: !EXITED");
+            return WEXITSTATUS(_M_status); 
+        }
 
         // is_signaled() -> term_signal()
         //
@@ -216,8 +276,11 @@ namespace more {
         { return WIFSIGNALED(_M_status); }
 
         int term_signal() const
-        { assert(WIFSIGNALED(_M_status));
-            return WTERMSIG(_M_status); }
+        { 
+            if (!WIFSIGNALED(_M_status))
+                throw std::runtime_error("exec::term_signal: !SIGNALED");
+            return WTERMSIG(_M_status); 
+        }
 
         // is_stopped() -> stop_signal()
         //
@@ -226,18 +289,23 @@ namespace more {
         { return WIFSTOPPED(_M_status); }
 
         int stop_signal() const
-        { assert(WIFSTOPPED(_M_status)); 
-            return WSTOPSIG(_M_status); }
+        { 
+            if(!WIFSTOPPED(_M_status)) 
+                throw std::runtime_error("exec::stop_signal: !STOPPED");
+            return WSTOPSIG(_M_status); 
+        }
 
         pid_t
         pid() const 
         { return _M_pid; }
 
     private:
-        std::vector<std::string> _M_arg;
+        std::vector<std::string>    _M_arg;
+        std::vector<child_fd>       _M_redir;
+        std::tr1::array< int[2], 3> _M_pipe;
 
         int     _M_status;
-        int     _M_pipe[2];
+        
         int     _M_delay;
         bool    _M_wait;
         pid_t   _M_pid;
@@ -261,6 +329,87 @@ namespace more {
                 raise(SIGABRT);            
             }
         }
+    };
+
+    // group of processes
+    //
+
+    class exec_group 
+    {
+    public:
+
+        typedef std::set<exec *>::iterator          iterator;
+        typedef std::set<exec *>::const_iterator    const_iterator;
+
+        exec_group()
+        : _M_group()
+        {}
+
+        ~exec_group()
+        {}
+
+        // iterators..
+
+        iterator
+        begin()
+        { return _M_group.begin(); }
+
+        iterator
+        end()
+        { return _M_group.end(); }
+
+        const_iterator
+        begin() const
+        { return _M_group.begin(); }
+
+        const_iterator
+        end() const
+        { return _M_group.end(); }
+
+        bool add(exec *ptr)
+        {
+            return _M_group.insert(ptr).second;
+        }
+
+        void remove(exec *ptr)
+        {
+            _M_group.erase(ptr);
+        }
+
+        void run()
+        {
+            std::for_each(_M_group.begin(), _M_group.end(), std::tr1::mem_fn(&exec::operator()));
+        }
+
+        void
+        wait_all()
+        {
+            std::for_each(_M_group.begin(), _M_group.end(), std::tr1::mem_fn(&exec::wait));
+        }
+
+        exec *
+        wait()
+        {
+            int status;
+            pid_t p = waitpid(0, &status, 0);
+            if (p < 0)
+                return NULL;
+
+            std::set<exec *>::iterator it = _M_group.begin();
+            for(; it != _M_group.end(); ++it) 
+            {
+                if ( p == (*it)->pid() ) { // found!
+                    (*it)->_M_wait = false;
+                    (*it)->_M_status = status;
+                    return *it;
+                }
+            }    
+            return NULL;
+        }
+
+    private:
+        std::set<exec *> _M_group;
+
     };
 
 } // namespace more
