@@ -11,14 +11,20 @@
 #ifndef _NULLPTR_HH_
 #define _NULLPTR_HH_ 
 
-struct __nullptr
-{
-    template <typename T>
-    operator T *()
-    {
-        return 0;
-    }
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+namespace more {
 
-} static nullptr __attribute__((unused));
+    struct nullptr_t
+    {
+        template <typename T>
+        operator T *()
+        {
+            return 0;
+        }
+    };
+
+}
+#define nullptr more::nullptr_t()
+#endif
 
 #endif /* _NULLPTR_HH_ */
