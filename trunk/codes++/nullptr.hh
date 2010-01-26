@@ -11,7 +11,7 @@
 #ifndef _NULLPTR_HH_
 #define _NULLPTR_HH_ 
 
-struct __nullptr
+static struct __nullptr
 {
     template <typename T>
     operator T *()
@@ -19,6 +19,6 @@ struct __nullptr
         return 0;
     }
 
-} extern nullptr;
+} nullptr;
 
 #endif /* _NULLPTR_HH_ */
