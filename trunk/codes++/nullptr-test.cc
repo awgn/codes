@@ -8,17 +8,17 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef _NULLPTR_HH_
-#define _NULLPTR_HH_ 
+#include <iostream>
+#include <nullptr.hh>
 
-struct __nullptr
+int
+main(int argc, char *argv[])
 {
-    template <typename T>
-    operator T *()
+    char  * a = nullptr;
+    if (a == nullptr)
     {
-        return 0;
+        std::cout << "ok" << std::endl;
     }
+    return 0;
+}
 
-} static nullptr __attribute__((unused));
-
-#endif /* _NULLPTR_HH_ */
