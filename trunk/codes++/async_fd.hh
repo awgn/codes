@@ -30,6 +30,7 @@
 #include <error.hh>
 #include <noncopyable.hh>
 #include <atomicity-policy.hh>
+#include <algorithm.hh>
 
 namespace more { 
 
@@ -95,13 +96,6 @@ namespace more {
         typedef ssize_t (*sendto_type) (int, const void *, size_t, int, const struct sockaddr *, socklen_t);
         typedef ssize_t (*sendmsg_type)(int, const struct msghdr *, int);
 
-        /////////////////////////////////////// logic xor has not the bitwise (^) meaning...
-
-        static inline
-        bool logic_xor(bool a, bool b)
-        {
-            return ( (a && !b) || (!a && b) );
-        }
     }
 
     //////////////////////////////// async_root class...
@@ -203,7 +197,7 @@ namespace more {
         ssize_t
         buffered_write(const struct iovec * iov, unsigned int iovcnt, const struct msghdr *hdr, int flags)
         {
-            assert( logic_xor(iov,hdr) ); // iov or hdr are mutually exclusive, yet iov or hdr must be non-null 
+            assert( logical_xor(iov,hdr) ); // iov or hdr are mutually exclusive, yet iov or hdr must be non-null 
            
             int bufsize = _M_buffer.size();
 
