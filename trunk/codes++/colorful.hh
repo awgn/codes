@@ -49,26 +49,36 @@ namespace more {
     template <typename T>
     struct colorful 
     {
-        typedef T type_value;
+        typedef T value_type;
     };
+
+
+    template <typename T>
+    struct ecma_parameter
+    {
+        typedef T value_type; 
+    };
+
+    
+    template <typename CharT, typename Traits>
+    inline std::basic_ostream<CharT, Traits> & 
+    operator<<(std::basic_ostream<CharT, Traits> &out, ecma_parameter<more::tl::null>)
+    {
+        return out;
+    }
+
+    template <typename CharT, typename Traits, typename T>
+    inline std::basic_ostream<CharT, Traits> & 
+    operator<<(std::basic_ostream<CharT, Traits> &out, ecma_parameter<T>)
+    {
+        return out << ";" << T::head::attribute_value << ecma_parameter<typename T::tail>();
+    }
 
     template <typename CharT, typename Traits, typename T>
     inline std::basic_ostream<CharT, Traits> & 
     operator<<(std::basic_ostream<CharT, Traits> &out, colorful<T>)
     {
-        out << "\E["; ecma_parameter(out,typename colorful<T>::type_value()); out << "m";
-        return out;
-    }
-
-    static inline 
-    void ecma_parameter(std::ostream &, more::tl::null)
-    {}
-
-    template <typename T>
-    inline void ecma_parameter(std::ostream &out, T)
-    {
-        out << ";" << T::head::attribute_value; 
-        ecma_parameter(out, typename T::tail() ); 
+        return out << "\E[" << ecma_parameter<T>() << "m";
     }
 
 } // namespace more
