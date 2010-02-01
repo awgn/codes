@@ -22,7 +22,6 @@ include_directories(.)
 add_definitions(-DARCH_i386 -DMORE_USE_TR1_SHARED_PTR -DMORE_USE_GNU_MUTEX)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        add_executable(any-test any-test.cc)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
