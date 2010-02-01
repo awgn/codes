@@ -11,49 +11,6 @@
 #include <iostream>
 #include <movable.hh>
 
-void function(int a)
-{
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
-    std::cout << "value: " << a << std::endl;
-}
-
-void function(more::movable<int> a)
-{
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
-    std::cout << "value: " << a << std::endl;
-}
-
-
-struct simple
-{
-    simple(int n)
-    {
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
-    }
-};
-
-
-struct simple_movable 
-{
-    simple_movable(int n)
-    {
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
-    }
-
-    simple_movable(more::movable<int> k)
-    {
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
-    }
-};
-
-
-int factory()
-{
-    int n = 0;
-    return more::move(n);
-}
-
-
 struct uncopyable 
 {
     uncopyable(const uncopyable &);
@@ -64,7 +21,7 @@ struct uncopyable
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
 
-    uncopyable(more::movable<uncopyable>)
+    uncopyable(const more::movable<uncopyable>)
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
@@ -78,31 +35,34 @@ struct uncopyable
 
 
 uncopyable
-factory2()
+factory()
 {
     uncopyable x;
     return more::move(x); 
 }
 
+void function(more::movable<uncopyable> a)
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+}
+
+void function(uncopyable a)
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+}
 
 int
 main(int argc, char *argv[])
 {
-    int n = 10;
-
-    more::movable<int> m(n);   
-
-    function(m);
-
-    simple x(m);
-
-    simple_movable y(m);
-    simple_movable z(m);
-    simple_movable(factory());
+    uncopyable abc (factory());
 
     std::cout << "----------" << std::endl;
+    
+    function( more::movable<uncopyable>(abc) );
 
-    uncopyable abc (factory2());
+    std::cout << "----------" << std::endl;
+    
+    function( more::move(abc) );
 
     return 0;
 }

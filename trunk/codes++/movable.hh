@@ -19,20 +19,21 @@ namespace more {
     class movable
     {
     public:
-        explicit movable(T &elem)
-        : _M_elem(elem)
+        explicit movable(T &from)
+        : _M_from(from)
         {}
        
         ~movable()
         {}
 
-        operator T()
+        T &
+        get()
         {
-            return _M_elem;
+            return _M_from;
         }
 
     private:
-        T & _M_elem;
+        T & _M_from;
 
         movable & operator=(const movable &x);
     };
@@ -40,7 +41,7 @@ namespace more {
     template <typename T>
     inline T move(T &x)
     {
-        return T(more::movable<T>(x));
+        return T(more::movable<T>(x));  // this works by means of RVO!
     }
 
 
