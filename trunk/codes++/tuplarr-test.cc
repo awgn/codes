@@ -37,7 +37,7 @@ main(int argc, char *argv[])
     std::vector<double> vec;
 
     std::tr1::tuple<int,double,int> t = make_tuple(0,1,2);
-    std::tr1::array<int,2> a = { 3, 4 };
+    std::tr1::array<int,2> a = {{ 3, 4 }};
 
     more::tuplarr::copy(t, std::back_inserter(vec));
     more::tuplarr::copy(a, std::back_inserter(vec));
