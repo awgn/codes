@@ -1,25 +1,34 @@
 cmake_minimum_required(VERSION 2.4)
 
-include(CheckIncludeFiles)
-
-CHECK_INCLUDE_FILES(cpufreq.h HAVE_CPUFREQ_H)
-CHECK_INCLUDE_FILES(pcap.h HAVE_PCAP_H)
-
-if (NOT "${HAVE_CPUFREQ_H}" STREQUAL "1" )
-    message(FATAL_ERROR "libcpufreq-dev package not installed...")
-endif (NOT "${HAVE_CPUFREQ_H}" STREQUAL "1" )
-
-if (NOT ${HAVE_PCAP_H})
-    message(FATAL_ERROR "libpcap-dev package not installed...")
-endif(NOT ${HAVE_PCAP_H})
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    
+    include(CheckIncludeFiles)
+    
+    CHECK_INCLUDE_FILES(cpufreq.h HAVE_CPUFREQ_H)
+    CHECK_INCLUDE_FILES(pcap.h HAVE_PCAP_H)
+    
+    if (NOT "${HAVE_CPUFREQ_H}" STREQUAL "1" )
+            message(FATAL_ERROR "libcpufreq-dev package not installed...")
+    endif (NOT "${HAVE_CPUFREQ_H}" STREQUAL "1" )
+    
+    if (NOT ${HAVE_PCAP_H})
+            message(FATAL_ERROR "libpcap-dev package not installed...")
+    endif(NOT ${HAVE_PCAP_H})
+    
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 include_directories(.)
 
 add_definitions(-DARCH_i386 -DMORE_USE_TR1_SHARED_PTR -DMORE_USE_GNU_MUTEX)
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        add_executable(any-test any-test.cc)
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 add_executable(CTdispatcher CTdispatcher.cc)
-add_executable(algorithm-test algorithm-test.cc)
 add_executable(any-test any-test.cc)
+add_executable(algorithm-test algorithm-test.cc)
 add_executable(async_fd-test async_fd-test.cc)
 add_executable(atomic_test atomic-test.cc)
 add_executable(atomicio_test atomicio-test.cc)
@@ -119,3 +128,4 @@ target_link_libraries(tstreambuf-test -pthread)
 target_link_libraries(tqueue-test -pthread)
 target_link_libraries(tspinlock-test -pthread)
 
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
