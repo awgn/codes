@@ -202,7 +202,7 @@ public:
             cc();
         } else {
             int n;
-            cc.redirect( more::exec::child_fd(2, std::tr1::ref(n) ) );
+            cc.redirect( std::make_pair(more::exec::STDERR, std::tr1::ref(n) ) );
             cc();
         }
 
