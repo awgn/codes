@@ -13,33 +13,6 @@
 
 namespace more { namespace expr { 
 
-    // terminal expression-template that
-    // represent an integral type.
-    //
-
-    template <typename T, T value>
-    struct integral
-    {
-        typedef T value_type;
-
-        T operator()() const
-        { return value; }
-    };
-
-    template <typename CharT, typename Traits, typename T, T value>
-    inline std::basic_ostream<CharT,Traits> &
-    operator<< (std::basic_ostream<CharT,Traits> &out, const integral<T,value> &un)
-    {
-        return out << value; 
-    }
-
-    // example: _false and _true integral type.
-    //
-
-    static integral<bool, false> _false;
-    static integral<bool, true>  _true;
-   
-
     // unary expression template...
     //
 
@@ -59,6 +32,14 @@ namespace more { namespace expr {
         {
             return _M_op(_M_arg());
         }
+
+        template <typename C>
+        value_type 
+        operator()(const C &ctx) const 
+        {
+            return _M_op(_M_arg(ctx));
+        }
+
 
         A 
         argument() const
@@ -100,6 +81,13 @@ namespace more { namespace expr {
         operator()() const
         {
             return _M_op(_M_lhs(), _M_rhs());
+        }
+
+        template <typename C>
+        value_type
+        operator()(const C &ctx) const
+        {
+            return _M_op(_M_lhs(ctx), _M_rhs(ctx));
         }
 
         T1
@@ -288,6 +276,56 @@ namespace more { namespace expr {
     {
         return ex();
     }
+
+    // evalute the expression template over a give context
+    //
+
+    template <typename T, typename C>
+    typename T::value_type 
+    eval(T ex, const C & ctx)
+    {
+        return ex(ctx);
+    }
+
+    //////////////////// example ///////////////////////
+
+    // terminal expression-template that
+    // represent an integral type.
+    //
+
+    template <typename T, T value>
+    struct integral
+    {
+        typedef T value_type;
+
+        T operator()() const
+        { return value; }
+    };
+
+    template <typename T>
+    struct identity_context 
+    {
+        typedef T value_type;
+
+        T operator()(T value) const
+        { return value; }
+    };
+
+    template <typename CharT, typename Traits, typename T, T value>
+    inline std::basic_ostream<CharT,Traits> &
+    operator<< (std::basic_ostream<CharT,Traits> &out, const integral<T,value> &un)
+    {
+        return out << value; 
+    }
+
+    // example: _false and _true integral type.
+    //
+
+    static integral<bool, false> _false;
+    static integral<bool, true>  _true;
+    
+    static identity_context<bool> _bool;    // a boolean type that exploit the context...
+
 
 } // namespace expr 
 } // namespace more

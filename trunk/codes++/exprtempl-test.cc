@@ -18,6 +18,9 @@ main(int argc, char *argv[])
 {
     std::cout << std::boolalpha;
     std::cout << (( !_false ^ _true ) == _false) << " -> " << eval( ( !_false ^ _true ) == _false ) << std::endl;
+
+    std::cout <<  "closure -> " << eval( !(_bool ^ _bool), true) << std::endl;
+
     return 0;
 }
 
