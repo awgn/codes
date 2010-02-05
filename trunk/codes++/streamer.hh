@@ -11,10 +11,14 @@
 #ifndef STREAMER_HH
 #define STREAMER_HH
 
+#include <tr1/type_traits>
+
 #include <iostream>
 #include <cstdio>
 #include <string>
-#include <mtp.hh>
+
+#include <mtp.hh>           // more!
+#include <type_traits.hh>   // more!
 
 namespace more {
 

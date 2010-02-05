@@ -9,7 +9,9 @@
  */
 
 #include <iostream>
-#include <mtp.hh>
+
+#include <mtp.hh>           // more!
+#include <type_traits.hh>   // more!
 
 template <typename T>
 typename more::mtp::enable_if< more::traits::is_class_or_union<T>,int>::type 
