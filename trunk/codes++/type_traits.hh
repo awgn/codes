@@ -106,6 +106,32 @@ namespace more
     struct is_metafunction : public integral_constant<bool, __is_metafunction_helper<T>::value>
     {};
 
+
+    // is_pair
+    template <typename T>
+    struct  __is_pair
+    {
+    private:
+        template <typename Ty>
+        struct __is_pair_impl
+        {
+            enum { value = 0 };
+        };
+
+        template <typename T1, typename T2>
+        struct __is_pair_impl<std::pair<T1,T2> >
+        {
+            enum { value = 1 };
+        };
+
+    public:
+        enum { value = __is_pair_impl<T>::value };
+    };
+    
+    template <typename T>
+    struct is_pair : public integral_constant<bool, __is_pair<T>::value>
+    {};
+
     } // namespace traits
 
 } // namespace more 

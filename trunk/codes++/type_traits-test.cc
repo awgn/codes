@@ -49,7 +49,7 @@ int
 main(int argc, char *argv[])
 {
     std::cout << "int is a class on union? " << verdict( more::traits::is_class_or_union<int>())  << std::endl; assert(more::traits::is_class_or_union<int>::value == false);
-    std::cout << "struct is a class or union? " << verdict(more::traits::is_class_or_union<s>())  << std::endl;assert(more::traits::is_class_or_union<s>::value == true);
+    std::cout << "struct is a class or union? " << verdict(more::traits::is_class_or_union<s>())  << std::endl; assert(more::traits::is_class_or_union<s>::value == true);
 
     std::cout << "int is a container ? " << verdict( more::traits::is_container<int>())  << std::endl; assert(more::traits::is_container<int>::value == false );
     std::cout << "false_container<int> is a container ? " << verdict( more::traits::is_container<false_container<int> >())  << std::endl; assert( more::traits::is_container<false_container<int> >::value == false);
@@ -66,5 +66,7 @@ main(int argc, char *argv[])
     std::cout << "identity is a metafunction ? " << verdict( more::traits::is_metafunction< identity<int> >())  << std::endl; assert( more::traits::is_metafunction< identity<int> >::value == true);
     std::cout << "num_identity is a metafunction ? " << verdict( more::traits::is_metafunction< num_identity<0> >())  << std::endl; assert( more::traits::is_metafunction< num_identity<0> >::value == true);
 
+    std::cout << "is_pair? " << verdict( more::traits::is_pair< std::pair<int,int> >()) << std::endl; assert((more::traits::is_pair< std::pair<int,int> >::value) == true);
+    std::cout << "is_pair? " << verdict( more::traits::is_pair< int >()) << std::endl; assert( more::traits::is_pair< int >::value == false );
     return 0;
 }
