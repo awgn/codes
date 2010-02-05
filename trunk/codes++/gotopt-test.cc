@@ -46,8 +46,8 @@ main(int argc, char *argv[])
         switch(o)
         {
         case 'l': 
-            par.arg<int>();
-            par.arg<int>();
+            par.optarg<int>();
+            par.optarg<int>();
             std::cout << "--hello given!" << std::endl; 
             break;
 

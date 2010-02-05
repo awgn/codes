@@ -18,8 +18,8 @@
 #include <map>
 #include <string>
 
-#include <exprtempl.hh>
-#include <lexical_cast.hh>
+#include <lexical_cast.hh>      // more!
+#include <exprtempl.hh>         // more!
 
 //////////////////////////////////////
 // ... and now getopt() go home !!! 
@@ -86,6 +86,9 @@ namespace more { namespace gotopt {
         if (!epilog.empty())
             out << epilog << std::endl;
     }
+
+    // parser class
+    //
 
     class parser
     {
@@ -193,7 +196,7 @@ namespace more { namespace gotopt {
         //
 
         template <typename T>
-        T arg()
+        T optarg()
         {
             if (_M_it == _M_args.end())
                 throw std::runtime_error("no more arguments available");
@@ -218,7 +221,6 @@ namespace more { namespace gotopt {
                 return true;
             return false;
         }
-
     };
 
     //////////////////////////////////////
