@@ -14,7 +14,6 @@
 #ifndef MTP_HH
 #define MTP_HH
 
-#include <type_traits.hh>
 #include <iostream>
 #include <string>
 
@@ -61,13 +60,12 @@ namespace more { namespace mtp {
         typedef V type;
     };
 
-    // parameter optimization:
-
-    template <typename T>
-    struct parameter : select< more::traits::is_class_or_union<T>::value, 
-                               typename std::tr1::add_reference<T>::type, 
-                               typename tag_type<T>::type >
-    {};
+    // parameter optimization: (deprecated)
+    // template <typename T>
+    // struct parameter : select< more::traits::is_class_or_union<T>::value, 
+    //                            typename std::tr1::add_reference<T>::type, 
+    //                            typename tag_type<T>::type >
+    // {};
 
     //////////////////////////////////////////////////////
     // boost's heritage
