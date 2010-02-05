@@ -107,6 +107,39 @@ namespace more { namespace expr {
         Op _M_op;
     };
 
+    // terminal expression-template that
+    // represent an integral type.
+    // 
+
+    template <typename T, T value>
+    struct integral
+    {
+        typedef T value_type;
+
+        T eval() const
+        { return value; }
+
+        template <typename C>
+        T eval(const C &) const
+        { return value; }
+    };
+
+    template <typename CharT, typename Traits, typename T, T value>
+    inline std::basic_ostream<CharT,Traits> &
+    operator<< (std::basic_ostream<CharT,Traits> &out, const integral<T,value> &un)
+    {
+        return out << value; 
+    }
+
+    // _false and _true type...
+
+    namespace 
+    {
+        static integral<bool, false> _false;
+        static integral<bool, true>  _true;
+    }
+
+
     // operand function objects...
     //
 
@@ -514,9 +547,9 @@ namespace more { namespace expr {
 
     template <typename T>
     typename T::value_type 
-    eval(T ex)
+    eval(T exp)
     {
-        return ex.eval();
+        return exp.eval();
     }
 
     // evalute the expression template over a given context
@@ -524,9 +557,9 @@ namespace more { namespace expr {
 
     template <typename T, typename C>
     typename T::value_type 
-    eval(T ex, const C & ctx)
+    eval(T exp, const C & ctx)
     {
-        return ex.eval(ctx);
+        return exp.eval(ctx);
     }
 
 } // namespace expr 
