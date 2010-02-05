@@ -135,8 +135,8 @@ namespace more { namespace expr {
 
     namespace 
     {
-        static integral<bool, false> _false;
-        static integral<bool, true>  _true;
+        integral<bool, false> _false;
+        integral<bool, true>  _true;
     }
 
 
