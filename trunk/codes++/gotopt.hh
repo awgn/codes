@@ -73,7 +73,7 @@ namespace more { namespace gotopt {
         long unsigned int maxlen = 0;
         for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]) ; i++)
         {
-            maxlen = std::max(maxlen, options[i].name ? strlen(options[i].name) : 0);    
+            maxlen = std::max(maxlen, options[i].name ? strlen(options[i].name) : 0UL);    
         }
         maxlen = std::max(maxlen, 20UL); 
 
