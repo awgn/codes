@@ -13,10 +13,12 @@
 
 #include <iostream>
 #include <cassert>
+#include <cstdio>
 #include <stdexcept>
+
 #include <syslog.h>
 
-namespace sys 
+namespace more 
 {
     class syslog : public std::streambuf 
     {
@@ -112,7 +114,17 @@ namespace sys
         const int 
         priority() const  
         { return _M_priority ? : const_cast<syslog *>(this)->_M_facility() | 
-            const_cast<syslog *>(this)->_M_level(); }
+            const_cast<syslog *>(this)->_M_level(); 
+        }
+
+        static inline
+        syslog * ctrl(std::ostream &out)
+        {
+            syslog *ret = dynamic_cast<syslog *>(out.rdbuf());
+            if ( ret == NULL )
+                throw std::runtime_error("syslog::ctrl(): bad ostream");
+            return ret;
+        }
 
     private:
         static const int SIZE = 1024;
@@ -130,7 +142,7 @@ namespace sys
         {
             int b(n);
             if ( _M_cursor+b > SIZE-1 ) {
-                std::clog << "syslog: message overflows streambuf!\n" << std::endl;
+                fprintf(stderr, "syslog: message overflows in streambuf!\n");
                 b = SIZE - 1 - _M_cursor;
             }
             if (b > 0) {
@@ -170,15 +182,10 @@ namespace sys
 
     };
 
-    static inline
-    syslog * ctrl(std::ostream &out)
-    {
-        syslog *ret = dynamic_cast<syslog *>(out.rdbuf());
-        if ( ret == NULL )
-            throw std::runtime_error("sys::ctrl(): bad ostream");
-        return ret;
-    }
+}
 
+namespace sys 
+{
     extern std::ostream log;
     extern std::ostream plog;
     extern std::ostream err;
