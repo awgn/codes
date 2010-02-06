@@ -23,11 +23,12 @@ using namespace more::gotopt;
 struct option opts[] = 
 {
     option("Section:"),
-    option('l', "hello", 2, "2 integers"),
+    option('l', "hello", 2, "this option accepts 2 integers"),
     option('w', "world", 0, "world option"),
+    option(),
     option("General:"),
-    option('a', NULL , 0),
-    option('b', NULL , 0),
+    option('a', NULL ,   0),
+    option('b', NULL ,   0, "this is the b options"),
     option('h', "help" , 0, "print this help.")
 };
 
@@ -39,12 +40,14 @@ main(int argc, char *argv[])
     char o;
     while( (o = par(make_tuple(
                                make_pair( _l >> _w, "--hello -> --world error!"),
-                               make_pair( _a % _b,  "-a and -b are in mutual exclusion!"),
-                               make_pair( _a | _b,  "-a or -b option is required!")
+                               make_pair( _a % _b,  "-a and -b are in mutual exclusion!"), // rule with custom error
+                               _a || _b  // simple rule...
                                )
           )))
         switch(o)
         {
+        case 'a': break;
+        case 'b': break;
         case 'l': 
             par.optarg<int>();
             par.optarg<int>();

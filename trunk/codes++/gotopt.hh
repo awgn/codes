@@ -13,17 +13,21 @@
 
 #include <tr1/tuple>
 #include <stdexcept>
-#include <sstream>
+
+#include <iomanip>
 #include <vector>
-#include <map>
 #include <string>
+#include <cstring>
+#include <map>
 
 #include <lexical_cast.hh>      // more!
 #include <exprtempl.hh>         // more!
 
+
 //////////////////////////////////////
 // ... and now getopt() go home !!! 
 //////////////////////////////////////
+
 
 using std::tr1::make_tuple;
 using std::make_pair;
@@ -65,14 +69,20 @@ namespace more { namespace gotopt {
                   const std::string & epilog = std::string())
     {
         out << prolog << std::endl;
+
+        long unsigned int maxlen = 0;
+        for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]) ; i++)
+        {
+            maxlen = std::max(maxlen, options[i].name ? strlen(options[i].name) : 0);    
+        }
+        maxlen = std::max(maxlen, 20UL); 
+
         for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]) ; i++)
         {
             if (options[i].opt) {
-                out << "   -" << options[i].opt; 
-            }
-
-            if (options[i].name) {
-                out << ",  --" << options[i].name << "\t\t" << (options[i].description ? : "") << std::endl;
+                out << "   -" << options[i].opt  << 
+                ( options[i].name ? ",  --" : "     " ) << std::setw(maxlen+5) << std::left << ( options[i].name ? : "" ) <<
+                (options[i].description ? : "") << std::endl;
                 continue;
             }
 
@@ -102,27 +112,9 @@ namespace more { namespace gotopt {
         std::map<std::string, option>   _M_mopt;
         const_iterator                  _M_it;
 
-    public:
-        template <typename T, typename P>
-        parser(T beg, T end, const P & opt)
-        : _M_args(beg, end), _M_context(128,false), _M_mopt(), _M_it(_M_args.begin()) 
-        {
-            // load the map...
-            //
-            for(unsigned int i = 0; i < sizeof(opt)/sizeof(opt[0]) ; i++)
-            {
-                if (opt[i].opt) 
-                    _M_mopt[ std::string("-").append(1, opt[i].opt) ] = opt[i];
-                if (opt[i].name)
-                    _M_mopt[ std::string("--").append(opt[i].name) ]  = opt[i];
-            }
-        }
-
-        ~parser()
-        {}
-
+    public:        
+        
         // iterators...
-        //
 
         const_iterator
         begin() const
@@ -141,6 +133,27 @@ namespace more { namespace gotopt {
         {
             return _M_args.end();
         }
+
+        // constructors...
+        //
+
+        template <typename T, typename P>
+        parser(T beg, T end, const P & opt)
+        : _M_args(beg, end), _M_context(256,false), _M_mopt(), _M_it(_M_args.begin()) 
+        {
+            // load the map...
+            //
+            for(unsigned int i = 0; i < sizeof(opt)/sizeof(opt[0]) ; i++)
+            {
+                if (opt[i].opt) 
+                    _M_mopt[ std::string("-").append(1, opt[i].opt) ] = opt[i];
+                if (opt[i].name)
+                    _M_mopt[ std::string("--").append(opt[i].name) ]  = opt[i];
+            }
+        }
+
+        ~parser()
+        {}
 
         // callable object implementation 
         //
@@ -187,7 +200,7 @@ namespace more { namespace gotopt {
             // update the context with the current opt
             //
 
-            char r = _M_mopt[*_M_it++].opt;
+            unsigned char r = _M_mopt[*_M_it++].opt;
             _M_context[r] = true;
             return r;
         }
