@@ -23,13 +23,13 @@ using namespace more::gotopt;
 struct option opts[] = 
 {
     option("Section:"),
-    option('l', "hello", 2, "this option accepts 2 integers"),
-    option('w', "world", 0, "world option"),
+    option(+'l', "hello", 2, "this option accepts 2 integers"),
+    option(-'w', "world", 0, "world option"),
     option(),
     option("General:"),
-    option('a', NULL ,   0),
-    option('b', NULL ,   0, "this is the b options"),
-    option('h', "help" , 0, "print this help.")
+    option(+'a', NULL ,   0),
+    option(+'b', NULL ,   0, "this is the b options"),
+    option(+'h', "help" , 0, "print this help.")
 };
 
 int

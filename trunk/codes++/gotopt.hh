@@ -13,11 +13,11 @@
 
 #include <tr1/tuple>
 #include <stdexcept>
-
 #include <iomanip>
 #include <vector>
 #include <string>
 #include <cstring>
+#include <cstdlib>
 #include <map>
 
 #include <lexical_cast.hh>      // more!
@@ -75,13 +75,18 @@ namespace more { namespace gotopt {
         {
             maxlen = std::max(maxlen, options[i].name ? strlen(options[i].name) : 0UL);    
         }
-        maxlen = std::max(maxlen, 20UL); 
+        maxlen = std::max(maxlen, 16UL); 
 
         for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]) ; i++)
         {
             if (options[i].opt) {
-                out << "   -" << options[i].opt  << 
-                ( options[i].name ? ",  --" : "     " ) << std::setw(maxlen+5) << std::left << ( options[i].name ? : "" ) <<
+
+                if (options[i].opt > 0)
+                    out << "   -" << options[i].opt  << ",";
+                else
+                    out << "      ";
+
+                out << ( options[i].name ? "  --" : "    " ) << std::setw(maxlen+5) << std::left << ( options[i].name ? : "" ) <<
                 (options[i].description ? : "") << std::endl;
                 continue;
             }
@@ -145,7 +150,7 @@ namespace more { namespace gotopt {
             //
             for(unsigned int i = 0; i < sizeof(opt)/sizeof(opt[0]) ; i++)
             {
-                if (opt[i].opt) 
+                if (opt[i].opt > 0) 
                     _M_mopt[ std::string("-").append(1, opt[i].opt) ] = opt[i];
                 if (opt[i].name)
                     _M_mopt[ std::string("--").append(opt[i].name) ]  = opt[i];
@@ -200,7 +205,7 @@ namespace more { namespace gotopt {
             // update the context with the current opt
             //
 
-            unsigned char r = _M_mopt[*_M_it++].opt;
+            unsigned char r = std::abs(_M_mopt[*_M_it++].opt);
             _M_context[r] = true;
             return r;
         }
