@@ -1,0 +1,6 @@
+#!/bin/sh
+
+compiler=/usr/bin/g++
+
+$compiler $* 2>&1 | less -S --shift 4
+
