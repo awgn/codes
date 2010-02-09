@@ -2,6 +2,9 @@
 
 compiler=/usr/bin/g++
 
-($compiler $*) 3>&1 1>&2 2>&3 | tee /dev/stderr > /tmp/stderr; less -E -S --shift 4 /tmp/stderr
+($compiler $*) 3>&1 1>&2 2>&3 | tee /dev/stderr > /tmp/stderr; 
+if [ -s /tmp/stderr ]; then
+        gvim -q /tmp/stderr
+fi
 
 
