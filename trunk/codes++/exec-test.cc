@@ -16,13 +16,9 @@ int
 main(int argc, char *argv[])
 {
     // 1)
-    // more::exec abc;
-    // abc.arg("/bin/ls").arg("/").arg("-la");
-    //
-    // 2)
     // abc.cmdline("/bin/ls -la /");
 
-    // 3) by means of iterator...
+    // 2) by means of iterator...
     //
 
     const char * args[] = { "/bin/ls" , "/" , "-la" };

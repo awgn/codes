@@ -43,7 +43,7 @@ namespace more {
         typedef std::pair<enum fdnum, std::tr1::reference_wrapper<int> > redirect_type;
 
     public:
-        exec(const std::string &arg0 = std::string(), exec_type ex = ::execv /* ::execvp */)
+        exec(const std::string &arg = std::string(), exec_type ex = ::execv /* ::execvp */)
         : _M_arg(),
           _M_redir(),
           _M_pipe(),
@@ -52,9 +52,13 @@ namespace more {
           _M_wait(false),
           _M_pid(getpid()),
           _M_exec(ex)
-        { 
-            if (!arg0.empty())
-                _M_arg.push_back(arg0); 
+        {             
+            if (!arg.empty()) {
+                std::stringstream tmp(arg);
+                std::copy(std::istream_iterator<std::string>(tmp),
+                          std::istream_iterator<std::string>(),
+                          std::back_inserter(_M_arg));
+            }
         }
 
         // build exec array by means of iterators
@@ -88,13 +92,6 @@ namespace more {
         }
 
         exec &
-        arg(const std::string &arg)
-        { 
-            _M_arg.push_back(arg); 
-            return *this; 
-        }
-
-        exec &
         cmdline(const std::string &cmd)
         {
             _M_arg.clear();
@@ -112,6 +109,13 @@ namespace more {
             std::copy(_M_arg.begin(), _M_arg.end(), std::ostream_iterator<std::string>(tmp," "));
             return tmp.str();
         }
+
+        exec &
+        arg(const std::string &arg)
+        { 
+            _M_arg.push_back(arg); 
+            return *this; 
+        } 
 
         void operator()()
         {
