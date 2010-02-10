@@ -18,6 +18,7 @@
 #include <string>
 #include <cstring>
 #include <cstdlib>
+#include <cassert>
 #include <map>
 
 #include <lexical_cast.hh>      // more!
@@ -62,12 +63,12 @@ namespace more { namespace gotopt {
     // print help...
     //
 
-    template <typename CharT, typename Traits, typename T>
-    inline
-    void usage_on(std::basic_ostream<CharT,Traits> &out, 
-                  const std::string &prolog, const T &options, 
-                  const std::string & epilog = std::string())
+    template <typename T>
+    std::string usage(const std::string &prolog, const T &options, 
+                      const std::string & epilog = std::string())
     {
+        std::stringstream out;
+
         out << prolog << std::endl;
 
         long unsigned int maxlen = 0;
@@ -100,6 +101,8 @@ namespace more { namespace gotopt {
         }
         if (!epilog.empty())
             out << epilog << std::endl;
+    
+        return out.str();
     }
 
     // parser class
@@ -116,9 +119,11 @@ namespace more { namespace gotopt {
         std::vector<bool>               _M_context;
         std::map<std::string, option>   _M_mopt;
         const_iterator                  _M_it;
+#ifndef NDEBUG
+        int                             _M_argnum;
+#endif
 
     public:        
-        
         // iterators...
 
         const_iterator
@@ -145,6 +150,9 @@ namespace more { namespace gotopt {
         template <typename T, typename P>
         parser(T beg, T end, const P & opt)
         : _M_args(beg, end), _M_context(256,false), _M_mopt(), _M_it(_M_args.begin()) 
+#ifndef NDEBUG
+        , _M_argnum(0)
+#endif 
         {
             // load the map...
             //
@@ -163,9 +171,16 @@ namespace more { namespace gotopt {
         // callable object implementation 
         //
 
-        template <typename T>
-        char operator()(const T & exp = std::tr1::make_tuple(_true))
+        char operator()()
         {
+            return operator()(std::tr1::make_tuple(_true));
+        }
+
+        template <typename T>
+        char operator()(const T & exp)
+        {
+            assert( _M_argnum == 0 || !"INTERNAL ERROR: some argument not parsed!");
+
             // stop paring at the end of the range, or at the first non-option encountered
             //
 
@@ -201,7 +216,9 @@ namespace more { namespace gotopt {
                                          .append(" requires ")
                                          .append(more::lexical_cast<std::string>(cur->second.args))
                                          .append(cur->second.args > 1 ? " arguments" : " argument"));
-
+#ifndef NDEBUG
+            _M_argnum = cur->second.args;
+#endif
             // update the context with the current opt
             //
 
@@ -218,7 +235,9 @@ namespace more { namespace gotopt {
         {
             if (_M_it == _M_args.end())
                 throw std::runtime_error("no more arguments available");
-
+#ifndef NDEBUG
+            _M_argnum--;
+#endif
             return more::lexical_cast<T>(*_M_it++);
         }
 
@@ -337,7 +356,7 @@ namespace more { namespace gotopt {
     {
         if (!more::expr::eval(elem, ctx)) 
         {
-            std::stringstream in; in << elem;
+            std::stringstream in; in << "Assert " <<  elem << " failed!";
             throw std::runtime_error(in.str());
         }
     }

@@ -59,7 +59,7 @@ main(int argc, char *argv[])
             break;
 
         case 'h': 
-            more::gotopt::usage_on(std::cout, "Gotpot class test.\nUsage: a.out [OPTION]...", opts, "Done.");
+            std::cout << more::gotopt::usage("Gotpot class test.\nUsage: a.out [OPTION]...", opts, "Done.");
             return 0;
         }
     
