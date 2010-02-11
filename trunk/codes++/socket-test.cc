@@ -20,28 +20,23 @@ int main()
 
     more::sockaddress<AF_INET> addr("127.0.0.1",31337);
     more::sockaddress<AF_INET> peer;
-    more::socket<AF_INET> l(SOCK_STREAM);
+    more::socket<AF_INET> local(SOCK_STREAM);
 
-    if (!addr) {
-        std::cerr << "sockaddr error!" << std::endl;
-        exit(1);
-    }
-    
-    if (!l) {
-        std::cerr << "socket error!" << std::endl;
-        exit(2);
-    }
+    local.bind(addr);
+    local.listen(1);
 
-    l.bind(addr);
-    l.listen(1);
+    std::cout << "Simple echo server on port 127.0.0.1:31337..." << std::endl << std::endl;
 
     for(;;) {
         std::cout << "waiting for a client... ";
         std::cout.flush();
-        more::socket<AF_INET> r(SOCK_STREAM);
-        l.accept(peer, r);
+
+        more::socket<AF_INET> remote(SOCK_STREAM);
+
+        local.accept(peer, remote);
+        
         std::cout << "[" << peer.host() << ":" << peer.port() << "]" << std::endl; 
-        int n = r.recv(buffer, sizeof(buffer), 0);
+        int n = remote.recv(buffer, sizeof(buffer), 0);
         
         // r.send(buffer, n, 0); 
         // send double-echo by means of iovec...
@@ -54,6 +49,6 @@ int main()
         iov[1].iov_base = buffer;
         iov[1].iov_len  = n;
 
-        r.send(iov,0);
+        remote.send(iov,0);
     }
 }
