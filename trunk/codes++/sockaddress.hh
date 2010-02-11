@@ -22,22 +22,17 @@
 #include <cassert>
 #include <stdexcept>
 
-#include <enable_exception_if.hh>
-#include <error.hh>
+#include <error.hh>             // more!
 
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX 108
-#endif
-
-#ifndef ENABLE_EXCEPTION   
-#define ENABLE_EXCEPTION true 
 #endif
 
 namespace more {
 
     template <int f> class sockaddress;
     template <>
-    class sockaddress<AF_INET> : public more::enable_exception_if<ENABLE_EXCEPTION> {
+    class sockaddress<AF_INET> {
 
         sockaddr_in _M_addr;
         socklen_t   _M_len;
@@ -81,8 +76,9 @@ namespace more {
             hints.ai_protocol = 0;
             hints.ai_flags    = 0;
 
-            if (getaddrinfo(host.c_str(), NULL, &hints, &res) < 0) {
-                throw_or_return ( std::runtime_error( std::string("getaddrinfo: ").append(pretty_gai_strerror(errno))) );
+            if (getaddrinfo(host.c_str(), NULL, &hints, &res) < 0) 
+            {
+                throw std::runtime_error(std::string("getaddrinfo: ").append(pretty_gai_strerror(errno)));
             }
 
             _M_addr.sin_addr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr)->sin_addr;
@@ -129,8 +125,9 @@ namespace more {
             hints.ai_protocol = 0;
             hints.ai_flags    = 0;
 
-            if (getaddrinfo(h.c_str(), NULL, &hints, &res) < 0) {
-                throw_or_return ( std::runtime_error(std::string("getaddrinfo: ").append(pretty_gai_strerror(errno))) );
+            if (getaddrinfo(h.c_str(), NULL, &hints, &res) < 0) 
+            {
+                throw std::runtime_error(std::string("getaddrinfo: ").append(pretty_gai_strerror(errno)));
             }
 
             _M_addr.sin_addr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr)->sin_addr;
@@ -147,7 +144,7 @@ namespace more {
         {
             char buf[64];
             if (inet_ntop(AF_INET, &_M_addr.sin_addr, buf, sizeof(buf)) <= 0) {
-                throw_or_return ( more::syscall_error("inet_ntop"), std::string() );
+                throw more::syscall_error("inet_ntop"), std::string();
             }
             return std::string(buf);
         }
@@ -180,7 +177,7 @@ namespace more {
     };
 
     template <>
-    class sockaddress<AF_INET6> : public more::enable_exception_if<ENABLE_EXCEPTION> {
+    class sockaddress<AF_INET6> {
 
         sockaddr_in6 _M_addr;
         socklen_t    _M_len;
@@ -217,7 +214,7 @@ namespace more {
                 return;
             }
             if (inet_pton(AF_INET6, host.c_str(), &_M_addr.sin6_addr.s6_addr) <= 0) {
-                throw_or_return ( more::syscall_error("inet_pton") );
+                throw more::syscall_error("inet_pton");
             }
         }
 
@@ -253,7 +250,7 @@ namespace more {
                 return;
             }
             if (inet_pton(AF_INET6, h.c_str(), &_M_addr.sin6_addr.s6_addr) <= 0) {
-                throw_or_return ( more::syscall_error("inet_pton") );
+                throw more::syscall_error("inet_pton");
             }
         }
 
@@ -267,7 +264,7 @@ namespace more {
         {
             char buf[64];
             if (inet_ntop(AF_INET6, &_M_addr.sin6_addr, buf, sizeof(buf)) <= 0) {
-                throw_or_return ( more::syscall_error("inet_ntop"), std::string() );
+                throw more::syscall_error("inet_ntop"), std::string();
             }
             return std::string(buf);
         }
@@ -300,7 +297,7 @@ namespace more {
     };
 
     template <>
-    class sockaddress<AF_UNIX> : public more::enable_exception_if<ENABLE_EXCEPTION> {
+    class sockaddress<AF_UNIX> {
 
         sockaddr_un _M_addr;
         socklen_t _M_len;
