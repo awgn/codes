@@ -16,6 +16,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <map>
+
 #include <tr1/type_traits>
 
 #include <typemap.hh>           // more
@@ -64,6 +66,39 @@ namespace more { namespace kv {
     { 
         return b.parse(in, "block");
     }
+    // generic container that supports push_back()
+    //
+    template <typename E, template <typename _Tp, typename Alloc = std::allocator<_Tp> > class C >
+    inline bool lex_parse(std::istream &in, C<E> &elems)
+    {
+        E tmp;
+        if ( lex_parse(in,tmp) ) {
+            elems.push_back(tmp);
+            return true;
+        }
+        return false;
+    }
+    // std::map that implements associative container 
+    //
+    template <typename K, typename V>
+    inline bool lex_parse(std::istream &in, std::map<K,V> &elems)
+    {
+        K key;
+        V value;
+
+        if ( !lex_parse(in,key) )
+            return false;
+        
+        std::string sep;
+        if (!(in >> sep) || sep != "=>" )
+            return false;
+
+        if ( !lex_parse(in,value) )
+            return false;
+
+        elems.insert( std::make_pair(key,value) );
+        return true;
+    }
 
     template <>
     inline bool lex_parse<bool>(std::istream &in, bool &elem)
@@ -110,17 +145,6 @@ namespace more { namespace kv {
         }
         return true;
     }
-    template <typename E, template <typename _Tp, typename Alloc = std::allocator<_Tp> > class C >
-    inline bool lex_parse(std::istream &in, C<E> &elems)
-    {
-        E tmp;
-        if ( lex_parse(in,tmp) ) {
-            elems.push_back(tmp);
-            return true;
-        }
-        return false;
-    }
-
     //////////////////////////////////////////////////////////////////////////
     //   parser class
 

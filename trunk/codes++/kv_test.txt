@@ -4,6 +4,9 @@
 
 # unsigned_int = 69
 
+associative = "goofy"  => 1 
+associative = "mickey" => 2 
+
 integers = 10     
 integers = 0x10     
 integers = 010     
@@ -37,7 +40,6 @@ blocks = {
           two:   2 
           three: 2
         } 
-
 
  unknown = key  # ignored in non-strict mode 
 
