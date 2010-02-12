@@ -25,7 +25,7 @@ int main()
     local.bind(addr);
     local.listen(1);
 
-    std::cout << "Simple echo server on port 127.0.0.1:31337..." << std::endl << std::endl;
+    std::cout << "Simple double-echo server on 127.0.0.1:31337..." << std::endl << std::endl;
 
     for(;;) {
         std::cout << "waiting for a client... ";

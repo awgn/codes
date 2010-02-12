@@ -17,15 +17,16 @@
 
 #include <tr1/array>
 #include <sockaddress.hh>           // more!
-#include <atomicity-policy.hh>      // more!
 #include <error.hh>                 // more!
 
 namespace more {
 
-    template <int FAMILY, typename ATOMICITY>
-    class generic_socket : private atomicity::emptybase_mutex<atomicity::DEFAULT> 
+    template <int FAMILY>
+    class generic_socket  
     {
     public:
+
+        ///////////////////// I/O do not throw ///////////////////// 
 
         int 
         send(const void *buf, size_t len, int flags) const
@@ -42,7 +43,9 @@ namespace more {
 
         int 
         recv(void *buf, size_t len, int flags) const
-        { return ::recv(_M_fd, buf, len, flags); }
+        { 
+            return ::recv(_M_fd, buf, len, flags); 
+        }
 
         template <std::size_t N>
         int recv(std::tr1::array<iovec,N> &iov, int flags) const
@@ -64,68 +67,99 @@ namespace more {
             return ::recvfrom(_M_fd, buf, len, flags, 
                               reinterpret_cast<struct sockaddr *>(&from), &from.len()); 
         }
+    
+        ////////////////// connect/bind/listen/accept: throw in case of non-blocking socket related errors
 
         virtual int 
         connect(const sockaddress<FAMILY> &addr)
         { 
-            return ::connect(_M_fd, reinterpret_cast<const struct sockaddr *>(&addr), addr.len()); 
+            if (::connect(_M_fd, reinterpret_cast<const struct sockaddr *>(&addr), addr.len()) < 0)
+            {
+                if (errno != EINPROGRESS && errno != EALREADY)
+                    throw more::syscall_error("socket::connect", errno);
+                return -1;
+            }
+            return 0;
         }
 
-        virtual int 
+        virtual void 
         bind(const sockaddress<FAMILY> &my_addr)
         { 
-            return ::bind(_M_fd,reinterpret_cast<const struct sockaddr *>(&my_addr), my_addr.len()); 
+            if (::bind(_M_fd,reinterpret_cast<const struct sockaddr *>(&my_addr), my_addr.len()) < 0)
+               throw more::syscall_error("socket::bind", errno); 
+        }
+
+        void 
+        listen(int backlog) 
+        { 
+            if(::listen(_M_fd, backlog) <0)
+                throw more::syscall_error("socket::listen", errno);
         }
 
         int 
-        accept(sockaddress<FAMILY> &addr, generic_socket<FAMILY, ATOMICITY> &remote) 
+        accept(sockaddress<FAMILY> &addr, generic_socket<FAMILY> &remote) 
         {
             int s = ::accept(_M_fd,reinterpret_cast<struct sockaddr *>(&addr), &addr.len());
-            if (s != -1) { 
-                typename ATOMICITY::scoped_lock L(remote.mutex());
-                remote.close_fd();
-                remote._M_fd = s;
+            if (s < 0) {
+                if (errno != EAGAIN && errno != EWOULDBLOCK)
+                    throw more::syscall_error("socket::accept", errno);
+                return -1; 
             }
+            remote.close_fd();
+            remote._M_fd = s;
             return s;
         }
 
-        int 
-        listen(int backlog) 
-        { return ::listen(_M_fd, backlog); }
+        ////////////////////////////////////////////
 
         int 
         getsockname(sockaddress<FAMILY> &name) const
-        { return ::getsockname(_M_fd, reinterpret_cast<struct sockaddr *>(&name), &name.len()); }
+        { 
+            return ::getsockname(_M_fd, reinterpret_cast<struct sockaddr *>(&name), &name.len()); 
+        }
 
         int 
         getpeername(sockaddress<FAMILY> &name) const
-        { return ::getpeername(_M_fd, reinterpret_cast<struct sockaddr *>(&name), &name.len()); }
+        { 
+            return ::getpeername(_M_fd, reinterpret_cast<struct sockaddr *>(&name), &name.len()); 
+        }
 
         int 
         setsockopt(int level, int optname, const void *optval, socklen_t optlen)
-        { return ::setsockopt(_M_fd, level, optname, optval, optlen); }
+        { 
+            return ::setsockopt(_M_fd, level, optname, optval, optlen); 
+        }
 
         int 
         getsockopt(int level, int optname, void *optval, socklen_t *optlen) const
-        { return ::getsockopt(_M_fd, level, optname, optval, optlen); }
-
-        const int 
-        fd() const 
-        { return _M_fd; }        
+        { 
+            return ::getsockopt(_M_fd, level, optname, optval, optlen); 
+        }
 
         int 
+        fd() const 
+        { 
+            return _M_fd; 
+        }        
+
+        bool
+        is_open() const
+        { return _M_fd == -1; }
+
+        void 
+        close()
+        {
+            this->close_fd();
+        }
+
+        void 
         init(int type,int protocol=0) 
         {
-            typename ATOMICITY::scoped_lock L(this->mutex());
-            if (_M_fd != -1) {
-                throw std::runtime_error("generic_socket::init: socket already opened");
-            }
-
+            close_fd();
             _M_fd = ::socket(FAMILY, type, protocol);
             if (_M_fd == -1) {
-                throw more::syscall_error(std::string("generic_socket::init"),errno);
+                throw more::syscall_error(std::string("socket::init"),errno);
             }
-            return 0;
         }
 
     protected:
@@ -134,29 +168,27 @@ namespace more {
 
         virtual ~generic_socket()
         {
-            typename ATOMICITY::scoped_lock L(this->mutex());
             this->close_fd();
         }
 
-        generic_socket() 
-        : _M_fd(-1)
+        generic_socket(int s = -1) 
+        : _M_fd(s)
         {}
 
         generic_socket(__socket_type type, int protocol=0)
         : _M_fd(::socket(FAMILY, type, protocol))
         {
             if ( _M_fd == -1) {
-                throw more::syscall_error(std::string("generic_socket():"), errno);
+                throw more::syscall_error(std::string("socket()"), errno);
             }
         }
 
         generic_socket(const generic_socket &rhs)
         : _M_fd(-1)
         {
-            typename ATOMICITY::scoped_lock L(this->mutex());
             if ( rhs._M_fd == -1 )
-                throw std::runtime_error(std::string("generic_socket(generic_socket &): bad file descriptor"));
-            std::swap(_M_fd, rhs._M_fd);
+                throw std::runtime_error(std::string("socket(socket &): bad file descriptor"));
+            _M_fd = rhs.release();
         }
 
         generic_socket &
@@ -164,18 +196,16 @@ namespace more {
         {
             if (this != &rhs) 
             {
-                typename ATOMICITY::scoped_lock L(this->mutex());
                 if ( rhs._M_fd == -1 )
-                    throw std::runtime_error(std::string("generic_socket::operator=(generic_socket &): bad file descriptor"));
+                    throw std::runtime_error(std::string("socket::operator=(socket &): bad file descriptor"));
                 this->close_fd();
-                std::swap(_M_fd, rhs._M_fd);
+                _M_fd = rhs.release();
             }
             return *this;         
         }
 
-        // close the socket, set _M_fd = -1
-        //
-
+        // close the socket and set fd to -1
+        
         void close_fd()
         {
             if (_M_fd != -1) 
@@ -185,35 +215,43 @@ namespace more {
             }
         }
 
+        // release the socket
+        
+        int release()
+        {
+            int __tmp = _M_fd;
+            _M_fd = -1;
+            return __tmp;
+        }
+    
     };
 
-    // generic socket PF_INET/PF_INET6
+    // generic socket: PF_INET/PF_INET6...
     //
 
-    template <int FAMILY, typename ATOMICITY = atomicity::DEFAULT > 
-    struct socket : public generic_socket<FAMILY, ATOMICITY> 
+    template <int FAMILY> 
+    struct socket : public generic_socket<FAMILY> 
     {
         socket()
-        : generic_socket<FAMILY, ATOMICITY>()
+        : generic_socket<FAMILY>()
         {}
 
         socket(__socket_type type, int protocol=0)
-        : generic_socket<FAMILY,ATOMICITY>(type,protocol) 
+        : generic_socket<FAMILY>(type,protocol) 
         {}
-
     };
 
-    // PF_UNIX specializations...
+    // PF_UNIX specialization
     //
-    template <typename ATOMICITY> 
-    struct socket<PF_UNIX, ATOMICITY> : public generic_socket<PF_UNIX, ATOMICITY>   
+    template <> 
+    struct socket<PF_UNIX> : public generic_socket<PF_UNIX>   
     {
         socket()
-        : generic_socket<PF_UNIX, ATOMICITY>()
+        : generic_socket<PF_UNIX>()
         {}
 
         socket(__socket_type type, int protocol=0)
-        : generic_socket<PF_UNIX, ATOMICITY>(type,protocol),
+        : generic_socket<PF_UNIX>(type,protocol),
         _M_pathname(),
         _M_bound(false)
         {}
@@ -225,20 +263,24 @@ namespace more {
             }
         }
 
-        int bind(const sockaddress<PF_UNIX> &my_addr)
+        void bind(const sockaddress<PF_UNIX> &my_addr)
         {
-            int r = ::bind(this->_M_fd,reinterpret_cast<const struct sockaddr *>(&my_addr), my_addr.len());
-            if (r != -1)
-                _M_pathname = my_addr;
-            return r;
+            if(::bind(this->_M_fd,reinterpret_cast<const struct sockaddr *>(&my_addr), my_addr.len())<0)
+                throw more::syscall_error("socket::bind", errno);
+            _M_pathname = my_addr;
         }
 
-        int connect(const sockaddress<PF_UNIX> &addr)
+        int
+        connect(const sockaddress<PF_UNIX> &addr)
         {
-            int r = ::connect(this->_M_fd, reinterpret_cast<const struct sockaddr *>(&addr), addr.len());
-            if (r != -1)
-                _M_pathname = addr;
-            return r;
+            if (::connect(this->_M_fd, reinterpret_cast<const struct sockaddr *>(&addr), addr.len()) < 0)
+            {
+                if ( errno != EINPROGRESS && errno != EALREADY)
+                    throw more::syscall_error("socket::connect", errno);
+                return -1;
+            }
+            _M_pathname = addr;
+            return 0;
         }
 
     private:
