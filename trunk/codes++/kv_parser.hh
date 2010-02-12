@@ -20,9 +20,9 @@
 
 #include <tr1/type_traits>
 
-#include <typemap.hh>           // more
-#include <iomanip.hh>           // more
-#include <lnistreambuf.hh>      // more
+#include <typemap.hh>           // more!
+#include <iomanip.hh>           // more!
+#include <lnistreambuf.hh>      // more!
 
 //////////////////////////////////
 //  key-value config file parser 
@@ -66,9 +66,11 @@ namespace more { namespace kv {
     { 
         return b.parse(in, "block");
     }
+
     // generic container that supports push_back()
     //
-    template <typename E, template <typename _Tp, typename Alloc = std::allocator<_Tp> > class C >
+    template <typename E, 
+              template <typename _Tp, typename Alloc = std::allocator<_Tp> > class C >
     inline bool lex_parse(std::istream &in, C<E> &elems)
     {
         E tmp;
@@ -78,10 +80,14 @@ namespace more { namespace kv {
         }
         return false;
     }
-    // std::map that implements associative container 
+    
+    // generic associative container that supports insert(std::pair<K,V>)
     //
-    template <typename K, typename V>
-    inline bool lex_parse(std::istream &in, std::map<K,V> &elems)
+    template <typename K, typename V,  
+                template <typename _Key, typename _Tp,
+                          typename _Compare = std::less<_Key>,
+                          typename _Alloc = std::allocator<std::pair<const _Key, _Tp> > > class Cont >
+    inline bool lex_parse(std::istream &in, Cont<K,V> &elems)
     {
         K key;
         V value;
@@ -100,6 +106,8 @@ namespace more { namespace kv {
         return true;
     }
 
+    // specialization for boolean
+    //
     template <>
     inline bool lex_parse<bool>(std::istream &in, bool &elem)
     {
@@ -110,6 +118,9 @@ namespace more { namespace kv {
         }
         return true;
     }
+
+    // specialization for strings, " support
+    //
     template <>
     inline bool lex_parse<std::string>(std::istream &in, std::string &elem)
     {
@@ -149,16 +160,16 @@ namespace more { namespace kv {
     //   parser class
 
     template <typename T, 
-             bool SMD  = false /* strict mode */, 
-             char SEP  = '='  /* separator */, 
-             char COM  = '#' /* comment */ >
+             bool Strict     = false /* strict mode */, 
+             char Separator  = '='  /* separator */, 
+             char Comment    = '#' /* comment */ >
      struct parser
      {
      public:
          typedef typename T::key key_type;
          typedef typename T::value value_type;
 
-         typedef parser<typename T::next, SMD, SEP, COM> map_type;
+         typedef parser<typename T::next, Strict, Separator, Comment> map_type;
 
          map_type     _M_map;
          key_type     _M_key;
@@ -198,8 +209,8 @@ namespace more { namespace kv {
          bool parse_key_value(std::istream &in, const std::string &fname, const std::string &key)
          { return __parse(in, fname, key, *this); }
 
-         template <typename U, bool S >
-         static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<U,S,SEP,COM> &that)
+         template <typename U, bool _Strict >
+         static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<U,_Strict,Separator,Comment> &that)
          {
              if (key == U::key::value()) {
                  if (!lex_parse(in,that._M_value) || in.fail() ) {
@@ -212,20 +223,19 @@ namespace more { namespace kv {
              }
              return __parse(in, fname, key, that._M_map);
          }
-         template <bool S>
-         static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<mtp::TM::null,S,SEP,COM> &)
+         template <bool _Strict>
+         static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<mtp::TM::null,_Strict,Separator,Comment> &)
          {
-             // unknown key-value!
-             //
+             // unknown key-value...
 
-             if (S) {   // strict mode: dump-error 
+             if (_Strict) {   // strict mode: dump-error 
                  std::clog << fname << ": parse error: key[" << key << "] unknown (line " << 
                  more::line_number(in) << ")" << std::endl;
                  return false;
              }
 
              // non-strict mode: skip this line
-             //
+             
              in >> more::ignore_line;
              return true;
          }
@@ -258,17 +268,15 @@ namespace more { namespace kv {
                  si >> std::noskipws >> std::ws;
 
                  // parse KEY 
-                 //
 
                  char c('\0');
-                 while ( si >> c && !isspace(c) && c != SEP ) {
+                 while ( si >> c && !isspace(c) && c != Separator ) {
                      key.push_back(c);
                  }
 
                  // skip comments/empty lines
-                 //
 
-                 if (key.empty() || key[0] == COM ) {
+                 if (key.empty() || key[0] == Comment ) {
                      si >> more::ignore_line;
                      continue;
                  }
@@ -293,21 +301,19 @@ namespace more { namespace kv {
                      return false;
                  }
 
-                 // parse SEPARATOR ('=')
-                 //
+                 // parse Separator ('=')
 
-                 if ( c != SEP ) {
+                 if ( c != Separator ) {
                      si >> c; 
-                     if ( c != SEP ) {
+                     if ( c != Separator ) {
                          std::clog << fname << ": parse error: key[" << key << "] missing separator '" 
-                         << SEP << "' (line "<< more::line_number(si) << ")" << std::endl;
+                         << Separator << "' (line "<< more::line_number(si) << ")" << std::endl;
                          return false;
                      }
                  }
 
                  // parse value... 
-                 //
-
+                 
                  if ( !parse_key_value(si, fname, key) ) 
                      return false;
              }
@@ -316,11 +322,11 @@ namespace more { namespace kv {
          }
      };
 
-    template <bool S, char SEP, char COM>
-    class parser<mtp::TM::null, S, SEP, COM> {};
+    template <bool S, char Separator, char Comment>
+    class parser<mtp::TM::null, S, Separator, Comment> {};
 
-    template <typename T, bool SMD = false> 
-    struct block : public parser<T, SMD, ':', '#'> {}; 
+    template <typename T, bool Strict = false> 
+    struct block : public parser<T, Strict, ':', '#'> {}; 
 
 } // namespace kv
 } // namespace more
