@@ -48,30 +48,30 @@
 //
 
 #ifndef TYPELIST
-#define TYPELIST_1(a)                  more::tl::typelist<a,more::tl::null>
-#define TYPELIST_2(a,...)              more::tl::typelist<a,TYPELIST_1(__VA_ARGS__) >
-#define TYPELIST_3(a,...)              more::tl::typelist<a,TYPELIST_2(__VA_ARGS__) >
-#define TYPELIST_4(a,...)              more::tl::typelist<a,TYPELIST_3(__VA_ARGS__) >
-#define TYPELIST_5(a,...)              more::tl::typelist<a,TYPELIST_4(__VA_ARGS__) >
-#define TYPELIST_6(a,...)              more::tl::typelist<a,TYPELIST_5(__VA_ARGS__) >
-#define TYPELIST_7(a,...)              more::tl::typelist<a,TYPELIST_6(__VA_ARGS__) >
-#define TYPELIST_8(a,...)              more::tl::typelist<a,TYPELIST_7(__VA_ARGS__) >
-#define TYPELIST_9(a,...)              more::tl::typelist<a,TYPELIST_8(__VA_ARGS__) >
-#define TYPELIST_10(a,...)             more::tl::typelist<a,TYPELIST_9(__VA_ARGS__) >
-#define TYPELIST_11(a,...)             more::tl::typelist<a,TYPELIST_10(__VA_ARGS__) >
-#define TYPELIST_12(a,...)             more::tl::typelist<a,TYPELIST_11(__VA_ARGS__) >
-#define TYPELIST_13(a,...)             more::tl::typelist<a,TYPELIST_12(__VA_ARGS__) >
-#define TYPELIST_14(a,...)             more::tl::typelist<a,TYPELIST_13(__VA_ARGS__) >
-#define TYPELIST_15(a,...)             more::tl::typelist<a,TYPELIST_14(__VA_ARGS__) >
-#define TYPELIST_16(a,...)             more::tl::typelist<a,TYPELIST_15(__VA_ARGS__) >
-#define TYPELIST_17(a,...)             more::tl::typelist<a,TYPELIST_16(__VA_ARGS__) >
-#define TYPELIST_18(a,...)             more::tl::typelist<a,TYPELIST_17(__VA_ARGS__) >
-#define TYPELIST_19(a,...)             more::tl::typelist<a,TYPELIST_18(__VA_ARGS__) >
-#define TYPELIST_20(a,...)             more::tl::typelist<a,TYPELIST_19(__VA_ARGS__) >
+#define TYPELIST_1(a)                  more::TL::typelist<a,more::TL::null>
+#define TYPELIST_2(a,...)              more::TL::typelist<a,TYPELIST_1(__VA_ARGS__) >
+#define TYPELIST_3(a,...)              more::TL::typelist<a,TYPELIST_2(__VA_ARGS__) >
+#define TYPELIST_4(a,...)              more::TL::typelist<a,TYPELIST_3(__VA_ARGS__) >
+#define TYPELIST_5(a,...)              more::TL::typelist<a,TYPELIST_4(__VA_ARGS__) >
+#define TYPELIST_6(a,...)              more::TL::typelist<a,TYPELIST_5(__VA_ARGS__) >
+#define TYPELIST_7(a,...)              more::TL::typelist<a,TYPELIST_6(__VA_ARGS__) >
+#define TYPELIST_8(a,...)              more::TL::typelist<a,TYPELIST_7(__VA_ARGS__) >
+#define TYPELIST_9(a,...)              more::TL::typelist<a,TYPELIST_8(__VA_ARGS__) >
+#define TYPELIST_10(a,...)             more::TL::typelist<a,TYPELIST_9(__VA_ARGS__) >
+#define TYPELIST_11(a,...)             more::TL::typelist<a,TYPELIST_10(__VA_ARGS__) >
+#define TYPELIST_12(a,...)             more::TL::typelist<a,TYPELIST_11(__VA_ARGS__) >
+#define TYPELIST_13(a,...)             more::TL::typelist<a,TYPELIST_12(__VA_ARGS__) >
+#define TYPELIST_14(a,...)             more::TL::typelist<a,TYPELIST_13(__VA_ARGS__) >
+#define TYPELIST_15(a,...)             more::TL::typelist<a,TYPELIST_14(__VA_ARGS__) >
+#define TYPELIST_16(a,...)             more::TL::typelist<a,TYPELIST_15(__VA_ARGS__) >
+#define TYPELIST_17(a,...)             more::TL::typelist<a,TYPELIST_16(__VA_ARGS__) >
+#define TYPELIST_18(a,...)             more::TL::typelist<a,TYPELIST_17(__VA_ARGS__) >
+#define TYPELIST_19(a,...)             more::TL::typelist<a,TYPELIST_18(__VA_ARGS__) >
+#define TYPELIST_20(a,...)             more::TL::typelist<a,TYPELIST_19(__VA_ARGS__) >
 #define TYPELIST(...)                  XPASTE(TYPELIST_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
 #endif /* TYPELIST */
 
-namespace more { namespace tl {
+namespace more { namespace TL {
 
     class null {};
     struct empty {};
@@ -181,10 +181,10 @@ namespace more { namespace tl {
         struct valid_type<V,-1>
         {};
 
-        typedef typename valid_type<T, more::tl::index_of<TLIST,T>::value >::type type;
+        typedef typename valid_type<T, more::TL::index_of<TLIST,T>::value >::type type;
     };
 
-    // tl::is_same<TLIST1, TLIST2>::value
+    // TL::is_same<TLIST1, TLIST2>::value
     //
     template <typename T1, typename T2> struct is_same;
     template <>
@@ -208,7 +208,7 @@ namespace more { namespace tl {
         enum { value = std::tr1::is_same<H1, H2>::value && is_same<T1, T2>::value };
     };        
 
-    // tl::apply1<TLIST, UNARY_FUNCTION>::type
+    // TL::apply1<TLIST, UNARY_FUNCTION>::type
     //
     template <typename TLIST, typename UF> struct apply1;
     template <typename UF>
@@ -226,7 +226,7 @@ namespace more { namespace tl {
                  > type;
     };
 
-    // tl::transform<TLIST1, TLIST2, BINARY_FUNCTION>::type
+    // TL::transform<TLIST1, TLIST2, BINARY_FUNCTION>::type
     //
     template <typename T1, typename T2, typename BF> struct transform;
     template <typename BF>
@@ -244,7 +244,7 @@ namespace more { namespace tl {
                  > type;
     };
 
-}  // namespace tl
+}  // namespace TL
 }; // namespace more
 
 #endif /* TYPELIST_HH */

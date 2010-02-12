@@ -47,7 +47,7 @@ namespace more {
         struct type_index
         {
             typedef TYPELIST(T0,T1,T2,T3,T4,T5) list_type;
-            enum { value = more::tl::index_of<list_type, T>::value };
+            enum { value = more::TL::index_of<list_type, T>::value };
         };
 
         ///////////////////////////////////////////// store strategy 

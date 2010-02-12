@@ -21,33 +21,33 @@ main(int argc, char *argv[])
 {
     typedef TYPEMAP(name, std::string, age, int) mymap;
 
-    mtp::TM::get<name, mymap>::type me = "Nicola";
-    mtp::TM::get<age , mymap>::type a __attribute__((unused)) = 36;
+    more::TM::get<name, mymap>::type me = "Nicola";
+    more::TM::get<age , mymap>::type a __attribute__((unused)) = 36;
 
-    typedef mtp::TM::null empty;
+    typedef more::TM::null empty;
 
-    typedef mtp::TM::append<size,int, empty >::type  map_1;
-    typedef mtp::TM::append<age, int, map_1>::type  map_2;
-    // typedef mtp::TM::append<nickname, int, map_2>::type map_3;
+    typedef more::TM::append<size,int, empty >::type  map_1;
+    typedef more::TM::append<age, int, map_1>::type  map_2;
+    // typedef more::TM::append<nickname, int, map_2>::type map_3;
 
-    mtp::TM::get<size, map_1>::type x __attribute__((unused))= 1;
-    mtp::TM::get<size, map_2>::type c __attribute__((unused))= 2;
-    mtp::TM::get<age,  map_2>::type d __attribute__((unused))= 3;
+    more::TM::get<size, map_1>::type x __attribute__((unused))= 1;
+    more::TM::get<size, map_2>::type c __attribute__((unused))= 2;
+    more::TM::get<age,  map_2>::type d __attribute__((unused))= 3;
 
-    std::cout << "size<map_1>::value  = " << mtp::TM::size<map_1>::value << std::endl;
-    std::cout << "size<map_2>::value  = " << mtp::TM::size<map_2>::value << std::endl;
+    std::cout << "size<map_1>::value  = " << more::TM::size<map_1>::value << std::endl;
+    std::cout << "size<map_2>::value  = " << more::TM::size<map_2>::value << std::endl;
 
-    std::cout << "index_of<size,map_2> = " << mtp::TM::index_of<size, map_2>::value << std::endl;
-    std::cout << "index_of<age, map_2> = " << mtp::TM::index_of<age, map_2>::value << std::endl;
-    std::cout << "index_of<name,map_2> = " << mtp::TM::index_of<name, map_2>::value << std::endl;
+    std::cout << "index_of<size,map_2> = " << more::TM::index_of<size, map_2>::value << std::endl;
+    std::cout << "index_of<age, map_2> = " << more::TM::index_of<age, map_2>::value << std::endl;
+    std::cout << "index_of<name,map_2> = " << more::TM::index_of<name, map_2>::value << std::endl;
 
-    std::cout << "get_key<0, map_2> = " << typeid(mtp::TM::get_key<0, map_2>::type).name() << std::endl; 
-    std::cout << "get_key<1, map_2> = " << typeid(mtp::TM::get_key<1, map_2>::type).name() << std::endl; 
-    std::cout << "get_key<2, map_2> = " << typeid(mtp::TM::get_key<2, map_2>::type).name() << std::endl; 
+    std::cout << "get_key<0, map_2> = " << typeid(more::TM::get_key<0, map_2>::type).name() << std::endl; 
+    std::cout << "get_key<1, map_2> = " << typeid(more::TM::get_key<1, map_2>::type).name() << std::endl; 
+    std::cout << "get_key<2, map_2> = " << typeid(more::TM::get_key<2, map_2>::type).name() << std::endl; 
 
-    std::cout << "key[0] = " << ( mtp::TM::get_key<0, map_2>::type::value() ? : "NULL" ) << std::endl;
-    std::cout << "key[1] = " << ( mtp::TM::get_key<1, map_2>::type::value() ? : "NULL" ) << std::endl;
-    std::cout << "key[2] = " << ( mtp::TM::get_key<2, map_2>::type::value() ? : "NULL" ) << std::endl;
+    std::cout << "key[0] = " << ( more::TM::get_key<0, map_2>::type::value() ? : "NULL" ) << std::endl;
+    std::cout << "key[1] = " << ( more::TM::get_key<1, map_2>::type::value() ? : "NULL" ) << std::endl;
+    std::cout << "key[2] = " << ( more::TM::get_key<2, map_2>::type::value() ? : "NULL" ) << std::endl;
     return 0;
 }
  

@@ -50,37 +50,37 @@
 //
 
 #ifndef TYPEMAP
-#define TYPEMAP_2(a,b,...)            mtp::TM::typemap<a,b,mtp::TM::null>
-#define TYPEMAP_4(a,b,...)            mtp::TM::typemap<a,b,TYPEMAP_2(__VA_ARGS__) >
-#define TYPEMAP_6(a,b,...)            mtp::TM::typemap<a,b,TYPEMAP_4(__VA_ARGS__) >
-#define TYPEMAP_8(a,b,...)            mtp::TM::typemap<a,b,TYPEMAP_6(__VA_ARGS__) >
-#define TYPEMAP_10(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_8(__VA_ARGS__) >
-#define TYPEMAP_12(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_10(__VA_ARGS__) >
-#define TYPEMAP_14(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_12(__VA_ARGS__) >
-#define TYPEMAP_16(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_14(__VA_ARGS__) >
-#define TYPEMAP_18(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_16(__VA_ARGS__) >
-#define TYPEMAP_20(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_18(__VA_ARGS__) >
-#define TYPEMAP_22(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_20(__VA_ARGS__) >
-#define TYPEMAP_24(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_22(__VA_ARGS__) >
-#define TYPEMAP_26(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_24(__VA_ARGS__) >
-#define TYPEMAP_28(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_26(__VA_ARGS__) >
-#define TYPEMAP_30(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_28(__VA_ARGS__) >
-#define TYPEMAP_32(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_30(__VA_ARGS__) >
-#define TYPEMAP_34(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_32(__VA_ARGS__) >
-#define TYPEMAP_36(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_34(__VA_ARGS__) >
-#define TYPEMAP_38(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_36(__VA_ARGS__) >
-#define TYPEMAP_40(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_38(__VA_ARGS__) >
-#define TYPEMAP_42(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_40(__VA_ARGS__) >
-#define TYPEMAP_44(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_42(__VA_ARGS__) >
-#define TYPEMAP_46(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_44(__VA_ARGS__) >
-#define TYPEMAP_48(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_46(__VA_ARGS__) >
-#define TYPEMAP_50(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_48(__VA_ARGS__) >
-#define TYPEMAP_52(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_50(__VA_ARGS__) >
-#define TYPEMAP_54(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_52(__VA_ARGS__) >
-#define TYPEMAP_56(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_54(__VA_ARGS__) >
-#define TYPEMAP_58(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_56(__VA_ARGS__) >
-#define TYPEMAP_60(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_58(__VA_ARGS__) >
-#define TYPEMAP_62(a,b,...)           mtp::TM::typemap<a,b,TYPEMAP_60(__VA_ARGS__) >
+#define TYPEMAP_2(a,b,...)            more::TM::typemap<a,b,more::TM::null>
+#define TYPEMAP_4(a,b,...)            more::TM::typemap<a,b,TYPEMAP_2(__VA_ARGS__) >
+#define TYPEMAP_6(a,b,...)            more::TM::typemap<a,b,TYPEMAP_4(__VA_ARGS__) >
+#define TYPEMAP_8(a,b,...)            more::TM::typemap<a,b,TYPEMAP_6(__VA_ARGS__) >
+#define TYPEMAP_10(a,b,...)           more::TM::typemap<a,b,TYPEMAP_8(__VA_ARGS__) >
+#define TYPEMAP_12(a,b,...)           more::TM::typemap<a,b,TYPEMAP_10(__VA_ARGS__) >
+#define TYPEMAP_14(a,b,...)           more::TM::typemap<a,b,TYPEMAP_12(__VA_ARGS__) >
+#define TYPEMAP_16(a,b,...)           more::TM::typemap<a,b,TYPEMAP_14(__VA_ARGS__) >
+#define TYPEMAP_18(a,b,...)           more::TM::typemap<a,b,TYPEMAP_16(__VA_ARGS__) >
+#define TYPEMAP_20(a,b,...)           more::TM::typemap<a,b,TYPEMAP_18(__VA_ARGS__) >
+#define TYPEMAP_22(a,b,...)           more::TM::typemap<a,b,TYPEMAP_20(__VA_ARGS__) >
+#define TYPEMAP_24(a,b,...)           more::TM::typemap<a,b,TYPEMAP_22(__VA_ARGS__) >
+#define TYPEMAP_26(a,b,...)           more::TM::typemap<a,b,TYPEMAP_24(__VA_ARGS__) >
+#define TYPEMAP_28(a,b,...)           more::TM::typemap<a,b,TYPEMAP_26(__VA_ARGS__) >
+#define TYPEMAP_30(a,b,...)           more::TM::typemap<a,b,TYPEMAP_28(__VA_ARGS__) >
+#define TYPEMAP_32(a,b,...)           more::TM::typemap<a,b,TYPEMAP_30(__VA_ARGS__) >
+#define TYPEMAP_34(a,b,...)           more::TM::typemap<a,b,TYPEMAP_32(__VA_ARGS__) >
+#define TYPEMAP_36(a,b,...)           more::TM::typemap<a,b,TYPEMAP_34(__VA_ARGS__) >
+#define TYPEMAP_38(a,b,...)           more::TM::typemap<a,b,TYPEMAP_36(__VA_ARGS__) >
+#define TYPEMAP_40(a,b,...)           more::TM::typemap<a,b,TYPEMAP_38(__VA_ARGS__) >
+#define TYPEMAP_42(a,b,...)           more::TM::typemap<a,b,TYPEMAP_40(__VA_ARGS__) >
+#define TYPEMAP_44(a,b,...)           more::TM::typemap<a,b,TYPEMAP_42(__VA_ARGS__) >
+#define TYPEMAP_46(a,b,...)           more::TM::typemap<a,b,TYPEMAP_44(__VA_ARGS__) >
+#define TYPEMAP_48(a,b,...)           more::TM::typemap<a,b,TYPEMAP_46(__VA_ARGS__) >
+#define TYPEMAP_50(a,b,...)           more::TM::typemap<a,b,TYPEMAP_48(__VA_ARGS__) >
+#define TYPEMAP_52(a,b,...)           more::TM::typemap<a,b,TYPEMAP_50(__VA_ARGS__) >
+#define TYPEMAP_54(a,b,...)           more::TM::typemap<a,b,TYPEMAP_52(__VA_ARGS__) >
+#define TYPEMAP_56(a,b,...)           more::TM::typemap<a,b,TYPEMAP_54(__VA_ARGS__) >
+#define TYPEMAP_58(a,b,...)           more::TM::typemap<a,b,TYPEMAP_56(__VA_ARGS__) >
+#define TYPEMAP_60(a,b,...)           more::TM::typemap<a,b,TYPEMAP_58(__VA_ARGS__) >
+#define TYPEMAP_62(a,b,...)           more::TM::typemap<a,b,TYPEMAP_60(__VA_ARGS__) >
 #define TYPEMAP(...)                  XPASTE(TYPEMAP_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
 #endif /* TYPEMAP */
 
@@ -135,7 +135,7 @@
 #define TYPEMAP_KEY(...)              XPASTE(TYPEMAP_KEY_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
 
 
-namespace mtp { namespace TM {
+namespace more { namespace TM {
 
     struct null 
     {

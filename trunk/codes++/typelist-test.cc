@@ -60,67 +60,67 @@ namespace example
 int main()
 {
     typedef TYPELIST(int) list0;
-    typedef tl::append<list0, bool>::type list1;
-    typedef tl::append<list1, std::string>::type list2;
+    typedef TL::append<list0, bool>::type list1;
+    typedef TL::append<list1, std::string>::type list2;
 
     std::cout << "{*} length...\n";
-    std::cout << "    len:" << tl::length<list2>::value << std::endl;
+    std::cout << "    len:" << TL::length<list2>::value << std::endl;
 
     std::cout << "{*} at...\n";
 
-    std::cout << "    " << 0 << ":" << more::cxa_demangle(typeid(tl::at<list2,0>::type).name()) << std::endl;
-    std::cout << "    " << 1 << ":" << more::cxa_demangle(typeid(tl::at<list2,1>::type).name()) << std::endl;
-    std::cout << "    " << 2 << ":" << more::cxa_demangle(typeid(tl::at<list2,2>::type).name()) << std::endl;
+    std::cout << "    " << 0 << ":" << more::cxa_demangle(typeid(TL::at<list2,0>::type).name()) << std::endl;
+    std::cout << "    " << 1 << ":" << more::cxa_demangle(typeid(TL::at<list2,1>::type).name()) << std::endl;
+    std::cout << "    " << 2 << ":" << more::cxa_demangle(typeid(TL::at<list2,2>::type).name()) << std::endl;
 
 
     // append...
-    typedef tl::null a_list;
+    typedef TL::null a_list;
 
     std::cout << "{*} append...\n";
 
-    typedef tl::append<list2, short>::type list3;
+    typedef TL::append<list2, short>::type list3;
 
-    std::cout << "    " << 0 << ":" << more::cxa_demangle(typeid(tl::at<list3,0>::type).name()) << std::endl;
-    std::cout << "    " << 1 << ":" << more::cxa_demangle(typeid(tl::at<list3,1>::type).name()) << std::endl;
-    std::cout << "    " << 2 << ":" << more::cxa_demangle(typeid(tl::at<list3,2>::type).name()) << std::endl;
-    std::cout << "    " << 3 << ":" << more::cxa_demangle(typeid(tl::at<list3,3>::type).name()) << std::endl;
+    std::cout << "    " << 0 << ":" << more::cxa_demangle(typeid(TL::at<list3,0>::type).name()) << std::endl;
+    std::cout << "    " << 1 << ":" << more::cxa_demangle(typeid(TL::at<list3,1>::type).name()) << std::endl;
+    std::cout << "    " << 2 << ":" << more::cxa_demangle(typeid(TL::at<list3,2>::type).name()) << std::endl;
+    std::cout << "    " << 3 << ":" << more::cxa_demangle(typeid(TL::at<list3,3>::type).name()) << std::endl;
 
     std::cout << "{*} insert...\n";
-    typedef tl::insert<list3, double>::type list4;
+    typedef TL::insert<list3, double>::type list4;
 
-    std::cout << "    " << 0 << ":" << more::cxa_demangle(typeid(tl::at<list4,0>::type).name()) << std::endl;
-    std::cout << "    " << 1 << ":" << more::cxa_demangle(typeid(tl::at<list4,1>::type).name()) << std::endl;
-    std::cout << "    " << 2 << ":" << more::cxa_demangle(typeid(tl::at<list4,2>::type).name()) << std::endl;
-    std::cout << "    " << 3 << ":" << more::cxa_demangle(typeid(tl::at<list4,3>::type).name()) << std::endl;
-    std::cout << "    " << 4 << ":" << more::cxa_demangle(typeid(tl::at<list4,4>::type).name()) << std::endl;
+    std::cout << "    " << 0 << ":" << more::cxa_demangle(typeid(TL::at<list4,0>::type).name()) << std::endl;
+    std::cout << "    " << 1 << ":" << more::cxa_demangle(typeid(TL::at<list4,1>::type).name()) << std::endl;
+    std::cout << "    " << 2 << ":" << more::cxa_demangle(typeid(TL::at<list4,2>::type).name()) << std::endl;
+    std::cout << "    " << 3 << ":" << more::cxa_demangle(typeid(TL::at<list4,3>::type).name()) << std::endl;
+    std::cout << "    " << 4 << ":" << more::cxa_demangle(typeid(TL::at<list4,4>::type).name()) << std::endl;
 
     // index_of
     std::cout << "{*} index_of...\n";
-    std::cout << "    double:" << tl::index_of<list4, double>::value << std::endl;
-    std::cout << "    string:" << tl::index_of<list4, std::string>::value << std::endl;
-    std::cout << "    int   :" << tl::index_of<list4, int>::value << std::endl;
+    std::cout << "    double:" << TL::index_of<list4, double>::value << std::endl;
+    std::cout << "    string:" << TL::index_of<list4, std::string>::value << std::endl;
+    std::cout << "    int   :" << TL::index_of<list4, int>::value << std::endl;
 
-    typedef tl::apply1<list4, example::sizeof_f>::type size_list;
+    typedef TL::apply1<list4, example::sizeof_f>::type size_list;
 
     std::cout << "{*} apply1...\n";
-    std::cout << "    [0] sizeof= " << tl::at<size_list,0>::type::value << std::endl;
-    std::cout << "    [1] sizeof= " << tl::at<size_list,1>::type::value << std::endl;
-    std::cout << "    [2] sizeof= " << tl::at<size_list,2>::type::value << std::endl;
-    std::cout << "    [3] sizeof= " << tl::at<size_list,3>::type::value << std::endl;
-    std::cout << "    [4] sizeof= " << tl::at<size_list,4>::type::value << std::endl;
+    std::cout << "    [0] sizeof= " << TL::at<size_list,0>::type::value << std::endl;
+    std::cout << "    [1] sizeof= " << TL::at<size_list,1>::type::value << std::endl;
+    std::cout << "    [2] sizeof= " << TL::at<size_list,2>::type::value << std::endl;
+    std::cout << "    [3] sizeof= " << TL::at<size_list,3>::type::value << std::endl;
+    std::cout << "    [4] sizeof= " << TL::at<size_list,4>::type::value << std::endl;
 
     // is_same...
     std::cout << "{*} is_same...\n";
-    std::cout << "    is_same = " << tl::is_same<tl::null, tl::null>::value << std::endl;
+    std::cout << "    is_same = " << TL::is_same<TL::null, TL::null>::value << std::endl;
 
     // tranform...
-    typedef tl::transform<list4, list4, example::same_size_f>::type samesize_list;
+    typedef TL::transform<list4, list4, example::same_size_f>::type samesize_list;
 
     std::cout << "{*} transform...\n";
-    std::cout << "    [0] value= " << tl::at<samesize_list,0>::type::value << std::endl;
-    std::cout << "    [1] value= " << tl::at<samesize_list,1>::type::value << std::endl;
-    std::cout << "    [2] value= " << tl::at<samesize_list,2>::type::value << std::endl;
-    std::cout << "    [3] value= " << tl::at<samesize_list,3>::type::value << std::endl;
-    std::cout << "    [4] value= " << tl::at<samesize_list,4>::type::value << std::endl;
+    std::cout << "    [0] value= " << TL::at<samesize_list,0>::type::value << std::endl;
+    std::cout << "    [1] value= " << TL::at<samesize_list,1>::type::value << std::endl;
+    std::cout << "    [2] value= " << TL::at<samesize_list,2>::type::value << std::endl;
+    std::cout << "    [3] value= " << TL::at<samesize_list,3>::type::value << std::endl;
+    std::cout << "    [4] value= " << TL::at<samesize_list,4>::type::value << std::endl;
  
 }

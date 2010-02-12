@@ -188,12 +188,12 @@ namespace more { namespace kv {
          // compile-time get
 
          template <typename K>
-         typename std::tr1::add_reference< typename mtp::TM::get<K, T>::type>::type
+         typename std::tr1::add_reference< typename more::TM::get<K, T>::type>::type
          get() 
-         { return __get<K>(int2type< mtp::TM::index_of<K, T>::value >()); }
+         { return __get<K>(int2type<more::TM::index_of<K, T>::value >()); }
 
          template <typename K, int n>
-         typename std::tr1::add_reference<typename mtp::TM::get<K, T>::type>::type
+         typename std::tr1::add_reference<typename more::TM::get<K, T>::type>::type
          __get(int2type<n>) 
          { return _M_map.__get<K>(int2type<n-1>()); }
 
@@ -224,7 +224,7 @@ namespace more { namespace kv {
              return __parse(in, fname, key, that._M_map);
          }
          template <bool _Strict>
-         static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<mtp::TM::null,_Strict,Separator,Comment> &)
+         static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<more::TM::null,_Strict,Separator,Comment> &)
          {
              // unknown key-value...
 
@@ -323,7 +323,7 @@ namespace more { namespace kv {
      };
 
     template <bool S, char Separator, char Comment>
-    class parser<mtp::TM::null, S, Separator, Comment> {};
+    class parser<more::TM::null, S, Separator, Comment> {};
 
     template <typename T, bool Strict = false> 
     struct block : public parser<T, Strict, ':', '#'> {}; 

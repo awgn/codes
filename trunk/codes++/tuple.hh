@@ -132,13 +132,13 @@ namespace more
         {}
 
         template <int n>
-        typename add_reference<typename tl::at<L,n>::type >::type
+        typename add_reference<typename TL::at<L,n>::type >::type
         get()
         { return __get(int2Type<n>()); }
 
         // __get is overloaded by means of int2Type
         template <int n>
-        typename add_reference<typename tl::at<L,n>::type >::type
+        typename add_reference<typename TL::at<L,n>::type >::type
         __get(int2Type<n>)
         { return _M_list.__get(int2Type<n-1>()); }
 
@@ -147,12 +147,12 @@ namespace more
         { return _M_elem; }
 
         size_t size() const 
-        { return tl::length<L>::value; }
+        { return TL::length<L>::value; }
 
     };
 
     template<>
-    class tuple<tl::null> {};
+    class tuple<TL::null> {};
 
     template <typename T1>
     inline tuple<TYPELIST(T1)> 

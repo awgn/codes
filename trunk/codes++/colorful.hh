@@ -62,7 +62,7 @@ namespace more {
     
     template <typename CharT, typename Traits>
     inline std::basic_ostream<CharT, Traits> & 
-    operator<<(std::basic_ostream<CharT, Traits> &out, ecma_parameter<more::tl::null>)
+    operator<<(std::basic_ostream<CharT, Traits> &out, ecma_parameter<more::TL::null>)
     {
         return out;
     }
