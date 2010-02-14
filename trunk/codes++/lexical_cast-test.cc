@@ -18,7 +18,7 @@ main(int argc, char *argv[])
 {
     const int max_iter = 10000000;
 
-    std::cout << max_iter << " number of lexical_cast<int>(): " << std::endl;
+    std::cout << max_iter << " lexical_cast<int>(): " << std::endl;
 
     more::Timeval b = more::Timeval::now();
 

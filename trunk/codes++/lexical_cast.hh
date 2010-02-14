@@ -47,8 +47,9 @@ namespace more {
             Target ret;
             _M_ss.clear();
 
-            if( !( _M_ss << arg) || !( _M_ss >>ret) || !( _M_ss >> std::ws).eof() ) 
+            if(!( _M_ss << arg &&  _M_ss >> ret && (_M_ss >> std::ws).eof() )) 
             {
+                _M_ss.str(std::string());
                 throw bad_lexical_cast();
             }
             return ret;
