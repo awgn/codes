@@ -180,7 +180,7 @@ namespace more {
 
                 if ( _M_run() < 0 ) {
                     exec_ret = -1;
-                    exit(1);
+                    _exit(1);
                 }
             }
 
