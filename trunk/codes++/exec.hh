@@ -129,7 +129,10 @@ namespace more {
             return *this; 
         } 
 
-        void operator()()
+        // return -1 in case of execve() failure!
+        //
+
+        int operator()()
         {
             _M_wait = true;
     
@@ -141,8 +144,14 @@ namespace more {
                 if ( ::pipe( _M_pipe.at(fd) ) < 0 )
                     throw std::runtime_error(std::string("pipe: ").append(pretty_strerror(errno)));
             }
+            
+            // rationale: vfork() shares memory between parent and child.
+            //            exec_ret is used to vehicle the return value of execve() in case of
+            //            error.
 
-            _M_pid = ::fork();
+            int exec_ret = 0; 
+
+            _M_pid = ::vfork();
             if (_M_pid == -1) 
             {
                 // close open pipes...
@@ -169,7 +178,10 @@ namespace more {
                     ::dup2(_M_pipe.at(fd)[!!fd], fd); 
                 }
 
-                _M_run();
+                if ( _M_run() < 0 ) {
+                    exec_ret = -1;
+                    exit(1);
+                }
             }
 
             // parent...
@@ -181,6 +193,7 @@ namespace more {
                 _M_redir[i].second.get() = _M_pipe.at(fd)[!fd];
             }
 
+            return exec_ret;
         }
 
         void redirect(const redirect_type &x)
@@ -277,7 +290,7 @@ namespace more {
 
         exec_type _M_exec;
 
-        void _M_run()
+        int _M_run()
         {
             int n = _M_arg.size();
             const char *argv[n+1];
@@ -291,8 +304,10 @@ namespace more {
 
             if ( _M_exec(argv[0], const_cast<char * const *>(argv)) == -1 ) {
                 std::clog << "exec::exec: " << pretty_strerror(errno) << std::endl;
-                raise(SIGABRT);            
+                return -1;
             }
+
+            return 0;
         }
     };
 
