@@ -30,6 +30,8 @@
 #include <signal.h>
 #include <error.hh>
 
+#include <string-utils.hh>  // more!
+
 namespace more {
 
     class exec
@@ -64,6 +66,14 @@ namespace more {
         // build exec array by means of iterators
         //
 
+        struct simple_trim 
+        {
+            std::string operator()(const std::string &str) const
+            {
+                return more::trim_copy(str);
+            }
+        };
+
         template <typename Iter>
         exec(Iter beg, Iter end, exec_type ex = ::execv /* ::execvp */)
         : _M_arg(),
@@ -75,7 +85,9 @@ namespace more {
           _M_pid(getpid()),
           _M_exec(ex)
         {
-            std::copy(beg, end, std::back_inserter(_M_arg));  
+            // apply simple_trim while copying the strings from the range
+            //
+            std::transform(beg, end, std::back_inserter(_M_arg), simple_trim());
         }
 
         ~exec()
