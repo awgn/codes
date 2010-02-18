@@ -16,6 +16,10 @@
 #include <sstream>
 #include <cassert>
 
+#ifdef _REENTRANT
+#include <atomicity-policy.hh>
+#endif
+
 /////////////////////////////////////////////////////////////
 // lexical_cast ala boost, inspired to that of Kevlin Henney
 
@@ -39,17 +43,22 @@ namespace more {
     template <typename Target, typename Source>
     struct lexical_cast_policy
     {
-        static std::stringstream _M_ss;   
-
+        static std::stringstream _S_ss;   
+#ifdef _REENTRANT
+        static atomicity::GNU_CXX::mutex _S_mutex;
+#endif
         static 
         Target apply(const Source &arg)
         {
             Target ret;
-            _M_ss.clear();
+#ifdef _REENTRANT
+            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+#endif
+            _S_ss.clear();
 
-            if(!( _M_ss << arg &&  _M_ss >> ret && (_M_ss >> std::ws).eof() )) 
+            if(!( _S_ss << arg &&  _S_ss >> ret && (_S_ss >> std::ws).eof() )) 
             {
-                _M_ss.str(std::string());
+                _S_ss.str(std::string());
                 throw bad_lexical_cast();
             }
             return ret;
@@ -57,7 +66,12 @@ namespace more {
     };
 
     template <typename Target, typename Source>
-    std::stringstream lexical_cast_policy<Target,Source>::_M_ss;
+    std::stringstream lexical_cast_policy<Target,Source>::_S_ss;
+
+#ifdef _REENTRANT
+    template <typename Target, typename Source>
+    atomicity::GNU_CXX::mutex lexical_cast_policy<Target,Source>::_S_mutex;
+#endif
 
     // null cast optimization...
     //
