@@ -18,6 +18,7 @@
 
 #include <mtp.hh>           // mtp::enable_if
 #include <type_traits.hh>   // more::traits::is_tuple<>
+#include <streamer.hh>      // more!
 
 namespace more 
 {
@@ -169,48 +170,6 @@ namespace more
         // Nicola...
 
     }
-
 }
-
-namespace std { 
-
-    //////////////////////////
-    // operator<< for pair...
-
-    template <typename CharT, typename Traits, typename U, typename V>
-    inline std::basic_ostream<CharT,Traits> &
-    operator<< (std::basic_ostream<CharT,Traits> &out, const std::pair<U,V> &r)
-    {
-        out << '<' << r.first << ':' << r.second << '>';
-        return out;
-    }
-
-    namespace tr1 {
-
-    ///////////////////////////
-    // operator<< for array...
-
-    template <typename CharT, typename Traits, typename T, std::size_t N>
-    std::basic_ostream<CharT,Traits> &
-    operator<<(std::basic_ostream<CharT,Traits> &out, const std::tr1::array<T,N> & rhs)
-    {
-        out << "[ ";
-        more::tuplarr_policy::printon<CharT, Traits, std::tr1::array<T,N>, N>::apply(out,rhs);
-        return out << "]";
-    }
-
-    ////////////////////////////////////////////////////////
-    // operator<< for tuple: (enabled if T is a tuple<>)... 
-
-    template <typename CharT, typename Traits, typename T>
-    typename more::mtp::enable_if< more::traits::is_tuple<T>, std::basic_ostream<CharT,Traits> >::type &
-    operator<<(std::basic_ostream<CharT,Traits> &out, const T & rhs)
-    {
-        out << "< ";
-        more::tuplarr_policy::printon<CharT, Traits, T, std::tr1::tuple_size<T>::value>::apply(out,rhs);
-        return out << ">";
-    }
-
-}}
 
 #endif /* _TUPLARR_HH_ */
