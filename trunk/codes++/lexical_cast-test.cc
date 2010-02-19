@@ -13,13 +13,15 @@
 
 #include <timeval.hh>
 
-int
-main(int argc, char *argv[])
+#ifdef _REENTRANT
+#include <pthread.h>
+#endif
+
+const int max_iter = 10000000;
+
+void *
+thread_routine_boost(void *)
 {
-    const int max_iter = 10000000;
-
-    std::cout << max_iter << " lexical_cast<int>(): " << std::endl;
-
     more::Timeval b = more::Timeval::now();
 
     for(int i=0; i< max_iter; ++i) 
@@ -28,20 +30,50 @@ main(int argc, char *argv[])
     }
 
     more::Timeval e = more::Timeval::now();
-    
-    std::cout << "boost: " << (e-b).to_msec() << " msec" << std::endl;
+    std::cout << max_iter << " boost::lexical_cast<int>() " << (e-b).to_msec() << " msec" << std::endl;
+}
 
-    b = more::Timeval::now();
+void *
+thread_routine_more(void *)
+{    
+    more::Timeval b = more::Timeval::now();
 
     for(int i=0; i< max_iter; ++i) 
     {
         more::lexical_cast<int>("123456");
     }
 
-    e = more::Timeval::now();
+    more::Timeval e = more::Timeval::now();
+    std::cout << max_iter << " more::lexical_cast<int>() " << (e-b).to_msec() << " msec" << std::endl;
+}
 
-    std::cout << "more: " << (e-b).to_msec() << " msec" << std::endl;
 
+int
+main(int argc, char *argv[])
+{
+#ifndef _REENTRANT
+    thread_routine_boost(0);
+    thread_routine_more(0);
+#else
+
+    pthread_t a,b,c;
+    pthread_create(&a, NULL, thread_routine_boost, NULL);
+    pthread_create(&b, NULL, thread_routine_boost, NULL);
+    // pthread_create(&c, NULL, thread_routine_boost, NULL);
+
+    pthread_join(a,NULL);
+    pthread_join(b,NULL);
+    // pthread_join(c,NULL);
+
+    pthread_create(&a, NULL, thread_routine_more, NULL);
+    pthread_create(&b, NULL, thread_routine_more, NULL);
+    // pthread_create(&c, NULL, thread_routine_more, NULL);
+
+    pthread_join(a,NULL);
+    pthread_join(b,NULL);
+    // pthread_join(c,NULL);
+
+#endif
     return 0;
 }
  
