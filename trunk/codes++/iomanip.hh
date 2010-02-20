@@ -69,7 +69,7 @@ namespace more {
         {}
 
         ~basic_token()
-        {}\
+        {}
 
         friend inline std::basic_istream<CharT,Traits> & 
         operator>>(std::basic_istream<CharT,Traits> &__in, basic_token &rhs)
