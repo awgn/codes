@@ -147,7 +147,7 @@ namespace more {
 
         /////////// conversion
 
-        operator bool()
+        operator bool() const
         {
             return _M_tv.tv_sec || _M_tv.tv_usec;
         }
