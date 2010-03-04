@@ -32,6 +32,8 @@
 
 #include <string-utils.hh>  // more!
 
+using namespace std::tr1::placeholders;
+
 namespace more {
 
     class exec
@@ -72,6 +74,16 @@ namespace more {
             {
                 return more::trim_copy(str);
             }
+        };
+
+        // a prolog is called in the child context between the vfork and the execve system call.
+        // this is a dummy, nullprolog 
+        //
+
+        struct nullprolog : public std::unary_function<void, void> 
+        {
+            void operator()() const
+            {}
         };
 
         template <typename Iter>
@@ -132,7 +144,7 @@ namespace more {
         // return -1 in case of execve() failure!
         //
 
-        int operator()()
+        int operator()(std::tr1::function<void()> prolog = nullprolog())
         {
             _M_wait = true;
     
@@ -169,6 +181,13 @@ namespace more {
             }
 
             if (_M_pid == 0) { // child
+
+                // invoke a user-defined prolog in the child.
+                // note: only a limited number of operations can be done here.
+                // Please refer to man 3 vfork.
+                //
+
+                prolog();
 
                 for(unsigned int i=0; i < _M_redir.size(); i++)
                 {
@@ -357,8 +376,15 @@ namespace more {
 
         void run()
         {
-            std::for_each(_M_group.begin(), _M_group.end(), std::tr1::mem_fn(&exec::operator()));
+            std::for_each(_M_group.begin(), _M_group.end(), std::tr1::bind(&exec::operator(), _1, exec::nullprolog() /* default argument */ ));
         }
+
+        template <typename T>
+        void run(T prolog)
+        {
+            std::for_each(_M_group.begin(), _M_group.end(), std::tr1::bind(&exec::operator(), _1, prolog /* default argument */ ));
+        }
+
 
         void
         wait_all()

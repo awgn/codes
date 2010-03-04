@@ -33,6 +33,8 @@ main(int argc, char *argv[])
     // abc.redirect( exec::child_fd(more::exec::STDERR, std::tr1::ref(err) ) );
 
     abc(); // run
+    
+    // abc(exec::nullprolog());
 
     char buffer[1024+1];
     
@@ -60,9 +62,11 @@ main(int argc, char *argv[])
 
     group.run();
 
+    // you can also provide a prolog for each child process...
+    // group.run(more::exec::nullprolog());
+
     // group.wait_all();
 
-    //
     // if ( abc1.is_exited()) {
     //     std::cout << "-> exit: [" << abc1.exit_status() << " pid: " << abc1.pid() << "]" << std::endl;
     // }
