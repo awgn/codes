@@ -20,22 +20,27 @@ namespace more {
     class cursor
     {
         template <typename P>
-        void boundary_alignment_check(P *start, P *end)
+        void _M_boundary_alignment_check(P *start, P *end)
         {
              if ( (end-start) % sizeof(T) )
-                throw std::runtime_error("cursor::cursor: bad boundaries");
+                throw std::runtime_error("cursor::_M_boundary_alignment_check");
         }
 
-        void range_check()
+        void _M_range_check()
         {
             if (_M_cur <  _M_beg || _M_cur >= _M_end)
-                throw std::runtime_error("cursor::range_check");
+                throw std::runtime_error("cursor::_M_range_check");
         }
 
     public:
-        typedef T           value_type;
-        typedef T *         iterator;
-        typedef const T *   const_iterator;
+        typedef std::random_access_iterator_tag  iterator_category;
+        typedef T                                value_type;
+        typedef ptrdiff_t                        difference_type;
+        typedef T *                              pointer;
+        typedef T &                              reference;
+
+        typedef T *                              iterator;
+        typedef const T *                        const_iterator;
 
         friend class cursor< typename std::tr1::add_const<T>::type >;
 
@@ -45,7 +50,7 @@ namespace more {
           _M_end(reinterpret_cast<T *>(end)),
           _M_cur(_M_beg) 
         {
-            boundary_alignment_check(beg,end);
+            _M_boundary_alignment_check(beg,end);
         }
 
         ~cursor()
@@ -56,7 +61,7 @@ namespace more {
           _M_cur(cur),
           _M_end(end)
         {
-            range_check();
+            _M_range_check();
         }
 
         cursor(cursor &rhs)
@@ -64,7 +69,7 @@ namespace more {
           _M_end(rhs._M_end),
           _M_cur(rhs._M_cur)
         {
-            range_check();
+            _M_range_check();
         }
 
         cursor & 
@@ -73,8 +78,7 @@ namespace more {
             _M_beg = rhs._M_beg;
             _M_end = rhs._M_end;
             _M_cur = rhs._M_cur;
-
-            range_check();
+            _M_range_check();
             return *this;
         }
 
@@ -84,8 +88,8 @@ namespace more {
           _M_end(reinterpret_cast<T *>(rhs._M_end)),
           _M_cur(reinterpret_cast<T *>(rhs._M_cur))
         {
-            boundary_alignment_check(rhs._M_beg,rhs._M_end);
-            range_check();
+            _M_boundary_alignment_check(rhs._M_beg,rhs._M_end);
+            _M_range_check();
         }
 
         template <typename P>
@@ -96,8 +100,7 @@ namespace more {
             _M_beg = reinterpret_cast<T *>(rhs._M_beg);
             _M_end = reinterpret_cast<T *>(rhs._M_end);
             _M_cur = reinterpret_cast<T *>(rhs._M_cur);
-            
-            range_check();
+            _M_range_check();
             return *this;
         }
     
@@ -207,14 +210,14 @@ namespace more {
         T &
         operator *()
         {
-            range_check();
+            _M_range_check();
             return * _M_cur;
         } 
 
         T *
         operator->()
         {
-            range_check();
+            _M_range_check();
             return _M_cur;
         }
 
