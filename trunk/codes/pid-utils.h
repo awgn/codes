@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
     extern int pid_filter(const struct dirent *d);
-    extern int pid_sort(const void *a, const void *b);
+    extern int pid_sort(const struct dirent **a, const struct dirent **b);
 
     extern pid_t get_parent(pid_t p);
     extern pid_t get_sibling(pid_t pid, pid_t sib);

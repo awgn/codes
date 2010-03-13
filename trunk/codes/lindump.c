@@ -74,7 +74,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #define CONFIG_X86_CMPXCHG
-#include <asm/system.h>
+//#include <asm/system.h>
 
 static char cvsid[] = "$Id$";
 
@@ -213,6 +213,13 @@ FILE *fileout;
 FILE *filein;
 
 int fdout;			/* raw dump */
+
+static inline
+void mb()   { asm volatile("mfence" ::: "memory"); }
+static inline
+void rmb()  { asm volatile("lfence" ::: "memory"); }
+static inline
+void wmb()  { asm volatile("sfence" ::: "memory"); }
 
 static void fatal(char *pattern,...) __attribute__((noreturn));
 static void
@@ -465,8 +472,8 @@ __dump_ring(int byte)
                         	io_vector[2].iov_len = sizeof(short);
                         	io_vector[3].iov_base = &iph->tos;
                         	io_vector[3].iov_len = sizeof(char);   
-                                io_vector[4].iov_base = &(frame->s_ll.sll_pkttype);
-                                io_vector[4].iov_len = sizeof(char);  
+                            io_vector[4].iov_base = &(frame->s_ll.sll_pkttype);
+                            io_vector[4].iov_len = sizeof(char);  
 				writev(fdout, io_vector, 5);
 #endif
 
@@ -732,7 +739,7 @@ void
 destructor(int i)
 {
 	struct tpacket_stats kstats;
-	size_t len = sizeof(struct tpacket_stats);
+	socklen_t len = sizeof(struct tpacket_stats);
 
 #ifdef CACHE
 	if (	opt_dump == OPT_DUMP_RAW     ||

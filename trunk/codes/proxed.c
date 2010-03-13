@@ -853,7 +853,7 @@ client_handler(void *s)
 	int ret;
 
 	cli.ttl     = opt.ttl;
-	cli.insock  = (int) s;	
+	cli.insock  = *(int *)&s;	
 	cli.outsock = 0;
 	cli.bytes   = 0;
 	

@@ -48,6 +48,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <asm/ptrace.h>
+#include <asm/ptrace-abi.h>
 
 #include <stdio.h>
 #include <stdlib.h>
