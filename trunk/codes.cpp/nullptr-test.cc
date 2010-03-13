@@ -17,8 +17,15 @@ main(int argc, char *argv[])
     char  * a = nullptr;
     if (a == nullptr)
     {
-        std::cout << "ok" << std::endl;
+        std::cout << "nullptr ok" << std::endl;
     }
+
+    int * b = deadptr;
+    if ( b == deadptr )
+    {
+        std::cout << "deadptr ok" << std::endl;
+    }
+
     return 0;
 }
 

@@ -14,17 +14,20 @@
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 namespace more {
 
-    struct nullptr_t
+    template <unsigned int N>
+    struct static_ptr_t
     {
         template <typename T>
         operator T *()
         {
-            return 0;
+            return reinterpret_cast<T *>(N);
         }
     };
 
 }
-#define nullptr more::nullptr_t()
+#define nullptr more::static_ptr_t<0>()
+#define deadptr more::static_ptr_t<0xdeadbeef>()
+
 #endif
 
 #endif /* _NULLPTR_HH_ */
