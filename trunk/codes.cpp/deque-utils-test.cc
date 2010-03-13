@@ -13,6 +13,7 @@
 #include <iostream>
 #include <algorithm>
 #include <iterator>
+#include <string>
 
 int
 main(int argc, char *argv[])
