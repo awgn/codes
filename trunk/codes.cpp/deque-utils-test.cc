@@ -29,7 +29,8 @@ main(int argc, char *argv[])
     abc.push_front(-3);
     abc.push_front(-4);
 
-    std::copy(abc.begin(), abc.end(), std::ostream_iterator<int>(std::cout, "\n"));
+    std::copy(abc.begin(), abc.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
 
     std::vector<iovec> iov = more::deque_iovec(abc);
 
@@ -43,15 +44,15 @@ main(int argc, char *argv[])
 
     std::deque<char> hello_world;
 
-    char * hello = " ,olleH";
-    char * world = "World!";
+    std::string hello(" ,olleH");
+    std::string world("World!");
 
-    std::copy(hello, hello+sizeof(hello)-1, std::front_inserter(hello_world));
-    std::copy(world, world+sizeof(world)-1, std::back_inserter (hello_world));
+    std::copy(hello.begin(), hello.end(), std::front_inserter(hello_world));
+    std::copy(world.begin(), world.end(), std::back_inserter (hello_world));
     hello_world.push_back('\n');
 
     std::vector<iovec> iov2 = more::deque_iovec(hello_world);
-    ::writev(1, iov2.data(), iov2.size());
+    ::writev(1, &iov2.front(), iov2.size());
 
     return 0;
 }
