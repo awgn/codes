@@ -14,6 +14,7 @@
 #include <tr1/type_traits>
 #include <string>
 #include <typeinfo>
+#include <algorithm> 
 
 // Yet another boost tribute: the class any.
 //
@@ -227,7 +228,7 @@ namespace more {
         {
             virtual void printon(std::ostream &out, const any &arg)=0;
             virtual streamer * clone()=0;
-            virtual ~streamer() {};
+            virtual ~streamer() {}
         };
 
         template <typename T> struct streamer_impl : public streamer {

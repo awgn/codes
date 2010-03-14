@@ -11,11 +11,6 @@
 #ifndef _NET_HEADERS_HH_
 #define _NET_HEADERS_HH_ 
 
-#include <tr1/type_traits>
-#include <iostream>
-#include <string>
-#include <stdexcept>
-
 #include <netinet/ether.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
@@ -25,7 +20,13 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
-#include <cursor.hh>    // more
+#include <cursor.hh>        // more!
+
+#include <tr1/type_traits>
+#include <iostream>
+#include <string>
+#include <stdexcept>
+#include <algorithm>
 
 namespace more {
 
@@ -83,7 +84,7 @@ namespace more {
         // ctor for static size headers.. ie: ethernet
 
         template <typename P, int N>
-        void ctor( more::cursor<P> &cur, header_helper::int2type<N>)
+        void ctor(more::cursor<P> &cur, header_helper::int2type<N>)
         {
             if (cur.size() < N)
                 throw std::range_error(T::__name::str().append("::static_size"));
@@ -92,7 +93,7 @@ namespace more {
         }
 
         template <typename P, int N>
-        void ctor( more::cursor<P> &cur, ssize_t size, header_helper::int2type<N>)
+        void ctor(more::cursor<P> &cur, ssize_t size, header_helper::int2type<N>)
         {
             if ( cur.size() < N)
                 throw std::range_error(T::__name::str().append("::static_size"));
@@ -871,7 +872,7 @@ namespace net {
     // NP batch frame header
     //////////////////////////////////////////////////////////
 
-    static const short int NP_PKT_TYPE = 0x9000;
+    static const uint16_t NP_PKT_TYPE = 0x9000;
 
     class np_packet 
     {

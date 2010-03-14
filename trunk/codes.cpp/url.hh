@@ -11,12 +11,13 @@
 #ifndef _URL_HH_
 #define _URL_HH_ 
 
+#include <netdb.h>
+
+#include <lexical_cast.hh>  // more!
+
 #include <stdexcept>
 #include <iostream>
 #include <string>
-#include <lexical_cast.hh>
-
-#include <netdb.h>
 
 namespace more {
 
@@ -46,8 +47,7 @@ namespace more {
             std::string::size_type e = s.find("/", p+3);
             if (e == std::string::npos) {
                 baseurl.assign(s.c_str()+p+3);     
-            }
-            else {
+            } else {
                 baseurl.assign(s.c_str()+p+3, s.c_str() + e);
                 _M_path.assign(s.c_str() + e + 1);     
             }
@@ -58,14 +58,15 @@ namespace more {
                 std::string::size_type x = baseurl.find(":");
                 if ( x == std::string::npos ) {
                     _M_user.assign(baseurl.c_str(), baseurl.c_str()+at);
-                }
-                else {
+                } else {
                     _M_user.assign(baseurl.c_str(), baseurl.c_str()+x);
                     _M_pass.assign(baseurl.c_str()+x+1, baseurl.c_str()+at);
                 }
 
                 p = at + 1;
-            } else p = 0;
+            } else {
+                p = 0;
+            }
 
             // parsing host and port...
             std::string::size_type c = baseurl.find(":", p);

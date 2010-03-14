@@ -17,12 +17,12 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#include <error.hh>             // more!
+
 #include <iostream>
 #include <string>
 #include <cassert>
 #include <stdexcept>
-
-#include <error.hh>             // more!
 
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX 108

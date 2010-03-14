@@ -11,14 +11,14 @@
 #ifndef _CPUINFO_HH_
 #define _CPUINFO_HH_ 
 
+#include <iomanip.hh>       // more
+#include <string-utils.hh>  // more
+
 #include <fstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include <map>
-
-#include <iomanip.hh>       // more
-#include <string-utils.hh>  // more
 
 namespace more { namespace proc { 
 

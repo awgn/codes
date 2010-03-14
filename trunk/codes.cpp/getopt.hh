@@ -11,12 +11,13 @@
 #ifndef GETOPT_HH
 #define GETOPT_HH
 
+#include <unistd.h>
+#include <getopt.h>
+
 #include <iostream>
 #include <cstdio>
 #include <stdexcept>
-
-#include <unistd.h>
-#include <getopt.h>
+#include <string>
 
 namespace posix {
 
@@ -25,7 +26,7 @@ namespace posix {
         const char *_M_optstring;
 
     public:
-        getopt(const char *o) 
+        explicit getopt(const char *o) 
         : _M_optstring(o) 
         { opterr=0; }
 

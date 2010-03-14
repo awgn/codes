@@ -12,10 +12,13 @@
 #define _EXT_BUFFER_HH_ 
 
 #include <sys/uio.h>
+
+#include <atomicio.hh>  // more!
+
 #include <iostream>
 #include <cstring>
 #include <algorithm>
-#include <atomicio.hh>
+#include <string>
 
 namespace more {
 

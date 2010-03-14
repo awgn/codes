@@ -11,10 +11,11 @@
 #ifndef _IOMANIP_HH_
 #define _IOMANIP_HH_ 
 
+#include <string-utils.hh>  // more
+
 #include <iostream>
 #include <limits>
-
-#include <string-utils.hh>  // more
+#include <string>
 
 namespace more { 
 

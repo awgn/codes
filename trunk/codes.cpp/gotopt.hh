@@ -11,6 +11,9 @@
 #ifndef _GOTOPT_H_
 #define _GOTOPT_H_ 
 
+#include <lexical_cast.hh>      // more!
+#include <exprtempl.hh>         // more!
+
 #include <tr1/tuple>
 #include <stdexcept>
 #include <iomanip>
@@ -19,11 +22,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
+#include <algorithm>
 #include <map>
-
-#include <lexical_cast.hh>      // more!
-#include <exprtempl.hh>         // more!
-
 
 //////////////////////////////////////
 // ... and now getopt() go home !!! 

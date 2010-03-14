@@ -92,7 +92,7 @@ namespace more {
 
         struct scoped_lock : public QMutexLocker
         {
-            scoped_lock(QMutex &m) : QMutexLocker(&m)
+            explicit scoped_lock(QMutex &m) : QMutexLocker(&m)
             {}
 
             ~scoped_lock()
@@ -169,7 +169,7 @@ namespace more {
 
         struct scoped_lock : public QMutexLocker
         {
-            scoped_lock(QMutex &m) : QMutexLocker(&m)
+            explicit scoped_lock(QMutex &m) : QMutexLocker(&m)
             {}
 
             ~scoped_lock()

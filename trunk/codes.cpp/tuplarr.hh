@@ -11,14 +11,15 @@
 #ifndef _TUPLARR_HH_
 #define _TUPLARR_HH_ 
 
+#include <mtp.hh>           // mtp::enable_if
+#include <type_traits.hh>   // more::traits::is_tuple<>
+#include <streamer.hh>      // more!
+
 #include <tr1/tuple>
 #include <tr1/array>
 #include <iostream>
 #include <iterator>
-
-#include <mtp.hh>           // mtp::enable_if
-#include <type_traits.hh>   // more::traits::is_tuple<>
-#include <streamer.hh>      // more!
+#include <algorithm>
 
 namespace more 
 {

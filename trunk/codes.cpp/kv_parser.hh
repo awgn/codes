@@ -11,18 +11,20 @@
 #ifndef _KV_FILE_HH_
 #define _KV_FILE_HH_ 
 
+#include <typemap.hh>           // more!
+#include <iomanip.hh>           // more!
+#include <lnistreambuf.hh>      // more!
+
+#include <tr1/type_traits>
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
+#include <memory>
+#include <functional>
 #include <map>
-
-#include <tr1/type_traits>
-
-#include <typemap.hh>           // more!
-#include <iomanip.hh>           // more!
-#include <lnistreambuf.hh>      // more!
 
 //////////////////////////////////
 //  key-value config file parser 
@@ -144,8 +146,7 @@ namespace more { namespace kv {
                 std::clog << "parse: error at string '" << elem << ": missing quotation." << std::endl;
                 return false;
             }
-        }
-        else { // simple string
+        } else { // simple string
             elem.push_back(c); 
             std::string tmp;
             if ( !(in >> tmp) ) 

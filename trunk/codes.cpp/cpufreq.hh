@@ -14,14 +14,15 @@
 #ifndef _CPUFREQ_HH_ 
 #define _CPUFREQ_HH_ 
 
+#include <cpufreq.h>        // libcpufreq
+
+#include <tr1/memory>
 #include <cstring>
 #include <cstdio>
 #include <string>
 #include <stdexcept>
+#include <utility>
 #include <list>
-#include <tr1/memory>
-
-#include <cpufreq.h>        // libcpufreq
 
 
 namespace more {

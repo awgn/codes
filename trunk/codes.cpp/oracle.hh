@@ -11,17 +11,6 @@
 #ifndef _ORACLE_HH_
 #define _ORACLE_HH_ 
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <string>
-#include <cstdlib>
-#include <stdexcept>
-#include <tr1/memory>
-#include <algorithm>
-#include <iterator>
-#include <set>
-
 #include <cxxabi.h>
 #include <colorful.hh>
 
@@ -29,6 +18,17 @@
 #include <atomicity-policy.hh>
 #include <atomic.hh>
 #endif
+
+#include <tr1/memory>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <string>
+#include <cstdlib>
+#include <stdexcept>
+#include <algorithm>
+#include <iterator>
+#include <set>
 
 #define oracle_std_swap(CLASS)  \
 namespace std   \
@@ -466,7 +466,7 @@ namespace more {
 
     struct oracle_set_dump
     {
-        oracle_set_dump(std::ostream &o)
+        explicit oracle_set_dump(std::ostream &o)
         : out(o)
         {}
 

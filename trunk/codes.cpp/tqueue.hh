@@ -11,8 +11,9 @@
 #ifndef _TQUEUE_HH_
 #define _TQUEUE_HH_ 
 
+#include <pthread++.hh>     // more!
 #include <queue>
-#include <pthread++.hh>
+#include <deque>
 
 namespace more { 
 

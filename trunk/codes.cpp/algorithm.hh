@@ -12,6 +12,7 @@
 #define _ALGORITHM_HH_ 
 
 #include <tr1/functional>
+#include <functional>
 #include <algorithm>
 
 namespace more { 

@@ -10,11 +10,12 @@
 #ifndef SPRINT_HH
 #define SPRINT_HH
 
+#include <macro_template.h>     // more!
+
 #include <string>
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
-#include <macro_template.h>
 
 #ifndef likely
 #define likely(x)   __builtin_expect(!!(x), 1)

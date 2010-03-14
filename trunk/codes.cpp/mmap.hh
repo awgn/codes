@@ -18,11 +18,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <stdexcept>
-#include <error.hh>
+#include <static_assert.hh>         // more!
+#include <mtp.hh>                   // more!
+#include <error.hh>                 // more!
 
-#include <static_assert.hh>
-#include <mtp.hh>
+#include <stdexcept>
 
 namespace more {
 

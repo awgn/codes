@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <cassert>
+#include <algorithm>
 
 namespace more { 
 

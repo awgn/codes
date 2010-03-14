@@ -14,13 +14,16 @@
 // Yet another simple C/C++ parser
 // 
 
+#include <iomanip.hh>       // more!
+
 #include <tr1/type_traits>
 #include <iostream>
 #include <fstream>
 #include <iterator>
 #include <string>
+#include <algorithm>
+#include <functional>
 
-#include <iomanip.hh>
 
 namespace more { namespace yacpp {
 
@@ -175,8 +178,8 @@ namespace more { namespace yacpp {
         { _M_read(); } 
 
         basic_iterator(const basic_iterator &rhs)
-        : _M_stream(rhs._M_stream),_M_decanter(rhs._M_decanter),
-        _M_line(rhs._M_line), _M_ok(rhs._M_ok)
+        : _M_stream(rhs._M_stream), _M_decanter(rhs._M_decanter),
+          _M_line(rhs._M_line), _M_ok(rhs._M_ok)
         {}
 
     private:

@@ -11,19 +11,21 @@
 #ifndef _PCAP_HH_
 #define _PCAP_HH_ 
 
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <pcap.h>
+
+#include <noncopyable.hh>   // more!
+
 #include <iostream>
 #include <string>
 #include <cstring>
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
+#include <utility>
 #include <list>
 
-#include <noncopyable.hh>
-
-#include <sys/types.h>
-#include <arpa/inet.h>
-#include <pcap.h>
 
 namespace more { 
 
@@ -34,7 +36,7 @@ namespace more {
     class pcap_sockaddr
     {
     public:
-        pcap_sockaddr(const sockaddr *s)
+        explicit pcap_sockaddr(const sockaddr *s)
         : _M_storage()
         {
             if (s == NULL)
@@ -53,7 +55,7 @@ namespace more {
             return reinterpret_cast<const struct sockaddr &>(_M_storage).sa_family;
         }
 
-        short 
+        uint16_t 
         port() const
         {
             switch(this->family())
@@ -102,7 +104,7 @@ namespace more {
         pcap_sockaddr broadaddr;
         pcap_sockaddr dstaddr;    
  
-        pcap_addr(pcap_addr_t *p)
+        explicit pcap_addr(pcap_addr_t *p)
         : addr(p->addr),
           netmask(p->netmask),
           broadaddr(p->broadaddr),
@@ -136,7 +138,7 @@ namespace more {
         std::list<pcap_addr> addresses;
         int flags;   
 
-        pcap_if(pcap_if_t * i)
+        explicit pcap_if(pcap_if_t * i)
         : name(i->name),
           description(i->description ? : ""),
           flags(i->flags)
@@ -507,8 +509,8 @@ namespace more {
                 case DLT_FDDI: return 21;
                 case DLT_ATM_RFC1483: return 8;
 
-                case DLT_LOOP: return 4;	/* according to OpenBSD DLT_LOOP
-                                         * collision: see "bpf.h" */
+                case DLT_LOOP: return 4;	// according to OpenBSD DLT_LOOP
+                                            // collision: see "bpf.h"
                 case DLT_RAW: return 0;
 
                 case DLT_SLIP_BSDOS: return 16;
@@ -674,7 +676,7 @@ namespace more {
     class pcap_offline : public pcap
     {   
     public:          
-        pcap_offline(const std::string &fname)        
+        explicit pcap_offline(const std::string &fname)        
         : pcap(),
           _M_device(fname)
         {

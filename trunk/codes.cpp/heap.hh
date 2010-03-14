@@ -16,6 +16,7 @@
 #include <vector>
 #include <deque>
 #include <queue>
+#include <memory>
 #include <map>
 
 namespace more { 

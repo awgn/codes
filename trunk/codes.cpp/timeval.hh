@@ -13,6 +13,7 @@
 
 #include <sys/time.h>
 #include <iostream>
+#include <algorithm>
 
 namespace more { 
 
@@ -39,13 +40,13 @@ namespace more {
             _M_tv.tv_usec = rhs.tv_usec();
         }
 
-        Timeval(const struct timeval& rhs)
+        explicit Timeval(const struct timeval& rhs)
         {
             _M_tv.tv_sec = rhs.tv_sec;
             _M_tv.tv_usec = rhs.tv_usec;
         }
 
-        Timeval(const struct timespec& rhs)
+        explicit Timeval(const struct timespec& rhs)
         {
             _M_tv.tv_sec = rhs.tv_sec;
             _M_tv.tv_usec = rhs.tv_nsec/1000;

@@ -35,7 +35,7 @@ namespace more {
                 delete [] matrix;
             }
 
-            Matrix(Matrix &aMatrix) :
+            Matrix(const Matrix &aMatrix) :
             row(aMatrix.row),
             col(aMatrix.col),
             matrix(new T[aMatrix.row*aMatrix.col])

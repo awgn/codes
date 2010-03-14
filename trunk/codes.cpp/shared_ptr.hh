@@ -11,9 +11,7 @@
 #ifndef _SHARED_PTR_H_
 #define _SHARED_PTR_H_ 
 
-#include <integral.hh>
-#include <algorithm>
-#include <iterator>
+#include <integral.hh>      // more!
 
 #if defined(MORE_USE_QT_SHARED_PTR)
 #include <QSharedPointer>
@@ -31,6 +29,10 @@
 #   warning using more::shared_ptr<> as std::tr1::shared_ptr<> 
 #   endif
 #endif
+
+#include <algorithm>
+#include <iterator>
+#include <memory>
 
 namespace more { 
 

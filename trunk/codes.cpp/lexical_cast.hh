@@ -15,6 +15,7 @@
 #include <typeinfo>
 #include <sstream>
 #include <cassert>
+#include <string>
 
 /////////////////////////////////////////////////////////////
 // lexical_cast ala boost, inspired to that of Kevlin Henney

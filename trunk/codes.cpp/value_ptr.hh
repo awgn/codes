@@ -14,6 +14,8 @@
 // this is value_ptr implementation 
 // inspired to that of Sutter (More Exceptional C++)
 
+#include <algorithm>
+
 namespace more { 
 
     /////////////////// traits //////////////////////////

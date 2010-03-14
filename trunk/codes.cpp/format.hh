@@ -11,13 +11,14 @@
 #ifndef _FORMAT_HH_
 #define _FORMAT_HH_ 
 
+#include <any.hh>       // more!
+
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <vector>
 #include <cassert>
 
-#include <any.hh>
 
 namespace more { 
 

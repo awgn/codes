@@ -13,6 +13,7 @@
 
 #include <tr1/type_traits>
 #include <tr1/tuple>
+#include <utility>
 
 using std::tr1::integral_constant;
 using std::tr1::true_type; using std::tr1::false_type;

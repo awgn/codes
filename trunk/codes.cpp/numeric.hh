@@ -158,7 +158,7 @@ namespace more { namespace numeric {
     }; 
 
     // binary
-    template <unsigned long N> 
+    template <unsigned int N> 
     struct binary
     {
         enum { value = binary<N/10>::value * 2 + N%10 };

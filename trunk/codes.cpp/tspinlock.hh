@@ -11,11 +11,12 @@
 #ifndef _TSPINLOCK_HH_
 #define _TSPINLOCK_HH_ 
 
+#include <sched.h>
+#include <pthread.h>
+
 #include <iostream>
 #include <cassert>
 
-#include <sched.h>
-#include <pthread.h>
 
 // This is a c++ implementation of the Linux Kernel "ticket spinlock".
 // http://lwn.net/Articles/267968/

@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <typeinfo>
 #include <string>
+#include <algorithm>
 
 namespace more 
 {

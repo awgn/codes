@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <cstdlib>
+#include <string>
 
 // enumap: pure macro/meta/c++ programming trickology.
 //

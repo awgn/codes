@@ -19,6 +19,11 @@
 #include <fcntl.h>
 #include <poll.h>
 
+#include <error.hh>             // more!
+#include <noncopyable.hh>       // more!
+#include <atomicity-policy.hh>  // more!
+#include <algorithm.hh>         // more!
+
 #include <tr1/type_traits>
 #include <iostream>
 #include <algorithm>
@@ -26,11 +31,6 @@
 #include <cassert>
 #include <vector>
 #include <set>
-
-#include <error.hh>
-#include <noncopyable.hh>
-#include <atomicity-policy.hh>
-#include <algorithm.hh>
 
 namespace more { 
 
@@ -108,7 +108,7 @@ namespace more {
         { return _M_fd; }
 
     protected:
-        async_root(int fd)
+        explicit async_root(int fd)
         : _M_fd(fd)
         {                
             typename ATOM::scoped_lock S( this->static_mutex() );
@@ -153,7 +153,7 @@ namespace more {
             }               
         }
 
-        async_base(int fd)
+        explicit async_base(int fd)
         : async_root<atomicity::DEFAULT>(fd)
         {
             if ( std::tr1::is_same<R,IO_nonblocking>::value || 
@@ -326,7 +326,6 @@ namespace more {
 
         void set_nonblock(int & old_flags)
         {
-            // std::cout << __PRETTY_FUNCTION__ << std::endl;
             if ((old_flags = fcntl(this->_M_fd, F_GETFL, 0)) == -1)
                 old_flags = 0;
             if ( fcntl(this->_M_fd, F_SETFL, old_flags | O_NONBLOCK) < 0 )
@@ -335,7 +334,6 @@ namespace more {
 
         void set_block(int &old_flags)
         {
-            // std::cout << __PRETTY_FUNCTION__ << std::endl;
             if ((old_flags = fcntl(this->_M_fd, F_GETFL, 0)) == -1)
                 old_flags = 0;
             if ( fcntl(this->_M_fd, F_SETFL, old_flags & ~O_NONBLOCK) < 0 )
@@ -344,14 +342,12 @@ namespace more {
 
         void set_flags(int flags)
         {
-            // std::cout << __PRETTY_FUNCTION__ << std::endl;
             if ( fcntl(this->_M_fd, F_SETFL, flags) < 0 )
                 throw more::syscall_error(__FUNCTION__);
         }
 
         int get_flags() const
         {
-            // std::cout << __PRETTY_FUNCTION__ << std::endl;
             int flags;
             if ((flags=fcntl(this->_M_fd, F_GETFL, 0)) == -1)
                 throw more::syscall_error(__FUNCTION__);
@@ -369,46 +365,8 @@ namespace more {
     };
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////////
-    namespace {   /////////////////////////////////////////////////////////////////////////////
-
-        /////////////////////////////////////// scoped_fd_block/scoped_fd_nonblock in raii fashion 
-
-        // template <typename R, typename W>
-        // struct scoped_nonblock
-        // {
-        //     scoped_nonblock(async_base<R,W> &ref)
-        //     : _M_ref(ref)
-        //     {
-        //         _M_ref.set_nonblock(_M_store_flags);
-        //     }
-
-        //     ~scoped_nonblock()
-        //     {
-        //         _M_ref.set_flags(_M_store_flags);
-        //     }
-
-        //     int _M_store_flags;
-        //     async_base<R,W> & _M_ref;
-        // };
-
-        // template <typename R, typename W>
-        // struct scoped_block
-        // {
-        //     scoped_block(async_base<R,W> &ref)
-        //     : _M_ref(ref)
-        //     {
-        //         _M_ref.set_block(_M_store_flags);
-        //     }
-
-        //     ~scoped_block()
-        //     {
-        //         _M_ref.set_flags(_M_store_flags);
-        //     }
-
-        //     int _M_store_flags;
-        //     async_base<R,W> & _M_ref;
-        // };
+    //////////////////////////////////////////////////////////
+    namespace {   
 
         /////////////////////////////////////// async_io_policy 
 
@@ -430,7 +388,6 @@ namespace more {
             static
             void block_in(async_base<IO_blocking,IO_nonblocking> &ref)
             { 
-                std::cout << __PRETTY_FUNCTION__ << std::endl;
                 if (!ref.wait_for_event<POLLIN>())
                     throw std::runtime_error("POLLIN");
             }
@@ -450,7 +407,6 @@ namespace more {
             static
             void block_out(async_base<IO_nonblocking, IO_blocking> &ref)
             {
-                std::cout << __PRETTY_FUNCTION__ << std::endl;
                 if(!ref.wait_for_event<POLLOUT>())
                     throw std::runtime_error("POLLOUT");
             }
@@ -653,7 +609,7 @@ namespace more {
     class async_fd : public async_read_strategy<R,W>, public async_write_strategy<R,W>
     {
         public:
-            async_fd(int fd)
+            explicit async_fd(int fd)
             : async_base<R,W>(fd)
             {}
 

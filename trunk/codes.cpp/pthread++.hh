@@ -11,6 +11,14 @@
 #ifndef PTHREADPP_HH
 #define PTHREADPP_HH
 
+#include <sys/time.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <signal.h>
+
+#include <error.hh>         // more!
+#include <noncopyable.hh>   // more!
+
 #include <tr1/memory>
 #include <tr1/functional>
 #include <stdexcept>
@@ -19,14 +27,6 @@
 #include <cstring>
 #include <algorithm>
 #include <set>
-
-#include <error.hh>
-#include <noncopyable.hh>
-
-#include <sys/time.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <signal.h>
 
 namespace more { namespace posix 
 {    

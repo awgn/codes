@@ -11,10 +11,10 @@
 #ifndef _LAZY_OBJECT_HH_
 #define _LAZY_OBJECT_HH_ 
 
-#include <stdexcept>
+#include <shared_ptr.hh>    // more!
+#include <any.hh>           // more!
 
-#include <shared_ptr.hh>
-#include <any.hh>
+#include <stdexcept>
 
 namespace more {
 

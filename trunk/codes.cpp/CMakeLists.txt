@@ -21,9 +21,6 @@ include_directories(.)
 
 add_definitions(-DARCH_i386 -DMORE_USE_TR1_SHARED_PTR -DMORE_USE_GNU_MUTEX)
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-endif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 add_executable(CTdispatcher CTdispatcher.cc)
 add_executable(any-test any-test.cc)
@@ -118,6 +115,7 @@ add_executable(tuple-test tuple-test.cc)
 add_executable(type_traits_test type_traits-test.cc)
 add_executable(typelist-test typelist-test.cc)
 add_executable(typemap-test typemap-test.cc)
+add_executable(value_ptr-test value_ptr-test.cc)
 add_executable(variant-test variant-test.cc)
 add_executable(yaccp-test yacpp-test.cc)
 

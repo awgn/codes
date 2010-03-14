@@ -12,6 +12,9 @@
 #ifndef _MD5_HH_
 #define _MD5_HH_ 
 
+#include <stdint.h>
+#include <mtp.hh>       // more!
+
 #include <tr1/array>
 #include <tr1/functional>
 
@@ -22,9 +25,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
-
-#include <stdint.h>
-#include <mtp.hh>
+#include <string>
 
 namespace more { 
 

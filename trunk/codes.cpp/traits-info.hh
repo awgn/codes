@@ -11,6 +11,13 @@
 #ifndef _TRAITS_INFO_HH_
 #define _TRAITS_INFO_HH_ 
 
+#include <cxxabi.h>
+
+#ifdef USE_COLORS
+#include <colorful.hh>
+#include <typelist.hh>
+#endif
+
 #include <tr1/type_traits>
 #include <tr1/memory>
 
@@ -19,13 +26,6 @@
 #include <string>
 #include <cstdlib>
 #include <stdexcept>
-
-#include <cxxabi.h>
-
-#ifdef USE_COLORS
-#include <colorful.hh>
-#include <typelist.hh>
-#endif
 
 namespace more { 
 

@@ -12,9 +12,10 @@
 #define FLOCK_HH
 
 #include <sys/file.h>
+
+#include <error.hh>     // more!
 #include <iostream>
 #include <cstring>
-#include <error.hh>
 
 namespace more 
 {

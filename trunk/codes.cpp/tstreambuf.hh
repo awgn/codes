@@ -11,12 +11,13 @@
 #ifndef _TSTREAMBUF_HH_
 #define _TSTREAMBUF_HH_ 
 
+#include <pthread.h>
+
+#include <atomicity-policy.hh>  // more!
+#include <tspinlock.hh>         // more!
+
 #include <iostream>
 #include <cstdio>
-
-#include <atomicity-policy.hh>
-#include <tspinlock.hh>
-#include <pthread.h>
 
 namespace more { 
 

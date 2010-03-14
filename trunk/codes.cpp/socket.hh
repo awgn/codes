@@ -15,9 +15,11 @@
 #include <sys/socket.h>
 #include <sys/uio.h>
 
-#include <tr1/array>
 #include <sockaddress.hh>           // more!
 #include <error.hh>                 // more!
+
+#include <tr1/array>
+#include <string>
 
 namespace more {
 

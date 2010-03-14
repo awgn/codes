@@ -11,6 +11,8 @@
 #ifndef _OBSERVER_HH_
 #define _OBSERVER_HH_ 
 
+#include <atomicity-policy.hh> // more
+
 #include <tr1/functional>
 #include <tr1/memory>
 #include <tr1/type_traits>
@@ -19,8 +21,6 @@
 #include <vector>
 #include <cassert>
 #include <stdexcept>
-
-#include <atomicity-policy.hh> // more
 
 using std::tr1::mem_fn;
 using std::tr1::bind;

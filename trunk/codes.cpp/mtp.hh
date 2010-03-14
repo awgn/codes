@@ -14,9 +14,6 @@
 #ifndef MTP_HH
 #define MTP_HH
 
-#include <iostream>
-#include <string>
-
 namespace more { namespace mtp {
 
     class null  {};

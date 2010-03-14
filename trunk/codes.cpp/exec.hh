@@ -11,6 +11,12 @@
 #ifndef _EXEC_HH_
 #define _EXEC_HH_
 
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <signal.h>
+#include <error.hh>
+
 #include <tr1/functional>
 #include <tr1/array>
 
@@ -22,13 +28,8 @@
 #include <iterator>
 #include <cstdio>
 #include <set>
-
-#include <sys/types.h>
-#include <sys/wait.h>
-
-#include <unistd.h>
-#include <signal.h>
-#include <error.hh>
+#include <utility>
+#include <functional>
 
 #include <string-utils.hh>  // more!
 

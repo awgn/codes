@@ -11,13 +11,15 @@
 #ifndef _TIMER_HH_
 #define _TIMER_HH_ 
 
-#include <pthread++.hh>
+#include <sys/time.h>
+
+#include <pthread++.hh>     // more!
+#include <error.hh>         // more!
+
 #include <tr1/type_traits>
 #include <tr1/array>
 #include <cstring>
-#include <error.hh>
-
-#include <sys/time.h>
+#include <string>
 
 namespace more { namespace time {
 
@@ -103,11 +105,11 @@ namespace more { namespace time {
         : _M_itv(), _M_itv_p(NULL)
         {}
 
-        itimer(const itimerval * value, itimerval *ovalue = NULL)
+        explicit itimer(const itimerval * value, itimerval *ovalue = NULL)
         : _M_itv(*value), _M_itv_p(ovalue)
         {}
 
-        itimer(const timeval *value)
+        explicit itimer(const timeval *value)
         : _M_itv(), _M_itv_p(0)
         {
             this->set(value);
@@ -186,11 +188,11 @@ namespace more { namespace time {
         : _M_itimer()
         {}
 
-        itimer_pulse_thread(const struct itimerval *value, struct itimerval *oldvalue = NULL)
+        explicit itimer_pulse_thread(const struct itimerval *value, struct itimerval *oldvalue = NULL)
         : _M_itimer(value, oldvalue)
         {}
 
-        itimer_pulse_thread(const struct timeval *value)
+        explicit itimer_pulse_thread(const struct timeval *value)
         : _M_itimer(value)
         {}
 
@@ -224,7 +226,7 @@ namespace more { namespace time {
                 T.current = now.tv_sec * 1000 + now.tv_usec / 1000;
                 T.thread_data[ itimer_trait<WHICH>::signal_expiration ]._cond.broadcast();
             }
-            return (void *)0;        
+            return static_cast<void *>(0);        
         }
 
     private:
@@ -259,13 +261,13 @@ namespace more { namespace time {
             this->init();
         }
 
-        rt_timer(const itimerspec *value, itimerspec *oldvalue = NULL)
+        explicit rt_timer(const itimerspec *value, itimerspec *oldvalue = NULL)
         : _M_id(), _M_its(*value), _M_its_p(oldvalue)
         {
             this->init();
         }
 
-        rt_timer(const timespec *value)
+        explicit rt_timer(const timespec *value)
         : _M_id(), _M_its(), _M_its_p(0)
         {
             this->set(value);
@@ -394,11 +396,11 @@ namespace more { namespace time {
         : _M_rt_timer(), _M_update(false)
         {}
 
-        rt_timer_pulse_thread(const itimerspec *value, itimerspec *oldvalue = NULL)
+        explicit rt_timer_pulse_thread(const itimerspec *value, itimerspec *oldvalue = NULL)
         : _M_rt_timer(value, oldvalue), _M_update(false)
         {}
 
-        rt_timer_pulse_thread(const timespec *value)
+        explicit rt_timer_pulse_thread(const timespec *value)
         : _M_rt_timer(value), _M_update(false)
         {}
 
@@ -442,7 +444,7 @@ namespace more { namespace time {
                 T.current = now.tv_sec * 1000 + now.tv_usec / 1000;
                 T.thread_data[SIGNO]._cond.broadcast();
             }
-            return (void *)0;
+            return static_cast<void *>(0);
         }
 
         void update(const itimerspec *value)

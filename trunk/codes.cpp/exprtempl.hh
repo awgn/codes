@@ -11,7 +11,8 @@
 #ifndef _EXPRTEMPL_HH_
 #define _EXPRTEMPL_HH_ 
 
-#include <mtp.hh>
+#include <mtp.hh>       // more!
+#include <iostream>
 
 namespace more { namespace expr { 
 
@@ -427,11 +428,13 @@ namespace more { namespace expr {
 
     template <typename T, typename Ty>
     class enable_if_expression 
-        : public more::mtp::enable_if_c< is_expression_template<T>::value, Ty> {};
+        : public more::mtp::enable_if_c< is_expression_template<T>::value, Ty> 
+    {};
 
     template <typename T1, typename T2, typename Ty>
     class enable_if_expression_2 
-        : public more::mtp::enable_if_c< is_expression_template<T1>::value && is_expression_template<T2>::value, Ty > {};
+        : public more::mtp::enable_if_c< is_expression_template<T1>::value && is_expression_template<T2>::value, Ty > 
+    {};
 
     template <typename T1, typename T2>
     typename enable_if_expression_2<T1,T2, 

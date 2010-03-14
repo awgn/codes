@@ -16,16 +16,15 @@
 #ifndef INOTIFY_HH
 #define INOTIFY_HH
 
+#include <sys/inotify.h>
+#include <sys/select.h>
+#include <error.hh>         // more!
+
 #include <stdexcept>
 #include <iostream>
 #include <string>
 #include <list>
 #include <cstring>
-
-#include <sys/inotify.h>
-#include <sys/select.h>
-
-#include <error.hh>
 
 #define EVENT_SIZE  (sizeof (struct inotify_event))     /* size of the event structure, not counting name */
 #define BUF_LEN     (1024 * (EVENT_SIZE + 16))          /* reasonable guess as to size of 1024 events */

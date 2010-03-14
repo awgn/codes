@@ -139,7 +139,7 @@ namespace more { namespace TM {
 
     struct null 
     {
-        static const char * value() { return NULL; };
+        static const char * value() { return NULL; }
     };
 
     template <typename K, typename V, typename N>

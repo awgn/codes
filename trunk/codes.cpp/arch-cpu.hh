@@ -14,14 +14,15 @@
 #ifndef ARCH_CPU_HH 
 #define ARCH_CPU_HH 
 
+#include <cpufreq.hh>       // more + libcpufreq
+
+#include <tr1/memory>
 #include <cstring>
 #include <cstdio>
 #include <string>
 #include <stdexcept>
+#include <algorithm>
 #include <list>
-
-#include <cpufreq.hh>       // more + libcpufreq
-#include <tr1/memory>
 
 // asm policies are taken from the linux kernel 2.6/include/arch-.../
 //

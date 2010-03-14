@@ -11,11 +11,11 @@
 #ifndef _ERROR_HH_
 #define _ERROR_HH_ 
 
+#include <errcode.h>
+
 #include <cstring>
 #include <string>
 #include <stdexcept>
-
-#include <errcode.h>
 
 #ifdef _REENTRANT
 #include <atomicity-policy.hh>

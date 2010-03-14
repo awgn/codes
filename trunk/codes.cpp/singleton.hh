@@ -11,9 +11,10 @@
 #ifndef SINGLETON_HH
 #define SINGLETON_HH
 
+#include <typelist.hh>      // more!
+
 #include <tr1/type_traits>
 #include <iostream>
-#include <typelist.hh>
 
 namespace more
 {    

@@ -11,13 +11,13 @@
 #ifndef FAST_DEQUE_HH
 #define FAST_DEQUE_HH
 
+#include <atomic.hh>    // more!
+
 #include <iostream> 
 #include <stdexcept>
-#include <atomic.hh>
 
 #define likely(x)   __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
-
 
 namespace more 
 {

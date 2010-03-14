@@ -11,12 +11,13 @@
 #ifndef _VARIANT_HH_
 #define _VARIANT_HH_ 
 
+#include <typelist.hh>  // more!
+#include <mtp.hh>       // more!
+
 #include <typeinfo>
 #include <iostream>
 #include <stdexcept>
-
-#include <typelist.hh>
-#include <mtp.hh>
+#include <algorithm>
 
 // Yet another boost tribute: the class variant.
 //

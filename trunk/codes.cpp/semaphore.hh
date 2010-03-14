@@ -11,14 +11,14 @@
 #ifndef __SEMAPHORE_HH__
 #define __SEMAPHORE_HH__
 
-#include <noncopyable.hh>
+#include <semaphore.h>      
+#include <error.hh>         // more!
+#include <noncopyable.hh>   // more!
+
 #include <stdexcept>
 #include <string>
 #include <cstring>
 #include <iostream>
-
-#include <semaphore.h>
-#include <error.hh>
 
 namespace more { namespace posix {
 
