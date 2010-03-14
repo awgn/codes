@@ -36,10 +36,6 @@ main(int argc, char *argv[])
     abc.push_front(-3);
     abc.push_front(-4);
 
-    for (int i=0; i<10000000; i++) {
-    std::vector<iovec> iov = more::get_iovec(abc.begin(), abc.end());
-    }
-
     std::vector<iovec> iov = more::get_iovec(abc.begin(), abc.end());
     std::copy(iov.begin(), iov.end(), std::ostream_iterator<iovec>(std::cout, "-"));
     std::cout << std::endl;
