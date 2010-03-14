@@ -31,6 +31,8 @@ thread_routine_boost(void *)
 
     more::Timeval e = more::Timeval::now();
     std::cout << max_iter << " boost::lexical_cast<int>() " << (e-b).to_msec() << " msec" << std::endl;
+    
+    return 0;
 }
 
 void *
@@ -45,6 +47,7 @@ thread_routine_more(void *)
 
     more::Timeval e = more::Timeval::now();
     std::cout << max_iter << " more::lexical_cast<int>() " << (e-b).to_msec() << " msec" << std::endl;
+    return 0;
 }
 
 
