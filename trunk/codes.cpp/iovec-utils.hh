@@ -13,7 +13,13 @@
 
 #include <sys/uio.h>
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#endif
+
 #include <vector>
 #include <iterator>
 #include <iostream>
@@ -27,7 +33,7 @@ namespace more {
         struct address_of {
 
             template <typename T>
-            static typename std::tr1::add_const<T>::type * 
+            static typename std::add_const<T>::type * 
             value(const T &elem)
             {
                 return & elem;
@@ -64,7 +70,7 @@ namespace more {
     get_iovec(Iterator __it, Iterator __end)
     {
         typedef typename 
-            more::mtp::if_< std::tr1::is_same< std::string, typename std::iterator_traits<Iterator>::value_type >::value, 
+            more::mtp::if_< std::is_same< std::string, typename std::iterator_traits<Iterator>::value_type >::value, 
                 char, 
                 typename std::iterator_traits<Iterator>::value_type>::type value_type;
 

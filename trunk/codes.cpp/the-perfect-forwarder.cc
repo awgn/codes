@@ -8,7 +8,13 @@
  * ----------------------------------------------------------------------------
  */
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/functional>
+namespace std { using namespace std::tr1; }
+#else
+#include <functional>
+#endif
+
 #include <iostream>
 #include <colorful.hh>
 
@@ -130,25 +136,25 @@ main(int argc, char *argv[])
         std::cout << "    arg & a3 = " << a3.get() << " <== should be 1! [" << red() << "ERROR" << rst() << "]" << std::endl;
     }
 
-    std::cout << red() << "\n[#3] candidate_forwarder_2 [with std::tr1::reference_wrapper<>]" << rst() << std::endl;
+    std::cout << red() << "\n[#3] candidate_forwarder_2 [with std::reference_wrapper<>]" << rst() << std::endl;
     {
         arg a3;
 
         std::cout << "--- prolog:" << std::endl;
-        candidate_forwarder_2(fun, arg(), arg(), std::tr1::ref(a3) );  // rvalue are not allowed
+        candidate_forwarder_2(fun, arg(), arg(), std::ref(a3) );  // rvalue are not allowed
         std::cout << "--- epilog:" << std::endl;
 
         std::cout << "    arg & a3 = " << a3.get() << " <== should be 1! [" << bold() << "OK" << rst() << "]" << std::endl;
     }
 
-    std::cout << red() << "\n[#4] candidate_forwarder_2 [with std::tr1::reference_wrapper<>]" << rst() << std::endl;
+    std::cout << red() << "\n[#4] candidate_forwarder_2 [with std::reference_wrapper<>]" << rst() << std::endl;
     {
         arg a1;
         arg a2;
         arg a3;
 
         std::cout << "--- prolog:" << std::endl;
-        candidate_forwarder_2(fun, a1, a2, std::tr1::ref(a3) );  // rvalue are not allowed
+        candidate_forwarder_2(fun, a1, a2, std::ref(a3) );  // rvalue are not allowed
         std::cout << "--- epilog:" << std::endl;
 
         std::cout << "    arg & a3 = " << a3.get() << " <== should be 1! [" << bold() << "OK" << rst() << "]" << std::endl;

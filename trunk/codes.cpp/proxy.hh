@@ -11,7 +11,13 @@
 #ifndef PROXY_HH
 #define PROXY_HH
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/functional>
+namespace std { using namespace std::tr1; }
+#else
+#include <functional>
+#endif
+
 #include <stdexcept>
 #include <typeinfo>
 #include <string>
@@ -209,7 +215,7 @@ namespace more
         _M_value(_M_storage)
         {}
 
-        explicit ref_proxy (std::tr1::reference_wrapper<T> pv)
+        explicit ref_proxy (std::reference_wrapper<T> pv)
         : _M_storage(),
         _M_value(pv.get())
         {}

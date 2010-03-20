@@ -16,7 +16,13 @@
 #include <errno.h>
 #include <unistd.h>
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#endif
+
 #include <stdexcept>
 
 namespace more
@@ -40,7 +46,9 @@ namespace more
         template < typename C, typename T > 
         static inline int call(C callback, int fd, T *buff, size_t n)
         {
-            typename __select< std::tr1::is_const<T>::value , const char *,char *>::type p = reinterpret_cast<typeof(p)>(buff);
+            typedef typename __select< std::is_const<T>::value , const char *,char *>::type ptr_type; 
+            ptr_type p = reinterpret_cast<ptr_type>(buff);
+
             size_t res, pos = 0;
 
             while (n > pos) {
@@ -65,7 +73,9 @@ namespace more
         template < typename C, typename T, typename P1 > 
         static inline int call(C callback, int fd, T *buff, size_t n, P1 p1)
         {
-            typename __select< std::tr1::is_const<T>::value , const char *,char *>::type p = reinterpret_cast<typeof(p)>(buff);
+            typedef typename __select< std::is_const<T>::value , const char *,char *>::type ptr_type; 
+            ptr_type p = reinterpret_cast<ptr_type>(buff);
+
             size_t res, pos = 0;
 
             while (n > pos) {
@@ -87,7 +97,8 @@ namespace more
         template < typename C, typename T, typename P1, typename P2 > 
         static inline int call(C callback, int fd, T *buff, size_t n, P1 p1, P2 p2)
         {
-            typename __select< std::tr1::is_const<T>::value , const char *,char *>::type p = reinterpret_cast<typeof(p)>(buff);
+            typedef typename __select< std::is_const<T>::value , const char *,char *>::type ptr_type;
+            ptr_type p = reinterpret_cast<ptr_type>(buff);
             size_t res, pos = 0;
 
             while (n > pos) {
@@ -112,7 +123,8 @@ namespace more
         template < typename C, typename T, typename P1, typename P2, typename P3 > 
         static inline int call(C callback, int fd, T *buff, size_t n, P1 p1, P2 p2, P3 p3)
         {
-            typename __select< std::tr1::is_const<T>::value , const char *,char *>::type p = reinterpret_cast<typeof(p)>(buff);
+            typedef typename __select< std::is_const<T>::value , const char *,char *>::type ptr_type;
+            ptr_type p = reinterpret_cast<ptr_type>(buff);
             size_t res, pos = 0;
 
             while (n > pos) {

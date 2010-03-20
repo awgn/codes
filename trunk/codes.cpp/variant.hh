@@ -14,6 +14,13 @@
 #include <typelist.hh>  // more!
 #include <mtp.hh>       // more!
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+namespace std { using namespace std::tr1; }
+#include <tr1/type_traits>
+#else
+#include <type_traits>
+#endif
+
 #include <typeinfo>
 #include <iostream>
 #include <stdexcept>
@@ -247,15 +254,15 @@ namespace more {
                 {
                 case 0: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, rhs.get<T0>()); break;
                 case 1: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::tr1::is_same<T1, variat_helper::none>::value, T0, T1>::type>()); break;
+                                       rhs.get<typename  mtp::if_< std::is_same<T1, variat_helper::none>::value, T0, T1>::type>()); break;
                 case 2: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::tr1::is_same<T2, variat_helper::none>::value, T0, T2>::type>()); break;
+                                       rhs.get<typename  mtp::if_< std::is_same<T2, variat_helper::none>::value, T0, T2>::type>()); break;
                 case 3: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::tr1::is_same<T3, variat_helper::none>::value, T0, T3>::type>()); break;
+                                       rhs.get<typename  mtp::if_< std::is_same<T3, variat_helper::none>::value, T0, T3>::type>()); break;
                 case 4: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::tr1::is_same<T4, variat_helper::none>::value, T0, T4>::type>()); break;
+                                       rhs.get<typename  mtp::if_< std::is_same<T4, variat_helper::none>::value, T0, T4>::type>()); break;
                 case 5: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::tr1::is_same<T5, variat_helper::none>::value, T0, T5>::type>()); break;
+                                       rhs.get<typename  mtp::if_< std::is_same<T5, variat_helper::none>::value, T0, T5>::type>()); break;
                 }
             }
             catch(...)
@@ -346,11 +353,11 @@ namespace more {
             switch(_M_type)
             {
                 case 0: cw(this->get<T0>()); break;
-                case 1: cw(this->get< typename  mtp::if_< std::tr1::is_same<T1, variat_helper::none>::value, T0, T1>::type >()); break;
-                case 2: cw(this->get< typename  mtp::if_< std::tr1::is_same<T2, variat_helper::none>::value, T0, T2>::type >()); break;
-                case 3: cw(this->get< typename  mtp::if_< std::tr1::is_same<T3, variat_helper::none>::value, T0, T3>::type >()); break;
-                case 4: cw(this->get< typename  mtp::if_< std::tr1::is_same<T4, variat_helper::none>::value, T0, T4>::type >()); break;
-                case 5: cw(this->get< typename  mtp::if_< std::tr1::is_same<T5, variat_helper::none>::value, T0, T5>::type >()); break;
+                case 1: cw(this->get< typename  mtp::if_< std::is_same<T1, variat_helper::none>::value, T0, T1>::type >()); break;
+                case 2: cw(this->get< typename  mtp::if_< std::is_same<T2, variat_helper::none>::value, T0, T2>::type >()); break;
+                case 3: cw(this->get< typename  mtp::if_< std::is_same<T3, variat_helper::none>::value, T0, T3>::type >()); break;
+                case 4: cw(this->get< typename  mtp::if_< std::is_same<T4, variat_helper::none>::value, T0, T4>::type >()); break;
+                case 5: cw(this->get< typename  mtp::if_< std::is_same<T5, variat_helper::none>::value, T0, T5>::type >()); break;
             }    
         }
 
@@ -447,11 +454,11 @@ namespace more {
              switch(_M_type)
             {
                 case 0:  out << this->get<T0>(); break;
-                case 1:  out << this->get< typename  mtp::if_< std::tr1::is_same<T1, variat_helper::none>::value, T0, T1>::type >(); break;
-                case 2:  out << this->get< typename  mtp::if_< std::tr1::is_same<T2, variat_helper::none>::value, T0, T2>::type >(); break;
-                case 3:  out << this->get< typename  mtp::if_< std::tr1::is_same<T3, variat_helper::none>::value, T0, T3>::type >(); break;
-                case 4:  out << this->get< typename  mtp::if_< std::tr1::is_same<T4, variat_helper::none>::value, T0, T4>::type >(); break;
-                case 5:  out << this->get< typename  mtp::if_< std::tr1::is_same<T5, variat_helper::none>::value, T0, T5>::type >(); break;
+                case 1:  out << this->get< typename  mtp::if_< std::is_same<T1, variat_helper::none>::value, T0, T1>::type >(); break;
+                case 2:  out << this->get< typename  mtp::if_< std::is_same<T2, variat_helper::none>::value, T0, T2>::type >(); break;
+                case 3:  out << this->get< typename  mtp::if_< std::is_same<T3, variat_helper::none>::value, T0, T3>::type >(); break;
+                case 4:  out << this->get< typename  mtp::if_< std::is_same<T4, variat_helper::none>::value, T0, T4>::type >(); break;
+                case 5:  out << this->get< typename  mtp::if_< std::is_same<T5, variat_helper::none>::value, T0, T5>::type >(); break;
             }    
         }
 

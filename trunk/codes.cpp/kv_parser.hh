@@ -15,7 +15,13 @@
 #include <iomanip.hh>           // more!
 #include <lnistreambuf.hh>      // more!
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
+#else
+#include <tr1/type_traits>
+#include <type_traits>
+#endif
 
 #include <iostream>
 #include <fstream>

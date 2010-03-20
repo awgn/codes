@@ -16,7 +16,13 @@
 
 #include <iomanip.hh>       // more!
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <iterator>
@@ -201,11 +207,11 @@ namespace more { namespace yacpp {
                     // split codeline from comments...
                     _M_decanter( static_cast<std::string &>(_M_line), comment);
                     more::trim(comment);
-                    if ( std::tr1::is_same<Target, comment_type>::value )
+                    if ( std::is_same<Target, comment_type>::value )
                         std::swap(comment, static_cast<std::string &>(_M_line)); 
                 }
                 while( !more::trim(static_cast<std::string &>(_M_line)).size() || 
-                       ( std::tr1::is_same<Target, cpp_type>::value && _M_line.str()[0] != '#' )
+                       ( std::is_same<Target, cpp_type>::value && _M_line.str()[0] != '#' )
                      );
             }
         }

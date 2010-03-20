@@ -15,10 +15,10 @@ using namespace more::basic_concepts;
 
 struct test_class {
 
-    bool operator==(const test_class &b)
+    bool operator==(const test_class &b) const
     { return true; }
 
-    bool operator!=(const test_class &b)
+    bool operator!=(const test_class &b) const
     { return !this->operator==(b); }
 
     test_class &

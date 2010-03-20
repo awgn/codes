@@ -15,7 +15,12 @@
 #include <iterator>
 #include <cstdio>
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/array>
+namespace std { using namespace std::tr1; }
+#else
+#include <array>
+#endif
 
 int
 main(int argc, char *argv[])
@@ -38,7 +43,7 @@ main(int argc, char *argv[])
     std::cout.flush();
     writev(fileno(stdout), abc, 2);
 
-    std::tr1::array<iovec,1> array_iovec_hello __attribute__((unused)) = {{ more::ext_buffer(hello,5) }};
+    std::array<iovec,1> array_iovec_hello __attribute__((unused)) = {{ more::ext_buffer(hello,5) }};
 
     std::cout << std::endl;
 

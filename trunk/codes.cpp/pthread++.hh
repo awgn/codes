@@ -18,9 +18,17 @@
 
 #include <error.hh>         // more!
 #include <noncopyable.hh>   // more!
+#include <static_assert.hh> // more!
 
-#include <tr1/memory>
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/functional>
+#include <tr1/memory>
+namespace std { using namespace std::tr1; }
+#endif
+
+#include <memory>
+#include <functional>
+
 #include <stdexcept>
 #include <iostream>
 #include <cassert>
@@ -30,10 +38,10 @@
 
 namespace more { namespace posix 
 {    
-    using namespace std::tr1::placeholders;
-    using std::tr1::shared_ptr;
-    using std::tr1::mem_fn;
-    using std::tr1::bind;
+    using namespace std::placeholders;
+    using std::shared_ptr;
+    using std::mem_fn;
+    using std::bind;
 
     namespace  
     {
@@ -45,13 +53,6 @@ namespace more { namespace posix
         template <typename T>
         struct type2type {
             typedef T type;
-        };
-
-        template <bool N> struct static_assert;
-        template <>
-        struct static_assert<true>
-        {
-            enum { value = true };
         };
     }
 
@@ -330,9 +331,7 @@ namespace more { namespace posix
         scoped_lock(T &m) 
         : _M_mutex( static_cast<mutex_type &>(m) )
         {   
-            static_assert<  std::tr1::is_same<T, M>::value || 
-                            std::tr1::is_base_of<T, M>::value > 
-                            lock_type_unknown __attribute__((unused));
+            static_assert( (std::is_same<T, M>::value) || (std::is_base_of<T, M>::value) , lock_type_unknown );
 
             if (!this->lock()) { 
                 throw std::runtime_error("scoped_lock<>");

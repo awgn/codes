@@ -11,16 +11,22 @@
 #ifndef _CXA_DEMANGLE_HH_
 #define _CXA_DEMANGLE_HH_ 
 
-#include <string>
-#include <cstdlib>
-#include <stdexcept>
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/memory>
+namespace std { using namespace std::tr1; }
+#else
+#include <memory>
+#endif
 
 #include <cxxabi.h>
 
 #ifdef _REENTRANT
 #include <atomicity-policy.hh>
 #endif
+
+#include <string>
+#include <cstdlib>
+#include <stdexcept>
 
 namespace more { 
 
@@ -33,7 +39,7 @@ namespace more {
         atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
         int status;
-        std::tr1::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
+        std::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
         if (status < 0) {
 #ifdef __EXCEPTIONS
             throw std::runtime_error("__cxa_demangle");

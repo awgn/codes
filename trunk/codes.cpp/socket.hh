@@ -18,7 +18,13 @@
 #include <sockaddress.hh>           // more!
 #include <error.hh>                 // more!
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/array>
+namespace std { using namespace std::tr1; }
+#else
+#include <array>
+#endif
+
 #include <string>
 
 namespace more {
@@ -37,7 +43,7 @@ namespace more {
         }
 
         template <std::size_t N>
-        int send(const std::tr1::array<iovec,N> &iov, int flags) const
+        int send(const std::array<iovec,N> &iov, int flags) const
         { 
             const msghdr msg = { NULL, 0, const_cast<iovec *>(&iov.front()), N, NULL, 0, 0 };    
             return ::sendmsg(_M_fd, &msg, flags); 
@@ -50,7 +56,7 @@ namespace more {
         }
 
         template <std::size_t N>
-        int recv(std::tr1::array<iovec,N> &iov, int flags) const
+        int recv(std::array<iovec,N> &iov, int flags) const
         { 
             msghdr msg = { NULL, 0, &iov.front(), N, NULL, 0, 0 };    
             return ::recvmsg(_M_fd, &msg, flags); 

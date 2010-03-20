@@ -19,10 +19,10 @@
 #define BLACK   "\E[0;29;1m"
 #define RESET   "\E[0m"
 
-std::string verdict( false_type )
+std::string verdict( std::false_type )
 { return "[" RED "false" RESET "]"; }
 
-std::string verdict( true_type )
+std::string verdict( std::true_type )
 { return "[" BLACK "true" RESET "]"; }
 
 template <typename T>
@@ -58,7 +58,7 @@ main(int argc, char *argv[])
 
     std::cout << "std::vector<int> is a container ? " << verdict( more::traits::is_container< std::vector<int> >())  << std::endl; assert(more::traits::is_container<std::vector<int> >::value == true);
 
-    typedef std::tr1::tuple<long long int, long int, short int> mytuple;
+    typedef std::tuple<long long int, long int, short int> mytuple;
 
     std::cout << "int is a tuple ? " << verdict( more::traits::is_tuple< int >())  << std::endl; assert( more::traits::is_tuple< int >::value == false);
     std::cout << "mytuple is a tuple ? " << verdict( more::traits::is_tuple< mytuple >())  << std::endl; assert ( more::traits::is_tuple< mytuple >::value == true);

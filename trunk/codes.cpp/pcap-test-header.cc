@@ -13,7 +13,6 @@
 #include <algorithm>
 
 #include <pcap++.hh>
-#include <tr1/functional>
 
 #include <net-headers.hh>
 
@@ -88,7 +87,7 @@ main(int argc, char *argv[])
     std::cout << std::endl;
 
     bpf_u_int32 net, mask;
-    std::tr1::tie(net,mask) = more::pcap::lookupnet("lo");
+    std::tie(net,mask) = more::pcap::lookupnet("lo");
 
     std::cout << "lookupnet: " << more::pcap::ipv4_dotform(net) << " " << more::pcap::ipv4_dotform(mask) << std::endl;
     std::cout << "dispatch: " << std::endl;

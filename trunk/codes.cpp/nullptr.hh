@@ -11,7 +11,6 @@
 #ifndef _NULLPTR_HH_
 #define _NULLPTR_HH_ 
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
 namespace more {
 
     template <unsigned int N>
@@ -23,11 +22,12 @@ namespace more {
             return reinterpret_cast<T *>(N);
         }
     };
-
 }
-#define nullptr more::static_ptr_t<0>()
-#define deadptr more::static_ptr_t<0xdeadbeef>()
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#define nullptr more::static_ptr_t<0>()
 #endif
+
+#define deadptr more::static_ptr_t<0xdeadbeef>()
 
 #endif /* _NULLPTR_HH_ */

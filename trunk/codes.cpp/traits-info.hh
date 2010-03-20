@@ -18,9 +18,16 @@
 #include <typelist.hh>
 #endif
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
 #include <tr1/memory>
+namespace std { using namespace std::tr1; }
+#else
+#include <tr1/type_traits>
+#include <type_traits>
+#endif
 
+#include <memory>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -47,15 +54,15 @@ namespace more {
     }
 
 #ifdef USE_COLORS
-#define __dump_trait_type(x,y)   std::setw(42) << "std::tr1::" #x "<" #y ">: " << \
-            typename traits_info_helper::color_trait< std::tr1::x<y>::value >::type() << \
-            std::tr1::x<y>::value << \
+#define __dump_trait_type(x,y)   std::setw(42) << "std::" #x "<" #y ">: " << \
+            typename traits_info_helper::color_trait< std::x<y>::value >::type() << \
+            std::x<y>::value << \
             "_type" << more::colorful< TYPELIST(ecma::reset) > ()  
 #else
-#define __dump_trait_type(x,y)   std::setw(42) << "std::tr1::" #x "<" #y ">: " << std::tr1::x<y>::value << "_type"  
+#define __dump_trait_type(x,y)   std::setw(42) << "std::" #x "<" #y ">: " << std::x<y>::value << "_type"  
 #endif
 
-#define __dump_trait_value(x,y)  std::setw(42) << "std::tr1::" #x "<" #y ">: " << std::tr1::x<y>::value  
+#define __dump_trait_value(x,y)  std::setw(42) << "std::" #x "<" #y ">: " << std::x<y>::value  
 
     template <typename T>
     struct traits_info
@@ -89,12 +96,12 @@ namespace more {
             __dump_trait_type(is_empty,T) << std::endl <<
             __dump_trait_type(is_polymorphic,T) << std::endl <<
             __dump_trait_type(is_abstract,T) << std::endl <<
-            __dump_trait_type(has_trivial_constructor,T) << std::endl <<
-            __dump_trait_type(has_trivial_copy,T) << std::endl <<
+            __dump_trait_type(tr1::has_trivial_constructor,T) << std::endl <<
+            __dump_trait_type(tr1::has_trivial_copy,T) << std::endl <<
             __dump_trait_type(has_trivial_assign,T) << std::endl <<
             __dump_trait_type(has_trivial_destructor,T) << std::endl <<
-            __dump_trait_type(has_nothrow_constructor,T) << std::endl <<
-            __dump_trait_type(has_nothrow_copy,T) << std::endl <<
+            __dump_trait_type(tr1::has_nothrow_constructor,T) << std::endl <<
+            __dump_trait_type(tr1::has_nothrow_copy,T) << std::endl <<
             __dump_trait_type(has_nothrow_assign,T) << std::endl <<
             __dump_trait_type(has_virtual_destructor,T) << std::endl <<
             __dump_trait_type(is_signed,T) << std::endl <<

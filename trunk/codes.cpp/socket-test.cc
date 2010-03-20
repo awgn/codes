@@ -41,7 +41,7 @@ int main()
         // r.send(buffer, n, 0); 
         // send double-echo by means of iovec...
 
-        std::tr1::array<iovec,2> iov;
+        std::array<iovec,2> iov;
 
         iov[0].iov_base = buffer;
         iov[0].iov_len  = n;

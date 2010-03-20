@@ -110,8 +110,8 @@ main(int argc, char *argv[])
     {
         sub2 owner;
         {
-            std::tr1::shared_ptr<observer<> > obs_1(new obs2);
-            std::tr1::shared_ptr<observer<> > obs_2(new obs2);
+            std::shared_ptr<observer<> > obs_1(new obs2);
+            std::shared_ptr<observer<> > obs_2(new obs2);
 
             std::cout << "    attach(2)" << std::endl;
             owner.attach(obs_1);

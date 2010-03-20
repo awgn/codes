@@ -8,16 +8,11 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <tr1/functional>
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include <string>
-#include <iterator>
+//////////////////////// glibc headers
 
-#include <cstring>
-#include <cstdlib>
-#include <cassert>
+#include <sys/time.h>
+#include <getopt.h>
+#include <errno.h>
 
 //////////////////////// more library dependency
 
@@ -26,11 +21,22 @@
 #include <exec.hh>
 #include <colorful.hh>
 
-//////////////////////// glibc headers
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#include <tr1/functional>
+namespace std { using namespace std::tr1; }
+#endif
 
-#include <sys/time.h>
-#include <getopt.h>
-#include <errno.h>
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
+#include <string>
+#include <iterator>
+#include <memory>
+#include <utility>
+
+#include <cstring>
+#include <cstdlib>
+#include <cassert>
 
 #define member_reader(type,value) \
     const type & \
@@ -67,8 +73,8 @@ const char usage[]=
 const std::string  COMPILE_ERROR("COMPILE_ERROR_");
 const std::string  WARNING_ERROR("WARNING_ERROR_");
 
-using std::tr1::reference_wrapper;
-using namespace std::tr1::placeholders;
+using std::reference_wrapper;
+using namespace std::placeholders;
 
 typedef more::colorful< TYPELIST(more::ecma::bold, more::ecma::fg_green)>  GREEN;
 typedef more::colorful< TYPELIST(more::ecma::bold, more::ecma::fg_blue)> BLUE;
@@ -181,15 +187,15 @@ public:
     {
         more::exec cc(_M_compiler, ::execvp );
 
-        std::for_each(_M_opt.begin(), _M_opt.end(),         std::tr1::bind(&more::exec::arg, std::tr1::ref(cc), _1 ));
-        std::for_each(_M_macro.begin(), _M_macro.end(),     std::tr1::bind(&more::exec::arg, std::tr1::ref(cc), _1 ));
-        std::for_each(_M_include.begin(), _M_include.end(), std::tr1::bind(&more::exec::arg, std::tr1::ref(cc), _1 ));
-        std::for_each(_M_source.begin(), _M_source.end(),   std::tr1::bind(&more::exec::arg, std::tr1::ref(cc), _1 )); 
+        std::for_each(_M_opt.begin(), _M_opt.end(),         std::bind(&more::exec::arg, std::ref(cc), _1 ));
+        std::for_each(_M_macro.begin(), _M_macro.end(),     std::bind(&more::exec::arg, std::ref(cc), _1 ));
+        std::for_each(_M_include.begin(), _M_include.end(), std::bind(&more::exec::arg, std::ref(cc), _1 ));
+        std::for_each(_M_source.begin(), _M_source.end(),   std::bind(&more::exec::arg, std::ref(cc), _1 )); 
 
         cc.arg("-o");
         cc.arg(this->bin());
 
-        std::for_each(_M_library.begin(), _M_library.end(),std::tr1::bind(&more::exec::arg, std::tr1::ref(cc), _1)); 
+        std::for_each(_M_library.begin(), _M_library.end(),std::bind(&more::exec::arg, std::ref(cc), _1)); 
 
         if ( _M_compile_expect_status ) {
             std::cout << " #" << std::setw(2) << std::left << this->id() << BOLD() << " compile: " << RESET() << cc.cmdline() << std::endl;
@@ -202,7 +208,7 @@ public:
             cc();
         } else {
             int n;
-            cc.redirect( std::make_pair(more::exec::STDERR, std::tr1::ref(n) ) );
+            cc.redirect( more::exec::redirect_type(more::exec::STDERR, std::ref(n) ) );
             cc();
         }
 
@@ -224,7 +230,7 @@ public:
 
         more::exec target("./" + this->bin(), ::execvp );
 
-        std::for_each(_M_rt_option.begin(), _M_rt_option.end(), std::tr1::bind(&more::exec::arg, std::tr1::ref(target), _1 ));
+        std::for_each(_M_rt_option.begin(), _M_rt_option.end(), std::bind(&more::exec::arg, std::ref(target), _1 ));
 
         std::cout << " #" << std::setw(2) << std::left << this->id() << BLUE() << " running: " << RESET() << target.cmdline() << " -> ";
         std::cout.flush();
@@ -283,6 +289,7 @@ public:
 };
 
 int testcpp::_S_id = 0;
+
 
 ///////////////////////// testcpprc parser 
 
@@ -360,7 +367,7 @@ bool load_cpptests()
             
             // load sources
             std::for_each(sources.begin(), sources.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::source), std::tr1::ref(x), _1));
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::source), std::ref(x), _1));
 
             std::vector<std::string> copt;
             std::vector<std::string>::const_iterator it = config.get<warning_opt>().begin();
@@ -369,23 +376,23 @@ bool load_cpptests()
             } while ( it++ != warn);
 
             std::for_each(copt.begin(), copt.end(), 
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::opt), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::opt), std::ref(x), _1));  
 
             // load libraries
             std::for_each(libraries.begin(), libraries.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::ref(x), _1));  
 
             // load includes
             std::for_each(includes.begin(), includes.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::ref(x), _1));  
 
             // load macros 
             std::for_each(macros.begin(), macros.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::ref(x), _1));  
 
             // load runtime options 
             std::for_each(runtime_opts.begin(), runtime_opts.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::rt_option), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::rt_option), std::ref(x), _1));  
 
             x.compile_expectation( testcpp::success() );
             x.run_expectation( testcpp::success() );
@@ -408,7 +415,7 @@ bool load_cpptests()
     std::vector<std::string> ifdef;
 
     std::for_each(sources.begin(), sources.end(),
-                  std::tr1::bind( parse_ifdef, _1, std::tr1::ref(ifdef), COMPILE_ERROR ));              
+                  std::bind( parse_ifdef, _1, std::ref(ifdef), COMPILE_ERROR ));              
 
     // for each compiler
 
@@ -426,7 +433,7 @@ bool load_cpptests()
  
             // load sources
             std::for_each(sources.begin(), sources.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::source), std::tr1::ref(x), _1));
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::source), std::ref(x), _1));
 
             std::string errmacro("-D");
             errmacro.append(*it);
@@ -436,15 +443,15 @@ bool load_cpptests()
 
             // load libraries
             std::for_each(libraries.begin(), libraries.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::ref(x), _1));  
 
             // load includes
             std::for_each(includes.begin(), includes.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::ref(x), _1));  
 
             // load macros 
             std::for_each(macros.begin(), macros.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::ref(x), _1));  
 
             x.compile_expectation( testcpp::failure() );
             x.verbose_compile(false);
@@ -479,25 +486,25 @@ bool load_cpptests()
 
             // load sources
             std::for_each(sources.begin(), sources.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::source), std::tr1::ref(x), _1));
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::source), std::ref(x), _1));
 
             x.opt(*opt);
 
             // load libraries
             std::for_each(libraries.begin(), libraries.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::library), std::ref(x), _1));  
 
             // load includes
             std::for_each(includes.begin(), includes.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::include), std::ref(x), _1));  
 
             // load macros 
             std::for_each(macros.begin(), macros.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::macro), std::ref(x), _1));  
 
             // load runtime options 
             std::for_each(runtime_opts.begin(), runtime_opts.end(),
-            std::tr1::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::rt_option), std::tr1::ref(x), _1));  
+            std::bind( static_cast<testcpp &(testcpp::*)(const std::string &)>(&testcpp::rt_option), std::ref(x), _1));  
 
             x.compile_expectation( testcpp::success() );
             x.run_expectation( testcpp::success() );
@@ -636,4 +643,4 @@ main(int argc, char *argv[])
 
     return 0;
 }
- 
+

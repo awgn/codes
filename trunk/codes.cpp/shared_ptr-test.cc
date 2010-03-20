@@ -14,8 +14,6 @@
 #include <cstdlib>
 #include <vector>
 
-#include <tr1/memory>
-
 ////////////////////////////////////////////////
 // more::shared_ptr<> traits usage:
 
@@ -123,11 +121,11 @@ main(int, char *[])
     std::vector<QSharedPointer<int> >::iterator it_end = vec.end();
 
 #else
-    std::tr1::shared_ptr<int> zero = make_zero();    
+    std::shared_ptr<int> zero = make_zero();    
     
-    std::vector<std::tr1::shared_ptr<int> > vec = factory();
-    std::vector<std::tr1::shared_ptr<int> >::iterator it = vec.begin();
-    std::vector<std::tr1::shared_ptr<int> >::iterator it_end = vec.end();
+    std::vector<std::shared_ptr<int> > vec = factory();
+    std::vector<std::shared_ptr<int> >::iterator it = vec.begin();
+    std::vector<std::shared_ptr<int> >::iterator it_end = vec.end();
 
 #endif
 

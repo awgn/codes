@@ -11,7 +11,13 @@
 #ifndef _ANY_HH_
 #define _ANY_HH_ 
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#endif
+
 #include <string>
 #include <typeinfo>
 #include <algorithm> 
@@ -144,7 +150,7 @@ namespace more {
     template <typename T>
     inline T any_cast(any &rhs)
     {
-        typedef typename std::tr1::remove_const< typename std::tr1::remove_reference<T>::type >::type Type;
+        typedef typename std::remove_const< typename std::remove_reference<T>::type >::type Type;
 
         Type * p = any_cast<Type>(&rhs);
         if (!p)
@@ -155,7 +161,7 @@ namespace more {
     template <typename T>
     inline T any_cast(const any &rhs)
     {
-        typedef typename std::tr1::remove_reference<T>::type Type;
+        typedef typename std::remove_reference<T>::type Type;
         return any_cast<const Type &>(const_cast<any &>(rhs));
     }
 

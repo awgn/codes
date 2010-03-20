@@ -12,7 +12,7 @@
 #include <iostream>
 #include <algorithm.hh>
 
-using namespace std::tr1::placeholders;
+using namespace std::placeholders;
 
 int
 main(int argc, char *argv[])
@@ -42,7 +42,7 @@ main(int argc, char *argv[])
     std::cout << "flipflop: " << ff1(1) << std::endl; 
 
     // flipflop2
-    more::flipflop2<int> ff2( std::tr1::bind(std::equal_to<int>(),_1, 0), std::tr1::bind(std::equal_to<int>(), _1, 3) );    
+    more::flipflop2<int> ff2( std::bind(std::equal_to<int>(),_1, 0), std::bind(std::equal_to<int>(), _1, 3) );    
 
     std::cout << "flipflop2: " << -2 << " " << ff2(-2) << std::endl;
     std::cout << "flipflop2: " << -1 << " " << ff2(-1) << std::endl;
@@ -52,6 +52,19 @@ main(int argc, char *argv[])
     std::cout << "flipflop2: " << 3  << " " << ff2(3)  << std::endl;
     std::cout << "flipflop2: " << 4  << " " << ff2(4)  << std::endl;
 
+    // levenshtein distance
+    //
+
+    std::string a("hello");
+    std::string b("Hello");
+    std::string c("helol");
+
+    std::cout << a << ':' << c << " -> " << more::levenshtein_distance(a.begin(), a.end(), c.begin(), c.end(), std::equal_to<char>()) << std::endl;
+    std::cout << c << ':' << a << " -> " << more::levenshtein_distance(c.begin(), c.end(), a.begin(), a.end(), std::equal_to<char>()) << std::endl;
+    std::cout << a << ':' << a << " -> " << more::levenshtein_distance(a.begin(), a.end(), a.begin(), a.end(), std::equal_to<char>()) << std::endl;
+    std::cout << a << ':' << b << " -> " << more::levenshtein_distance(a.begin(), a.end(), b.begin(), b.end()) << std::endl;
+    std::cout << a << ':' << b << " -> " << more::levenshtein_distance(a,b) << " (std::string)" << std::endl;
+        
     return 0;
 }
  

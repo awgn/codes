@@ -15,23 +15,21 @@
 
 #include <pthread++.hh>     // more!
 #include <error.hh>         // more!
+#include <static_assert.hh> // more!
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
 #include <tr1/array>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#include <array>
+#endif
+
 #include <cstring>
 #include <string>
 
 namespace more { namespace time {
-
-    namespace 
-    {
-        template <bool N> struct static_assert;
-        template <>
-        struct static_assert<true>
-        {
-            enum { value = true };
-        };
-    }
 
     struct tick_data
     {
@@ -40,7 +38,7 @@ namespace more { namespace time {
             posix::cond  _cond;
         } tick_data_type;
 
-        std::tr1::array<tick_data_type, 64 /* under linux SIGRTMAX is a function and cannot appear in constant expressions */ +1 > thread_data; 
+        std::array<tick_data_type, 64 /* under linux SIGRTMAX is a function and cannot appear in constant expressions */ +1 > thread_data; 
     };
 
     ////////////////////////////////////////////
@@ -335,15 +333,16 @@ namespace more { namespace time {
     private:
         void init()
         {
-            static_assert< CID == CLOCK_REALTIME            ||
+            
+            static_assert( CID == CLOCK_REALTIME            ||
                            CID == CLOCK_MONOTONIC           ||
                            CID == CLOCK_PROCESS_CPUTIME_ID  ||
-                           CID == CLOCK_THREAD_CPUTIME_ID > clokid_not_allowed __attribute__((unused));
+                           CID == CLOCK_THREAD_CPUTIME_ID,  clokid_not_allowed);
 
-            static_assert< SIGEV == SIGEV_SIGNAL ||
+            static_assert( SIGEV == SIGEV_SIGNAL ||
                            SIGEV == SIGEV_NONE   ||
                            SIGEV == SIGEV_THREAD ||
-                           SIGEV == SIGEV_THREAD_ID > sigev_notify_not_allowed __attribute__((unused));
+                           SIGEV == SIGEV_THREAD_ID , sigev_notify_not_allowed);
 
             // The  Linux  kernel  supports a range of 32 different real-time signals,
             // numbered 33 to 64. However, the  glibc  POSIX  threads  implementation
@@ -351,8 +350,8 @@ namespace more { namespace time {
             // signals (see pthreads(7)), and adjusts the value of  SIGRTMIN  suitably
             // (to 34 or 35)
 
-            static_assert< SIGNO >= SIGRT_MIN && SIGNO <= SIGRT_MAX > rt_sig_numer_not_allowed __attribute__((unused)); 
-            static_assert< FLAGS == 0 || FLAGS == 1 > timer_settime_flags_not_allowed __attribute__((unused));
+            static_assert( SIGNO >= SIGRT_MIN && SIGNO <= SIGRT_MAX , rt_sig_numer_not_allowed); 
+            static_assert( FLAGS == 0 || FLAGS == 1, timer_settime_flags_not_allowed);
 
             struct sigevent ev;
             ev.sigev_notify = SIGEV;

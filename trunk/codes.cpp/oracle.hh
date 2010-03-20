@@ -19,7 +19,13 @@
 #include <atomic.hh>
 #endif
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/memory>
+namespace std { using namespace std::tr1; }
+#else
+#include <memory>
+#endif
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -69,7 +75,7 @@ namespace more {
             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
 #endif
             int status;
-            std::tr1::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);                    
+            std::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);                    
             if (status < 0)
                 throw std::runtime_error("__cxa_demangle");
             

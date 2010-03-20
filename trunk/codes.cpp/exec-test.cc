@@ -27,10 +27,10 @@ main(int argc, char *argv[])
     std::cout << "running: [" << abc.cmdline() << "]" << std::endl;
 
     int out;
-    abc.redirect( std::make_pair(more::exec::STDOUT, std::tr1::ref(out)) );
+    abc.redirect( exec::redirect_type( more::exec::STDOUT, std::ref(out)) );
     
     // int err;
-    // abc.redirect( exec::child_fd(more::exec::STDERR, std::tr1::ref(err) ) );
+    // abc.redirect( exec::redirect_type(more::exec::STDERR, std::ref(err) ) );
 
     abc(); // run
     

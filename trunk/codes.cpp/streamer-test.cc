@@ -58,5 +58,8 @@ main(int argc, char *argv[])
     more::streamer::sep(std::cout, "|");    // set the separator
     std::cout << "map<std::string,int>          :" << m << std::endl;
 
+    std::cout << "std::tuple<int,double>        :" << std::tuple<int,double>(1,1.1) << std::endl;
+    std::cout << "std::array<int,3>             :" << std::array<int,3>() << std::endl;
+
     return 0;
 }

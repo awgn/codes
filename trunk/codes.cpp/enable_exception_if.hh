@@ -95,7 +95,7 @@ namespace more {
         { return _M_value; }
 
         template <typename T>
-        typename mtp::disable_if<std::tr1::is_base_of<std::exception, typename std::tr1::remove_reference<T>::type > ,void>::type  
+        typename mtp::disable_if<std::is_base_of<std::exception, typename std::remove_reference<T>::type > ,void>::type  
         throw_exception(const T &e) const
         {
 #ifndef NDEBUG

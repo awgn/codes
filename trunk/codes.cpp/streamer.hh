@@ -11,16 +11,23 @@
 #ifndef STREAMER_HH
 #define STREAMER_HH
 
+#include <mtp.hh>           // more!
+#include <type_traits.hh>   // more!
+
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
 #include <tr1/array>
 #include <tr1/tuple>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#include <array>
+#include <tuple>
+#endif
 
 #include <iostream>
 #include <cstdio>
 #include <string>
-
-#include <mtp.hh>           // more!
-#include <type_traits.hh>   // more!
 
 namespace more {
 
@@ -62,12 +69,12 @@ namespace more {
     //
 
     template <typename T>
-    inline typename std::tr1::add_const< typename sc_mangling_traits<T>::type >::type sc_type_mangling(const T &t)
+    inline typename std::add_const< typename sc_mangling_traits<T>::type >::type sc_type_mangling(const T &t)
     { return t; }
 
     template <>
     inline
-    std::tr1::add_const<sc_mangling_traits<char>::type>::type 
+    std::add_const<sc_mangling_traits<char>::type>::type 
     sc_type_mangling<char>(const char &c)
     {
         char buf[8];
@@ -76,7 +83,7 @@ namespace more {
     }
     template <>
     inline
-    std::tr1::add_const<sc_mangling_traits<unsigned char>::type>::type
+    std::add_const<sc_mangling_traits<unsigned char>::type>::type
     sc_type_mangling<unsigned char>(const unsigned char &c)
     {
         char buf[8];
@@ -94,7 +101,7 @@ namespace more {
         {
             static void apply(std::basic_ostream<CharT,Traits> &out, const T &tupl)
             {
-                out << std::tr1::get< std::tr1::tuple_size<T>::value - N>(tupl) << ' ';
+                out << std::get< std::tuple_size<T>::value - N>(tupl) << ' ';
                 printon<CharT, Traits, T,N-1>::apply(out,tupl);
             }
 
@@ -117,7 +124,7 @@ namespace std {
 
     template <typename CharT, typename Traits, typename T>
     inline typename more::mtp::enable_if_c< more::traits::is_container<T>::value && 
-    !tr1::is_same<typename std::string,T>::value, 
+    !is_same<typename std::string,T>::value, 
            std::basic_ostream<CharT,Traits> >::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
     {
@@ -143,17 +150,19 @@ namespace std {
         return out;
     }
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
     namespace tr1 
     {
+#endif
         ///////////////////////////
         // operator<< for array...
 
         template <typename CharT, typename Traits, typename T, std::size_t N>
         std::basic_ostream<CharT,Traits> &
-        operator<<(std::basic_ostream<CharT,Traits> &out, const std::tr1::array<T,N> & rhs)
+        operator<<(std::basic_ostream<CharT,Traits> &out, const std::array<T,N> & rhs)
         {
             out << "[ ";
-            more::__tuplarr_policy::printon<CharT, Traits, std::tr1::array<T,N>, N>::apply(out,rhs);
+            more::__tuplarr_policy::printon<CharT, Traits, std::array<T,N>, N>::apply(out,rhs);
             return out << "]";
         }
 
@@ -165,11 +174,14 @@ namespace std {
         operator<<(std::basic_ostream<CharT,Traits> &out, const T & rhs)
         {
             out << "< ";
-            more::__tuplarr_policy::printon<CharT, Traits, T, std::tr1::tuple_size<T>::value>::apply(out,rhs);
+            more::__tuplarr_policy::printon<CharT, Traits, T, std::tuple_size<T>::value>::apply(out,rhs);
             return out << ">";
         }
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
     }   // namespace tr1
+#endif
+
 } // namespace std
 
 #endif /* STREAMER_HH */

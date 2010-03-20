@@ -12,11 +12,8 @@
 #include <iostream>
 #include <iterator>
 #include <algorithm>
-#include <tr1/functional>
 
 #include <tuplarr.hh>
-
-using namespace std::tr1;
 
 struct test {};
 
@@ -29,15 +26,15 @@ struct print_on
     }
 };
 
-using namespace std::tr1::placeholders;
+using namespace std::placeholders;
 
 int
 main(int argc, char *argv[])
 {
     std::vector<double> vec;
 
-    std::tr1::tuple<int,double,int> t = make_tuple(0,1,2);
-    std::tr1::array<int,2> a = {{ 3, 4 }};
+    std::tuple<int,double,int> t = std::make_tuple(0,1.0,2);
+    std::array<int,2> a = {{ 3, 4 }};
 
     more::tuplarr::copy(t, std::back_inserter(vec));
     more::tuplarr::copy(a, std::back_inserter(vec));
@@ -49,8 +46,8 @@ main(int argc, char *argv[])
     std::cout << t << std::endl;
     std::cout << a << std::endl;
 
-    std::tr1::tuple<> nt;
-    std::tr1::array<int,0> na;
+    std::tuple<> nt;
+    std::array<int,0> na;
 
     std::cout << nt << std::endl;
     std::cout << na << std::endl;
@@ -71,7 +68,7 @@ main(int argc, char *argv[])
     // count_if
 
     std::cout << "count_if: " << 
-        more::tuplarr::count_if(t, std::tr1::bind(std::greater<double>(), _1, 0)) 
+        more::tuplarr::count_if(t, std::bind(std::greater<double>(), _1, 0)) 
         << std::endl;
 
     return 0;

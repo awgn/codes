@@ -59,7 +59,7 @@ typedef more::lazy_object<derived> lazy_derived;
 
 void test_upcast(const more::lazy_object<base> & lo)
 {
-    std::tr1::shared_ptr<base> p = lo.shared_from_this();
+    std::shared_ptr<base> p = lo.shared_from_this();
     p->say();
 }
 
@@ -89,7 +89,7 @@ main(int argc, char *argv[])
     // x.ctor<std::string>(); <- invoke derived(const std::string &) constructor
     //
 
-    std::for_each(vec.begin(), vec.end(), std::tr1::mem_fn(&more::lazy_object<derived>::ctor<std::string> /* ctor signature */ ) );
+    std::for_each(vec.begin(), vec.end(), std::mem_fn(&more::lazy_object<derived>::ctor<std::string> /* ctor signature */ ) );
 
     sleep(2);
 
@@ -103,8 +103,8 @@ main(int argc, char *argv[])
 
     std::cout << "[*] invoking methods on real object..." << std::endl;
 
-    std::tr1::shared_ptr<base> p = vec[0].shared_from_this();
-    std::tr1::shared_ptr<base> q = vec[1].shared_from_this();
+    std::shared_ptr<base> p = vec[0].shared_from_this();
+    std::shared_ptr<base> q = vec[1].shared_from_this();
         
     p->say();
     q->say();

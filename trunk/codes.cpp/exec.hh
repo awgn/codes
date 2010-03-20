@@ -17,8 +17,19 @@
 #include <signal.h>
 #include <error.hh>
 
+#include <string-utils.hh>  // more!
+
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#include <tr1/type_traits>
 #include <tr1/functional>
 #include <tr1/array>
+#include <tr1/memory>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#include <array>
+#include <memory>
+#endif
 
 #include <iostream>
 #include <sstream>
@@ -31,9 +42,7 @@
 #include <utility>
 #include <functional>
 
-#include <string-utils.hh>  // more!
-
-using namespace std::tr1::placeholders;
+using namespace std::placeholders;
 
 namespace more {
 
@@ -44,8 +53,8 @@ namespace more {
     public:
         enum fdnum { STDIN, STDOUT, STDERR };
         
-        typedef std::tr1::function<int(const char *, char * const[])> exec_type;
-        typedef std::pair<enum fdnum, std::tr1::reference_wrapper<int> > redirect_type;
+        typedef std::function<int(const char *, char * const[])> exec_type;
+        typedef std::pair<enum fdnum, std::reference_wrapper<int> > redirect_type;
 
     public:
         exec(const std::string &arg = std::string(), exec_type ex = ::execv /* ::execvp */)
@@ -145,7 +154,7 @@ namespace more {
         // return -1 in case of execve() failure!
         //
 
-        int operator()(std::tr1::function<void()> prolog = nullprolog())
+        int operator()(std::function<void()> prolog = nullprolog())
         {
             _M_wait = true;
     
@@ -301,7 +310,7 @@ namespace more {
     private:
         std::vector<std::string>    _M_arg;
         std::vector<redirect_type>  _M_redir;
-        std::tr1::array< int[2], 3> _M_pipe;
+        std::array< int[2], 3> _M_pipe;
 
         int     _M_status;
         int     _M_delay;
@@ -377,20 +386,20 @@ namespace more {
 
         void run()
         {
-            std::for_each(_M_group.begin(), _M_group.end(), std::tr1::bind(&exec::operator(), _1, exec::nullprolog() /* default argument */ ));
+            std::for_each(_M_group.begin(), _M_group.end(), std::bind(&exec::operator(), _1, exec::nullprolog() /* default argument */ ));
         }
 
         template <typename T>
         void run(T prolog)
         {
-            std::for_each(_M_group.begin(), _M_group.end(), std::tr1::bind(&exec::operator(), _1, prolog /* default argument */ ));
+            std::for_each(_M_group.begin(), _M_group.end(), std::bind(&exec::operator(), _1, prolog /* default argument */ ));
         }
 
 
         void
         wait_all()
         {
-            std::for_each(_M_group.begin(), _M_group.end(), std::tr1::mem_fn(&exec::wait));
+            std::for_each(_M_group.begin(), _M_group.end(), std::mem_fn(&exec::wait));
         }
 
         exec *

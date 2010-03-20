@@ -13,18 +13,26 @@
 
 #include <atomicity-policy.hh> // more
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/functional>
 #include <tr1/memory>
 #include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
+#else
+#include <functional>
+#include <memory>
+#include <type_traits>
+
+#endif
 
 #include <algorithm>
 #include <vector>
 #include <cassert>
 #include <stdexcept>
 
-using std::tr1::mem_fn;
-using std::tr1::bind;
-using namespace std::tr1::placeholders;
+using std::mem_fn;
+using std::bind;
+using namespace std::placeholders;
 
 namespace more { 
 
@@ -52,12 +60,12 @@ namespace more {
                   typename T4, typename T5, typename T6>
         struct is_shared_ptr_enabled
         {
-            enum { value = std::tr1::is_same<T1, enable_shared_ptr>::value ||
-                           std::tr1::is_same<T2, enable_shared_ptr>::value ||
-                           std::tr1::is_same<T3, enable_shared_ptr>::value ||
-                           std::tr1::is_same<T4, enable_shared_ptr>::value ||
-                           std::tr1::is_same<T5, enable_shared_ptr>::value ||
-                           std::tr1::is_same<T6, enable_shared_ptr>::value };
+            enum { value = std::is_same<T1, enable_shared_ptr>::value ||
+                           std::is_same<T2, enable_shared_ptr>::value ||
+                           std::is_same<T3, enable_shared_ptr>::value ||
+                           std::is_same<T4, enable_shared_ptr>::value ||
+                           std::is_same<T5, enable_shared_ptr>::value ||
+                           std::is_same<T6, enable_shared_ptr>::value };
         };
 
         ////////////////////////
@@ -161,16 +169,16 @@ namespace more {
     { 
     public:
 
-        typedef typename observer_opt::restore_type<P1>::value_type T1;
-        typedef typename observer_opt::restore_type<P2>::value_type T2;
-        typedef typename observer_opt::restore_type<P3>::value_type T3;
-        typedef typename observer_opt::restore_type<P4>::value_type T4;
-        typedef typename observer_opt::restore_type<P5>::value_type T5;
-        typedef typename observer_opt::restore_type<P6>::value_type T6;
+        typedef typename observer_opt::restore_type<P1>::value_type value_type_1;
+        typedef typename observer_opt::restore_type<P2>::value_type value_type_2;
+        typedef typename observer_opt::restore_type<P3>::value_type value_type_3;
+        typedef typename observer_opt::restore_type<P4>::value_type value_type_4;
+        typedef typename observer_opt::restore_type<P5>::value_type value_type_5;
+        typedef typename observer_opt::restore_type<P6>::value_type value_type_6;
 
         typedef typename observer_opt::select_type< observer_opt::is_shared_ptr_enabled<P1,P2,P3,P4,P5,P6>::value, 
-                std::tr1::shared_ptr<observer<T1,T2,T3,T4,T5,T6> >,
-                observer<T1,T2,T3,T4,T5,T6> * >::type ptr_type; 
+                std::shared_ptr<observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6> >,
+                observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6> * >::type ptr_type; 
 
         subject()
         : _M_observers()
@@ -180,8 +188,8 @@ namespace more {
         {
             typename Atomicity::scoped_lock lock(this->mutex());
             std::for_each(_M_observers.begin(),  _M_observers.end(), 
-                 mem_fn(static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(void)>
-                        (&observer<T1,T2,T3,T4,T5,T6>::updatex))); 
+                 mem_fn(static_cast<void(observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>:: *)(void)>
+                        (&observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>::updatex))); 
         }
         template<typename T1>
         void notify(T1 n1)
@@ -189,8 +197,8 @@ namespace more {
             typename Atomicity::scoped_lock lock(this->mutex());
             std::for_each(_M_observers.begin(),  _M_observers.end(), 
                  bind( mem_fn(
-                      static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1)>
-                      (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1) ); 
+                      static_cast<void(observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>:: *)(T1)>
+                      (&observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>::updatex)), _1, n1) ); 
         }
         template<typename T1, typename T2>
         void notify(T1 n1, T2 n2)
@@ -198,8 +206,8 @@ namespace more {
             typename Atomicity::scoped_lock lock(this->mutex());
             std::for_each(_M_observers.begin(),  _M_observers.end(), 
                  bind( mem_fn(
-                       static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1,T2)>
-                       (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1, n2) ); 
+                       static_cast<void(observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>:: *)(T1,T2)>
+                       (&observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>::updatex)), _1, n1, n2) ); 
         }
         template<typename T1, typename T2, typename T3>
         void notify(T1 n1, T2 n2, T3 n3)
@@ -207,8 +215,8 @@ namespace more {
             typename Atomicity::scoped_lock lock(this->mutex());
             std::for_each(_M_observers.begin(),  _M_observers.end(), 
                  bind( mem_fn(
-                       static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1,T2,T3)>
-                       (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1, n2, n3) ); 
+                       static_cast<void(observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>:: *)(T1,T2,T3)>
+                       (&observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>::updatex)), _1, n1, n2, n3) ); 
         }
         template<typename T1, typename T2, typename T3,
                  typename T4>
@@ -217,8 +225,8 @@ namespace more {
             typename Atomicity::scoped_lock lock(this->mutex());
             std::for_each(_M_observers.begin(),  _M_observers.end(), 
                  bind( mem_fn(
-                       static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1,T2,T3,T4)>
-                       (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1, n2, n3, n4) ); 
+                       static_cast<void(observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>:: *)(T1,T2,T3,T4)>
+                       (&observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>::updatex)), _1, n1, n2, n3, n4) ); 
         }
         template<typename T1, typename T2, typename T3,
                  typename T4, typename T5>
@@ -227,8 +235,8 @@ namespace more {
             typename Atomicity::scoped_lock lock(this->mutex());
             std::for_each(_M_observers.begin(),  _M_observers.end(), 
                  bind( mem_fn(
-                       static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1,T2,T3,T4,T5)>
-                       (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1, n2, n3, n4, n5) ); 
+                       static_cast<void(observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>:: *)(T1,T2,T3,T4,T5)>
+                       (&observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>::updatex)), _1, n1, n2, n3, n4, n5) ); 
         }
         template<typename T1, typename T2, typename T3,
                  typename T4, typename T5, typename T6>
@@ -237,8 +245,8 @@ namespace more {
             typename Atomicity::scoped_lock lock(this->mutex());
             std::for_each(_M_observers.begin(),  _M_observers.end(), 
                  bind( mem_fn(
-                       static_cast<void(observer<T1,T2,T3,T4,T5,T6>:: *)(T1,T2,T3,T4,T5,T6)>
-                       (&observer<T1,T2,T3,T4,T5,T6>::updatex)), _1, n1, n2, n3, n4, n5, n6) ); 
+                       static_cast<void(observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>:: *)(T1,T2,T3,T4,T5,T6)>
+                       (&observer<value_type_1,value_type_2,value_type_3,value_type_4,value_type_5,value_type_6>::updatex)), _1, n1, n2, n3, n4, n5, n6) ); 
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////

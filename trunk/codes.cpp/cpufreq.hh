@@ -16,14 +16,19 @@
 
 #include <cpufreq.h>        // libcpufreq
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/memory>
+namespace std { using namespace std::tr1; }
+#else
+#include <memory>
+#endif
+
 #include <cstring>
 #include <cstdio>
 #include <string>
 #include <stdexcept>
 #include <utility>
 #include <list>
-
 
 namespace more {
 
@@ -97,7 +102,7 @@ namespace more {
         std::string
         get_driver() const
         {
-            std::tr1::shared_ptr<char> d( cpufreq_get_driver(_M_cpu), cpufreq_put_driver );
+            std::shared_ptr<char> d( cpufreq_get_driver(_M_cpu), cpufreq_put_driver );
             return std::string(d.get()); 
         }
 
@@ -105,10 +110,10 @@ namespace more {
          *
          */
 
-        std::tr1::shared_ptr<const cpufreq_policy> 
+        std::shared_ptr<const cpufreq_policy> 
         policy() const
         {
-            return std::tr1::shared_ptr<const cpufreq_policy>(cpufreq_get_policy(_M_cpu), cpufreq_put_policy);
+            return std::shared_ptr<const cpufreq_policy>(cpufreq_get_policy(_M_cpu), cpufreq_put_policy);
         } 
 
         /* determine CPUfreq governors currently available
@@ -120,7 +125,7 @@ namespace more {
         available_governors() const
         {
             std::list<std::string> ret;
-            std::tr1::shared_ptr<cpufreq_available_governors> 
+            std::shared_ptr<cpufreq_available_governors> 
                 gov( cpufreq_get_available_governors(_M_cpu), cpufreq_put_available_governors);
 
             for( cpufreq_available_governors * p = gov.get() ;p != NULL; p=p->next)
@@ -139,7 +144,7 @@ namespace more {
         available_frequencies() const
         {
             std::list<unsigned long> ret;
-            std::tr1::shared_ptr<cpufreq_available_frequencies> 
+            std::shared_ptr<cpufreq_available_frequencies> 
                 q ( cpufreq_get_available_frequencies(_M_cpu), cpufreq_put_available_frequencies);
             for( cpufreq_available_frequencies * p = q.get() ;p != NULL; p=p->next)
             {
@@ -153,10 +158,10 @@ namespace more {
          * This is not available in all kernel versions or configurations.
          */
 
-        std::tr1::shared_ptr<const cpufreq_stats>
+        std::shared_ptr<const cpufreq_stats>
         get_stats(unsigned long long *total_time) const
         {
-            return std::tr1::shared_ptr<const cpufreq_stats>(cpufreq_get_stats(_M_cpu, total_time), cpufreq_put_stats);
+            return std::shared_ptr<const cpufreq_stats>(cpufreq_get_stats(_M_cpu, total_time), cpufreq_put_stats);
         }
 
         unsigned long

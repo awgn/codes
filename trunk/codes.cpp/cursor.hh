@@ -11,7 +11,13 @@
 #ifndef _CURSOR_HH_
 #define _CURSOR_HH_ 
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#endif
+
 #include <stdexcept>
 
 namespace more { 
@@ -42,7 +48,7 @@ namespace more {
         typedef T *                              iterator;
         typedef const T *                        const_iterator;
 
-        friend class cursor< typename std::tr1::add_const<T>::type >;
+        friend class cursor< typename std::add_const<T>::type >;
 
         template <typename P>
         cursor(P *beg, P *end)

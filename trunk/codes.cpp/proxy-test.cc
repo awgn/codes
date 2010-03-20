@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
     int zzz = 2;
     std::cout << "before: zzz=" << zzz << std::endl;
-    fun( ref_proxy<int>(std::tr1::ref(zzz)), 12345 );
+    fun( ref_proxy<int>(std::ref(zzz)), 12345 );
     std::cout << "after : zzz=" << zzz << std::endl;
 
     std::cout << "lockable<int> test:" << std::endl;

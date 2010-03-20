@@ -15,8 +15,15 @@
 #include <stdint.h>
 #include <mtp.hh>       // more!
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/array>
 #include <tr1/functional>
+
+namespace std { using namespace std::tr1; }
+#else
+#include <array>
+#include <functional>
+#endif
 
 #include <iostream>
 #include <iomanip>
@@ -29,8 +36,8 @@
 
 namespace more { 
 
-    using std::tr1::array;
-    using namespace std::tr1::placeholders;
+    using std::array;
+    using namespace std::placeholders;
 
     class md5 : public std::iterator<std::output_iterator_tag, void, void, void, void> 
     {
@@ -91,10 +98,10 @@ namespace more {
         void operator()(I first, I last)
         {
             std::for_each(first, last, 
-                std::tr1::bind
+                std::bind
                     (
                     static_cast<void (md5::*)(const typename std::iterator_traits<I>::value_type &)> (&md5::operator()), 
-                    std::tr1::ref(*this), _1) 
+                    std::ref(*this), _1) 
                     );
         }
 
@@ -233,10 +240,10 @@ namespace more {
     template <typename T>
     inline
     typename mtp::disable_if<
-        std::tr1::is_base_of
+        std::is_base_of
             <
             std::streambuf, // to provide a better overloading for std::basic_stringbuf<char, std::char_traits<char>, std::allocator<char> > 
-            typename std::tr1::remove_pointer<T>::type
+            typename std::remove_pointer<T>::type
             >,
         md5 &
     >::type

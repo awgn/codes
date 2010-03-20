@@ -23,11 +23,16 @@
 #   ifndef NDEBUG
 #   warning using more::shared_ptr<> as boost::shared_ptr<> 
 #   endif
-#elif defined(MORE_USE_TR1_SHARED_PTR)
+#elif defined(MORE_USE_TR1_SHARED_PTR) && !defined(__GXX_EXPERIMENTAL_CXX0X__) 
 #include <tr1/memory>
+#include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
 #   ifndef NDEBUG
 #   warning using more::shared_ptr<> as std::tr1::shared_ptr<> 
 #   endif
+#elif defined(__GXX_EXPERIMENTAL_CXX0X__)
+#include <type_traits>
+#   warning using more::shared_ptr<> as c++0x std::shared_ptr<>  
 #endif
 
 #include <algorithm>
@@ -116,13 +121,13 @@ namespace more {
         struct is_boost : public true_type {};
         struct is_qt    : public false_type {};
     };
-#elif defined(MORE_USE_TR1_SHARED_PTR)
+#elif defined(MORE_USE_TR1_SHARED_PTR) || defined(__GXX_EXPERIMENTAL_CXX0X__)
 
     template <typename Tp>
     struct shared_ptr 
     {
-        typedef std::tr1::shared_ptr<Tp> type;
-        typedef std::tr1::shared_ptr<Tp> native_type;
+        typedef std::shared_ptr<Tp> type;
+        typedef std::shared_ptr<Tp> native_type;
         typedef tr1_type shared_ptr_type;        
         
         struct is_tr1   : public true_type {};
@@ -196,27 +201,27 @@ namespace more {
         return rhs;
     }
 
-#elif defined(MORE_USE_TR1_SHARED_PTR)
+#elif defined(MORE_USE_TR1_SHARED_PTR) || defined(__GXX_EXPERIMENTAL_CXX0X__)
 
     template <class O, class Ty>
     inline 
-    std::tr1::shared_ptr<O> static_pointer_cast(const std::tr1::shared_ptr<Ty> &sp)
+    std::shared_ptr<O> static_pointer_cast(const std::shared_ptr<Ty> &sp)
     {
-        return std::tr1::static_pointer_cast<O>(sp);    
+        return std::static_pointer_cast<O>(sp);    
     }
 
     template <class O, class Ty>
     inline 
-    std::tr1::shared_ptr<O> dynamic_pointer_cast(const std::tr1::shared_ptr<Ty> &sp)
+    std::shared_ptr<O> dynamic_pointer_cast(const std::shared_ptr<Ty> &sp)
     {
-        return std::tr1::dynamic_pointer_cast<O>(sp);    
+        return std::dynamic_pointer_cast<O>(sp);    
     }
 
     template <class O, class Ty>
     inline 
-    std::tr1::shared_ptr<O> const_pointer_cast(const std::tr1::shared_ptr<Ty> &sp)
+    std::shared_ptr<O> const_pointer_cast(const std::shared_ptr<Ty> &sp)
     {
-        return std::tr1::const_pointer_cast<O>(sp);    
+        return std::const_pointer_cast<O>(sp);    
     }
 
     template < template <typename El, typename Al> class Ct, typename El, typename Al>

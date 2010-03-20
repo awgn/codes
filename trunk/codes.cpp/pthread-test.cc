@@ -57,7 +57,7 @@ public:
     : posix::thread()
     {}
 
-    Hello(std::tr1::shared_ptr<thread_attr> a)
+    Hello(std::shared_ptr<thread_attr> a)
     : posix::thread(a)
     {}
 
@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
     std::cout << "\n[*]" RED " non-const reference in thread constructor..." RESET "\n";
     {
         int n = 0;
-        concrete_thread<NonConstRef> test(std::tr1::ref(n));
+        concrete_thread<NonConstRef> test(std::ref(n));
         test.start();
         test.join();
         assert(n == 1);
@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*]" RED " scoped thread (custom attr)..." RESET "\n";
     {
-        std::tr1::shared_ptr<posix::thread_attr> a(new posix::thread_attr);
+        std::shared_ptr<posix::thread_attr> a(new posix::thread_attr);
         a->setstacksize(1000000);
 
         concrete_thread<Hello> test(a);

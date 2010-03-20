@@ -60,7 +60,8 @@ namespace more
         // priority:    facility|level
 
         explicit syslog(int opt, int fac = LOG_USER, int lev = LOG_NOTICE )  
-        : _M_priority(0),
+        : _M_buffer(),
+          _M_priority(0),
           _M_cursor(0),
           _M_option(opt)
         {

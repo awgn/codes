@@ -19,7 +19,7 @@ main(int argc, char *argv[])
 {
     more::cpufreq cpu0(0);
 
-    std::tr1::shared_ptr<const cpufreq_policy> p = cpu0.policy();
+    std::shared_ptr<const cpufreq_policy> p = cpu0.policy();
 
     if (p) {
         std::cout << "min: " << p->min << std::endl;

@@ -22,7 +22,13 @@
 
 #include <cursor.hh>        // more!
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#endif
+
 #include <iostream>
 #include <string>
 #include <stdexcept>
@@ -38,7 +44,7 @@ namespace more {
         template <bool V, typename T>
         struct remove_const_if
         {
-            typedef typename std::tr1::remove_const<T>::type type;
+            typedef typename std::remove_const<T>::type type;
         };
 
         template <typename T>
@@ -50,7 +56,7 @@ namespace more {
         template <bool V, typename T>
         struct add_const_if
         {
-            typedef typename std::tr1::add_const<T>::type type;
+            typedef typename std::add_const<T>::type type;
         };
 
         template <typename T>
@@ -131,7 +137,7 @@ namespace more {
         header(more::cursor<P> &cur)
         : _M_value( const_cast< 
                         typename header_helper::remove_const_if< 
-                            std::tr1::is_const<T>::value, P
+                            std::is_const<T>::value, P
                             >::type * >(cur.cur()))
         {
             header_helper::compile_time_assert<sizeof(P) == 1> 
@@ -144,7 +150,7 @@ namespace more {
         header(more::cursor<P> & cur, ssize_t size /* set the header size */ )
         : _M_value( const_cast< 
                         typename header_helper::remove_const_if< 
-                            std::tr1::is_const<T>::value, P
+                            std::is_const<T>::value, P
                             >::type * >(cur.cur()))
         {
             header_helper::compile_time_assert<sizeof(P) == 1> 

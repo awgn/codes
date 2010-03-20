@@ -15,8 +15,16 @@
 #include <atomicity-policy.hh>
 
 #if   __GNUC__ >= 4
-#include <tr1/memory>
+
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+#include <tr1/memory>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#include <memory>
+#endif
+
 #else
 #error "compiler not supported"
 #endif
@@ -93,8 +101,8 @@ namespace more {
     template <typename T>
     class atomic
     {
-        enum { enabled = atomic_help::ct_assert< std::tr1::is_integral<T>::value || 
-                                                 std::tr1::is_pointer<T>::value >::value };
+        enum { enabled = atomic_help::ct_assert< std::is_integral<T>::value || 
+                                                 std::is_pointer<T>::value >::value };
 
     public:
 

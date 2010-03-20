@@ -11,14 +11,21 @@
 #ifndef _FACTORY_HH_
 #define _FACTORY_HH_ 
 
-#include <tr1/memory>
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+#include <tr1/memory>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#include <memory>
+#endif
+
 #include <string>
 #include <map>
 
 namespace more { 
 
-    using std::tr1::shared_ptr;
+    using std::shared_ptr;
     
     namespace factory_util {
 
@@ -40,7 +47,7 @@ namespace more {
         {
             void constraints()
             {  
-                static_assert__<std::tr1::is_base_of<B,D>::value>(); 
+                static_assert__<std::is_base_of<B,D>::value>(); 
             }
         };
 

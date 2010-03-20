@@ -26,7 +26,7 @@ int main()
 
         Linux::Inotify_list tmp = test.wait_events();
 
-        for ( Linux::Inotify_list::iterator it = tmp.begin(); it != tmp.end() ; it++) {
+        for ( Linux::Inotify_list::iterator it = tmp.begin(); it != tmp.end() ; ++it) {
             if (it->len && !strcmp( it->name.c_str(),"test") )
                 std::cout << *it ; 
         }

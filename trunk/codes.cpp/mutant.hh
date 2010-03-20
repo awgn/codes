@@ -11,7 +11,13 @@
 #ifndef _MUTANT_HH_
 #define _MUTANT_HH_ 
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#endif
+
 namespace more
 {
     // compile time assert 
@@ -29,8 +35,8 @@ namespace more
         template <typename T>
         void turn_into(const T & exemplar)
         {
-            mutant_assert< std::tr1::is_polymorphic<T>::value > is_polymorphic_concept __attribute__ ((unused));
-            mutant_assert< std::tr1::is_base_of<mutant, T>::value > is_base_concept __attribute__((unused));
+            mutant_assert< std::is_polymorphic<T>::value > is_polymorphic_concept __attribute__ ((unused));
+            mutant_assert< std::is_base_of<mutant, T>::value > is_base_concept __attribute__((unused));
             *(void **)this = *(void **)& exemplar;
         }
     };

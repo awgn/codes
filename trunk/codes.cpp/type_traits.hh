@@ -11,12 +11,16 @@
 #ifndef TYPE_TRAITS_HH
 #define TYPE_TRAITS_HH
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
 #include <tr1/tuple>
-#include <utility>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#include <tuple>
+#endif
 
-using std::tr1::integral_constant;
-using std::tr1::true_type; using std::tr1::false_type;
+#include <utility>
 
 namespace more 
 {
@@ -41,7 +45,7 @@ namespace more
     };
 
     template <typename T>
-    struct is_class_or_union : public integral_constant<bool, __is_class_or_union_helper<T>::value>
+    struct is_class_or_union : public std::integral_constant<bool, __is_class_or_union_helper<T>::value>
     {};
 
     // has member type helper (using SFINAE... Vandevoorde/Josuttis)
@@ -61,16 +65,16 @@ namespace more
     __has_member_type_helper(iterator);
 
     template <typename T>
-    struct has_iterator : public integral_constant<bool, __has_iterator_helper<T>::value>
+    struct has_iterator : public std::integral_constant<bool, __has_iterator_helper<T>::value>
     {};
     template <typename T>
-    struct has_value_type : public integral_constant<bool, __has_value_type_helper<T>::value>
+    struct has_value_type : public std::integral_constant<bool, __has_value_type_helper<T>::value>
     {};
     template <typename T>
-    struct has_type : public integral_constant<bool, __has_type_helper<T>::value>
+    struct has_type : public std::integral_constant<bool, __has_type_helper<T>::value>
     {};
     template <typename T>
-    struct is_container : public integral_constant<bool, __has_iterator_helper<T>::value && 
+    struct is_container : public std::integral_constant<bool, __has_iterator_helper<T>::value && 
                                                          __has_value_type_helper<T>::value >
     {};
 
@@ -81,7 +85,7 @@ namespace more
         template <int N>
         struct int2type {};
 
-        template <typename C> static __one test(int2type< std::tr1::tuple_size<C>::value > *);
+        template <typename C> static __one test(int2type< std::tuple_size<C>::value > *);
         template <typename C> static __two test(...);
 
     public:
@@ -89,14 +93,14 @@ namespace more
     };
 
     template <typename T>
-    struct is_tuple : public integral_constant<bool, __is_tuple_helper<T>::value>
+    struct is_tuple : public std::integral_constant<bool, __is_tuple_helper<T>::value>
     {};
 
     // is_metafunction 
     template <typename T>
     class __is_metafunction_helper : public __sfinae_types
     {
-        template <typename C> static __one test_value(integral_constant<bool,C::value> *);
+        template <typename C> static __one test_value(std::integral_constant<bool,C::value> *);
         template <typename C> static __two test_value(...);
 
     public:
@@ -104,7 +108,7 @@ namespace more
     };
 
     template <typename T>
-    struct is_metafunction : public integral_constant<bool, __is_metafunction_helper<T>::value>
+    struct is_metafunction : public std::integral_constant<bool, __is_metafunction_helper<T>::value>
     {};
 
 
@@ -130,7 +134,7 @@ namespace more
     };
     
     template <typename T>
-    struct is_pair : public integral_constant<bool, __is_pair<T>::value>
+    struct is_pair : public std::integral_constant<bool, __is_pair<T>::value>
     {};
 
     } // namespace traits

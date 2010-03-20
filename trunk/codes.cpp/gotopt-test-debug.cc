@@ -36,14 +36,15 @@ main(int argc, char *argv[])
 
     std::cout << _a <<  "," << _b << std::endl;
 
-    // binary_expr<opt, opt, op_or> r(a,b);
-
-    typeof(_a|_b) r = _a | _b;
-
-    // binary_expr<opt, opt, op_and> q(a,b);
-
+#ifndef __GXX_EXPERIMENTAL_CXX0X__ 
+    typeof(_a|_b) r = _a | _b;    
     typeof(_a & _b) q = _a & _b;
     typeof(_a ^ _b) x = _a ^ _b;
+#else
+    auto r = _a | _b;
+    auto q = _a & _b;
+    auto x = _a ^ _b;
+#endif
 
     std::cout << r << std::endl;
     std::cout << q << std::endl;
@@ -55,9 +56,9 @@ main(int argc, char *argv[])
     std::cout << "imply: " << ( _a >> _b ) << " -> " <<  eval( _a >> _b, context ) << std::endl;
     std::cout << "mutex: " << ( _a  % _b ) << " -> " <<  eval( _a  % _b, context ) << std::endl;
 
-    more::gotopt::validate_expression( std::tr1::make_tuple(_true), context );  // default check...
+    more::gotopt::validate_expression( std::make_tuple(_true), context );  // default check...
     
-    more::gotopt::validate_expression( std::tr1::make_tuple( 
+    more::gotopt::validate_expression( std::make_tuple( 
                                        std::make_pair( _a >> (_b|_c), "-a -> -b or -c" ), 
                                        std::make_pair( _b % _a , "-b and -a are mutually exclusive")
                                     ), context );

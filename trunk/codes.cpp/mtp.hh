@@ -60,7 +60,7 @@ namespace more { namespace mtp {
     // parameter optimization: (deprecated)
     // template <typename T>
     // struct parameter : select< more::traits::is_class_or_union<T>::value, 
-    //                            typename std::tr1::add_reference<T>::type, 
+    //                            typename std::add_reference<T>::type, 
     //                            typename tag_type<T>::type >
     // {};
 

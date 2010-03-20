@@ -14,7 +14,13 @@
 #include <lexical_cast.hh>      // more!
 #include <exprtempl.hh>         // more!
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/tuple>
+namespace std { using namespace std::tr1; }
+#else
+#include <tuple>
+#endif
+
 #include <stdexcept>
 #include <iomanip>
 #include <vector>
@@ -30,7 +36,7 @@
 //////////////////////////////////////
 
 
-using std::tr1::make_tuple;
+using std::make_tuple;
 using std::make_pair;
 
 namespace more { namespace gotopt { 
@@ -173,7 +179,7 @@ namespace more { namespace gotopt {
 
         char operator()()
         {
-            return operator()(std::tr1::make_tuple(_true));
+            return operator()(std::make_tuple(_true));
         }
 
         template <typename T>
@@ -336,7 +342,7 @@ namespace more { namespace gotopt {
         template <typename C>
         static bool apply(const T &tupl, const C &ctx)
         {
-            check_expression( std::tr1::get< std::tr1::tuple_size<T>::value - N >(tupl), ctx);
+            check_expression( std::get< std::tuple_size<T>::value - N >(tupl), ctx);
             return recursive_evaluation<T, N-1>::apply(tupl,ctx);
         }
     };
@@ -373,7 +379,7 @@ namespace more { namespace gotopt {
     template <typename T, typename C>
     inline void validate_expression(const T &tupl, const C &ctx)
     {
-        recursive_evaluation<T, std::tr1::tuple_size<T>::value >::apply(tupl, ctx);        
+        recursive_evaluation<T, std::tuple_size<T>::value >::apply(tupl, ctx);        
     }
 
     ///////////////////////////////
@@ -382,7 +388,6 @@ namespace more { namespace gotopt {
     namespace
     {
         // options...
-        //
 
         opt<'a'> _a;
         opt<'b'> _b;

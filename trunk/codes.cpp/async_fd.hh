@@ -24,7 +24,13 @@
 #include <atomicity-policy.hh>  // more!
 #include <algorithm.hh>         // more!
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
+namespace std { using namespace std::tr1; }
+#else
+#include <type_traits>
+#endif
+
 #include <iostream>
 #include <algorithm>
 #include <iterator>
@@ -142,8 +148,8 @@ namespace more {
         async_base()
         : async_root<atomicity::DEFAULT>(-1)
         { 
-            if ( std::tr1::is_same<R,IO_nonblocking>::value ||
-                 std::tr1::is_same<W,IO_nonblocking>::value )
+            if ( std::is_same<R,IO_nonblocking>::value ||
+                 std::is_same<W,IO_nonblocking>::value )
             {
                 this->set_nonblock(_M_flags);    
             } 
@@ -156,8 +162,8 @@ namespace more {
         explicit async_base(int fd)
         : async_root<atomicity::DEFAULT>(fd)
         {
-            if ( std::tr1::is_same<R,IO_nonblocking>::value || 
-                 std::tr1::is_same<W,IO_nonblocking>::value )
+            if ( std::is_same<R,IO_nonblocking>::value || 
+                 std::is_same<W,IO_nonblocking>::value )
             {
                 this->set_nonblock(_M_flags);    
             } 
