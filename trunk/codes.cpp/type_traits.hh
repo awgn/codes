@@ -33,7 +33,7 @@ namespace more
       typedef struct { char __arr[2]; } __two;
     };
 
-    // is_class (using SFINAE... Vandevoorde/Josuttis)
+    // is_class_or_union (using SFINAE... Vandevoorde/Josuttis)
     template <typename T>
     class __is_class_or_union_helper : public __sfinae_types
     {

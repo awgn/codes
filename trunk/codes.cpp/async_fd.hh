@@ -22,7 +22,7 @@
 #include <error.hh>             // more!
 #include <noncopyable.hh>       // more!
 #include <atomicity-policy.hh>  // more!
-#include <algorithm.hh>         // more!
+#include <functional.hh>        // more!
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
