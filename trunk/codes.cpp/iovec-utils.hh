@@ -33,10 +33,11 @@ namespace more {
         struct address_of {
 
             template <typename T>
-            static typename std::add_const<T>::type * 
+            static typename more::mtp::enable_if< std::is_integral<T>,
+                typename std::add_const<T>::type *>::type 
             value(const T &elem)
             {
-                return & elem;
+                return &elem;
             }
 
             static const char *
@@ -51,7 +52,8 @@ namespace more {
         struct size_of {
 
             template <typename T>
-            static size_t value(T)
+            static typename more::mtp::enable_if< std::is_integral<T>, size_t>::type 
+            value(T)
             {
                 return sizeof(T);
             }
@@ -67,17 +69,17 @@ namespace more {
 
     template <typename Iterator>
     std::vector<iovec>
-    get_iovec(Iterator __it, Iterator __end)
+    get_iovec(Iterator __it, Iterator __end, std::forward_iterator_tag)
     {
+        std::vector<iovec> ret;
+
         typedef typename 
             more::mtp::if_< std::is_same< std::string, typename std::iterator_traits<Iterator>::value_type >::value, 
                 char, 
                 typename std::iterator_traits<Iterator>::value_type>::type value_type;
 
-        std::vector<iovec> ret;
-
         if ( __it == __end )
-            return std::vector<iovec>();
+            return ret;
 
         const value_type * base = iovec_util::address_of::value(*__it); size_t len = 0;
 
@@ -96,6 +98,31 @@ namespace more {
         ret.push_back(iov);
         return ret;
     }    
+
+    template <typename Iterator>
+    std::vector<iovec>
+    get_iovec(Iterator __it, Iterator __end, std::random_access_iterator_tag)
+    {
+        typedef typename std::iterator_traits<Iterator>::value_type value_type;
+        typedef typename std::iterator_traits<Iterator>::difference_type difference_type; 
+
+        const difference_type n = std::distance(__it,__end);
+
+        if ( std::is_integral<value_type>::value && n && n == (&*__end - &*__it) ) 
+        {
+            iovec iov = { static_cast<void *>(const_cast<value_type *>(& *__it)), n * sizeof(value_type) };
+            return std::vector<iovec>(1, iov);
+        }
+
+        return get_iovec(__it,__end, std::forward_iterator_tag());
+    }
+
+    template <typename Iterator>
+    std::vector<iovec>
+    get_iovec(Iterator __it, Iterator __end)
+    {
+        return get_iovec(__it,__end, typename std::iterator_traits<Iterator>::iterator_category());
+    } 
 
 } // nnamespace more
 

@@ -90,6 +90,24 @@ main(int argc, char *argv[])
     std::cout << std::endl;
 
     ::writev(1, &viov.front(), viov.size());
-    return 0;
+
+    // ----- vector<std::string>
+
+    std::vector<unsigned int> vec3(3, 0x41414141);
+    vec3.push_back(0x0a000000);
+
+    std::vector<iovec> viov3 = more::get_iovec(vec3.begin(), vec3.end());
+    std::copy(viov3.begin(), viov3.end(), std::ostream_iterator<iovec>(std::cout, "-"));
+    std::cout << std::endl;
+    ::writev(1, &viov3.front(), viov3.size());
+
+    // empty test
+    //
+
+    std::vector<char> vec4;
+    std::vector<iovec> viov4 = more::get_iovec(vec4.begin(), vec4.end());
+    std::copy(viov4.begin(), viov4.end(), std::ostream_iterator<iovec>(std::cout, "-"));
+    
+   return 0;
 }
 
