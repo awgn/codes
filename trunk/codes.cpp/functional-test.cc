@@ -52,6 +52,16 @@ main(int argc, char *argv[])
     std::cout << "flipflop2: " << 3  << " " << ff2(3)  << std::endl;
     std::cout << "flipflop2: " << 4  << " " << ff2(4)  << std::endl;
 
+    // norm
+
+    unsigned int a = 10;
+    unsigned int b = 52;
+    
+    more::norm<unsigned int> dist;
+
+    std::cout << "norm: |10-52| = " << dist(a,b) << std::endl;
+    std::cout << "norm: |52-10| = " << dist(b,a) << std::endl;
+
     return 0;
 }
  

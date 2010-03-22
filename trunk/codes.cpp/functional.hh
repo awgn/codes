@@ -18,6 +18,7 @@ namespace std { using namespace std::tr1; }
 #include <functional>
 #endif
 
+#include <algorithm>
 #include <iterator>
 #include <vector>
 #include <string>
@@ -97,6 +98,19 @@ namespace more {
         std::function< bool(Arg) > _M_pred1;
         std::function< bool(Arg) > _M_pred2;
     };
+
+    // norm (valid for signed and unsigned types)
+    //
+    
+    template <typename Tp>
+    struct norm : public std::binary_function<Tp, Tp, Tp>
+    {
+        Tp
+        operator()(const Tp& x, const Tp& y) const
+        {
+            return std::max(x,y)-std::min(x,y);
+        }
+    }; 
 
 } // namespace more
 #endif /* _FUNCTIONAL_HH_ */
