@@ -9,14 +9,31 @@
  */
 
 
-#include <iostream>
 #include <algorithm.hh>
+
+#include <iostream>
+#include <iterator>
+#include <functional>
+#include <tr1/functional>
 
 using namespace std::placeholders;
 
 int
 main(int argc, char *argv[])
 {
+    // the strange case of copy_if...
+
+    std::vector<int> vec(10);
+
+    more::iota(vec.begin(), vec.end(), 0);
+
+    std::copy(vec.begin(), vec.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+
+    more::copy_if(vec.begin(), vec.end(), std::ostream_iterator<int>(std::cout, " "), 
+                 std::bind(std::greater<int>(), 5, _1) );
+    std::cout << std::endl;
+
     // levenshtein distance
     //
 

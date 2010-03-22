@@ -25,6 +25,32 @@ namespace std { using namespace std::tr1; }
 
 namespace more { 
 
+    // copy_if (inspired to the original HP STL)
+    //
+
+    template <typename InputIter, typename OutputIter, typename Pred>
+    OutputIter copy_if(InputIter beg, InputIter end, OutputIter dest_beg, Pred op)    
+    {
+        for(; beg != end; ) {
+            if ( op(*beg) )
+                *dest_beg++ = *beg;
+                ++beg;
+        }
+        return dest_beg;
+    }
+
+    // iota yet in the standard... 
+    //
+
+    template <typename Iter, typename Tp>
+    void iota(Iter __first, Iter __last, Tp __value)
+    {
+        for(; __first != __last; ++__first)
+        {
+            *__first = __value++;
+        }
+    }
+
     // Levenshtein Distance Algorithm: C++ Implementation
     // a generic rewrite of http://www.merriampark.com/ldcpp.htm
     //
