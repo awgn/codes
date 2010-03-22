@@ -100,7 +100,8 @@ namespace more {
     }    
 
     template <typename Iterator>
-    std::vector<iovec>
+    typename more::mtp::enable_if< std::is_integral< typename std::iterator_traits<Iterator>::value_type >,
+                std::vector<iovec> >::type
     get_iovec(Iterator __it, Iterator __end, std::random_access_iterator_tag)
     {
         typedef typename std::iterator_traits<Iterator>::value_type value_type;
@@ -108,7 +109,7 @@ namespace more {
 
         const difference_type n = std::distance(__it,__end);
 
-        if ( std::is_integral<value_type>::value && n && n == (&*__end - &*__it) ) 
+        if ( n && n == (&*__end - &*__it) ) 
         {
             iovec iov = { static_cast<void *>(const_cast<value_type *>(& *__it)), n * sizeof(value_type) };
             return std::vector<iovec>(1, iov);
