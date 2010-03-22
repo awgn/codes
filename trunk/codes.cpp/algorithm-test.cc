@@ -23,11 +23,13 @@ main(int argc, char *argv[])
     std::string a("hello");
     std::string b("Hello");
     std::string c("helol");
+    std::string d("helo");
 
-    std::cout << a << ':' << c << " -> " << more::levenshtein_distance(a.begin(), a.end(), c.begin(), c.end(), std::equal_to<char>()) << std::endl;
-    std::cout << c << ':' << a << " -> " << more::levenshtein_distance(c.begin(), c.end(), a.begin(), a.end(), std::equal_to<char>()) << std::endl;
-    std::cout << a << ':' << a << " -> " << more::levenshtein_distance(a.begin(), a.end(), a.begin(), a.end(), std::equal_to<char>()) << std::endl;
+    std::cout << a << ':' << c << " -> " << more::levenshtein_distance(a.begin(), a.end(), c.begin(), c.end(), std::not_equal_to<char>()) << std::endl;
+    std::cout << c << ':' << a << " -> " << more::levenshtein_distance(c.begin(), c.end(), a.begin(), a.end(), std::not_equal_to<char>()) << std::endl;
+    std::cout << a << ':' << a << " -> " << more::levenshtein_distance(a.begin(), a.end(), a.begin(), a.end(), std::not_equal_to<char>()) << std::endl;
     std::cout << a << ':' << b << " -> " << more::levenshtein_distance(a.begin(), a.end(), b.begin(), b.end()) << std::endl;
+    std::cout << a << ':' << d << " -> " << more::levenshtein_distance(a.begin(), a.end(), d.begin(), d.end()) << std::endl;
     std::cout << a << ':' << b << " -> " << more::levenshtein_distance(a,b) << " (std::string)" << std::endl;
         
     return 0;

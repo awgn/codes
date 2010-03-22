@@ -29,8 +29,8 @@ namespace more {
     // a generic rewrite of http://www.merriampark.com/ldcpp.htm
     //
 
-    template <typename It, typename Eq >  
-    int levenshtein_distance(It __beg, It __end, It __beg2, It __end2, Eq eq)
+    template <typename It, typename Distance >  
+    int levenshtein_distance(It __beg, It __end, It __beg2, It __end2, Distance dist)
     {
         typedef typename std::iterator_traits<It>::difference_type difference_type;
         typedef typename std::iterator_traits<It>::value_type value_type;
@@ -59,7 +59,7 @@ namespace more {
 
             for (int j = 1; j <= m; j++, ++__t) {
 
-                const int cost  = !eq(* __s,* __t);
+                const int cost  = dist(* __s,* __t);
                 const int above = matrix[i-1][j];
                 const int left  = matrix[i][j-1];
                 const int diag  = matrix[i-1][j-1];
@@ -75,14 +75,14 @@ namespace more {
     template <typename It>  
     int levenshtein_distance(It __beg, It __end, It __beg2, It __end2)
     {
-        return levenshtein_distance(__beg, __end, __beg2, __end2, std::equal_to<typename std::iterator_traits<It>::value_type >());
+        return levenshtein_distance(__beg, __end, __beg2, __end2, std::not_equal_to<typename std::iterator_traits<It>::value_type >());
     } 
 
     template<typename CharT, typename Traits, typename Alloc>
     int levenshtein_distance(const std::basic_string<CharT, Traits, Alloc> &s1,
                              const std::basic_string<CharT, Traits, Alloc> &s2)
     {
-        return levenshtein_distance(s1.begin(), s1.end(), s2.begin(), s2.end(), std::equal_to<CharT>()); 
+        return levenshtein_distance(s1.begin(), s1.end(), s2.begin(), s2.end(), std::not_equal_to<CharT>()); 
     }
 
 
