@@ -25,7 +25,7 @@ namespace std { using namespace std::tr1; }
 
 namespace more { 
 
-    // copy_if (inspired to the original HP STL)
+    // copy_if (inspired to that of HP STL)
     //
 
     template <typename InputIter, typename OutputIter, typename Pred>
@@ -39,7 +39,7 @@ namespace more {
         return dest_beg;
     }
 
-    // iota yet in the standard... 
+    // iota not yet in the standard...  
     //
 
     template <typename Iter, typename Tp>
@@ -110,7 +110,6 @@ namespace more {
     {
         return levenshtein_distance(s1.begin(), s1.end(), s2.begin(), s2.end(), std::not_equal_to<CharT>()); 
     }
-
 
 } // namespace more
 #endif /* _ALGORITHM_HH_ */
