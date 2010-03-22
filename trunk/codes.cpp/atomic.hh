@@ -33,22 +33,6 @@ namespace std { using namespace std::tr1; }
 
 namespace more {
 
-#ifndef DONT_USE_X86_XMM2
-    static inline
-    void mb()   { asm volatile("mfence" ::: "memory"); }
-    static inline
-    void rmb()  { asm volatile("lfence" ::: "memory"); }
-    static inline
-    void wmb()  { asm volatile("sfence" ::: "memory"); }
-#else
-    static inline
-    void mb()  { asm volatile("lock; addl $0,0(%%esp)" ::: "memory"); }
-    static inline
-    void rmb() { asm volatile("lock; addl $0,0(%%esp)" ::: "memory"); }
-    static inline
-    void wmb() { asm volatile("lock; addl $0,0(%%esp)" ::: "memory"); }
-#endif
-
     ////////////////////////////////////////////////
     // raii idiom that implements a scoped counter.
 

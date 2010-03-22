@@ -11,7 +11,8 @@
 #ifndef FAST_DEQUE_HH
 #define FAST_DEQUE_HH
 
-#include <atomic.hh>    // more!
+#include <atomic.hh>            // more!
+#include <memory_barriers.hh>   // more!
 
 #include <iostream> 
 #include <stdexcept>
@@ -66,7 +67,7 @@ namespace more
                 if (unlikely(nh == _M_tail))
                     return -1;
                 _M_arena[_M_head] = ptr;
-                wmb();
+                more::memory_barrier();
                 return _M_head = nh;
             }
 
@@ -76,7 +77,7 @@ namespace more
                 if (unlikely(_M_head == _M_tail))
                     return -1;
                 ret = _M_arena[_M_tail];
-                rmb();
+                more::memory_barrier();
                 _M_tail = next(_M_tail);
                 return 0;
             }

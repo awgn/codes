@@ -30,7 +30,7 @@ namespace more
         void turn_into(const T & exemplar)
         {
             static_assert(std::is_polymorphic<T>::value, is_polymorphic_concept);
-            static_assert(std::is_base_of<mutant, T>::value, is_base_concept);
+            static_assert((std::is_base_of<mutant, T>::value), is_base_concept);
 
             *(void **)this = *(void **)& exemplar;
         }
