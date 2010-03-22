@@ -41,6 +41,7 @@ struct test_template_class
     CLASS_REQUIRES_CONCEPT(T, EqualityComparable);
     CLASS_REQUIRES_CONCEPT(T, PostIncrementable);
     // CLASS_REQUIRES_CONCEPT(T, PreIncrementable);
+    // CLASS_REQUIRES_CONCEPT(T, IsConstConcept);
 
     void hello_world() 
     { std::cout << __PRETTY_FUNCTION__  << std::endl; } 

@@ -11,8 +11,10 @@
 #ifndef ATOMIC_HH
 #define ATOMIC_HH
 
+#include <atomicity-policy.hh>  // more!
+#include <static_assert.hh>     // more!
+
 #include <iostream>
-#include <atomicity-policy.hh>
 
 #if   __GNUC__ >= 4
 
@@ -46,14 +48,6 @@ namespace more {
     static inline
     void wmb() { asm volatile("lock; addl $0,0(%%esp)" ::: "memory"); }
 #endif
-
-    namespace atomic_help {
-
-        template <bool> struct ct_assert;
-        template <>
-        struct ct_assert<true>
-        { enum { value = true }; };
-    }
 
     ////////////////////////////////////////////////
     // raii idiom that implements a scoped counter.
@@ -101,8 +95,7 @@ namespace more {
     template <typename T>
     class atomic
     {
-        enum { enabled = atomic_help::ct_assert< std::is_integral<T>::value || 
-                                                 std::is_pointer<T>::value >::value };
+        static_assert( (std::is_integral<T>::value || std::is_pointer<T>::value ), atomic_enabled_for_integrals_and_pointers);
 
     public:
 

@@ -11,6 +11,8 @@
 #ifndef _FACTORY_HH_
 #define _FACTORY_HH_ 
 
+#include <static_assert.hh>     // more!
+
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
 #include <tr1/memory>
@@ -29,13 +31,6 @@ namespace more {
     
     namespace factory_util {
 
-        template <bool> struct static_assert__;
-        template <>
-        struct static_assert__<true>
-        {
-            enum { value = true };
-        };
-
 #ifndef CLASS_REQUIRES_BINARY_CONCEPT
 #define CLASS_REQUIRES_BINARY_CONCEPT(t1,t2,C)       \
     template <void (C<t1,t2>::*ptr_value)()> struct class_ ## C {}; \
@@ -47,7 +42,7 @@ namespace more {
         {
             void constraints()
             {  
-                static_assert__<std::is_base_of<B,D>::value>(); 
+                static_assert( (std::is_base_of<B,D>::value) , base_of_concept ); 
             }
         };
 

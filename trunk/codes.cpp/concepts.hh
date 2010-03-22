@@ -11,6 +11,8 @@
 #ifndef _CONCEPTS_HH_
 #define _CONCEPTS_HH_ 
 
+#include <static_assert.hh>     // more!
+
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
 namespace std { using namespace std::tr1; }
@@ -42,13 +44,6 @@ namespace std { using namespace std::tr1; }
 //
 
 namespace more { namespace basic_concepts {
-
-    template <bool> struct static_assert__;
-    template <>
-    struct static_assert__<true>
-    {
-        enum { value = true };
-    };
 
     template <class T>
     struct DefaultConstructible
@@ -159,7 +154,7 @@ namespace more { namespace basic_concepts {
     {   \
         void constraints() \
         {   \
-            static_assert__<std::trait<Ty>::value>();  \
+            static_assert( std::trait<Ty>::value, tr1_type_traits_concept );  \
         }\
     };
 #define TR1_TYPE_TRAITS_BINARY_CONCEPT(type, trait) \
@@ -168,7 +163,7 @@ namespace more { namespace basic_concepts {
     {   \
         void constraints() \
         {   \
-            static_assert__<std::trait<T1,T2>::value>();  \
+            static_assert( (std::trait<T1,T2>::value), tr1_type_traits_binary_concept );  \
         }\
     };
 

@@ -11,12 +11,14 @@
 #ifndef _ENABLE_EXCEPTION_IF_HH_
 #define _ENABLE_EXCEPTION_IF_HH_ 
 
+#include <mtp.hh>           // more!
+#include <cxa_demangle.hh>  // more!
+#include <static_assert.hh> // more!
+
 #include <iostream>
 #include <stdexcept>
 #include <typeinfo>
 #include <cassert>
-#include <mtp.hh>
-#include <cxa_demangle.hh>
 
 #ifndef PP_NARG
 /* the so-called __VA_NARG__ (PP_NARG) macro from the thread at 
@@ -66,15 +68,6 @@ PP_ARG_N(__VA_ARGS__)
 #endif
 
 namespace more {
-
-    namespace {
-        template <bool value> struct ct_assert;
-        template <>
-        struct ct_assert<true>
-        {
-            enum { value = true };
-        };
-    }
 
     template <bool value> class enable_exception_if;
     template <>
@@ -133,7 +126,7 @@ namespace more {
 #ifdef __EXCEPTIONS
             throw e;
 #else
-            ct_assert<false> enable_exception_if_true_while___EXCEPTIONS_undefined;
+            static_assert(false, enable_exception_if_true_while___EXCEPTIONS_undefined );
 #endif
         }
 

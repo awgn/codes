@@ -25,9 +25,9 @@ namespace more
 }
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-#define static_assert(v,tok) more::compile_time_assert<(v)> tok __attribute__((unused))
+#define static_assert(v,msg) more::compile_time_assert<(v)> static_assertion_failed$_ ## msg __attribute__((unused))
 #else
-#define static_assert(v,tok) static_assert((v), #tok)
+#define static_assert(v,msg) static_assert((v), #msg)
 #endif
 
 #include <cassert>

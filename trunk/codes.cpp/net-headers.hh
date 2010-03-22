@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 
 #include <cursor.hh>        // more!
+#include <static_assert.hh> // more!
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/type_traits>
@@ -69,13 +70,6 @@ namespace more {
         struct int2type
         {
             enum { value = N };
-        };
-
-        template <bool> struct compile_time_assert;
-        template <>
-        struct compile_time_assert<true>
-        {
-            enum { value = true };
         };
 
     }
@@ -140,9 +134,7 @@ namespace more {
                             std::is_const<T>::value, P
                             >::type * >(cur.cur()))
         {
-            header_helper::compile_time_assert<sizeof(P) == 1> 
-                multi_bytes_cursor_not_allowed __attribute__((unused));
-
+            static_assert(sizeof(P) == 1, multi_bytes_cursor_not_allowed);
             ctor(cur, header_helper::int2type<T::__static_size>());
         }
 
@@ -153,9 +145,7 @@ namespace more {
                             std::is_const<T>::value, P
                             >::type * >(cur.cur()))
         {
-            header_helper::compile_time_assert<sizeof(P) == 1> 
-                multi_bytes_cursor_not_allowed __attribute__((unused));
-
+            static_assert(sizeof(P) == 1, multi_bytes_cursor_not_allowed);
             ctor(cur, size, header_helper::int2type<T::__static_size>());
         }
 
