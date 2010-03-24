@@ -109,25 +109,40 @@ namespace more {
         pthread_t _M_owner;
     };
 
+    // generic scoped_lock...
+    //
+        
     template <typename Tp>
-    struct scoped_spinlock : private more::noncopyable 
+    struct scoped_lock : private more::noncopyable 
     {
         // scoped lock... (RAII) 
 
-        scoped_spinlock(spinlock<Tp> &lock)
+        scoped_lock(Tp &lock)
         : _M_lock(lock)
         {
             _M_lock.lock();
         }
 
-        ~scoped_spinlock()
+        ~scoped_lock()
         {
             _M_lock.unlock();
         }
 
     private:
-        spinlock<Tp> &_M_lock;
+        Tp &_M_lock;
     };
+
+    // scoped_spinlock...
+    //
+
+    template <typename Tp>
+    struct scoped_spinlock : scoped_lock< spinlock<Tp> > 
+    {
+        scoped_spinlock(spinlock<Tp> &lock)
+        : scoped_lock<spinlock<Tp> >(lock)
+        {} 
+    };
+
 }
 
 #endif /* _SPINLOCK_HH_ */
