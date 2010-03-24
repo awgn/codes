@@ -14,7 +14,7 @@
 #include <pthread.h>
 
 #include <atomicity-policy.hh>  // more!
-#include <tspinlock.hh>         // more!
+#include <spinlock.hh>          // more!
 
 #include <iostream>
 #include <cstdio>
@@ -46,7 +46,7 @@ namespace more {
         }
     };
 
-    template <typename M = more::tspinlock_half_recursive, typename C = nullCancel >
+    template <typename M = more::spinlock_open_recursive, typename C = nullCancel >
     class tstreambuf : public std::streambuf
     {
     public:
@@ -112,30 +112,30 @@ namespace more {
 
         protected:
 
-        static tspinlock_half_recursive * spin_alloc(std::ostream &out)
+        static spinlock_open_recursive * spin_alloc(std::ostream &out)
         {
             int index = std::ios_base::xalloc();
-            tspinlock_half_recursive * &ret = reinterpret_cast<tspinlock_half_recursive * &>(out.iword(index));
-            ret = new tspinlock_half_recursive;
+            spinlock_open_recursive * &ret = reinterpret_cast<spinlock_open_recursive * &>(out.iword(index));
+            ret = new spinlock_open_recursive;
             return ret;
         }
 
-        static tspinlock_half_recursive * get_lock(std::ostream &out)
+        static spinlock_open_recursive * get_lock(std::ostream &out)
         {
-            static tspinlock_half_recursive * ret = spin_alloc(out);
+            static spinlock_open_recursive * ret = spin_alloc(out);
             return ret;
         }
 
         static inline std::ostream &_lock(std::ostream &out)
         {
-            tspinlock_half_recursive * sl = get_lock(out);
+            spinlock_open_recursive * sl = get_lock(out);
             sl->lock();
             return out;
         }
 
         static inline std::ostream &_unlock(std::ostream &out)
         {
-            tspinlock_half_recursive * sl = get_lock(out);
+            spinlock_open_recursive * sl = get_lock(out);
             sl->unlock();
             return out;
         }

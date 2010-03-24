@@ -12,7 +12,6 @@
 #define ATOMIC_HH
 
 #include <atomicity-policy.hh>  // more!
-#include <static_assert.hh>     // more!
 
 #include <iostream>
 
@@ -73,14 +72,17 @@ namespace more {
         scoped_counter & operator=(const scoped_counter &);
     };
 
-    ////////////////////
-    // atomic variable.
+    /////////////////////////
+    // atomic template class
+
+    template <bool N> struct atomic_enabled_for;
+    template <>
+    struct atomic_enabled_for<true>
+    {};
 
     template <typename T>
-    class atomic
+    class atomic : atomic_enabled_for< std::is_integral<T>::value || std::is_pointer<T>::value >
     {
-        static_assert( (std::is_integral<T>::value || std::is_pointer<T>::value ), atomic_enabled_for_integrals_and_pointers);
-
     public:
 
         explicit atomic(T v=T()) 

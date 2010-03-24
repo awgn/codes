@@ -10,9 +10,9 @@
 
 #include <iostream>
 #include <fstream>
-#include <tstreambuf.hh>
 #include <pthread.h>
 
+#include <tstreambuf.hh>
 #include <atomicity-policy.hh>
 
 void * thread(void *)
@@ -54,8 +54,8 @@ main(int argc, char *argv[])
 {   
     std::ofstream test_txt("test.txt");
 
-    more::tstreambuf<more::tspinlock_half_recursive> *b = new more::tstreambuf<more::tspinlock_half_recursive>(test_txt.rdbuf());
-    // more::tstreambuf<more::tspinlock_half_recursive> *b = new more::tstreambuf<more::tspinlock_half_recursive>(std::cout.rdbuf());
+    more::tstreambuf<more::spinlock_open_recursive> *b = new more::tstreambuf<more::spinlock_open_recursive>(test_txt.rdbuf());
+    // more::tstreambuf<more::spinlock_open_recursive> *b = new more::tstreambuf<more::spinlock_open_recursive>(std::cout.rdbuf());
     // std::clog.rdbuf(b);
 
     std::clog.rdbuf(b);
