@@ -61,7 +61,6 @@ namespace more {
         static void wait(int n, int& t)
         {
             if ((n % t) == 0) {
-                // std::cout << t << std::endl;
                 t= t>>1 ? : 1;
                 lock_relaxed::wait(0,0);
             }

@@ -17,7 +17,7 @@
 // typedef more::spinlock< more::lock_smart<64> > spinlock_type;
 // typedef more::spinlock< more::lock_relaxed   > spinlock_type;
 // typedef more::spinlock< more::lock_aggressive > spinlock_type;
-typedef more::spinlock< more::lock_backoff<64> > spinlock_type;
+typedef more::spinlock< more::lock_backoff<32> > spinlock_type;
 
 spinlock_type ticket_lock;
 
