@@ -31,7 +31,7 @@ public:
     }
 };
 
-more::shared_queue<elem *,8> queue;    
+more::shared_queue<elem *,1024,1,3> queue;    
 
 void *thread_producer(void *)
 {
