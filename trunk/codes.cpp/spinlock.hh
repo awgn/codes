@@ -29,7 +29,8 @@ namespace more {
 
     struct lock_relaxed 
     {
-        static void wait(int)
+        enum { threshold = 0 };
+        static void wait(int,int)
         {
             sched_yield();
         }
@@ -37,17 +38,33 @@ namespace more {
 
     struct lock_aggressive 
     {
-        static void wait(int)
+        enum { threshold = 0 };
+        static void wait(int,int)
         {}
     };
 
     template <int N = 10>
     struct lock_smart 
     {
-        static void wait(int n)
+        enum { threshold = N };
+        static void wait(int n, int)
         {
             if (n > N)
-                lock_relaxed::wait(0);
+                lock_relaxed::wait(0,0);
+        }
+    };
+
+    template <int N = 10>
+    struct lock_backoff 
+    {
+        enum { threshold = N };
+        static void wait(int n, int& t)
+        {
+            if ((n % t) == 0) {
+                // std::cout << t << std::endl;
+                t= t>>1 ? : 1;
+                lock_relaxed::wait(0,0);
+            }
         }
     };
 
@@ -61,9 +78,11 @@ namespace more {
         void lock()
         {             
             const unsigned my_ticket = _M_ticket++;
+
+            int t = Policy::threshold;
             for(int n = 1; _M_value != my_ticket; n++) 
-            {
-                Policy::wait(n);
+            {   
+                Policy::wait(n,t);
             }
         }
 

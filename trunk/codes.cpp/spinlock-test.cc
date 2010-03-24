@@ -9,21 +9,25 @@
  */
 
 #include <pthread.h>
-
 #include <spinlock.hh>  // more!
 
 #include <iostream>
 #include <cassert>
 
-more::spinlock<more::lock_smart<10> > ticket_lock;
+// typedef more::spinlock< more::lock_smart<64> > spinlock_type;
+// typedef more::spinlock< more::lock_relaxed   > spinlock_type;
+// typedef more::spinlock< more::lock_aggressive > spinlock_type;
+typedef more::spinlock< more::lock_backoff<64> > spinlock_type;
+
+spinlock_type ticket_lock;
 
 volatile int g = 0;
 
 void *thread_producer(void *)
 {
-    for(int i=0; i < 1000000; i++) 
+    for(int i=0; i < 500000; i++) 
     {
-        more::scoped_spinlock<more::lock_smart<10> > _s_(ticket_lock);
+        more::scoped_lock< spinlock_type > _s_(ticket_lock);
         g++;
     }    
     return 0;
@@ -31,9 +35,9 @@ void *thread_producer(void *)
 
 void *thread_consumer(void *)
 {
-    for(int i=0; i < 1000000; i++) 
+    for(int i=0; i < 500000; i++) 
     {
-        more::scoped_spinlock<more::lock_smart<10> > _s_(ticket_lock);
+        more::scoped_lock< spinlock_type > _s_(ticket_lock);
         g--; 
     }    
     return 0;
