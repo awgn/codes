@@ -26,118 +26,108 @@ namespace std { using namespace std::tr1; }
 #endif
 
 #include <iostream>
-#include <cstdio>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
 #include <string>
 
 namespace more {
 
-    // construction-on-the-first idiom allows to share a unique sep_index  
-    // between different compilation units 
-    //
+    namespace streamer {
 
-    struct streamer 
-    {
+        template <typename T>
+        static inline const T &
+        print(const T &elem)
+        {
+            return elem;
+        }
+        
+        static inline std::string
+        print(char c)
+        {
+            if ( c > 31 && c < 127 )
+                return std::string(1,c);
+            std::stringstream s;
+            s << "0x" << std::hex << static_cast<int>(c);
+            return s.str();
+        }
+
+        // construction-on-the-first idiom allows to share a unique sep_index  
+        // between different compilation units 
+        //
+
         static int sep_index()
         {
             static int index = std::ios_base::xalloc();
             return index;
         }    
 
-        static std::ostream &
-        sep(std::ostream &out, const char * sep = NULL)
+        template <typename CharT, typename Traits>
+        std::basic_ostream<CharT, Traits> &
+        sep(std::basic_ostream<CharT, Traits> &out, const char * sep = NULL)
         {
             out.iword(sep_index()) = reinterpret_cast<long>(sep);
             return out;
-        }
+        }    
 
-    };
-
-    // printable mangling traits
-    //
-
-    template <typename T>
-    struct sc_mangling_traits 
-    { typedef T type; };
-    template <>
-    struct sc_mangling_traits<char>
-    { typedef std::string type; };
-    template <>
-    struct sc_mangling_traits<unsigned char>
-    { typedef std::string type; };
-
-    // type mangling
-    //
-
-    template <typename T>
-    inline typename std::add_const< typename sc_mangling_traits<T>::type >::type sc_type_mangling(const T &t)
-    { return t; }
-
-    template <>
-    inline
-    std::add_const<sc_mangling_traits<char>::type>::type 
-    sc_type_mangling<char>(const char &c)
-    {
-        char buf[8];
-        sprintf(buf, (c > 31 && c < 127) ? "%c" : "0x%x", static_cast<unsigned char>(c));
-        return buf;
-    }
-    template <>
-    inline
-    std::add_const<sc_mangling_traits<unsigned char>::type>::type
-    sc_type_mangling<unsigned char>(const unsigned char &c)
-    {
-        char buf[8];
-        sprintf(buf, (c > 31 && c < 127) ? "%c" : "0x%x", static_cast<unsigned char>(c));
-        return buf;
-    }
-
-    namespace __tuplarr_policy {
-
-        // printon policy 
-        //
-
-        template <typename CharT, typename Traits, typename T, int N>
-        struct printon
+        template <typename CharT, typename Traits, typename T>
+        struct dumper : public std::unary_function<typename T::value_type, void>
         {
-            static void apply(std::basic_ostream<CharT,Traits> &out, const T &tupl)
+            dumper(std::basic_ostream<CharT, Traits> &out)
+            : _M_out(out), _M_sep(reinterpret_cast<char *>(out.iword(streamer::sep_index())))
+            {}
+
+            void operator()(const typename T::value_type & elem) const
             {
-                out << std::get< std::tuple_size<T>::value - N>(tupl) << ' ';
-                printon<CharT, Traits, T,N-1>::apply(out,tupl);
+                _M_out << more::streamer::print(elem);
+                if (_M_sep)
+                    _M_out << _M_sep;
             }
 
-        };
-        template <typename CharT, typename Traits, typename T>
-        struct printon<CharT, Traits, T,0>
-        {
-            static void apply(std::basic_ostream<CharT, Traits> &out, const T &)
-            {}
+        private:
+            std::basic_ostream<CharT, Traits> & _M_out;
+            char * _M_sep;
         };
 
+        namespace tuplarr {
+
+            // printon policy 
+
+            template <typename CharT, typename Traits, typename T, int N>
+            struct printon
+            {
+                static void apply(std::basic_ostream<CharT,Traits> &out, const T &tupl)
+                {
+                    out << std::get< std::tuple_size<T>::value - N>(tupl) << ' ';
+                    printon<CharT, Traits, T,N-1>::apply(out,tupl);
+                }
+
+            };
+            template <typename CharT, typename Traits, typename T>
+            struct printon<CharT, Traits, T,0>
+            {
+                static void apply(std::basic_ostream<CharT, Traits> &out, const T &)
+                {}
+            };
+        }
     }
-
 }
 
 namespace std {
-    
-    // streamer...
+
+    ///////////////////////////////////////
+    // operator<< for generic containers...
     //
 
     template <typename CharT, typename Traits, typename T>
     inline typename more::mtp::enable_if_c< more::traits::is_container<T>::value && 
     !is_same<typename std::string,T>::value, 
-           std::basic_ostream<CharT,Traits> >::type &
+    std::basic_ostream<CharT,Traits> >::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
     {
-        typename T::const_iterator it = v.begin();
-        for(; it != v.end();) {
-            out << more::sc_type_mangling(*it); 
-            if ( ++it != v.end() && out.iword(more::streamer::sep_index()) ) {
-                out << reinterpret_cast<char *>(out.iword(more::streamer::sep_index()));   
-            } 
-        }
+        std::for_each(v.begin(), v.end(), more::streamer::dumper<CharT, Traits, T>(out));
         return out;
     };
-
 
     //////////////////////////
     // operator<< for pair...
@@ -146,8 +136,7 @@ namespace std {
     inline std::basic_ostream<CharT, Traits> &
     operator<< (std::basic_ostream<CharT, Traits> &out, const std::pair<U,V> &r)
     {
-        out << '<' << r.first << ':' << r.second << '>';
-        return out;
+        return out << '<' << r.first << ':' << r.second << '>';
     }
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
@@ -162,7 +151,7 @@ namespace std {
         operator<<(std::basic_ostream<CharT,Traits> &out, const std::array<T,N> & rhs)
         {
             out << "[ ";
-            more::__tuplarr_policy::printon<CharT, Traits, std::array<T,N>, N>::apply(out,rhs);
+            more::streamer::tuplarr::printon<CharT, Traits, std::array<T,N>, N>::apply(out,rhs);
             return out << "]";
         }
 
@@ -174,7 +163,7 @@ namespace std {
         operator<<(std::basic_ostream<CharT,Traits> &out, const T & rhs)
         {
             out << "< ";
-            more::__tuplarr_policy::printon<CharT, Traits, T, std::tuple_size<T>::value>::apply(out,rhs);
+            more::streamer::tuplarr::printon<CharT, Traits, T, std::tuple_size<T>::value>::apply(out,rhs);
             return out << ">";
         }
 
