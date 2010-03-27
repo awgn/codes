@@ -26,34 +26,16 @@ namespace std { using namespace std::tr1; }
 #endif
 
 #include <iostream>
-#include <sstream>
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <cstring>
 
 namespace more {
 
     namespace streamer {
 
-        template <typename T>
-        static inline const T &
-        print(const T &elem)
-        {
-            return elem;
-        }
-        
-        static inline std::string
-        print(char c)
-        {
-            if ( c > 31 && c < 127 )
-                return std::string(1,c);
-            std::stringstream s;
-            s << "0x" << std::hex << static_cast<int>(c);
-            return s.str();
-        }
-
-        // construction-on-the-first idiom allows to share a unique sep_index  
-        // between different compilation units 
+        // construction-on-the-first idiom ensures sep_index will be unique  
         //
 
         static int sep_index()
@@ -66,32 +48,15 @@ namespace more {
         std::basic_ostream<CharT, Traits> &
         sep(std::basic_ostream<CharT, Traits> &out, const char * sep = NULL)
         {
-            out.iword(sep_index()) = reinterpret_cast<long>(sep);
+            free(reinterpret_cast<void *>(out.iword(sep_index())));
+            out.iword(sep_index()) = reinterpret_cast<long>(sep ? strdup(sep) : 0);
             return out;
         }    
-
-        template <typename CharT, typename Traits, typename T>
-        struct dumper : public std::unary_function<typename T::value_type, void>
-        {
-            dumper(std::basic_ostream<CharT, Traits> &out)
-            : _M_out(out), _M_sep(reinterpret_cast<char *>(out.iword(streamer::sep_index())))
-            {}
-
-            void operator()(const typename T::value_type & elem) const
-            {
-                _M_out << more::streamer::print(elem);
-                if (_M_sep)
-                    _M_out << _M_sep;
-            }
-
-        private:
-            std::basic_ostream<CharT, Traits> & _M_out;
-            char * _M_sep;
-        };
 
         namespace tuplarr {
 
             // printon policy 
+            //
 
             template <typename CharT, typename Traits, typename T, int N>
             struct printon
@@ -125,7 +90,8 @@ namespace std {
     std::basic_ostream<CharT,Traits> >::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
     {
-        std::for_each(v.begin(), v.end(), more::streamer::dumper<CharT, Traits, T>(out));
+        std::copy(v.begin(), v.end(), 
+                  std::ostream_iterator<typename T::value_type>(out, reinterpret_cast<char *>(out.iword(more::streamer::sep_index()))));
         return out;
     };
 
