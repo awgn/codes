@@ -10,14 +10,16 @@
 
 #include <pthread.h>
 #include <spinlock.hh>  // more!
+#include <atomicity-policy.hh> // more!
 
 #include <iostream>
 #include <cassert>
 
-// typedef more::spinlock< more::lock_smart<64> > spinlock_type;
-// typedef more::spinlock< more::lock_relaxed   > spinlock_type;
+// typedef more::atomicity::DEFAULT::mutex spinlock_type;
+// typedef more::spinlock< more::lock_usleep<100> > spinlock_type;
 // typedef more::spinlock< more::lock_aggressive > spinlock_type;
-typedef more::spinlock< more::lock_backoff<32> > spinlock_type;
+
+typedef more::spinlock< more::lock_smart<2048> > spinlock_type;
 
 spinlock_type ticket_lock;
 
@@ -25,7 +27,7 @@ volatile int g = 0;
 
 void *thread_producer(void *)
 {
-    for(int i=0; i < 500000; i++) 
+    for(int i=0; i < 5000000; i++) 
     {
         more::scoped_lock< spinlock_type > _s_(ticket_lock);
         g++;
@@ -35,7 +37,7 @@ void *thread_producer(void *)
 
 void *thread_consumer(void *)
 {
-    for(int i=0; i < 500000; i++) 
+    for(int i=0; i < 5000000; i++) 
     {
         more::scoped_lock< spinlock_type > _s_(ticket_lock);
         g--; 
@@ -50,7 +52,6 @@ main(int argc, char *argv[])
 
     pthread_create(&a, NULL, thread_producer, NULL);
     pthread_create(&b, NULL, thread_consumer, NULL);
-    
     pthread_create(&c, NULL, thread_producer, NULL);
     pthread_create(&d, NULL, thread_consumer, NULL);
 

@@ -17,7 +17,6 @@
 #include <noncopyable.hh>   // more!
 #include <atomic.hh>        // more!
 
-#include <iostream>
 #include <cassert>
 #include <cstdio>
 
@@ -27,45 +26,60 @@
 
 namespace more { 
 
-    struct lock_relaxed 
+    struct lock_yield 
     {
         enum { threshold = 0 };
-        static void wait(int,int)
+        static void wait(int,int,int)
         {
-            sched_yield();
+            pthread_yield();
+        }
+    };
+
+    template <int N>
+    struct lock_usleep 
+    {
+        enum { threshold = 0 };
+        static void wait(int,int,int)
+        {
+            usleep(N);
         }
     };
 
     struct lock_aggressive 
     {
         enum { threshold = 0 };
-        static void wait(int,int)
+        static void wait(int,int,int)
         {}
     };
 
-    template <int N = 10>
-    struct lock_smart 
-    {
-        enum { threshold = N };
-        static void wait(int n, int)
-        {
-            if (n > N)
-                lock_relaxed::wait(0,0);
-        }
-    };
-
-    template <int N = 10>
+    template <int N = 1024>
     struct lock_backoff 
     {
         enum { threshold = N };
-        static void wait(int n, int& t)
+        static void wait(int n, int& t, int len)
         {
             if ((n % t) == 0) {
                 t= t>>1 ? : 1;
-                lock_relaxed::wait(0,0);
+                lock_yield::wait(0,0,0);
             }
         }
     };
+
+    template <int N = 1024>
+    struct lock_smart 
+    {
+        enum { threshold = N };
+        static void wait(int n, int &t, int d)
+        {
+            if (d > 1 || (n % t) == 0) { 
+                // std::cout << d << std::endl; 
+                t= t>>1 ? : 1;
+                lock_yield::wait(0,0,0);
+            }
+        }
+    };
+
+    ///////////////////////////
 
     template <typename Policy>
     struct spinlock 
@@ -76,12 +90,11 @@ namespace more {
 
         void lock()
         {             
-            const unsigned my_ticket = _M_ticket++;
-
+            const unsigned int my_ticket = _M_ticket++;
             int t = Policy::threshold;
-            for(int n = 1; _M_value != my_ticket; n++) 
-            {   
-                Policy::wait(n,t);
+            for(int n = 1, d = 0; d=(my_ticket-_M_value); n++) 
+            { 
+                Policy::wait(n,t,d);
             }
         }
 
@@ -91,8 +104,8 @@ namespace more {
         }
 
     private:
-        more::atomic<unsigned int> _M_ticket;        
-        more::atomic<unsigned int> _M_value;        
+        more::atomic<volatile unsigned int> _M_ticket;        
+        more::atomic<volatile unsigned int> _M_value;        
     };
 
     class spinlock_open_recursive
