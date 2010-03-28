@@ -105,56 +105,78 @@ namespace more {
         { return __sync_lock_test_and_set(&_M_value, val); }
 
 
-        operator T() const 
+        operator T() const volatile 
         { return _M_value; }
 
-#define __SYNC(builtin) const T builtin(T val) { return __sync ## builtin(&_M_value, val); }
+#define __SYNC(builtin) T builtin(T val) volatile { return __sync_ ## builtin(&_M_value, val); }
 
         T 
-        operator++(int) 
+        operator+=(T value) volatile 
+        { return  __sync_add_and_fetch(&_M_value, value); }        
+
+        T 
+        operator-=(T value) volatile
+        { return  __sync_sub_and_fetch(&_M_value, value); }
+
+
+        T 
+        operator++(int) volatile 
         { return __sync_fetch_and_add(&_M_value, 1); }        
 
         T 
-        operator--(int) 
+        operator--(int) volatile
         { return __sync_fetch_and_sub(&_M_value, 1); }
+
+        T 
+        operator++() volatile 
+        { return  __sync_add_and_fetch(&_M_value, 1); }        
+
+        T 
+        operator--() volatile
+        { return  __sync_sub_and_fetch(&_M_value, 1); }
 
         __SYNC(fetch_and_or);
         __SYNC(fetch_and_and);
         __SYNC(fetch_and_xor);
         __SYNC(fetch_and_nand);
 
-        T 
-        operator++() 
-        { return  __sync_add_and_fetch(&_M_value, 1); }        
+        __SYNC(or_and_fetch);
+        __SYNC(and_and_fetch);
+        __SYNC(xor_and_fetch);
+        __SYNC(nnand_and_fetch);
 
-        T 
-        operator--() 
-        { return  __sync_sub_and_fetch(&_M_value, 1); }
+        __SYNC(lock_test_and_set);
+
+        void
+        lock_release() volatile
+        {
+            __sync_lock_release(&_M_value);
+        }
 
         T
-        operator &=(T v) 
+        operator &=(T v) volatile
         { return  __sync_and_and_fetch(&_M_value,v); }
 
         T 
-        operator |=(T v) 
+        operator |=(T v) volatile
         { return __sync_or_and_fetch(&_M_value,v); }
 
         T 
-        operator ^=(T v) 
+        operator ^=(T v) volatile
         { return  __sync_xor_and_fetch(&_M_value,v); }        
 
         __SYNC(nand_nad_fetch);
 
         T 
-        val_compare_and_swap(T oldval, T newval) 
+        val_compare_and_swap(T oldval, T newval) volatile 
         { return  __sync_val_compare_and_swap(&_M_value, oldval, newval); }
  
         bool 
-        bool_compare_and_swap(T oldval, T newval) 
+        bool_compare_and_swap(T oldval, T newval) volatile
         { return __sync_bool_compare_and_swap(&_M_value, oldval, newval); }
 
         static void 
-        memory_barrier()
+        memory_barrier() 
         { 
             __sync_synchronize(); 
         }
