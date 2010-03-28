@@ -13,39 +13,19 @@
 #include <shared_queue.hh>
 #include <cassert>
 
-class elem 
-{
-    int _M_elem;
-public:
-
-    elem (int _e) 
-    : _M_elem(_e)
-    {}
-
-    ~elem()
-    {}
-
-    int value()
-    { 
-        return _M_elem; 
-    }
-};
-
-more::shared_queue<elem *,1024,1,3> queue;    
+// more::shared_queue<int,128,3,1, more::atomicity::DEFAULT::mutex> queue;    
+more::shared_queue<int,128,3,1, more::spinlock<more::lock_smart<16> > > queue;    
+// more::shared_queue<int,128,3,1, more::spinlock<more::lock_relaxed > > queue;    
 
 void *thread_producer(void *)
 {
-    for(int i=0; i<100000; ) {
+    for(int i=0; i<10000000; ) {
 
-        elem * p = new elem(i);
 retry:
-        if ( queue.push_back(p) ) {
-            std::cout << "push: value->(" << i << ")" << std::endl; 
+        if ( queue.push_back(0) ) {
             i++;
-            usleep(1000);
             continue;
         }
-        usleep(1000);
         goto retry;
     }
 
@@ -54,18 +34,13 @@ retry:
 
 void *thread_consumer(void *)
 {
-    elem *r;
+    int r;
     for(;;) {
         if (!queue.pop_front(r) )
         {
             sched_yield();
             continue;
         }
-
-        assert(r);
-        std::cout << "pop: " << r->value() <<  " (size = " << queue.size() << ")" <<std::endl;
-        delete r;
-        usleep(5000);
     }
 
     return NULL;
@@ -79,12 +54,12 @@ int main()
     pthread_t d;
 
     pthread_create(&a, NULL, thread_producer, NULL);
-    pthread_create(&b, NULL, thread_consumer, NULL);
-    pthread_create(&c, NULL, thread_consumer, NULL);
+    pthread_create(&b, NULL, thread_producer, NULL);
+    // pthread_create(&c, NULL, thread_producer, NULL);
     pthread_create(&d, NULL, thread_consumer, NULL);
 
     pthread_join(a,NULL);
     pthread_join(b,NULL);
-    pthread_join(c,NULL);
-    pthread_join(d,NULL);
+    //pthread_join(c,NULL);
+    // pthread_join(d,NULL);
 }

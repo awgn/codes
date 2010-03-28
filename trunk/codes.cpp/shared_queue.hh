@@ -20,16 +20,16 @@
 
 namespace more 
 {
-    template <int N>    
+    template <int N, typename Lock>    
     struct shared_queue_lock_traits
     {
-        typedef more::spinlock< more::lock_smart<> > lock_type; 
+        typedef Lock lock_type;
     };
 
-    template <> 
-    struct shared_queue_lock_traits<0>;
-    template <>
-    struct shared_queue_lock_traits<1>
+    template <typename Lock> 
+    struct shared_queue_lock_traits<0,Lock>;
+    template <typename Lock>
+    struct shared_queue_lock_traits<1, Lock>
     {
         struct null_lock
         {
@@ -48,15 +48,17 @@ namespace more
     struct shared_queue_element<true>
     {};
 
-    template <typename T, unsigned int N = 1024, unsigned int Producer = 1, unsigned int Consumer = 1> 
+    template <typename T, unsigned int N = 1024, 
+              unsigned int Producer = 1, unsigned int Consumer = 1, 
+              typename Lock = more::spinlock<more::lock_backoff<> > > 
     class shared_queue : more::noncopyable, 
                          shared_queue_element< std::tr1::has_nothrow_assign<T>::value && std::tr1::has_nothrow_copy<T>::value  >
     {
         public:
             typedef typename std::vector<T>::size_type  size_type;
             typedef typename std::vector<T>::value_type value_type;
-            typedef typename shared_queue_lock_traits<Producer>::lock_type head_lock_type;
-            typedef typename shared_queue_lock_traits<Consumer>::lock_type tail_lock_type;
+            typedef typename shared_queue_lock_traits<Producer,Lock>::lock_type head_lock_type;
+            typedef typename shared_queue_lock_traits<Consumer,Lock>::lock_type tail_lock_type;
             typedef unsigned int unsigned_type;
 
         private:
