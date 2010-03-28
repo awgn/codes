@@ -14,14 +14,8 @@
 // Yet another simple C/C++ parser
 // 
 
-#include <iomanip.hh>       // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-namespace std { using namespace std::tr1; }
-#else
-#include <type_traits>
-#endif
+#include <iomanip.hh>           // more!
+#include <tr1_type_traits.hh>   // more!
 
 #include <iostream>
 #include <fstream>
@@ -29,7 +23,6 @@ namespace std { using namespace std::tr1; }
 #include <string>
 #include <algorithm>
 #include <functional>
-
 
 namespace more { namespace yacpp {
 

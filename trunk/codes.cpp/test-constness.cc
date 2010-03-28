@@ -22,7 +22,7 @@ public:
     // when returning a copy, only the const qualified
     // method is required...
 
-    const int 
+    int 
     get() const
     { return priv; }
 

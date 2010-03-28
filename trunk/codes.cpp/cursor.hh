@@ -11,13 +11,7 @@
 #ifndef _CURSOR_HH_
 #define _CURSOR_HH_ 
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-namespace std { using namespace std::tr1; }
-#else
-#include <type_traits>
-#endif
-
+#include <tr1_type_traits.hh>   // more!
 #include <stdexcept>
 
 namespace more { 

@@ -11,14 +11,8 @@
 #ifndef TYPE_TRAITS_HH
 #define TYPE_TRAITS_HH
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-#include <tr1/tuple>
-namespace std { using namespace std::tr1; }
-#else
-#include <type_traits>
-#include <tuple>
-#endif
+#include <tr1_type_traits.hh>   // more!
+#include <tr1_tuple.hh>         // more!
 
 #include <utility>
 

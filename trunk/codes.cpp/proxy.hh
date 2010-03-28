@@ -11,12 +11,7 @@
 #ifndef PROXY_HH
 #define PROXY_HH
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/functional>
-namespace std { using namespace std::tr1; }
-#else
-#include <functional>
-#endif
+#include <tr1_functional.hh>    // more!
 
 #include <stdexcept>
 #include <typeinfo>

@@ -20,11 +20,7 @@
 #include <format.hh>
 #include <exec.hh>
 #include <colorful.hh>
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/functional>
-namespace std { using namespace std::tr1; }
-#endif
+#include <tr1_functional.hh>
 
 #include <iostream>
 #include <iomanip>

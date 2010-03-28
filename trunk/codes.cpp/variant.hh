@@ -11,15 +11,9 @@
 #ifndef _VARIANT_HH_
 #define _VARIANT_HH_ 
 
-#include <typelist.hh>  // more!
-#include <mtp.hh>       // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-namespace std { using namespace std::tr1; }
-#include <tr1/type_traits>
-#else
-#include <type_traits>
-#endif
+#include <typelist.hh>          // more!
+#include <mtp.hh>               // more!
+#include <tr1_type_traits.hh>   // more!
 
 #include <typeinfo>
 #include <iostream>

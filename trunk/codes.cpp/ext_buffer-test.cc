@@ -9,18 +9,12 @@
  */
 
 #include <ext_buffer.hh>
+#include <tr1_array.hh>     // more!
 
 #include <iostream>
 #include <algorithm>
 #include <iterator>
 #include <cstdio>
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/array>
-namespace std { using namespace std::tr1; }
-#else
-#include <array>
-#endif
 
 int
 main(int argc, char *argv[])

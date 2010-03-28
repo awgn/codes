@@ -11,8 +11,8 @@
 #ifndef _LAZY_OBJECT_HH_
 #define _LAZY_OBJECT_HH_ 
 
-#include <shared_ptr.hh>    // more!
 #include <any.hh>           // more!
+#include <tr1_memory.hh>    // more!
 
 #include <stdexcept>
 
@@ -76,31 +76,31 @@ namespace more {
 
         void ctor()
         {
-            _M_obj = typename more::shared_ptr<T>::type( new T );
+            _M_obj = std::shared_ptr<T>( new T );
         }
 
         template <typename P1>
         void ctor() 
         {
-            _M_obj = typename more::shared_ptr<T>::type( new T(more::any_cast<P1>(_M_arg1)) );
+            _M_obj = typename std::shared_ptr<T>( new T(more::any_cast<P1>(_M_arg1)) );
         }
         template <typename P1, typename P2>
         void ctor() 
         {
-            _M_obj = typename more::shared_ptr<T>::type( new T(more::any_cast<P1>(_M_arg1),
+            _M_obj = typename std::shared_ptr<T>( new T(more::any_cast<P1>(_M_arg1),
                                                                more::any_cast<P2>(_M_arg2)) );
         }
         template <typename P1, typename P2, typename P3>
         void ctor() 
         {
-            _M_obj = typename more::shared_ptr<T>::type( new T(more::any_cast<P1>(_M_arg1),
+            _M_obj = typename std::shared_ptr<T>( new T(more::any_cast<P1>(_M_arg1),
                                                                more::any_cast<P2>(_M_arg2),
                                                                more::any_cast<P3>(_M_arg3)) );
         }
         template <typename P1, typename P2, typename P3, typename P4>
         void ctor()
         {
-            _M_obj = typename more::shared_ptr<T>::type( new T(more::any_cast<P1>(_M_arg1),
+            _M_obj = typename std::shared_ptr<T>( new T(more::any_cast<P1>(_M_arg1),
                                                                more::any_cast<P2>(_M_arg2),
                                                                more::any_cast<P3>(_M_arg3),
                                                                more::any_cast<P4>(_M_arg4)) );
@@ -108,7 +108,7 @@ namespace more {
         template <typename P1, typename P2, typename P3, typename P4, typename P5>
         void ctor()
         {
-            _M_obj = typename more::shared_ptr<T>::type( new T(more::any_cast<P1>(_M_arg1),
+            _M_obj = typename std::shared_ptr<T>( new T(more::any_cast<P1>(_M_arg1),
                                                                more::any_cast<P2>(_M_arg2),
                                                                more::any_cast<P3>(_M_arg3),
                                                                more::any_cast<P4>(_M_arg4),
@@ -117,7 +117,7 @@ namespace more {
         template <typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
         void ctor()
         {
-            _M_obj = typename more::shared_ptr<T>::type( new T(more::any_cast<P1>(_M_arg1),
+            _M_obj = typename std::shared_ptr<T>( new T(more::any_cast<P1>(_M_arg1),
                                                                more::any_cast<P2>(_M_arg2),
                                                                more::any_cast<P3>(_M_arg3),
                                                                more::any_cast<P4>(_M_arg4),
@@ -125,13 +125,13 @@ namespace more {
                                                                more::any_cast<P6>(_M_arg6)) );
         }
 
-        typename more::shared_ptr<T>::type
+        typename std::shared_ptr<T>
         shared_from_this() const 
         {
             if (!_M_obj)
                 throw std::logic_error("object not yet constructed");
 
-            return typename more::shared_ptr<T>::type(_M_obj);
+            return typename std::shared_ptr<T>(_M_obj);
         }
 
         // enable upcast...
@@ -142,7 +142,7 @@ namespace more {
         }
 
         // internals readers...
-        const typename more::shared_ptr<T>::type &
+        const typename std::shared_ptr<T> &
         obj() const
         {
             return _M_obj;
@@ -180,7 +180,7 @@ namespace more {
         } 
 
     private:
-        typename more::shared_ptr<T>::type _M_obj; // read why more::shared_prt<> in shared_ptr.hh 
+        typename std::shared_ptr<T> _M_obj; // read why more::shared_prt<> in shared_ptr.hh 
 
         more::any  _M_arg1;  
         more::any  _M_arg2; 

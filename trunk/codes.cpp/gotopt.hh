@@ -13,13 +13,7 @@
 
 #include <lexical_cast.hh>      // more!
 #include <exprtempl.hh>         // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/tuple>
-namespace std { using namespace std::tr1; }
-#else
-#include <tuple>
-#endif
+#include <tr1_tuple.hh>         // more!
 
 #include <stdexcept>
 #include <iomanip>

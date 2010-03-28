@@ -11,12 +11,7 @@
 #ifndef COLLECTOR_HH
 #define COLLECTOR_HH
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/memory>
-namespace std { using namespace std::tr1; }
-#else
-#include <memory>
-#endif
+#include <tr1_memory.hh>    // more!
 
 #include <stdexcept>
 #include <map>

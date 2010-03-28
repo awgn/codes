@@ -16,13 +16,7 @@
 // provided by g++ 3.4 or higher.
 //
 
-#if   __GNUC__ >= 4
-#include <tr1/memory>
-#elif (__GNUC__ == 3) && (__GNUC_MINOR__ == 4)
-#include <bits/atomicity.h>
-#else
-#error "g++ compiler not supported"
-#endif
+#include <tr1_memory.hh>    // more!
 
 namespace more 
 {

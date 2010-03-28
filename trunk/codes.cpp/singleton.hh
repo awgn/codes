@@ -11,14 +11,8 @@
 #ifndef SINGLETON_HH
 #define SINGLETON_HH
 
-#include <typelist.hh>      // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-namespace std { using namespace std::tr1; }
-#else
-#include <type_traits>
-#endif
+#include <typelist.hh>          // more!
+#include <tr1_type_traits.hh>   // more!
 
 #include <iostream>
 
@@ -35,7 +29,7 @@ namespace more
         template <typename T>
         struct identity
         {
-            typedef T type;
+            typedef T value_type;
         };
 
         template <typename U, bool c, bool v> struct __add_cv;
@@ -81,7 +75,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,0,singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
 
         struct tag {};
 
@@ -100,7 +94,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,1,singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
 
         struct tag {};
@@ -120,7 +114,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,2,singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
 
@@ -141,7 +135,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,3,singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -163,7 +157,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,4,singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -187,7 +181,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,5,singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -212,7 +206,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,6,singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -238,7 +232,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,7,singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -266,7 +260,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,8,singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -295,7 +289,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,9,singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -327,7 +321,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,0,indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
 
         struct tag {};
 
@@ -347,7 +341,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,1,indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
 
         struct tag {};
@@ -368,7 +362,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,2,indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
 
@@ -390,7 +384,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,3,indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -413,7 +407,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,4,indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -438,7 +432,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,5,indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -464,7 +458,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,6,indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -491,7 +485,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,7,indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -520,7 +514,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,8,indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;
@@ -550,7 +544,7 @@ namespace more
     template <typename T,typename CV, typename S>
     class singleton<T,CV,S,9,indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::type;
+        friend class singleton_base::identity<T>::value_type;
         typedef typename more::TL::at<S,0>::type arg1_type;
         typedef typename more::TL::at<S,1>::type arg2_type;
         typedef typename more::TL::at<S,2>::type arg3_type;

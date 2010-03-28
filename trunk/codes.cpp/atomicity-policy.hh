@@ -12,9 +12,8 @@
 #ifndef ATOMICITY_HH
 #define ATOMICITY_HH
 
-#if   __GNUC__ >= 4
-#include <tr1/memory>
-#endif
+#include <tr1_memory.hh>
+
 #ifdef BOOST_HAS_THREADS
 #include <boost/thread.hpp>
 #endif
@@ -70,7 +69,7 @@ namespace more { namespace atomicity {
     template <int, int> struct gnu_cxx;
     template <>
     struct gnu_cxx<4,0> {
-#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 0 
+#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 0 && !defined(__INTEL_COMPILER) 
         typedef __gnu_cxx::mutex_type mutex;
         typedef __gnu_cxx::lock scoped_lock;
 #endif
@@ -78,7 +77,7 @@ namespace more { namespace atomicity {
 
     template <>
     struct gnu_cxx<4,1> {
-#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 1
+#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 1 && !defined(__INTEL_COMPILER)
         typedef __gnu_cxx::mutex_type mutex;
         typedef __gnu_cxx::lock scoped_lock;
 #endif
@@ -86,14 +85,14 @@ namespace more { namespace atomicity {
 
     template <>
     struct gnu_cxx<4,2> {
-#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 2 
+#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 2  && !defined(__INTEL_COMPILER)
         typedef __gnu_cxx::__mutex mutex;
         typedef __gnu_cxx::__scoped_lock scoped_lock;
 #endif
     };
     template <>
     struct gnu_cxx<4,3> {
-#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 3 
+#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 3  && !defined(__INTEL_COMPILER)
         typedef __gnu_cxx::__mutex mutex;
         typedef __gnu_cxx::__scoped_lock scoped_lock;
 #endif
@@ -101,7 +100,7 @@ namespace more { namespace atomicity {
 
     template <>
     struct gnu_cxx<4,4> {
-#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 4 
+#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 4  && !defined(__INTEL_COMPILER)
         typedef __gnu_cxx::__mutex mutex;
         typedef __gnu_cxx::__scoped_lock scoped_lock;
 #endif
@@ -110,26 +109,25 @@ namespace more { namespace atomicity {
     template <int, int> struct gnu_cxx_recursive;
     template <>
     struct gnu_cxx_recursive<4,2> {
-#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 2 
+#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 2  && !defined(__INTEL_COMPILER)
         typedef __gnu_cxx::__recursive_mutex mutex;
         typedef atomicity::__scoped_lock<mutex> scoped_lock; // not yet sopported in gnu_cxx 
 #endif
     };
     template <>
     struct gnu_cxx_recursive<4,3> {
-#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 3 
+#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 3  && !defined(__INTEL_COMPILER)
         typedef __gnu_cxx::__recursive_mutex mutex;
         typedef atomicity::__scoped_lock<mutex> scoped_lock; // not yet supported in gnu_cxx
 #endif
     };
     template <>
     struct gnu_cxx_recursive<4,4> {
-#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 4 
+#if   __GNUC__ == 4 &&  __GNUC_MINOR__ == 4  && !defined(__INTEL_COMPILER)
         typedef __gnu_cxx::__recursive_mutex mutex;
         typedef atomicity::__scoped_lock<mutex> scoped_lock; // not yet supported in gnu_cxx
 #endif
     };
-
 
     typedef gnu_cxx<__GNUC__, __GNUC_MINOR__> GNU_CXX; 
     typedef gnu_cxx_recursive<__GNUC__, __GNUC_MINOR__> GNU_CXX_RECURSIVE; 
@@ -138,11 +136,25 @@ namespace more { namespace atomicity {
     // default policy... atomicity::DEFAULT
 
 #ifdef _REENTRANT
-#  ifndef NDEBUG
-#  warning "atomicity::DEFAULT set to GNU_CXX"
-#  endif
+
+#if defined(__INTEL_COMPILER)
+
+#   ifndef NDEBUG
+#   warning "atomicity::DEFAULT set to BOOST"
+#   endif
+
+    typedef BOOST DEFAULT;
+    typedef BOOST_RECURSIVE DEFAULT_RECURSIVE;
+#else
+
+#   ifndef NDEBUG
+#   warning "atomicity::DEFAULT set to GNU_CXX"
+#   endif
+
     typedef GNU_CXX DEFAULT;
     typedef GNU_CXX_RECURSIVE DEFAULT_RECURSIVE;
+#endif
+
 #else
 #  ifndef NDEBUG
 #  warning "atomicity::DEFAULT set to NONE"

@@ -11,19 +11,10 @@
 #ifndef _OBSERVER_HH_
 #define _OBSERVER_HH_ 
 
-#include <atomicity-policy.hh> // more
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/functional>
-#include <tr1/memory>
-#include <tr1/type_traits>
-namespace std { using namespace std::tr1; }
-#else
-#include <functional>
-#include <memory>
-#include <type_traits>
-
-#endif
+#include <atomicity-policy.hh>  // more!
+#include <tr1_functional.hh>    // more!
+#include <tr1_memory.hh>        // more!
+#include <tr1_type_traits.hh>   // more!
 
 #include <algorithm>
 #include <vector>

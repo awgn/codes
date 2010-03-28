@@ -15,9 +15,9 @@
 
 #include "type_traits.hh"
 
-#define RED     "\E[0;31;1m"
-#define BLACK   "\E[0;29;1m"
-#define RESET   "\E[0m"
+#define RED    "\e[0;31;1m"
+#define BLACK  "\e[0;29;1m"
+#define RESET  "\e[0m"
 
 std::string verdict( std::false_type )
 { return "[" RED "false" RESET "]"; }

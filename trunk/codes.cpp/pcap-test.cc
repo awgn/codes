@@ -13,7 +13,6 @@
 #include <algorithm>
 
 #include <pcap++.hh>
-#include <tr1/functional>
 
 class mycap : public more::pcap_live
 {

@@ -11,7 +11,7 @@
 #ifndef _MOVABLE_HH_
 #define _MOVABLE_HH_ 
 
-#include <tr1/functional>
+#include <tr1_functional.hh>    // more!
 
 namespace more { 
 

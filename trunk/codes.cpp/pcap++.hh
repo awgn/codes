@@ -15,14 +15,9 @@
 #include <arpa/inet.h>
 #include <pcap.h>
 
-#include <noncopyable.hh>   // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/tuple>
-namespace std { using namespace std::tr1; }
-#else
-#include <tuple>
-#endif
+#include <noncopyable.hh>    // more!
+#include <tr1_tuple.hh>      // more!
+#include <tr1_functional.hh> // more!
 
 #include <iostream>
 #include <string>
@@ -218,11 +213,12 @@ namespace more {
     ///////////////////////////////////////////////
     ///////////////////////////////////////////////
 
+    class pcap_dumper;
     class pcap : private noncopyable
     {
-        friend class pcap_dumper;
 
     protected:
+        friend class pcap_dumper;
 
         virtual ~pcap()
         {

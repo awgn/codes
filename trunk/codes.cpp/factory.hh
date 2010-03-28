@@ -12,15 +12,8 @@
 #define _FACTORY_HH_ 
 
 #include <static_assert.hh>     // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-#include <tr1/memory>
-namespace std { using namespace std::tr1; }
-#else
-#include <type_traits>
-#include <memory>
-#endif
+#include <tr1_type_traits.hh>   // more!
+#include <tr1_memory.hh>        // more!
 
 #include <string>
 #include <map>

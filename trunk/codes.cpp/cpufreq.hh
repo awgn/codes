@@ -15,13 +15,7 @@
 #define _CPUFREQ_HH_ 
 
 #include <cpufreq.h>        // libcpufreq
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/memory>
-namespace std { using namespace std::tr1; }
-#else
-#include <memory>
-#endif
+#include <tr1_memory.hh>    // more!
 
 #include <cstring>
 #include <cstdio>

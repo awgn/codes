@@ -81,7 +81,7 @@ int main()
     pthread_create(&a, NULL, thread_producer, NULL);
     pthread_create(&b, NULL, thread_consumer, NULL);
     pthread_create(&c, NULL, thread_consumer, NULL);
-    pthread_create(&c, NULL, thread_consumer, NULL);
+    pthread_create(&d, NULL, thread_consumer, NULL);
 
     pthread_join(a,NULL);
     pthread_join(b,NULL);

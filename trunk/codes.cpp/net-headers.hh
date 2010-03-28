@@ -20,15 +20,9 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
-#include <cursor.hh>        // more!
-#include <static_assert.hh> // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-namespace std { using namespace std::tr1; }
-#else
-#include <type_traits>
-#endif
+#include <cursor.hh>            // more!
+#include <static_assert.hh>     // more!
+#include <tr1_type_traits.hh>   // more!
 
 #include <iostream>
 #include <string>

@@ -9,12 +9,11 @@
  */
 
 #include <iostream>
-//#include <boost/thread.hpp>
-#include "atomic.hh"
+#include <atomic.hh>
 
 using namespace more;
 
-typedef atomicity::GNU_CXX_RECURSIVE AtomicityPolicy;
+typedef atomicity::DEFAULT_RECURSIVE AtomicityPolicy;
 
 // this bad_class is shared between threads.
 //

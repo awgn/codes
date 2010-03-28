@@ -242,8 +242,8 @@ struct Controller : public posix::thread
 };
 
 
-#define RED     "\E[0;31;1m"
-#define RESET   "\E[0m"
+#define RED     "\e[0;31;1m"
+#define RESET   "\e[0m"
 
 int main(int argc, char *argv[])
 {

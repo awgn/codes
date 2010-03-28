@@ -12,23 +12,10 @@
 #define ATOMIC_HH
 
 #include <atomicity-policy.hh>  // more!
+#include <tr1_type_traits.hh>   // more!
+#include <tr1_memory.hh>        // more!
 
 #include <iostream>
-
-#if   __GNUC__ >= 4
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-#include <tr1/memory>
-namespace std { using namespace std::tr1; }
-#else
-#include <type_traits>
-#include <memory>
-#endif
-
-#else
-#error "compiler not supported"
-#endif
 
 namespace more {
 
@@ -179,7 +166,7 @@ namespace more {
     // the following atomic_ptr is based on an idea of Alexandrescu, 
     // see http://www.ddj.com/cpp/184403766 for further details.
 
-    template <typename Atomicity = atomicity::GNU_CXX>
+    template <typename Atomicity = atomicity::DEFAULT>
     struct atomic_class 
     {
         typename Atomicity::mutex _M_mutex;
@@ -192,7 +179,7 @@ namespace more {
         {}
     };
 
-    template <typename T, class Atomicity = atomicity::GNU_CXX>
+    template <typename T, class Atomicity = atomicity::DEFAULT>
     class atomic_ptr {
 
     public:

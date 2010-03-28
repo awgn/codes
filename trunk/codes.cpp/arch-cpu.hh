@@ -15,8 +15,8 @@
 #define ARCH_CPU_HH 
 
 #include <cpufreq.hh>       // more + libcpufreq
+#include <tr1_memory.hh>    // more!
 
-#include <tr1/memory>
 #include <cstring>
 #include <cstdio>
 #include <string>

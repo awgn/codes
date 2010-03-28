@@ -17,19 +17,11 @@
 #include <signal.h>
 #include <error.hh>
 
-#include <string-utils.hh>  // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-#include <tr1/functional>
-#include <tr1/array>
-#include <tr1/memory>
-namespace std { using namespace std::tr1; }
-#else
-#include <type_traits>
-#include <array>
-#include <memory>
-#endif
+#include <string-utils.hh>      // more!
+#include <tr1_type_traits.hh>   // more!
+#include <tr1_functional.hh>    // more!
+#include <tr1_array.hh>         // more!
+#include <tr1_memory.hh>        // more!
 
 #include <iostream>
 #include <sstream>

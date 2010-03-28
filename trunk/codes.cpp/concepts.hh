@@ -12,14 +12,7 @@
 #define _CONCEPTS_HH_ 
 
 #include <static_assert.hh>     // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-namespace std { using namespace std::tr1; }
-#else
-#include <tr1/type_traits>
-#include <type_traits>
-#endif
+#include <tr1_type_traits.hh>   // more!
 
 // Yet another boost::concepts implementation...
 //
@@ -193,12 +186,12 @@ namespace more { namespace basic_concepts {
     TR1_TYPE_TRAITS_CONCEPT(IsEmptyConcept, is_empty);  
     TR1_TYPE_TRAITS_CONCEPT(IsPolymorphicConcept, is_polymorphic);  
     TR1_TYPE_TRAITS_CONCEPT(IsAbstractConcept, is_abstract);  
-    TR1_TYPE_TRAITS_CONCEPT(HasTrivialContructorConcept, tr1::has_trivial_constructor);  
-    TR1_TYPE_TRAITS_CONCEPT(HasTrivialCopyConcept, tr1::has_trivial_copy);  
+    //TR1_TYPE_TRAITS_CONCEPT(HasTrivialContructorConcept, tr1::has_trivial_constructor);  
+    //TR1_TYPE_TRAITS_CONCEPT(HasTrivialCopyConcept, tr1::has_trivial_copy);  
     TR1_TYPE_TRAITS_CONCEPT(HasTrivialAssignConcept, has_trivial_assign);  
     TR1_TYPE_TRAITS_CONCEPT(HasTrivialDestructorConcept, has_trivial_destructor);  
-    TR1_TYPE_TRAITS_CONCEPT(HasNothrowContructorConcept, tr1::has_nothrow_constructor);  
-    TR1_TYPE_TRAITS_CONCEPT(HasNothrowCopyConcept, tr1::has_nothrow_copy);  
+    //TR1_TYPE_TRAITS_CONCEPT(HasNothrowContructorConcept, tr1::has_nothrow_constructor);  
+    //TR1_TYPE_TRAITS_CONCEPT(HasNothrowCopyConcept, tr1::has_nothrow_copy);  
     TR1_TYPE_TRAITS_CONCEPT(HasNothrowAssignConcept, has_nothrow_assign);  
     TR1_TYPE_TRAITS_CONCEPT(HasVirtualDestructorConcept, has_virtual_destructor);  
     TR1_TYPE_TRAITS_CONCEPT(IsSignedConcept, is_signed);  

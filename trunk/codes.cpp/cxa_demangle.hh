@@ -11,14 +11,9 @@
 #ifndef _CXA_DEMANGLE_HH_
 #define _CXA_DEMANGLE_HH_ 
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/memory>
-namespace std { using namespace std::tr1; }
-#else
-#include <memory>
-#endif
-
 #include <cxxabi.h>
+
+#include <tr1_memory.hh>    // more!
 
 #ifdef _REENTRANT
 #include <atomicity-policy.hh>

@@ -15,11 +15,7 @@
 // mechanism [ 9.7.4 C++ Template Metaprogramming: Abrahams/Gurtovoy ]
 //
 
-#if   __GNUC__ >= 4
-#include <tr1/memory>
-#else
-#error "g++ compiler not supported"
-#endif
+#include <tr1_memory.hh>    // more!
 
 namespace more {
 
@@ -47,7 +43,7 @@ namespace more {
             F _M_fun;
         };
 
-        std::tr1::shared_ptr<base_functor> _M_ptr;
+        std::shared_ptr<base_functor> _M_ptr;
 
     public:
         template <class F>

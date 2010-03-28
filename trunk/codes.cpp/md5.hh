@@ -13,17 +13,11 @@
 #define _MD5_HH_ 
 
 #include <stdint.h>
-#include <mtp.hh>       // more!
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/array>
-#include <tr1/functional>
-
-namespace std { using namespace std::tr1; }
-#else
-#include <array>
-#include <functional>
-#endif
+#include <mtp.hh>               // more!
+#include <tr1_array.hh>         // more!
+#include <tr1_type_traits.hh>   // more!
+#include <tr1_functional.hh>    // more!
 
 #include <iostream>
 #include <iomanip>

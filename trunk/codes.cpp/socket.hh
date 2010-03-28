@@ -17,13 +17,7 @@
 
 #include <sockaddress.hh>           // more!
 #include <error.hh>                 // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/array>
-namespace std { using namespace std::tr1; }
-#else
-#include <array>
-#endif
+#include <tr1_array.hh>             // more!
 
 #include <string>
 

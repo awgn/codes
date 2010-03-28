@@ -11,9 +11,10 @@
 #ifndef _ENABLE_EXCEPTION_IF_HH_
 #define _ENABLE_EXCEPTION_IF_HH_ 
 
-#include <mtp.hh>           // more!
-#include <cxa_demangle.hh>  // more!
-#include <static_assert.hh> // more!
+#include <mtp.hh>             // more!
+#include <cxa_demangle.hh>    // more!
+#include <static_assert.hh>   // more!
+#include <tr1_type_traits.hh> // more!
 
 #include <iostream>
 #include <stdexcept>

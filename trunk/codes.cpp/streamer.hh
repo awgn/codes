@@ -14,16 +14,9 @@
 #include <mtp.hh>           // more!
 #include <type_traits.hh>   // more!
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-#include <tr1/array>
-#include <tr1/tuple>
-namespace std { using namespace std::tr1; }
-#else
-#include <type_traits>
-#include <array>
-#include <tuple>
-#endif
+#include <tr1_type_traits.hh>
+#include <tr1_array.hh>
+#include <tr1_tuple.hh>
 
 #include <iostream>
 #include <algorithm>

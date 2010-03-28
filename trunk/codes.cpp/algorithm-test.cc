@@ -14,7 +14,8 @@
 #include <iostream>
 #include <iterator>
 #include <functional>
-#include <tr1/functional>
+
+#include <tr1_functional.hh>
 
 using namespace std::placeholders;
 

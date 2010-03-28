@@ -13,18 +13,11 @@
 
 #include <sys/time.h>
 
-#include <pthread++.hh>     // more!
-#include <error.hh>         // more!
-#include <static_assert.hh> // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/type_traits>
-#include <tr1/array>
-namespace std { using namespace std::tr1; }
-#else
-#include <type_traits>
-#include <array>
-#endif
+#include <pthread++.hh>         // more!
+#include <error.hh>             // more!
+#include <static_assert.hh>     // more!
+#include <tr1_type_traits.hh>   // more!
+#include <tr1_array.hh>         // more!
 
 #include <cstring>
 #include <string>

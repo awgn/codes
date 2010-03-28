@@ -19,16 +19,11 @@
 #include <error.hh>         // more!
 #include <noncopyable.hh>   // more!
 #include <static_assert.hh> // more!
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/functional>
-#include <tr1/memory>
-namespace std { using namespace std::tr1; }
-#endif
+#include <tr1_functional.hh>// more!
+#include <tr1_memory.hh>    // more!
 
 #include <memory>
 #include <functional>
-
 #include <stdexcept>
 #include <iostream>
 #include <cassert>
@@ -144,8 +139,8 @@ namespace more { namespace posix
 
     private:
         int _M_cancelstate_old;
-
-        static __thread int _S_lock_cnt;
+        
+        static  __thread  int _S_lock_cnt;
 
     protected:
 
@@ -170,8 +165,8 @@ namespace more { namespace posix
         }
     };
 
-    template <int n>
-    __thread int __base_mutex<n>::_S_lock_cnt = 0;
+    template <int N>
+     __thread int __base_mutex<N>::_S_lock_cnt = 0;
 
     typedef __base_mutex<0> base_mutex;
 

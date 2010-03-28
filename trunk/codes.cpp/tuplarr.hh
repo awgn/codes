@@ -11,19 +11,13 @@
 #ifndef _TUPLARR_HH_
 #define _TUPLARR_HH_ 
 
-#include <mtp.hh>           // mtp::enable_if
-#include <type_traits.hh>   // more::traits::is_tuple<>
-#include <streamer.hh>      // more!
+#include <mtp.hh>            // mtp::enable_if
+#include <type_traits.hh>    // more::traits::is_tuple<>
+#include <streamer.hh>       // more!
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/tuple>
-#include <tr1/array>
-#include <tr1/functional>
-namespace std { using namespace std::tr1; }
-#else
-#include <tuple>
-#include <array>
-#endif
+#include <tr1_tuple.hh>      // more!
+#include <tr1_array.hh>      // more!
+#include <tr1_functional.hh> // more!
 
 #include <iostream>
 #include <iterator>

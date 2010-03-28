@@ -11,12 +11,7 @@
 #ifndef _FUNCTIONAL_HH_
 #define _FUNCTIONAL_HH_ 
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#include <tr1/functional>
-namespace std { using namespace std::tr1; }
-#else
-#include <functional>
-#endif
+#include <tr1_functional.hh>    // more!
 
 #include <algorithm>
 #include <iterator>
