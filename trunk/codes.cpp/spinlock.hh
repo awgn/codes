@@ -72,7 +72,6 @@ namespace more {
         static void wait(int n, int &t, int d)
         {
             if (d > 1 || (n % t) == 0) { 
-                // std::cout << d << std::endl; 
                 t= t>>1 ? : 1;
                 lock_yield::wait(0,0,0);
             }
@@ -85,6 +84,32 @@ namespace more {
     struct spinlock 
     {
         spinlock()
+        : _M_value(0)
+        {}
+
+        void lock()
+        {   
+            int t = Policy::threshold;
+            for(int n=0; _M_value.lock_test_and_set(1) != 0; ++n)
+            { 
+                Policy::wait(n,t,0);
+            }
+        }
+
+        void unlock()
+        {
+           _M_value.lock_release(); 
+        }
+
+    private:
+        volatile more::atomic<unsigned int> _M_value;        
+    };
+
+
+    template <typename Policy>
+    struct ticket_spinlock 
+    {
+        ticket_spinlock()
         : _M_ticket(0), _M_value(0)
         {}
 
@@ -104,8 +129,8 @@ namespace more {
         }
 
     private:
-        more::atomic<volatile unsigned int> _M_ticket;        
-        more::atomic<volatile unsigned int> _M_value;        
+        volatile more::atomic<unsigned int> _M_ticket;        
+        volatile more::atomic<unsigned int> _M_value;        
     };
 
     class spinlock_open_recursive

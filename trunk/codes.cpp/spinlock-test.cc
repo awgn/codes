@@ -18,18 +18,18 @@
 // typedef more::atomicity::DEFAULT::mutex spinlock_type;
 // typedef more::spinlock< more::lock_usleep<100> > spinlock_type;
 // typedef more::spinlock< more::lock_aggressive > spinlock_type;
+// typedef more::spinlock< more::lock_yield > spinlock_type;
+typedef more::spinlock< more::lock_smart<1024> > spinlock_type;
 
-typedef more::spinlock< more::lock_smart<2048> > spinlock_type;
-
-spinlock_type ticket_lock;
+spinlock_type lock;
 
 volatile int g = 0;
 
 void *thread_producer(void *)
 {
-    for(int i=0; i < 5000000; i++) 
+    for(int i=0; i < 50000000; i++) 
     {
-        more::scoped_lock< spinlock_type > _s_(ticket_lock);
+        more::scoped_lock< spinlock_type > _s_(lock);
         g++;
     }    
     return 0;
@@ -37,9 +37,9 @@ void *thread_producer(void *)
 
 void *thread_consumer(void *)
 {
-    for(int i=0; i < 5000000; i++) 
+    for(int i=0; i < 50000000; i++) 
     {
-        more::scoped_lock< spinlock_type > _s_(ticket_lock);
+        more::scoped_lock< spinlock_type > _s_(lock);
         g--; 
     }    
     return 0;
