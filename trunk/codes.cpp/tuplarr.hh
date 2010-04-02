@@ -31,7 +31,7 @@ namespace more
         // assign policy 
         //
        
-        template <typename Iter, typename T, int N >
+        template <typename Iter, typename T, int N>
         struct assign 
         {
             static void apply(const T &tupl, Iter &it)
@@ -136,7 +136,7 @@ namespace more
 
     namespace tuplarr {
 
-        // copy algorith
+        // copy algorithm
         //
 
         template <typename T, typename Iter>
@@ -146,7 +146,7 @@ namespace more
             tuplarr_policy::assign<Iter,T,std::tuple_size<T>::value>::apply(tupl,out);
         } 
 
-        // for_earch algorithm 
+        // for_each algorithm 
         //
 
         template <typename T, typename Fun>

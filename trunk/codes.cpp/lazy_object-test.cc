@@ -12,6 +12,7 @@
 #include <vector>
 #include <algorithm>
 
+#include <tr1_functional.hh>
 #include <lazy_object.hh>
 
 //////////////////// base <- derived ... 
@@ -53,7 +54,6 @@ struct derived : public base
 };
 
 
-#include <tr1/functional>
 
 typedef more::lazy_object<derived> lazy_derived;
 

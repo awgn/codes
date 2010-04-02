@@ -19,8 +19,10 @@
 #include <error.hh>         // more!
 #include <noncopyable.hh>   // more!
 #include <static_assert.hh> // more!
-#include <tr1_functional.hh>// more!
-#include <tr1_memory.hh>    // more!
+
+#include <tr1_type_traits.hh> // more!
+#include <tr1_functional.hh>  // more!
+#include <tr1_memory.hh>      // more!
 
 #include <memory>
 #include <functional>
@@ -129,7 +131,6 @@ namespace more { namespace posix
     class __base_mutex : private noncopyable
     {    
     public:
-
         __base_mutex()
         : _M_cancelstate_old()
         {}
@@ -139,8 +140,7 @@ namespace more { namespace posix
 
     private:
         int _M_cancelstate_old;
-        
-        static  __thread  int _S_lock_cnt;
+        static __thread int _S_lock_cnt;
 
     protected:
 
@@ -166,7 +166,10 @@ namespace more { namespace posix
     };
 
     template <int N>
-     __thread int __base_mutex<N>::_S_lock_cnt = 0;
+#ifndef __INTEL_COMPILER 
+    __thread 
+#endif
+    int __base_mutex<N>::_S_lock_cnt = 0;
 
     typedef __base_mutex<0> base_mutex;
 
@@ -326,7 +329,7 @@ namespace more { namespace posix
         scoped_lock(T &m) 
         : _M_mutex( static_cast<mutex_type &>(m) )
         {   
-            static_assert( (std::is_same<T, M>::value) || (std::is_base_of<T, M>::value) , lock_type_unknown );
+            static_assert( (std::is_same<T, M>::value) || (std::is_base_of<T, M>::value), lock_type_unknown );
 
             if (!this->lock()) { 
                 throw std::runtime_error("scoped_lock<>");

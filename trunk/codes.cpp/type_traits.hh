@@ -79,16 +79,27 @@ namespace more
         template <int N>
         struct int2type {};
 
+        template <typename Tp>
+        struct type2type {};
+
         template <typename C> static __one test(int2type< std::tuple_size<C>::value > *);
+        // template <typename C> static __one test(type2type<typename std::tuple_element<0,C>::type> *);
         template <typename C> static __two test(...);
 
     public:
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };
     };
 
+#if defined(MORE_USE_BOOST) || defined(__INTEL_COMPILER) 
+#include <boost/fusion/support/is_sequence.hpp>
+    template <typename T>
+    struct is_tuple : public std::integral_constant<bool, boost::fusion::traits::is_sequence<T>::value>
+    {};
+#else    
     template <typename T>
     struct is_tuple : public std::integral_constant<bool, __is_tuple_helper<T>::value>
     {};
+#endif
 
     // is_metafunction 
     template <typename T>
