@@ -95,7 +95,6 @@ namespace more {
     };
 
     // norm (valid for signed and unsigned types)
-    //
     
     template <typename Tp>
     struct norm : public std::binary_function<Tp, Tp, Tp>
@@ -106,6 +105,48 @@ namespace more {
             return std::max(x,y)-std::min(x,y);
         }
     }; 
+
+    // identity functor
+    //
+
+    template <typename Tp>
+    struct identity : public std::unary_function<Tp,Tp>
+    {
+        Tp& 
+        operator()(Tp& n) const
+        { 
+            return n; 
+        }        
+        
+        const Tp& 
+        operator()(const Tp& n) const
+        { 
+            return n; 
+        }
+ 
+    };
+
+
+    template <typename Tp>
+    struct select1st : public std::unary_function<Tp, typename Tp::first_type>
+    {
+        typename Tp::first_type 
+        operator()(Tp n) const
+        {
+            return n.first; 
+        }
+    };
+
+    template <typename Tp>
+    struct select2nd : public std::unary_function<Tp, typename Tp::second_type>
+    {
+        typename Tp::second_type 
+        operator()(Tp n) const
+        {
+            return n.second; 
+        }
+    };
+
 
 } // namespace more
 #endif /* _FUNCTIONAL_HH_ */

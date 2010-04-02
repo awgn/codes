@@ -22,7 +22,7 @@ include_directories(.)
 add_definitions(-DARCH_i386 -DMORE_USE_TR1_SHARED_PTR -DMORE_USE_GNU_MUTEX)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-add_executable(CTdispatcher CTdispatcher.cc)
+        #add_executable(CTdispatcher CTdispatcher.cc)
 add_executable(any-test any-test.cc)
 add_executable(algorithm-test algorithm-test.cc)       ## __builtin_fpclassify issue (not yet fixed in icc 11.1)
 add_executable(async_fd-test async_fd-test.cc)         ## __builtin_fpclassify issue (not yet fixed in icc 11.1)

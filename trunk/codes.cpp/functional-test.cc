@@ -62,6 +62,15 @@ main(int argc, char *argv[])
     std::cout << "norm: |10-52| = " << dist(a,b) << std::endl;
     std::cout << "norm: |52-10| = " << dist(b,a) << std::endl;
 
+    // identity
+
+    std::cout << "idenity<int>(42) = " << more::identity<int>()(42) << std::endl;
+
+    // select1st, select2nd
+
+    std::cout << "select1st<pair<int,int> >(make_pair(11,42)) = " << more::select1st< std::pair<int,int> >()(std::make_pair(11,42)) << std::endl;
+    std::cout << "select2nd<pair<int,int> >(make_pair(11,42)) = " << more::select2nd< std::pair<int,int> >()(std::make_pair(11,42)) << std::endl;
+
     return 0;
 }
  
