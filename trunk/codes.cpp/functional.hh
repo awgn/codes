@@ -126,6 +126,8 @@ namespace more {
  
     };
 
+    // select1st, select2nd non-standard functor
+    //
 
     template <typename Tp>
     struct select1st : public std::unary_function<Tp, typename Tp::first_type>
