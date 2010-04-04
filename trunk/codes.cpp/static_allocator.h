@@ -15,6 +15,10 @@
 #include <limits>
 #include <new>
 
+#ifndef NDEBUG
+#include <iostream>
+#endif
+
 namespace more { 
 
     template <typename Tp>
@@ -34,7 +38,7 @@ namespace more {
         { typedef static_allocator<Tp1> other; };
 
         static_allocator(void* _area, size_type _size) throw()
-        : _M_area(reinterpret_cast<Tp*>(_area)),
+        : _M_area(_area),
           _M_size(_size)
         {}
 
@@ -65,13 +69,19 @@ namespace more {
         pointer
         allocate(size_type __n, const void * = 0)
         {
-            if ( __n > _M_size )
+            const size_type __s = __n * sizeof(Tp);
+            
+#ifndef NDEBUG
+            std::cout << "static_allocator<>: this[" << (void *)this << "]->allocate(" << __s << ") bytes..." << std::endl;
+#endif
+            if ( __s > _M_size )
                 throw std::out_of_range("allocate");
             
-            _M_size -= __n;
-            pointer __a = _M_area;
-            _M_area += __n;
-            return __a;
+            _M_size -= __s;
+            pointer a = static_cast<Tp*>(_M_area);
+            
+            _M_area = reinterpret_cast<void *>( static_cast<char*>(_M_area) + __s);
+            return a;
         }
 
         void
@@ -86,14 +96,13 @@ namespace more {
         template<typename... _Args>
         void
         construct(pointer __p, _Args&&... __args)
-        { ::new((void *)__p) _Tp(std::forward<_Args>(__args)...); }
+        { ::new((void *)__p) Tp(std::forward<_Args>(__args)...); }
 #endif
 
         void
         destroy(pointer __p) {  __p->~Tp(); }
 
-    private:
-        Tp *      _M_area;
+        void *    _M_area;
         size_type _M_size;
     };
 
