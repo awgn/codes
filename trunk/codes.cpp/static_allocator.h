@@ -34,7 +34,7 @@ namespace more {
         { typedef static_allocator<Tp1> other; };
 
         static_allocator(void* _area, size_type _size) throw()
-        : _M_area(_area),
+        : _M_area(reinterpret_cast<Tp*>(_area)),
           _M_size(_size)
         {}
 
@@ -68,9 +68,9 @@ namespace more {
             if ( __n > _M_size )
                 throw std::out_of_range("allocate");
             
-            pointer __a = static_cast<Tp*>(_M_area);
             _M_size -= __n;
-            _M_area  = reinterpret_cast<void *>(__a+__n);
+            pointer __a = _M_area;
+            _M_area += __n;
             return __a;
         }
 
@@ -93,7 +93,7 @@ namespace more {
         destroy(pointer __p) {  __p->~Tp(); }
 
     private:
-        void *    _M_area;
+        Tp *      _M_area;
         size_type _M_size;
     };
 
