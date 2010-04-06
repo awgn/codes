@@ -149,6 +149,36 @@ namespace more {
         }
     };
 
+    // unary_callable_if
+    //
+
+    template <typename Callable>
+    struct unary_callable_if 
+    : public std::binary_function<bool, typename Callable::argument_type, 
+                                        typename Callable::result_type>
+    {
+        unary_callable_if(Callable f)
+        : _M_fun(f)
+        {}
+
+        typename Callable::result_type
+        operator()(bool cond, typename Callable::argument_type x)
+        {
+            if (cond)
+                return _M_fun(x);
+            return typename Callable::result_type();
+        }
+
+    private:
+        Callable _M_fun;
+    };
+
+    template <typename Callable>
+    inline unary_callable_if<Callable>
+    call_if(Callable n)
+    {
+        return unary_callable_if<Callable>(n);
+    }
 
 } // namespace more
 #endif /* _FUNCTIONAL_HH_ */

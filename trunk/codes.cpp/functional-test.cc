@@ -10,9 +10,21 @@
 
 
 #include <iostream>
+#include <functional>
+#include <tr1/memory>
 #include <functional.hh>
 
 using namespace std::placeholders;
+
+struct test
+{
+    int value;
+    test(int n)
+    : value(n)
+    {}
+
+    void hello() { std::cout << "Hello World! (" << value << ")" << std::endl; }
+};
 
 int
 main(int argc, char *argv[])
@@ -70,6 +82,20 @@ main(int argc, char *argv[])
 
     std::cout << "select1st<pair<int,int> >(make_pair(11,42)) = " << more::select1st< std::pair<int,int> >()(std::make_pair(11,42)) << std::endl;
     std::cout << "select2nd<pair<int,int> >(make_pair(11,42)) = " << more::select2nd< std::pair<int,int> >()(std::make_pair(11,42)) << std::endl;
+
+    // call_if test:
+
+    std::vector<test *> vec;
+
+    vec.push_back(new test(1));
+    vec.push_back(0);
+    vec.push_back(0);
+    vec.push_back(new test(2));
+
+    using namespace std::tr1::placeholders;
+    std::for_each(vec.begin(), vec.end(), std::tr1::bind( 
+                                                         more::call_if(std::tr1::mem_fn(&test::hello)), _1, _1
+                                                         ));
 
     return 0;
 }
