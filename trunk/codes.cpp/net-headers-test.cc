@@ -75,9 +75,9 @@ main(int argc, char *argv[])
         std::cout << "tcp_checksum: " << h_tcp->check_verify(*h_ip, cur.size()) << std::endl;  
         std::cout << "payload: " << cur.size() << " bytes" << ", offset: " << (cur.cur()-cur.begin()) << std::endl;
 
-        std::cout << "eth_min_size: " << ethernet::__min_size << std::endl;
-        std::cout << " ip_min_size: " << ipv4::__min_size << std::endl;
-        std::cout << "tcp_min_size: " << tcp::__min_size << std::endl;
+        // std::cout << "eth_min_size: " << ethernet::__min_size << std::endl;
+        // std::cout << " ip_min_size: " << ipv4::__min_size << std::endl;
+        // std::cout << "tcp_min_size: " << tcp::__min_size << std::endl;
     }
 
     std::cout << "read test..." << std::endl;

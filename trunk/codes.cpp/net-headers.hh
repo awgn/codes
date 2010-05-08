@@ -235,7 +235,7 @@ namespace net {
 
     class ethernet
     {
-    public:
+    protected:
         static const int   __static_size = sizeof(ether_header);    // static size
         static const int   __min_size = sizeof(ether_header);       // min size
         
@@ -247,6 +247,7 @@ namespace net {
 
         friend class more::header<ethernet>;
 
+    public:
         template <typename T>
         ethernet(T *h)
         : _H_(reinterpret_cast<ether_header *>(h))
@@ -335,7 +336,7 @@ namespace net {
 
     class ipv4
     {
-    public:
+    protected:
         static const int __static_size = 0;            // dynamic size
         static const int __min_size = sizeof(iphdr);   // min size
 
@@ -347,6 +348,7 @@ namespace net {
 
         friend class ::more::header<ipv4>;
 
+    public:
         template <typename T>
         ipv4(T *h)
         : _H_(reinterpret_cast<iphdr *>(h))
@@ -505,7 +507,7 @@ namespace net {
 
     class udp
     {
-    public:
+    protected:
         static const int __static_size = sizeof(udphdr);   // static size
         static const int __min_size = sizeof(udphdr);      // min size
 
@@ -516,7 +518,8 @@ namespace net {
         }
 
         friend class more::header<udp>;
-
+            
+    public:
         template <typename T>
         udp(T *h)
         : _H_(reinterpret_cast<udphdr *>(h))
@@ -562,7 +565,7 @@ namespace net {
 
     class tcp
     {
-    public:
+    protected:
 
         struct pseudo_header
         {
@@ -584,6 +587,7 @@ namespace net {
 
         friend class more::header<tcp>;
 
+    public:
         template <typename T>
         tcp(T *h)
         : _H_(reinterpret_cast<tcphdr *>(h))
@@ -809,7 +813,7 @@ namespace net {
 
     class icmp 
     {
-    public:
+    protected:
         static const int __static_size = sizeof(icmphdr);   // static size
         static const int __min_size = sizeof(icmphdr);      // min size
 
@@ -820,7 +824,8 @@ namespace net {
         }
 
         friend class more::header<icmp>;
-
+    
+    public:
         template <typename T>
         icmp(T *h)
         : _H_(reinterpret_cast<icmphdr *>(h))
@@ -865,6 +870,7 @@ namespace net {
 
     class np_packet 
     {
+    protected:
         struct np_packet_hdr 
         {
             uint16_t reserved;
@@ -877,7 +883,6 @@ namespace net {
 
         } __attribute__((packed));
 
-    public:
         static const int __static_size = sizeof(np_packet_hdr);   // static size
         static const int __min_size = sizeof(np_packet_hdr);      // min size
         
@@ -889,6 +894,7 @@ namespace net {
 
         friend class more::header<np_packet>;
 
+    public:
         template <typename T>
         np_packet(T *h)
         : _H_(reinterpret_cast<np_packet_hdr *>(h))
