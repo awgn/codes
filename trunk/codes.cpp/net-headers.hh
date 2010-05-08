@@ -81,7 +81,7 @@ namespace more {
         void ctor(more::cursor<P> &cur, header_helper::int2type<N>)
         {
             if (cur.size() < N)
-                throw std::range_error(T::__name::str().append("::static_size"));
+                throw std::range_error(T::__name_str().append("::static_size"));
            
             cur += N; 
         }
@@ -90,10 +90,10 @@ namespace more {
         void ctor(more::cursor<P> &cur, ssize_t size, header_helper::int2type<N>)
         {
             if ( cur.size() < N)
-                throw std::range_error(T::__name::str().append("::static_size"));
+                throw std::range_error(T::__name_str().append("::static_size"));
             
             if ( size && size != N )
-                throw std::range_error(std::string("size != ").append(T::__name::str()).append("::static_size"));
+                throw std::range_error(std::string("size != ").append(T::__name_str()).append("::static_size"));
 
             cur += N;
         }
@@ -105,7 +105,7 @@ namespace more {
         void ctor(more::cursor<P> &cur, header_helper::int2type<0>)
         {
             if ( cur.size() < T::__min_size )
-                throw std::range_error(std::string(T::__name::str()).append("::size() [minimal size]"));
+                throw std::range_error(std::string(T::__name_str()).append("::size() [minimal size]"));
 
             ssize_t n = _M_value.size(cur.size());
             cur += n;
@@ -116,7 +116,7 @@ namespace more {
         {
             ssize_t n = _M_value.size(cur.size(), size);
             if (cur.size() < n)
-                throw std::range_error(std::string(T::__name::str()).append("::size() [dynamic size]"));
+                throw std::range_error(std::string(T::__name_str()).append("::size() [dynamic size]"));
             cur += n;
         }
 
@@ -160,7 +160,13 @@ namespace more {
         T _M_value;
     };
 
-} // namespace more
+namespace net {
+
+    struct raw_t {};  // to read raw fields
+    namespace 
+    {
+        raw_t raw;
+    }
 
 #define attr_reader(_type, _member) \
     _type \
@@ -192,11 +198,7 @@ namespace more {
     _member(const uint32_t value)\
     { _H_->_member = htonl(value); }
 
-
-namespace net {
-
-    struct raw {};  // to read raw fields
-
+ 
     //  slightly modified version cksum from TCP/IP Illustrated Vol. 2(1995) 
     //  by Gary R. Wright and W. Richard Stevens.  
 
@@ -236,15 +238,12 @@ namespace net {
     public:
         static const int   __static_size = sizeof(ether_header);    // static size
         static const int   __min_size = sizeof(ether_header);       // min size
-
-        struct __name
+        
+        static inline
+        std::string __name_str() 
         {
-            static inline
-            std::string str() 
-            {
-                return "ether";
-            }
-        };
+            return "ether";
+        }
 
         friend class more::header<ethernet>;
 
@@ -274,7 +273,7 @@ namespace net {
         }
     
         const uint8_t *
-        dhost(raw) const
+        dhost(raw_t) const
         {
             return _H_->ether_dhost;
         }
@@ -294,7 +293,7 @@ namespace net {
         }
 
         const uint8_t *
-        shost(raw) const
+        shost(raw_t) const
         {
             return _H_->ether_shost;
         }
@@ -340,14 +339,11 @@ namespace net {
         static const int __static_size = 0;            // dynamic size
         static const int __min_size = sizeof(iphdr);   // min size
 
-        struct __name
+        static inline
+        std::string __name_str() 
         {
-            static inline
-            std::string str() 
-            {
-                return "ipv4";
-            }
-        };
+            return "ipv4";
+        }
 
         friend class ::more::header<ipv4>;
 
@@ -435,9 +431,9 @@ namespace net {
         }
         
         uint32_t
-        saddr(raw) const
+        saddr(raw_t) const
         {
-            return _H_->saddr;
+            return ntohl(_H_->saddr);
         }
 
         void
@@ -446,6 +442,13 @@ namespace net {
             if (inet_pton(AF_INET,ip_addr.c_str(), &_H_->saddr) <= 0)
                throw std::runtime_error("ipv4::saddr: inet_pton");
         }
+
+        void
+        saddr(uint32_t addr)
+        {
+            _H_->saddr = htonl(addr);
+        }
+
 
         std::string
         daddr() const
@@ -456,9 +459,9 @@ namespace net {
         }
  
         uint32_t
-        daddr(raw) const
+        daddr(raw_t) const
         {
-            return _H_->daddr;
+            return ntohl(_H_->daddr);
         }
        
         void
@@ -467,7 +470,13 @@ namespace net {
             if (inet_pton(AF_INET,ip_addr.c_str(), &_H_->daddr) <= 0)
                throw std::runtime_error("ipv4::saddr: inet_pton");
         }
-
+        
+        void
+        daddr(uint32_t addr)
+        {
+            _H_->daddr = htonl(addr);
+        }
+ 
     private:
         iphdr * _H_;
     };
@@ -500,14 +509,11 @@ namespace net {
         static const int __static_size = sizeof(udphdr);   // static size
         static const int __min_size = sizeof(udphdr);      // min size
 
-        struct __name
+        static inline
+        std::string __name_str() 
         {
-            static inline
-            std::string str() 
-            {
-                return "udp";
-            }
-        };
+            return "udp";
+        }
 
         friend class more::header<udp>;
 
@@ -570,14 +576,11 @@ namespace net {
         static const int __static_size = 0;                // dynamic size
         static const int __min_size = sizeof(tcphdr);      // min size
 
-        struct __name
+        static inline
+        std::string __name_str() 
         {
-            static inline
-            std::string str() 
-            {
-                return "tcp";
-            }
-        };
+            return "tcp";
+        }
 
         friend class more::header<tcp>;
 
@@ -696,7 +699,7 @@ namespace net {
         }
 
         uint8_t 
-        flags(raw) const 
+        flags(raw_t) const 
         {
             return *(reinterpret_cast<char *>(_H_) + 13);
         }
@@ -718,7 +721,7 @@ namespace net {
             if (data_len < tcp_data_len)
                 throw std::runtime_error("tcp::checksum: missing bytes");
 
-            check_update(ip.saddr(raw()), ip.daddr(raw()), tcp_data_len); 
+            check_update(ip.saddr(raw), ip.daddr(raw), tcp_data_len); 
         }
 
         bool 
@@ -731,7 +734,7 @@ namespace net {
             if (data_len < tcp_data_len)
                 std::clog << "tcp::checksum: missing bytes, checksum unverifiable" << std::endl;
 
-            return check_verify(ip.saddr(raw()), ip.daddr(raw()), std::min(data_len,tcp_data_len)); 
+            return check_verify(ip.saddr(raw), ip.daddr(raw), std::min(data_len,tcp_data_len)); 
         }
 
     private:
@@ -740,8 +743,8 @@ namespace net {
         {
             pseudo_header ph;
             
-            ph.saddr = src;
-            ph.daddr = dst;
+            ph.saddr = htonl(src);
+            ph.daddr = htonl(dst);
             ph.zero  = 0;
             ph.protocol = IPPROTO_TCP;
             ph.length = htons(this->size() + tcp_data_len); // tcp header + tcp_data 
@@ -758,8 +761,8 @@ namespace net {
         {
             pseudo_header ph;
             
-            ph.saddr = src;
-            ph.daddr = dst;
+            ph.saddr = htonl(src);
+            ph.daddr = htonl(dst);
             ph.zero  = 0;
             ph.protocol = IPPROTO_TCP;
             ph.length = htons(this->size() + tcp_data_len); // tcp header + tcp_data 
@@ -810,15 +813,11 @@ namespace net {
         static const int __static_size = sizeof(icmphdr);   // static size
         static const int __min_size = sizeof(icmphdr);      // min size
 
-        struct __name
+        static inline
+        std::string __name_str() 
         {
-            static inline
-            std::string str() 
-            {
-                return "icmp";
-            }
-        };
-
+            return "icmp";
+        }
 
         friend class more::header<icmp>;
 
@@ -881,15 +880,12 @@ namespace net {
     public:
         static const int __static_size = sizeof(np_packet_hdr);   // static size
         static const int __min_size = sizeof(np_packet_hdr);      // min size
-
-        struct __name
-        {
-            static inline
-            std::string str() 
-            {
-                return "np_mon";
-            }
-        };
+        
+        static inline 
+        std::string __name_str() 
+        { 
+            return "np_mon"; 
+        }
 
         friend class more::header<np_packet>;
 
@@ -942,6 +938,7 @@ namespace net {
 
 
 } // namespace net 
+} // namespace more
 
 #undef attr_reader
 #undef attr_reader_uint16
