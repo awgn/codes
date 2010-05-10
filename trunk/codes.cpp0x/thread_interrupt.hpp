@@ -32,7 +32,7 @@ namespace more {
         }
  
         static bool
-        interruption_requested(std::thread::id h = std::this_thread::get_id())
+        interruption_requested(std::thread::id h)
         {
             mt_map_type & __map = that_thread::get_int_map();
             std::lock_guard<std::mutex> lock(__map.second);
@@ -51,7 +51,16 @@ namespace more {
             return one;
         }
     };
-
+ 
+    namespace this_thread
+    {
+        static bool
+        interruption_requested()
+        {
+            return that_thread::interruption_requested(std::this_thread::get_id());
+        }
+    }
+ 
 
 } // namespace more
 

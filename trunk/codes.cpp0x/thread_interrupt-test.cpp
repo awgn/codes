@@ -23,7 +23,7 @@ struct test
         for(;;)
         {
             std::cout << __PRETTY_FUNCTION__ << std::endl;
-            if ( that_thread::interruption_requested() ) {
+            if ( this_thread::interruption_requested() ) {
                 return;
             }                                        
         }
@@ -40,6 +40,7 @@ main(int argc, char *argv[])
     that_thread::interrupt( abc.get_id() );
     abc.join();
 
+    std::cout << "done!" << std::endl;
     return 0;
 }
  
