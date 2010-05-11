@@ -25,19 +25,24 @@ namespace more {
         typedef std::map<std::thread::id, interrupt_request_type > map_type;
         typedef std::pair<map_type, std::mutex> mt_map_type;
 
-        static interrupt_request_type
-        interrupt_request()
+        struct interrupt_hook
         {
-            return interrupt_request_type(new bool(false));
-        }
+            interrupt_hook()
+            : _M_req(interrupt_request())
+            {
+                interrupt_request_store(std::this_thread::get_id(), _M_req);
+            }
 
-        static
-        void interrupt_request_store(std::thread::id h, interrupt_request_type p)
-        {
-            mt_map_type & __map = that_thread::get_int_map();
-            std::lock_guard<std::mutex> lock(__map.second);
-            __map.first.insert(std::make_pair(h,p));
-        }
+            ~interrupt_hook()
+            {}
+            
+            operator bool()
+            {
+                return *_M_req;
+            }
+            
+            interrupt_request_type _M_req;
+        };
 
         static
         void interrupt(std::thread::id h)
@@ -52,7 +57,21 @@ namespace more {
             __map.first.erase(it);
         }
  
-    private:
+    private:          
+        static interrupt_request_type
+        interrupt_request()
+        {
+            return interrupt_request_type(new bool(false));
+        }
+
+        static
+        void interrupt_request_store(std::thread::id h, interrupt_request_type p)
+        {
+            mt_map_type & __map = that_thread::get_int_map();
+            std::lock_guard<std::mutex> lock(__map.second);
+            __map.first.insert(std::make_pair(h,p));
+        }
+ 
         static
         mt_map_type &
         get_int_map()
@@ -62,29 +81,6 @@ namespace more {
         }
     };
 
-    /////////////////////////////////////
-    // factory for interruptible threads
-
-    template <typename ...Types>
-    std::thread
-    make_interruptible_thread(Types... args)
-    {    
-        // create an interrupt request
-        //
-
-        that_thread::interrupt_request_type req = that_thread::interrupt_request();
-
-        // run the thread, passing the interrupt request as last argument.
-        //
-
-        std::thread t(args..., req);
-
-        // store the request for a later interruption...
-        //
-        that_thread::interrupt_request_store(t.get_id(), req);
-
-        return std::move(t); 
-    }
 
 } // namespace more
 

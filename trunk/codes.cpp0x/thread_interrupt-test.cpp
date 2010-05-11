@@ -19,12 +19,14 @@ using namespace more;
 struct test : public std::unary_function<that_thread::interrupt_request_type, void>
 {
     void
-    operator()(int n, that_thread::interrupt_request_type interrupt_requested) const
+    operator()(int n) const
     {
+        that_thread::interrupt_hook interrupt_requested;
+
         for(;;)
         {
             std::cout << __PRETTY_FUNCTION__ << std::endl;
-            if ( *interrupt_requested ) {
+            if ( interrupt_requested ) {
                 std::cout << "interrupted!" << std::endl;
                 return;
             }                                        
@@ -35,7 +37,7 @@ struct test : public std::unary_function<that_thread::interrupt_request_type, vo
   int
 main(int argc, char *argv[])
 {
-    std::thread abc = make_interruptible_thread(test(), 42);
+    std::thread abc( test(), 42);
 
     sleep(1);
 
