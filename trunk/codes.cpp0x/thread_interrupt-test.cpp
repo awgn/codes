@@ -10,20 +10,22 @@
  
 #include <thread>
 #include <iostream>
+#include <functional>
 
 #include <thread_interrupt.hpp>
 
 using namespace more;
 
-struct test
+struct test : public std::unary_function<that_thread::interrupt_request_type, void>
 {
     void
-    operator()() const
+    operator()(int n, that_thread::interrupt_request_type interrupt_requested) const
     {
         for(;;)
         {
             std::cout << __PRETTY_FUNCTION__ << std::endl;
-            if ( this_thread::interruption_requested() ) {
+            if ( *interrupt_requested ) {
+                std::cout << "interrupted!" << std::endl;
                 return;
             }                                        
         }
@@ -33,14 +35,13 @@ struct test
   int
 main(int argc, char *argv[])
 {
-    std::thread abc( (test()) );
+    std::thread abc = make_interruptible_thread(test(), 42);
 
     sleep(1);
 
     that_thread::interrupt( abc.get_id() );
     abc.join();
 
-    std::cout << "done!" << std::endl;
     return 0;
 }
  
