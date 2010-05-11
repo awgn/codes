@@ -29,7 +29,7 @@ namespace more {
         {
             interrupt_hook()
             : _M_req(interrupt_request())
-            {
+            {   
                 interrupt_request_store(std::this_thread::get_id(), _M_req);
             }
 
@@ -49,10 +49,11 @@ namespace more {
         {
             mt_map_type & __map = that_thread::get_int_map();
             std::lock_guard<std::mutex> lock(__map.second);               
-            
+
             map_type::iterator it = __map.first.find(h);
             if ( it == __map.first.end() )
-                std::runtime_error("interrupt_request not found");
+                throw std::runtime_error("interrupt_request not found");
+            
             *(it->second) = true;
             __map.first.erase(it);
         }
