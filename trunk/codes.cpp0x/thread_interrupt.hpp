@@ -32,11 +32,18 @@ namespace more {
             {   
                 interrupt_request_store(std::this_thread::get_id(), _M_req);
             }
-
+            
+            interrupt_hook(interrupt_request_type hook)
+            : _M_req(hook)
+            {   
+                interrupt_request_store(std::this_thread::get_id(), _M_req);
+            }
+ 
             ~interrupt_hook()
             {}
             
-            operator bool()
+            bool
+            operator()() const
             {
                 return *_M_req;
             }
@@ -58,13 +65,18 @@ namespace more {
             __map.first.erase(it);
         }
  
-    private:          
+   private:   
+
+        template <typename ...Types>
+        friend std::thread
+        make_interruptible_thread(Types&&... args);
+
         static interrupt_request_type
         interrupt_request()
         {
             return interrupt_request_type(new bool(false));
         }
-
+ 
         static
         void interrupt_request_store(std::thread::id h, interrupt_request_type p)
         {
@@ -77,11 +89,32 @@ namespace more {
         mt_map_type &
         get_int_map()
         {
-            static mt_map_type one;
-            return one;
+            static mt_map_type _S_map;
+            return _S_map;
         }
     };
 
+    /////////////////////////////////////
+    // factory for interruptible threads
+
+    template <typename ...Types>
+    inline std::thread
+    make_interruptible_thread(Types&&... args)
+    {    
+        // create an interrupt request
+        //
+        that_thread::interrupt_request_type req = that_thread::interrupt_request();
+
+        // the thread is passed the interrupt request as last argument.
+        //
+        std::thread t(args..., req);
+
+        // store the request for a later interruption...
+        //
+        that_thread::interrupt_request_store(t.get_id(), req);
+
+        return std::move(t); 
+    }
 
 } // namespace more
 

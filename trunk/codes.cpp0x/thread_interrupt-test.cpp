@@ -16,7 +16,10 @@
 
 using namespace more;
 
-struct test : public std::unary_function<that_thread::interrupt_request_type, void>
+////////////////////////////////////////////////////////
+// flavor one: self registering thread
+
+struct thread_one : public std::unary_function<int, void>
 {
     void
     operator()(int n) const
@@ -25,24 +28,51 @@ struct test : public std::unary_function<that_thread::interrupt_request_type, vo
 
         for(;;)
         {
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-            if ( interrupt_requested ) {
-                std::cout << "interrupted!" << std::endl;
+            // std::cout << __PRETTY_FUNCTION__ << std::endl;
+            if ( interrupt_requested() ) {
+                std::cout << "interrupted! " << std::this_thread::get_id() << std::endl;
                 return;
             }                                        
         }
     }
 };
 
+////////////////////////////////////////////////////////
+// flavor two: thread registered by the factory 
+// make_interruptible_thread().
+ 
+struct thread_two : public std::binary_function<int, more::that_thread::interrupt_hook, void>
+{
+    void
+    operator()(int n, more::that_thread::interrupt_hook interrupt_requested) const
+    {
+        for(;;)
+        {
+            // std::cout << __PRETTY_FUNCTION__ << std::endl;
+            if ( interrupt_requested() ) {
+                std::cout << "interrupted! " << std::this_thread::get_id() << std::endl;
+                return;
+            }                                        
+        }
+    }
+};
+ 
+
   int
 main(int argc, char *argv[])
 {
-    std::thread abc( test(), 42);
+    std::thread one(thread_one(), 42);
+
+    std::thread two = make_interruptible_thread(thread_two(), 42);
 
     sleep(1);
+    that_thread::interrupt(one.get_id());
 
-    that_thread::interrupt( abc.get_id() );
-    abc.join();
+    sleep(1);
+    that_thread::interrupt(two.get_id());
+    
+    one.join();
+    two.join();
 
     return 0;
 }
