@@ -24,7 +24,7 @@ struct thread_one : public std::unary_function<int, void>
     void
     operator()(int n) const
     {
-        that_thread::interrupt_hook interrupt_requested;
+        thread_interrupt::hook interrupt_requested;
 
         for(;;)
         {
@@ -41,10 +41,10 @@ struct thread_one : public std::unary_function<int, void>
 // flavor two: thread registered by the factory 
 // make_interruptible_thread().
  
-struct thread_two : public std::binary_function<int, more::that_thread::interrupt_hook, void>
+struct thread_two : public std::binary_function<int, more::thread_interrupt::hook, void>
 {
     void
-    operator()(int n, more::that_thread::interrupt_hook interrupt_requested) const
+    operator()(int n, more::thread_interrupt::hook interrupt_requested) const
     {
         for(;;)
         {
@@ -66,10 +66,10 @@ main(int argc, char *argv[])
     std::thread two = make_interruptible_thread(thread_two(), 42);
 
     sleep(1);
-    that_thread::interrupt(one.get_id());
+    thread_interrupt::interrupt(one.get_id());
 
     sleep(1);
-    that_thread::interrupt(two.get_id());
+    thread_interrupt::interrupt(two.get_id());
     
     one.join();
     two.join();

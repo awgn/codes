@@ -19,27 +19,27 @@
 namespace more { 
 
     struct 
-    that_thread
+    thread_interrupt
     {
-        typedef std::shared_ptr<volatile bool> interrupt_request_type;
-        typedef std::map<std::thread::id, interrupt_request_type > map_type;
+        typedef std::shared_ptr<volatile bool> request_type;
+        typedef std::map<std::thread::id, request_type > map_type;
         typedef std::pair<map_type, std::mutex> mt_map_type;
 
-        struct interrupt_hook
+        struct hook
         {
-            interrupt_hook()
+            hook()
             : _M_req(interrupt_request())
             {   
                 interrupt_request_store(std::this_thread::get_id(), _M_req);
             }
             
-            interrupt_hook(interrupt_request_type hook)
+            hook(request_type hook)
             : _M_req(hook)
             {   
                 interrupt_request_store(std::this_thread::get_id(), _M_req);
             }
  
-            ~interrupt_hook()
+            ~hook()
             {}
             
             bool
@@ -48,13 +48,13 @@ namespace more {
                 return *_M_req;
             }
             
-            interrupt_request_type _M_req;
+            request_type _M_req;
         };
 
         static
         void interrupt(std::thread::id h)
         {
-            mt_map_type & __map = that_thread::get_int_map();
+            mt_map_type & __map = thread_interrupt::get_int_map();
             std::lock_guard<std::mutex> lock(__map.second);               
 
             map_type::iterator it = __map.first.find(h);
@@ -71,16 +71,16 @@ namespace more {
         friend std::thread
         make_interruptible_thread(Types&&... args);
 
-        static interrupt_request_type
+        static request_type
         interrupt_request()
         {
-            return interrupt_request_type(new bool(false));
+            return request_type(new bool(false));
         }
  
         static
-        void interrupt_request_store(std::thread::id h, interrupt_request_type p)
+        void interrupt_request_store(std::thread::id h, request_type p)
         {
-            mt_map_type & __map = that_thread::get_int_map();
+            mt_map_type & __map = thread_interrupt::get_int_map();
             std::lock_guard<std::mutex> lock(__map.second);
             __map.first.insert(std::make_pair(h,p));
         }
@@ -103,7 +103,7 @@ namespace more {
     {    
         // create an interrupt request
         //
-        that_thread::interrupt_request_type req = that_thread::interrupt_request();
+        thread_interrupt::request_type req = thread_interrupt::interrupt_request();
 
         // the thread is passed the interrupt request as last argument.
         //
@@ -111,7 +111,7 @@ namespace more {
 
         // store the request for a later interruption...
         //
-        that_thread::interrupt_request_store(t.get_id(), req);
+        thread_interrupt::interrupt_request_store(t.get_id(), req);
 
         return std::move(t); 
     }
