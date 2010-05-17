@@ -230,11 +230,14 @@ namespace net {
     }
 
     //////////////////////////////////////////////////////////
-    // ethernet header
+    // ethernet header 802.1
     //////////////////////////////////////////////////////////
 
     class ethernet
     {
+    public:
+	static const uint16_t type_8021q = 0x8100;
+
     protected:
         static const int   __static_size = sizeof(ether_header);    // static size
         static const int   __min_size = sizeof(ether_header);       // min size
@@ -258,8 +261,6 @@ namespace net {
         ssize_t
         size(ssize_t bytes = -1, ssize_t s = 0) const
         {
-            // if ( bytes != -1 && bytes < sizeof(ether_header) )
-            //    throw std::range_error("ethernet::size()");
             return sizeof(ether_header);
         }
 
@@ -328,6 +329,83 @@ namespace net {
         return out << "[dhost=" << h.dhost() << 
                        " shost=" << h.shost() << 
                        " type="  << std::hex << h.ether_type() << std::dec <<  "]";
+    }
+
+    //////////////////////////////////////////////////////////
+    // ethernet header 802.1q
+    //////////////////////////////////////////////////////////
+
+    class eth802_1q 
+    {
+    protected:	
+	struct vlan_header
+	{
+	    uint16_t vlan_tag;
+	    uint16_t ether_type;	
+	};
+
+        static const int   __static_size = sizeof(vlan_header);	// static size
+        static const int   __min_size = sizeof(vlan_header);  	// min size
+        
+        static inline
+        std::string __name_str() 
+        {
+            return "eth802_1q";
+        }
+
+        friend class more::header<eth802_1q>;
+
+    public:
+        template <typename T>
+        eth802_1q(T *h)
+        : _H_(reinterpret_cast<vlan_header *>(h))
+        {} 
+
+        // for static-sized headers, just a size() method suffices...
+	//
+
+        ssize_t
+        size(ssize_t bytes = -1, ssize_t s = 0) const
+        {
+            return sizeof(vlan_header);
+        }
+
+        //////////////////////////////////////////////////////
+
+        uint16_t
+        vlan_tag() const
+        {
+            return ntohs(_H_->vlan_tag);
+        }
+
+        void
+        vlan_tag(uint16_t value)
+        {
+            _H_->vlan_tag = htons(value);
+        }
+
+        uint16_t
+        ether_type() const
+        {
+            return ntohs(_H_->ether_type);
+        }
+
+        void
+        ether_type(uint16_t value)
+        {
+            _H_->ether_type = htons(value);
+        }
+
+    private:
+        vlan_header * _H_;
+    };
+
+    template <typename CharT, typename Traits>
+    inline std::basic_ostream<CharT, Traits> &
+    operator<<(std::basic_ostream<CharT, Traits> &out, const eth802_1q & h)
+    {
+        return out << "[vlan_tag=" << std::hex << h.vlan_tag() << 
+                       " ether_type="  << h.ether_type() << std::dec <<  "]";
     }
 
     //////////////////////////////////////////////////////////

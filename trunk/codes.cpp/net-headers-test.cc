@@ -20,17 +20,22 @@ main(int argc, char *argv[])
 
     // write test...
     {
-        char buf[64]={ '\0' };
+        char buf[68]={ '\0' };
 
-        more::cursor<char> cur(buf, buf+64);
+        more::cursor<char> cur(buf, buf+68);
 
         more::header<ethernet> h_eth(cur);
+	more::header<eth802_1q> h_vlan(cur);
 
         h_eth->dhost("0:1:2:3:4:5");
         h_eth->shost("a:b:c:d:e:f");
-        h_eth->ether_type(0x800);
+        h_eth->ether_type(ethernet::vlan_8021q);
+
+	h_vlan->vlan_tag(0xbabe);
+	h_vlan->ether_type(0x800);
 
         std::cout << "eth: " << h_eth->size() << " bytes " << *h_eth << std::endl;
+        std::cout << "vlan: " << *h_vlan << std::endl;
 
         more::header<ipv4> h_ip(cur,20);
 
