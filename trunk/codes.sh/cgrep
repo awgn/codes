@@ -1,4 +1,4 @@
 #!/bin/bash
 # did you know that the old grep is still an order of magnitude faster than the fancy ack-grep ? 
 
-/bin/grep -n -r --color=auto --include=\*.{c,cc,cp,cxx,cpp,CPP,c++,C,h,hh,H,hp,hxx,hpp,HPP,h++,d,rb,sh} $*
+/bin/grep -n -r --color=auto --include=\*.{c,cc,cp,cxx,cpp,CPP,c++,C,h,hh,H,hp,hxx,hpp,HPP,h++,d,rb,sh} "$@"
