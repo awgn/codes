@@ -21,6 +21,8 @@ namespace more {
     {
     public:
 
+        typedef void(Timeval::*bool_type)();
+
         Timeval()
         : _M_tv()
         {}
@@ -148,9 +150,9 @@ namespace more {
 
         /////////// conversion
 
-        operator bool() const
+        operator bool_type() const
         {
-            return _M_tv.tv_sec || _M_tv.tv_usec;
+            return (_M_tv.tv_sec || _M_tv.tv_usec) ? &Timeval::update : 0;
         }
 
         operator const timeval () const

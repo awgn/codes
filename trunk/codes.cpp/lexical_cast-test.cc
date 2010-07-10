@@ -40,13 +40,15 @@ thread_routine_more(void *)
 {    
     more::Timeval b = more::Timeval::now();
 
+    long long int a = 0;
     for(int i=0; i< max_iter; ++i) 
     {
-        more::lexical_cast<int>("123456");
+        a += more::lexical_cast<long long int>("123456");
     }
 
     more::Timeval e = more::Timeval::now();
     std::cout << max_iter << " more::lexical_cast<int>() " << (e-b).to_msec() << " msec" << std::endl;
+    std::cout << a << std::endl;
     return 0;
 }
 
