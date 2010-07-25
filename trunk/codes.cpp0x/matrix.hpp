@@ -35,7 +35,11 @@ namespace more {
                 throw std::runtime_error(what);
         }
     };
-
+    
+    ///////////////////////////////////////////////////////////////////////////////
+    // matrix iterators
+    ///////////////////////////////////////////////////////////////////////////////
+ 
     template <typename Tp, typename Iter, typename ConstIter>
     struct _base_matrix_iterators
     {
@@ -210,8 +214,9 @@ namespace more {
  
     };
 
+    ///////////////////////////////////////////////////////////////////////////////
     // static-size matrix
-    // 
+    ///////////////////////////////////////////////////////////////////////////////
 
     template <typename Tp, size_t R = 0 , size_t C = 0>
     class matrix : _base_matrix_iterators<Tp,typename std::array<Tp, R*C>::iterator, 
@@ -465,9 +470,11 @@ namespace more {
         scoped_assert _M_assert;
         std::array<Tp, R*C> _M_mat; 
     };    
-
+    
+    ///////////////////////////////////////////////////////////////////////////////
     // dynamic-size matrix
-
+    ///////////////////////////////////////////////////////////////////////////////
+ 
     template <typename Tp>
     class matrix<Tp,0,0> : _base_matrix_iterators<Tp,typename std::vector<Tp>::iterator, 
                                                      typename std::vector<Tp>::const_iterator>
@@ -728,7 +735,11 @@ namespace more {
         size_t _M_c;
         std::vector<Tp> _M_mat;        
     };
-    
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // free functions:
+    ///////////////////////////////////////////////////////////////////////////////
+ 
     // type trait: 
     //
 
@@ -748,7 +759,7 @@ namespace more {
     //
     
     template <typename CharT, typename Traits, typename Tp, size_t R, size_t C>
-    typename std::basic_ostream<CharT, Traits> &
+    inline typename std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT,Traits> &out, const matrix<Tp,R,C> & rhs)
     {   
         typename matrix<Tp,R,C>::const_iterator it = rhs.begin();
