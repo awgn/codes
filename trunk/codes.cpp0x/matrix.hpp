@@ -19,6 +19,7 @@
 #include <functional>
 #include <iterator>
 #include <numeric>
+#include <limits>
 #include <type_traits>
 #include <initializer_list>
 
@@ -870,7 +871,7 @@ namespace more {
                 ret(j,i) = mat(i,j);
         return ret;
     }
- 
+
     template <typename Tp, size_t R>
     inline bool
     is_simmetric(const matrix<Tp, R, R> &mat)
@@ -887,6 +888,70 @@ namespace more {
         return mat == tr(mat);
     }
  
+    template <typename Tp, size_t R, size_t C>
+    inline bool
+    is_square(const matrix<Tp, R, C> &mat)
+    {
+        return mat.row() == mat.col();
+    }
+
+    template <typename Tp>
+    inline typename __gnu_cxx::__enable_if< std::is_integral<Tp>::value, Tp>::__type  
+    __divide(Tp a, Tp b)
+    {
+        double safe = static_cast<double>(a)/static_cast<double>(b);
+        Tp r = a/b;
+
+        if ( safe != static_cast<double>(r) )
+        {
+            throw std::runtime_error("matrix::__divide: underflow error!");
+        }
+        return r;
+    }
+
+    template <typename Tp>
+    inline typename __gnu_cxx::__enable_if< !std::is_integral<Tp>::value, Tp>::__type  
+    __divide(Tp a, Tp b)
+    {
+        return a/b;
+    }
+
+    template <typename Tp, size_t R>
+    Tp det(matrix<Tp, R, R> mat)
+    {
+        scoped_assert( is_square(mat), "matrix::det non a square matrix!");    
+        const unsigned int order = mat.row();
+        Tp _det = static_cast<Tp>(1);
+
+        unsigned int j;
+        for(unsigned int k = 0; k < order; ++k)
+        {
+            if (mat(k,k) == 0) {
+                bool ok = false;
+                for(j = k; j < order; ++j)
+                {
+                    if (mat(j,k) != Tp())
+                        ok = true;
+                }
+                if (!ok)
+                    return Tp();
+
+                for(unsigned int i = k; i < order; ++i)
+                    std::swap(mat(i,j), mat(i,k));
+
+                _det = - _det;
+            } 
+            _det *= mat(k,k);
+            if ( k+1 < order )
+            {
+                for (unsigned int i = k+1; i < order; ++i)
+                    for (unsigned int j = k+1; j < order; ++j)
+                        mat(i,j)-= __divide(mat(i,k)*mat(k,j), mat(k,k));
+            }
+        }
+        return _det;
+    }
+
 } // namespace more
 
 

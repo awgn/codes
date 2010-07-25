@@ -332,6 +332,21 @@ main(int argc, char *argv[])
         assert( (a * b) == p);
     }
 
+    // is_square:
+    {
+        more::matrix<int,2,3> a;
+        more::matrix<int> b(2,2);
+
+        assert( is_square(a) == false );
+        assert( is_square(b) == true  );
+    }
+
+    {
+        more::matrix<double> a(3,3);
+        a = {1, 7, 3, 2, 5, 2, 3, 8, 10};
+        assert( det(a) == -61 );
+    }
+
     return 0;
 }
 
