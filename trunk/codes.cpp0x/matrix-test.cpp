@@ -234,7 +234,6 @@ main(int argc, char *argv[])
         assert( std::equal(a.row_begin(1), a.row_end(1), r2.begin()) );
         assert( std::equal(b.row_begin(0), b.row_end(0), r1.begin()) );
         assert( std::equal(b.row_begin(1), b.row_end(1), r2.begin()) );
-
     }
 
     {        
@@ -268,7 +267,71 @@ main(int argc, char *argv[])
         assert( std::equal(it1_beg, it1_end, r1.begin()) );
         assert( std::equal(it2_beg, it2_end, r2.begin()) );
     }
+    
+    // product: static * static
+    {
+        more::matrix<int,2,3> a;
+        a = { 1, 2, 3, 4, 5, 6 };
+
+        more::matrix<int,3,2> b;
+        b = { 1, 1, 1, 1, 1, 1 };
+
+        more::matrix<int,2,2> p;
+
+        p = { 6, 6, 15, 15 };
+
+        std::cout << (a*b);
+        assert( (a * b) == p);
+    }
+
+    // product: dynamic * dynamic
+    {
+        more::matrix<int> a(2,3);
+        a = { 1, 2, 3, 4, 5, 6 };
+
+        more::matrix<int> b(3,2);
+        b = { 1, 1, 1, 1, 1, 1 };
+
+        more::matrix<int> p(2,2);
+
+        p = { 6, 6, 15, 15 };
+
+        std::cout << (a*b);
+        assert((a * b) == p);
+    }
+
+    // product: dynamic * static
+    {
+        more::matrix<int> a(2,3);
+        a = { 1, 2, 3, 4, 5, 6 };
+
+        more::matrix<int,3,2> b;
+        b = { 1, 1, 1, 1, 1, 1 };
+
+        more::matrix<int> p(2,2);
+
+        p = { 6, 6, 15, 15 };
+
+        std::cout << (a*b);
+        assert((a * b) == p);
+    }
  
+    // product: static * dynamic 
+    {
+        more::matrix<int,2,3> a;
+        a = { 1, 2, 3, 4, 5, 6 };
+
+        more::matrix<int> b(3,2);
+        b = { 1, 1, 1, 1, 1, 1 };
+
+        more::matrix<int> p(2,2);
+
+        p = { 6, 6, 15, 15 };
+
+        std::cout << (a*b);
+        assert( (a * b) == p);
+    }
+
     return 0;
 }
 

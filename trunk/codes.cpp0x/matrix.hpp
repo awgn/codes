@@ -18,6 +18,8 @@
 #include <algorithm>
 #include <functional>
 #include <iterator>
+#include <numeric>
+#include <type_traits>
 #include <initializer_list>
 
 using namespace std::placeholders;
@@ -150,7 +152,7 @@ namespace more {
                 _M_col = rhs._M_col;
             }
  
-            explicit _const_col_iterator(iterator it, size_t c)
+            explicit _const_col_iterator(const_iterator it, size_t c)
             : _M_it(it), _M_col(c)
             {}
 
@@ -208,7 +210,7 @@ namespace more {
             }
 
         private:
-            iterator _M_it;
+            const_iterator _M_it;
             size_t   _M_col;
         };
  
@@ -334,7 +336,7 @@ namespace more {
         }
         
         const_row_iterator
-        row_begin(size_t r) const
+        row_begin(size_t r) const       
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
             return _M_mat.begin() + (r * col());
@@ -367,7 +369,7 @@ namespace more {
         col_begin(size_t c) const
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return col_iterator(_M_mat.begin() + c, col());
+            return const_col_iterator(_M_mat.begin() + c, col());
         }
 
         col_iterator 
@@ -381,7 +383,7 @@ namespace more {
         col_end(size_t c) const
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return col_iterator(_M_mat.begin() + (c+R*C), col());
+            return const_col_iterator(_M_mat.begin() + (c+R*C), col());
         }
  
         ////////////////////////////////////////////
@@ -621,7 +623,7 @@ namespace more {
         col_begin(size_t c) const
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return col_iterator(_M_mat.begin() + c, col());
+            return const_col_iterator(_M_mat.begin() + c, col());
         }
 
         col_iterator 
@@ -635,7 +637,7 @@ namespace more {
         col_end(size_t c) const
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return col_iterator(_M_mat.begin() + (c+row()*col()), col());
+            return const_col_iterator(_M_mat.begin() + (c+row()*col()), col());
         }
  
         ////////////////////////////////////
@@ -750,7 +752,7 @@ namespace more {
     };
 
     template <typename Tp, size_t R, size_t C>
-    struct is_matrix< matrix<Tp, R, C> >
+    struct is_matrix< more::matrix<Tp, R, C> >
     {
         enum { value = true };
     }; 
@@ -792,13 +794,13 @@ namespace more {
     }
  
     template <typename Tp, size_t R, size_t C, typename A>
-    inline matrix<Tp,R,C>
+    inline typename __gnu_cxx::__enable_if<!is_matrix<A>::value, typename more::matrix<Tp,R,C>>::__type
     operator*(const matrix<Tp,R,C> &lhs, A rhs)
     {
         return matrix<Tp,R,C>(lhs)*=rhs;
     }
     template <typename Tp, size_t R, size_t C, typename A>
-    inline matrix<Tp,R,C>
+    inline typename __gnu_cxx::__enable_if<!is_matrix<A>::value,typename more::matrix<Tp,R,C>>::__type
     operator*(A lhs, const matrix<Tp,R,C> &rhs)
     {
         return matrix<Tp,R,C>(rhs)*=lhs;
@@ -811,6 +813,42 @@ namespace more {
         return matrix<Tp,R,C>(lhs)/=rhs;
     }
  
+    ///////// A * B: stc * stc size matrix:
+
+    template <typename Tp, size_t R, size_t X, size_t C>
+    inline typename __gnu_cxx::__enable_if< R != 0 && C != 0, typename more::matrix<Tp, R, C>>::__type
+    operator*(const matrix<Tp,R,X> &lhs, const matrix<Tp, X, C> &rhs)
+    {
+        matrix<Tp, R, C> mat;
+        for(unsigned int i = 0; i < R; i++)
+            for(unsigned int j = 0; j < C; j++)
+                mat(i,j) = std::inner_product(lhs.row_begin(i), lhs.row_end(i), rhs.col_begin(j), Tp()); 
+
+        return mat;
+    }
+
+    ///////// A * B: [dyn * dyn, dyn * stc, stc * dyn]-size matrix:
+    
+    template <typename Tp, size_t R1, size_t C1, size_t R2, size_t C2>
+    inline typename __gnu_cxx::__enable_if< R1 == 0 || C2 == 0, typename more::matrix<Tp, 0, 0>>::__type
+    operator*(const matrix<Tp,R1,C1> &lhs, const matrix<Tp,R2,C2> &rhs)
+    {
+        scoped_assert(lhs.col() == rhs.row(), "matrix::* size mismatch!");    
+
+        size_t row = lhs.row();
+        size_t col = rhs.col();
+
+        matrix<Tp> mat(row,col);
+
+        for(unsigned int i = 0; i < row; i++)
+            for(unsigned int j = 0; j < col; j++)
+                mat(i,j) = std::inner_product(lhs.row_begin(i), lhs.row_end(i), rhs.col_begin(j), Tp()); 
+
+        return mat;
+    } 
+
+    /////////
+
     template <typename Tp, size_t R, size_t C>
     inline matrix<Tp, C, R>
     tr(const matrix<Tp, R, C> &mat)
