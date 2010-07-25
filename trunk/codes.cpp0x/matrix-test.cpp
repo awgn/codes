@@ -58,6 +58,7 @@ main(int argc, char *argv[])
 
     {
         more::matrix<int, 2, 2> m;
+
         m(0,0) = 1;
         m(0,1) = 2;
         m(1,0) = 3;
@@ -86,10 +87,7 @@ main(int argc, char *argv[])
 
     {
         more::matrix<int> m(2,2);
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1, 2, 3, 4};
 
         more::matrix<int,2,2> m2(m);
 
@@ -114,30 +112,21 @@ main(int argc, char *argv[])
 
     {
         more::matrix<int,2,2> m;
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1, 2, 3, 4};
 
         std::cout << "----" << std::endl;
         std::cout << (m + m);
     }
     {
         more::matrix<int> m(2,2);
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1, 2, 3, 4};
 
         std::cout << "----" << std::endl;
         std::cout << (m - m);
     }
     {
         more::matrix<int> m(2,2);
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1, 2, 3, 4};
 
         std::cout << "----" << std::endl;
         std::cout << 2 * m;
@@ -145,10 +134,7 @@ main(int argc, char *argv[])
     }
     {
         more::matrix<double> m(2,2);
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1.0, 2.0, 3.0, 4.0};
 
         std::cout << "----" << std::endl;
         std::cout << m/2;
@@ -156,10 +142,7 @@ main(int argc, char *argv[])
 
     {
         more::matrix<double> m(2,2);
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1, 2, 3, 4};
 
         std::cout << "----" << std::endl;
         std::cout << -m;
@@ -167,10 +150,7 @@ main(int argc, char *argv[])
 
     {
         more::matrix<double> m(2,2);
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1, 2, 3, 4};
 
         std::cout << "----" << std::endl;
         std::cout << tr(m);
@@ -178,10 +158,7 @@ main(int argc, char *argv[])
 
     {
         more::matrix<double,2,3> m;
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1, 2, 0, 3, 4, 0};
 
         std::cout << "----" << std::endl;
         std::cout << tr(m);
@@ -191,10 +168,7 @@ main(int argc, char *argv[])
 
     {
         more::matrix<double,2,2> m;
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1, 2, 3, 4};
 
         std::cout << std::boolalpha;
         std::cout << is_simmetric(m) << std::endl;
@@ -203,10 +177,7 @@ main(int argc, char *argv[])
 
     {
         more::matrix<double,2,2> m;
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 2;
-        m(1,1) = 1;
+        m = {1, 2, 2, 1};
 
         std::cout << std::boolalpha;
         std::cout << is_simmetric(m) << std::endl;
@@ -215,10 +186,7 @@ main(int argc, char *argv[])
 
     {
         more::matrix<double> m(2,2);
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1, 2, 3, 4};
 
         std::cout << std::boolalpha;
         std::cout << is_simmetric(m) << std::endl;
@@ -227,10 +195,7 @@ main(int argc, char *argv[])
 
     {
         more::matrix<double> m(2,2);
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 2;
-        m(1,1) = 1;
+        m = {1, 2, 2, 1};
 
         std::cout << std::boolalpha;
         std::cout << is_simmetric(m) << std::endl;
@@ -239,10 +204,7 @@ main(int argc, char *argv[])
 
     {
         more::matrix<double> m(2,3);
-        m(0,0) = 1;
-        m(0,1) = 2;
-        m(1,0) = 3;
-        m(1,1) = 4;
+        m = {1, 2, 0, 3, 4, 0};
          
         assert(m == m);
         assert(!(m!=m));
