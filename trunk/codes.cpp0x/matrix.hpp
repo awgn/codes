@@ -915,6 +915,9 @@ namespace more {
     {
         return a/b;
     }
+    
+    // determinant: see http://cboard.cprogramming.com/cplusplus-programming/30001-determinant-calculation.html
+    //              for further details.
 
     template <typename Tp, size_t R>
     Tp det(matrix<Tp, R, R> mat)
