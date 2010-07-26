@@ -521,7 +521,7 @@ namespace more {
         }
 
         matrix &
-        operator=(const matrix<Tp,0,0> &rhs)
+        operator=(const matrix &rhs)
         {
             scoped_assert(rhs.row() == row() && rhs.col() == col(), "matrix::op= size mismatch!");    
             std::copy(rhs.begin(), rhs.end(), _M_mat.begin());
@@ -683,7 +683,7 @@ namespace more {
         }
 
         matrix &
-        operator+=(const matrix<Tp,0,0> &rhs)
+        operator+=(const matrix &rhs)
         {
             scoped_assert(rhs.row() == row() && rhs.col() == col(), "matrix::+= size mismatch!");    
             std::transform(_M_mat.begin(), _M_mat.end(), rhs.begin(), _M_mat.begin(), std::plus<Tp>());
@@ -702,7 +702,7 @@ namespace more {
         }
 
         matrix &
-        operator-=(const matrix<Tp,0,0> &rhs)
+        operator-=(const matrix &rhs)
         {
             scoped_assert(rhs.row() == row() && rhs.col() == col(), "matrix::-= size mismatch!");    
             std::transform(_M_mat.begin(), _M_mat.end(), rhs.begin(), _M_mat.begin(), std::minus<Tp>());
@@ -808,7 +808,7 @@ namespace more {
     }
  
     template <typename Tp, size_t R, size_t C, typename A>
-    inline matrix<Tp,R,C>
+    inline typename __gnu_cxx::__enable_if<!is_matrix<A>::value,typename more::matrix<Tp,R,C>>::__type
     operator/(const matrix<Tp,R,C> &lhs, A rhs)
     {
         return matrix<Tp,R,C>(lhs)/=rhs;
@@ -897,7 +897,7 @@ namespace more {
 
     template <typename Tp>
     inline typename __gnu_cxx::__enable_if< std::is_integral<Tp>::value, Tp>::__type  
-    __divide(Tp a, Tp b)
+    _divide(Tp a, Tp b)
     {
         double safe = static_cast<double>(a)/static_cast<double>(b);
         Tp r = a/b;
@@ -911,7 +911,7 @@ namespace more {
 
     template <typename Tp>
     inline typename __gnu_cxx::__enable_if< !std::is_integral<Tp>::value, Tp>::__type  
-    __divide(Tp a, Tp b)
+    _divide(Tp a, Tp b)
     {
         return a/b;
     }
@@ -949,7 +949,7 @@ namespace more {
             {
                 for (unsigned int i = k+1; i < order; ++i)
                     for (unsigned int j = k+1; j < order; ++j)
-                        mat(i,j)-= __divide(mat(i,k)*mat(k,j), mat(k,k));
+                        mat(i,j)-= _divide(mat(i,k)*mat(k,j), mat(k,k));
             }
         }
         return _det;
