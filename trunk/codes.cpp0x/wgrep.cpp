@@ -83,12 +83,10 @@ void grep(const std::string &file_name, const std::unordered_set<std::string> &d
     {
         std::istringstream ss(line);
 
-        // load token from the istreamstream
-        std::vector<std::string> vec( (std::istream_iterator<basic_token<cpp::delimiter>>(ss)),
-                                      (std::istream_iterator<basic_token<cpp::delimiter>>() ));
-
         // find the first occurrence in the wordlist
-        if ( std::find_if(vec.begin(), vec.end(), std::bind(&std::unordered_set<std::string>::count, std::ref(dict), _1) ) != vec.end() )
+        if ( std::find_if( std::istream_iterator<basic_token<cpp::delimiter>>(ss), 
+                           std::istream_iterator<basic_token<cpp::delimiter>>(), std::bind(&std::unordered_set<std::string>::count, std::ref(dict), _1) ) != 
+                           std::istream_iterator<basic_token<cpp::delimiter>>() )
         {
             std::cout << file_name << ':' << c << ':' << line << std::endl;
         }
@@ -105,17 +103,16 @@ main(int argc, char *argv[])
     }
 
     std::unordered_set<std::string> wordset;
-    {
-        // open the worldlist file...
-        std::ifstream wordlist(argv[1]);
-        if (!wordlist) {
-            std::cerr << "wgrep: could not open wordlist "<< argv[1] << "!\n";
-            exit(2);
-        }
-
-        // load the dictionary...
-        wordset.insert(std::istream_iterator<std::string>(wordlist), std::istream_iterator<std::string>());
+    
+    // open the worldlist file...
+    std::ifstream wordlist(argv[1]);
+    if (!wordlist) {
+        std::cerr << "wgrep: could not open wordlist "<< argv[1] << "!\n";
+        exit(2);
     }
+
+    // load the dictionary...
+    wordset.insert(std::istream_iterator<std::string>(wordlist), std::istream_iterator<std::string>());
 
     std::for_each(argv+2, argv+argc, std::bind(grep, _1, std::ref(wordset))); 
     return 0;
