@@ -25,51 +25,59 @@ namespace cpp
 {
     extern const char delimiter[] = " '\".,;:[](){}<>";
 }
-
+ 
 template <const char *Delim>
-class basic_token
+struct basic_token
 {
-public:
-    basic_token()
-    : _M_value()
-    {}
-    
-    ~basic_token()
-    {}
-
     operator const std::string &() const
     {
-        return _M_value;
+        return _M_str;
     }
 
     template <typename CharT, typename Traits>
     friend inline std::basic_istream<CharT, Traits> & 
-    operator>>(std::basic_istream<CharT,Traits> &__in, basic_token &rhs)
-    {
-        char c;            
-        rhs._M_value.clear();
+    operator>>(std::basic_istream<CharT,Traits> &in, basic_token &rhs)
+    {   
+        typedef typename std::basic_istream<CharT,Traits>::int_type int_type;
+        typedef typename std::basic_istream<CharT,Traits>::ios_base ios_base;
 
-        __in >> std::noskipws;
-        while( __in >> c && strchr(Delim,c) )
+        const int_type eof = Traits::eof();
+        typename ios_base::iostate err = ios_base::goodbit; 
+
+        rhs._M_str.erase();
+
+        int_type c = in.rdbuf()->sgetc();
+        while( !Traits::eq_int_type(c, eof) && strchr(Delim,Traits::to_char_type(c)) )
         {
-            // skip delimiter
+            c = in.rdbuf()->snextc();
+        } 
+
+        if ( Traits::eq_int_type(c, eof) ) {
+            err |= ios_base::failbit;
+            in.setstate(err);
+            return in;
+        } 
+        
+        rhs._M_str.append(1,Traits::to_char_type(c));
+        while ( !(c = in.rdbuf()->snextc(), Traits::eq_int_type(c,eof))  && 
+                !strchr(Delim,Traits::to_char_type(c)) )
+        {
+            rhs._M_str.append(1,Traits::to_char_type(c));
         }
-        if (__in) {
-            rhs._M_value.append(1,c);
-            while ( (__in >> c) && !strchr(Delim,c) )
-            {
-                rhs._M_value.append(1,c);
-            }
+        
+        if ( Traits::eq_int_type(c,eof) ) {
+            err |= ios_base::eofbit;
+            in.width(0);
+            in.setstate(err);            
         }
-        return __in;
+        return in;
     }
 
 private:
-    std::string _M_value;    
+    std::string _M_str;    
 };
 
-
-void grep(const std::string &file_name, const std::unordered_set<std::string> &dict)
+void grep(const std::string &file_name, const std::unordered_set<std::string> &dict, bool show)
 {
     std::ifstream file(file_name);
     if (!file)
@@ -82,39 +90,53 @@ void grep(const std::string &file_name, const std::unordered_set<std::string> &d
     for(int c = 1; std::getline(file, line); c++)
     {
         std::istringstream ss(line);
+        std::vector<std::string> match;
 
-        // find the first occurrence in the wordlist
-        if ( std::find_if( std::istream_iterator<basic_token<cpp::delimiter>>(ss), 
-                           std::istream_iterator<basic_token<cpp::delimiter>>(), std::bind(&std::unordered_set<std::string>::count, std::ref(dict), _1) ) != 
-                           std::istream_iterator<basic_token<cpp::delimiter>>() )
-        {
-            std::cout << file_name << ':' << c << ':' << line << std::endl;
-        }
+        std::copy_if(std::istream_iterator<basic_token<cpp::delimiter>>(ss), 
+                     std::istream_iterator<basic_token<cpp::delimiter>>(), 
+                     std::back_inserter(match),
+                     std::bind(&std::unordered_set<std::string>::count, std::ref(dict),_1));
+       
+        if (match.empty())
+            continue;
+
+        std::cout << file_name << ':' << c << ':'; 
+        if (show) 
+            std::copy(match.begin(), match.end(), std::ostream_iterator<std::string>(std::cout, "|"));
+        std::cout << line << std::endl;
     }
 }
 
   int
 main(int argc, char *argv[])
 {
-    if (argc<3)
+    bool verbose = false;
+
+    std::vector<std::string> args(argv+1, argv+argc);
+    auto opt = std::remove(args.begin(), args.end(), std::string("-v"));
+    if (opt != args.end()) {
+        verbose = true;
+        args.erase(opt);
+    }
+
+    if (args.size() < 2)
     {
-        std::cerr << "usage: wgrep wordlist file..." << std::endl;
+        std::cerr << "usage: wgrep [-v] wordlist file..." << std::endl;
         exit(1);
     }
 
-    std::unordered_set<std::string> wordset;
-    
     // open the worldlist file...
-    std::ifstream wordlist(argv[1]);
+    std::ifstream wordlist(args[0]);
     if (!wordlist) {
-        std::cerr << "wgrep: could not open wordlist "<< argv[1] << "!\n";
-        exit(2);
+        std::cerr << "wgrep: could not open wordlist "<< argv[0] << "!\n";
+        exit(1);
     }
 
     // load the dictionary...
-    wordset.insert(std::istream_iterator<std::string>(wordlist), std::istream_iterator<std::string>());
+    std::unordered_set<std::string> wordset((std::istream_iterator<std::string>(wordlist)), (std::istream_iterator<std::string>()));
 
-    std::for_each(argv+2, argv+argc, std::bind(grep, _1, std::ref(wordset))); 
+    // run grep
+    std::for_each(args.begin()+1, args.end(), std::bind(grep, _1, std::ref(wordset), verbose)); 
     return 0;
 }
 
