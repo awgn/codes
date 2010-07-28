@@ -160,6 +160,7 @@ namespace more {
         T _M_value;
     };
 
+
 namespace net {
 
     struct raw_t {};  // to read raw fields
@@ -236,7 +237,7 @@ namespace net {
     class ethernet
     {
     public:
-	static const uint16_t type_8021q = 0x8100;
+	    static const uint16_t type_8021q = 0x8100;
 
     protected:
         static const int   __static_size = sizeof(ether_header);    // static size
@@ -248,7 +249,8 @@ namespace net {
             return "ether";
         }
 
-        friend class more::header<ethernet>;
+        friend class ::more::header<ethernet>;
+        friend class ::more::header<const ethernet>;
 
     public:
         template <typename T>
@@ -337,12 +339,12 @@ namespace net {
 
     class eth802_1q 
     {
-    protected:	
-	struct vlan_header
-	{
-	    uint16_t vlan_tag;
-	    uint16_t ether_type;	
-	};
+    protected:
+        struct vlan_header
+        {
+            uint16_t vlan_tag;
+            uint16_t ether_type;	
+        };
 
         static const int   __static_size = sizeof(vlan_header);	// static size
         static const int   __min_size = sizeof(vlan_header);  	// min size
@@ -353,7 +355,8 @@ namespace net {
             return "eth802_1q";
         }
 
-        friend class more::header<eth802_1q>;
+        friend class ::more::header<eth802_1q>;
+        friend class ::more::header<const eth802_1q>;
 
     public:
         template <typename T>
@@ -362,7 +365,7 @@ namespace net {
         {} 
 
         // for static-sized headers, just a size() method suffices...
-	//
+	    //
 
         ssize_t
         size(ssize_t bytes = -1, ssize_t s = 0) const
@@ -425,6 +428,7 @@ namespace net {
         }
 
         friend class ::more::header<ipv4>;
+        friend class ::more::header<const ipv4>;
 
     public:
         template <typename T>
@@ -596,6 +600,7 @@ namespace net {
         }
 
         friend class more::header<udp>;
+        friend class more::header<const udp>;
             
     public:
         template <typename T>
@@ -663,7 +668,8 @@ namespace net {
             return "tcp";
         }
 
-        friend class more::header<tcp>;
+        friend class ::more::header<tcp>;
+        friend class ::more::header<const tcp>;
 
     public:
         template <typename T>
@@ -902,6 +908,7 @@ namespace net {
         }
 
         friend class more::header<icmp>;
+        friend class more::header<const icmp>;
     
     public:
         template <typename T>
@@ -971,6 +978,7 @@ namespace net {
         }
 
         friend class more::header<np_packet>;
+        friend class more::header<const np_packet>;
 
     public:
         template <typename T>

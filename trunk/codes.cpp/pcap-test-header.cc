@@ -16,6 +16,8 @@
 
 #include <net-headers.hh>
 
+using namespace more::net;
+
 class mycap : public more::pcap_live
 {
 public:
@@ -28,10 +30,10 @@ public:
     {
         more::cursor<const char> cur(p, p + h->caplen);
 
-        more::header<const more::net::ethernet> eth_h (cur);
-        more::header<const more::net::ipv4> ip_h(cur);
-        more::header<const more::net::tcp> tcp_h(cur);
-        // more::header<const net::icmp> icmp_h(cur);
+        more::header<const ethernet> eth_h (cur);
+        more::header<const ipv4> ip_h(cur);
+        more::header<const tcp> tcp_h(cur);
+        // more::header<const icmp> icmp_h(cur);
 
         std::cout << *h << "\n    " <<  *eth_h << 
                            "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check_verify() << 

@@ -13,7 +13,7 @@
 
 using namespace more::net;
 
-int
+  int
 main(int argc, char *argv[])
 {
     std::cout << "write test..." << std::boolalpha << std::endl;
@@ -25,14 +25,14 @@ main(int argc, char *argv[])
         more::cursor<char> cur(buf, buf+68);
 
         more::header<ethernet> h_eth(cur);
-	more::header<eth802_1q> h_vlan(cur);
+        more::header<eth802_1q> h_vlan(cur);
 
         h_eth->dhost("0:1:2:3:4:5");
         h_eth->shost("a:b:c:d:e:f");
-        h_eth->ether_type(ethernet::vlan_8021q);
+        h_eth->ether_type(ethernet::type_8021q);
 
-	h_vlan->vlan_tag(0xbabe);
-	h_vlan->ether_type(0x800);
+        h_vlan->vlan_tag(0xbabe);
+        h_vlan->ether_type(0x800);
 
         std::cout << "eth: " << h_eth->size() << " bytes " << *h_eth << std::endl;
         std::cout << "vlan: " << *h_vlan << std::endl;
@@ -44,7 +44,7 @@ main(int argc, char *argv[])
         h_ip->saddr("192.168.0.1");
         h_ip->daddr("192.168.0.100");
         h_ip->tot_len(50);
-        
+
         h_ip->check_update();
 
         std::cout << " ip: " << h_ip->size() << " bytes " << *h_ip << std::endl;
