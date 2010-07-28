@@ -13,7 +13,6 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <cstring>
 #include <algorithm>
 #include <iterator>
 #include <functional>
@@ -21,12 +20,19 @@
 
 using namespace std::placeholders;
 
-namespace cpp 
-{
-    extern const char delimiter[] = " '\".,;:[](){}<>";
+namespace cpp {
+
+    struct identifier
+    {
+        template <typename int_type>
+        bool operator()(int_type c)
+        {
+            return std::isalnum(c) || c == '_';    
+        }
+    };
 }
- 
-template <const char *Delim>
+
+template <typename Pred>
 struct basic_token
 {
     operator const std::string &() const
@@ -46,8 +52,11 @@ struct basic_token
 
         rhs._M_str.erase();
 
+        Pred is_token;
+
+        // skip delimiters:
         int_type c = in.rdbuf()->sgetc();
-        while( !Traits::eq_int_type(c, eof) && strchr(Delim,Traits::to_char_type(c)) )
+        while( !Traits::eq_int_type(c, eof) && !is_token(c) )
         {
             c = in.rdbuf()->snextc();
         } 
@@ -60,7 +69,7 @@ struct basic_token
         
         rhs._M_str.append(1,Traits::to_char_type(c));
         while ( !(c = in.rdbuf()->snextc(), Traits::eq_int_type(c,eof))  && 
-                !strchr(Delim,Traits::to_char_type(c)) )
+                is_token(c) )
         {
             rhs._M_str.append(1,Traits::to_char_type(c));
         }
@@ -92,14 +101,14 @@ void grep(const std::string &file_name, const std::unordered_set<std::string> &d
         std::istringstream ss(line);
         std::vector<std::string> match;
 
-        std::copy_if(std::istream_iterator<basic_token<cpp::delimiter>>(ss), 
-                     std::istream_iterator<basic_token<cpp::delimiter>>(), 
+        std::copy_if(std::istream_iterator<basic_token<cpp::identifier>>(ss), 
+                     std::istream_iterator<basic_token<cpp::identifier>>(), 
                      std::back_inserter(match),
                      std::bind(&std::unordered_set<std::string>::count, std::ref(dict),_1));
        
-        if (match.empty())
+        if (match.empty()) {
             continue;
-
+        }
         std::cout << file_name << ':' << c << ':'; 
         if (show) 
             std::copy(match.begin(), match.end(), std::ostream_iterator<std::string>(std::cout, "|"));
