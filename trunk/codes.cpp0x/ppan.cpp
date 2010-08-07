@@ -149,14 +149,29 @@ parse_source(const std::string &name)
                                         std::make_tuple(name,c)));
                 break;
             case _else:
+                if (tmp.empty()) {
+                    std::ostringstream error;
+                    error << "parse error at " << name << ':' << c; 
+                    throw std::runtime_error(error.str()); 
+                }
                 std::get<1>(tmp.top().first) = true;
                 break;
             case _elif:
+                if (tmp.empty()) {
+                    std::ostringstream error;
+                    error << "parse error at " << name << ':' << c; 
+                    throw std::runtime_error(error.str()); 
+                }
                 std::get<1>(tmp.top().first) = true;
                 tmp.push(std::make_pair(std::make_tuple(it->second, false, ss.str()),
                                         std::make_tuple(name,c)));
                 break;
             case _endif:
+                if (tmp.empty()) {
+                    std::ostringstream error;
+                    error << "parse error at " << name << ':' << c; 
+                    throw std::runtime_error(error.str()); 
+                }
                 ret.push_back(tmp.top());
                 tmp.pop();
                 break;
