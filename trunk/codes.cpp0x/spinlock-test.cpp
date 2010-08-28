@@ -8,10 +8,10 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <thread>
 #include <spinlock.hpp>  // more!
 
 #include <iostream>
+#include <thread>
 #include <cassert>
 
 // typedef more::spinlock< more::policy::lock_usleep<100> > spinlock_type;

@@ -8,9 +8,9 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef TYPE_TRAITS_HH
-#define TYPE_TRAITS_HH
-
+#ifndef _TYPE_TRAITS_HPP_
+#define _TYPE_TRAITS_HPP_ 
+ 
 #include <type_traits>   
 #include <utility>
 #include <tuple>         
@@ -144,4 +144,4 @@ namespace more
 
 } // namespace more 
 
-#endif /* TYPE_TRAITS_HH */
+#endif /* _TYPE_TRAITS_HPP_ */
