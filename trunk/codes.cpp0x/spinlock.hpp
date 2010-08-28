@@ -49,7 +49,7 @@ namespace more {
             enum { threshold = 0 };
             static void wait(int,int,int)
             {
-                std::this_thread::sleep_for( std::chrono::microseconds(N) );
+                std::this_thread::sleep_for(std::chrono::microseconds(N));
             }
         };
 

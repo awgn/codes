@@ -14,7 +14,6 @@
 #include <cctype>
 #include <string>
 
-
 namespace more { 
 
     template <typename Pred>
