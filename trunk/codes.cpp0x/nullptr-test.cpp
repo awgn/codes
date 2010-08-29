@@ -8,27 +8,16 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <errcode.h>
-
 #include <iostream>
-#include <string>
 #include <cassert>
+#include <nullptr.hpp>
 
 int
 main(int argc, char *argv[])
 {
-    assert( std::string("ENOTRECOVERABLE") == more::strerrcode(ENOTRECOVERABLE) );
-    assert( std::string("EAI_AGAIN") == more::gai_strerrcode(EAI_AGAIN) );
-    
-    try 
-    {
-        more::strerrcode(180);
-    }
-    catch(...) 
-    {
-        std::cout << "ok." << std::endl;
-    }
+    char  * a = nullptr;
+    assert(a == nullptr);
 
     return 0;
 }
- 
+

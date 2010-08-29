@@ -1,0 +1,46 @@
+#
+# kv-file example
+#
+
+# unsigned_int = 69
+
+associative = "goofy"  => 1 
+associative = "mickey" => 2 
+
+integers = 10     
+integers = 0x10     
+integers = 010     
+
+ empty =        # is ignored in non-strict mode 
+
+# strings: use quotation " to include spaces, use \" to include
+#          quotation
+
+strings =  hello
+strings = "hello world" 
+strings = "\"quoted string\"" 
+
+booleans = false  
+booleans = 1  
+
+block = {  
+          one:   1
+          two:   2 
+          # hello:  abc       
+        } 
+
+blocks = {  
+          one:   1 
+          two:   1 
+          three: 1 
+        } 
+
+blocks = {  
+          one:   2 
+          two:   2 
+          three: 2
+        } 
+
+ unknown = key  # ignored in non-strict mode 
+
+

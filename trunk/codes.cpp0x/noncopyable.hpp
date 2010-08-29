@@ -23,8 +23,8 @@ namespace more {
         ~noncopyable() = default;
 
     private:
-        noncopyable(const noncopyable &) = deleted;
-        const noncopyable & operator=(const noncopyable &) = deleted;
+        noncopyable(const noncopyable &) = delete;
+        const noncopyable & operator=(const noncopyable &) = delete;
     };
 
 } // namespace more
