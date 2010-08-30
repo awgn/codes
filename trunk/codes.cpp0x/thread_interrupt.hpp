@@ -54,15 +54,15 @@ namespace more {
         static
         void interrupt(std::thread::id h)
         {
-            mt_map_type & __map = thread_interrupt::get_int_map();
-            std::lock_guard<std::mutex> lock(__map.second);               
+            mt_map_type & _map = thread_interrupt::get_int_map();
+            std::lock_guard<std::mutex> lock(_map.second);               
 
-            map_type::iterator it = __map.first.find(h);
-            if ( it == __map.first.end() )
+            auto it = _map.first.find(h);
+            if ( it == _map.first.end() )
                 throw std::runtime_error("interrupt_request not found");
             
             *(it->second) = true;
-            __map.first.erase(it);
+            _map.first.erase(it);
         }
  
    private:   

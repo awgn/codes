@@ -37,14 +37,14 @@ main(int argc, char *argv[])
     std::cout << "    1 <= " << table::get<1>() << std::endl;
 
     std::cout << "\ndirect map:\n";
-    table::direct_map::iterator it = table::direct.begin();
+    auto it = table::direct.begin();
     for(; it != table::direct.end(); ++it)
     {
         std::cout << "   <" << it->first << "," << it->second << ">\n";
     }
 
     std::cout << "\nreverse map:\n";
-    table::reverse_map::iterator ot = table::reverse.begin();
+    auto ot = table::reverse.begin();
     for(; ot != table::reverse.end(); ++ot)
     {
         std::cout << "   <" << ot->first << "," << ot->second << ">\n";

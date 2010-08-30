@@ -31,24 +31,24 @@ namespace more
             typedef T value_type;
         };
 
-        template <typename U, bool c, bool v> struct __add_cv;
+        template <typename U, bool c, bool v> struct add_cv;
         template <typename U>
-        struct __add_cv<U, true, false>
+        struct add_cv<U, true, false>
         {
             typedef typename std::add_const<U>::type type;
         };
         template <typename U>
-        struct __add_cv<U, false, true>
+        struct add_cv<U, false, true>
         {
             typedef typename std::add_volatile<U>::type type;
         };
         template <typename U>
-        struct __add_cv<U, true, true>
+        struct add_cv<U, true, true>
         {
             typedef typename std::add_cv<U>::type type;
         };
         template <typename U>
-        struct __add_cv<U, false, false>
+        struct add_cv<U, false, false>
         {
             typedef U type;
         };
@@ -56,7 +56,7 @@ namespace more
         template <typename U, typename V>
         struct add_cv_qualifier
         {
-            typedef typename __add_cv<U, std::is_const<V>::value, std::is_volatile<V>::value>::type type;
+            typedef typename add_cv<U, std::is_const<V>::value, std::is_volatile<V>::value>::type type;
         };
 
     private:

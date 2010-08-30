@@ -86,7 +86,7 @@ namespace more
 
         static int eval(const std::string &a)
         { static const Q & r __attribute__((used)) = instance(); 
-            direct_map::iterator it = direct.find(a);
+            auto it = direct.find(a);
             if (it == direct.end()) {
                 std::clog << __PRETTY_FUNCTION__  << ": unknown value (" << a << ")" << std::endl;
                 return int(); 
@@ -96,7 +96,7 @@ namespace more
         static std::string 
         eval(const int a) 
         { static const Q & r __attribute__((used)) = instance(); 
-            reverse_map::iterator it = reverse.find(a);
+            auto it = reverse.find(a);
             if (it == reverse.end()) {
                 std::clog << __PRETTY_FUNCTION__  << ": unknown value [" << a << "]" << std::endl;
                 return std::string(); 

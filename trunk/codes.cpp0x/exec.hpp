@@ -391,7 +391,7 @@ namespace more {
             if (p < 0)
                 return NULL;
 
-            std::set<exec *>::iterator it = _M_group.begin();
+            auto it = _M_group.begin();
             for(; it != _M_group.end(); ++it) 
             {
                 if ( p == (*it)->pid() ) { // found!
