@@ -13,43 +13,42 @@
 
 #include <typelist.hpp>
 #include <ostream>
+#include <type_traits>
 
 namespace more { 
 
     namespace ecma
     {
-        template <int n> struct integral_value { enum { attribute_value = n }; };
-
-        typedef integral_value<0> reset;
-        typedef integral_value<1> bold;
-        typedef integral_value<2> half_bright;
-        typedef integral_value<4> underline;
-        typedef integral_value<5> blink;
-        typedef integral_value<7> reverse;
-        typedef integral_value<8> hidden;
+        typedef std::integral_constant<int,0> reset;
+        typedef std::integral_constant<int,1> bold;
+        typedef std::integral_constant<int,2> half_bright;
+        typedef std::integral_constant<int,4> underline;
+        typedef std::integral_constant<int,5> blink;
+        typedef std::integral_constant<int,7> reverse;
+        typedef std::integral_constant<int,8> hidden;
     
         namespace fg 
         {
-            typedef integral_value<30> black; 
-            typedef integral_value<31> red; 
-            typedef integral_value<32> green; 
-            typedef integral_value<33> yellow; 
-            typedef integral_value<34> blue; 
-            typedef integral_value<35> magenta; 
-            typedef integral_value<36> cyan; 
-            typedef integral_value<37> light_grey; 
+            typedef std::integral_constant<int,30> black; 
+            typedef std::integral_constant<int,31> red; 
+            typedef std::integral_constant<int,32> green; 
+            typedef std::integral_constant<int,33> yellow; 
+            typedef std::integral_constant<int,34> blue; 
+            typedef std::integral_constant<int,35> magenta; 
+            typedef std::integral_constant<int,36> cyan; 
+            typedef std::integral_constant<int,37> light_grey; 
         }
 
         namespace bg
         {
-            typedef integral_value<40> black; 
-            typedef integral_value<41> red; 
-            typedef integral_value<42> green; 
-            typedef integral_value<43> yellow; 
-            typedef integral_value<44> blue; 
-            typedef integral_value<45> magenta; 
-            typedef integral_value<46> cyan; 
-            typedef integral_value<47> light_grey; 
+            typedef std::integral_constant<int,40> black; 
+            typedef std::integral_constant<int,41> red; 
+            typedef std::integral_constant<int,42> green; 
+            typedef std::integral_constant<int,43> yellow; 
+            typedef std::integral_constant<int,44> blue; 
+            typedef std::integral_constant<int,45> magenta; 
+            typedef std::integral_constant<int,46> cyan; 
+            typedef std::integral_constant<int,47> light_grey; 
         }
     };
 
@@ -78,7 +77,7 @@ namespace more {
     inline std::basic_ostream<CharT, Traits> & 
     operator<<(std::basic_ostream<CharT, Traits> &out, ecma_parameter<T>)
     {
-        return out << ";" << T::head::attribute_value << ecma_parameter<typename T::tail>();
+        return out << ";" << T::head::value << ecma_parameter<typename T::tail>();
     }
 
     template <typename CharT, typename Traits, typename T>
