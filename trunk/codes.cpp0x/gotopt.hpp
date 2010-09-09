@@ -67,17 +67,16 @@ namespace more { namespace gotopt {
                       const std::string & epilog = std::string())
     {
         std::stringstream out;
-
         out << prolog << std::endl;
 
         long unsigned int maxlen = 0;
-        for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]) ; i++)
+        for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]); i++)
         {
             maxlen = std::max(maxlen, options[i].name ? strlen(options[i].name) : 0UL);    
         }
         maxlen = std::max(maxlen, 16UL); 
 
-        for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]) ; i++)
+        for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]); i++)
         {
             if (options[i].opt) {
 
@@ -124,7 +123,9 @@ namespace more { namespace gotopt {
 #endif
 
     public:        
+
         // iterators...
+        //
 
         const_iterator
         begin() const
@@ -148,20 +149,37 @@ namespace more { namespace gotopt {
         //
 
         template <typename T, typename P>
-        parser(T beg, T end, const P & opt)
-        : _M_args(beg, end), _M_context(256,false), _M_mopt(), _M_it(_M_args.begin()) 
+        parser(T it, T end, const P & opt)
+        : _M_args(), _M_context(256,false), _M_mopt(), _M_it() 
 #ifndef NDEBUG
         , _M_argnum(0)
 #endif 
         {
+            // parse the arguments
+            //
+
+            for(; it != end; ++it)
+            {
+                const char * p = *it;
+                if ( strlen(p) > 2 && p[0] == '-' && p[1] != '-') {
+                    _M_args.push_back(std::string(p,p+2));
+                    _M_args.push_back(std::string(p+2));
+                    continue;
+                }
+                _M_args.push_back(*it);
+            }
+
+            _M_it = _M_args.begin();
+
             // load the map...
             //
+
             for(unsigned int i = 0; i < sizeof(opt)/sizeof(opt[0]) ; i++)
             {
                 if (opt[i].opt > 0) 
                     _M_mopt[ std::string("-").append(1, opt[i].opt) ] = opt[i];
                 if (opt[i].name)
-                    _M_mopt[ std::string("--").append(opt[i].name) ]  = opt[i];
+                    _M_mopt[ std::string("--").append(opt[i].name) ] = opt[i];
             }
         }
 
@@ -181,7 +199,7 @@ namespace more { namespace gotopt {
         {
             assert( _M_argnum == 0 || !"INTERNAL ERROR: some argument not parsed!");
 
-            // stop paring at the end of the range, or at the first non-option encountered
+            // stop parsing at the end of the range, or at the first non-option encountered
             //
 
             if (_M_it == _M_args.end() || !is_option(*_M_it)) 
@@ -201,7 +219,7 @@ namespace more { namespace gotopt {
                 throw std::runtime_error( std::string("invalid option: ").append(*_M_it) );
 
 
-            // ensure all the arguments are available...
+            // ensure the expected arguments are available...
             //
 
             int i = 0;
