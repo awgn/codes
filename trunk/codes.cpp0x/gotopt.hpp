@@ -144,7 +144,12 @@ namespace more { namespace gotopt {
         {
             return _M_args.end();
         }
-
+        
+        size_t size() const
+        {
+           return std::distance(current(), end()); 
+        }
+ 
         // constructors...
         //
 
