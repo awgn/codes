@@ -8,8 +8,8 @@
  * ----------------------------------------------------------------------------
  */
  
-#ifndef _PRINT0x_HPP_
-#define _PRINT0x_HPP_ 
+#ifndef _MORE_PRINT_HPP_
+#define _MORE_PRINT_HPP_ 
 
 #include <iostream>
 #include <sstream>
@@ -17,6 +17,11 @@
 #include <cctype>
 #include <stdexcept>
 #include <cassert>
+                          
+//////////////////////////////////////////////////////////////////
+// print and sprint functions: both are inspired to boost::format
+// but are just ~5x times faster. Nicola
+//
 
 namespace more { 
     
@@ -148,4 +153,4 @@ namespace more {
  
 } // namespace as
 
-#endif /* _PRINT_HPP_ */
+#endif /* _MORE_PRINT_HPP_ */
