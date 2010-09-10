@@ -14,10 +14,11 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <cctype>
 #include <stdexcept>
 #include <cassert>
-                          
+
 //////////////////////////////////////////////////////////////////
 // print and sprint functions: both are inspired to boost::format
 // but are just ~5x times faster. Nicola
@@ -149,6 +150,17 @@ namespace more {
         std::ostringstream out;
         print(out, args...);
         return out.str();  
+    }
+
+    template <typename ... Ts>
+    inline void bprint(char *buffer, size_t len, const Ts& ... args)
+    {
+        memset(buffer,0,len);
+        std::stringbuf sb;
+        sb.pubsetbuf(buffer,len-1);
+        std::ostream out(&sb);
+        print(out, args...);
+        sb.pubsync();
     }
  
 } // namespace as
