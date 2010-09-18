@@ -152,15 +152,29 @@ namespace more {
         return out.str();  
     }
 
+    // portable memory streambuffer
+    //
+
+    struct membuf : public std::streambuf
+    {
+        membuf(char *buffer, size_t size)
+        {
+            this->setp(buffer,buffer+size);
+        }
+            
+        char *end() 
+        {
+            return this->pptr();
+        }
+    };
+
     template <typename ... Ts>
     inline void bprint(char *buffer, size_t len, const Ts& ... args)
     {
-        memset(buffer,0,len);
-        std::stringbuf sb;
-        sb.pubsetbuf(buffer,len-1);
+        membuf sb(buffer,len-1);
         std::ostream out(&sb);
         print(out, args...);
-        sb.pubsync();
+        *sb.end() = '\0';
     }
  
 } // namespace as

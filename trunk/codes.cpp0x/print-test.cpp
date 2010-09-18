@@ -38,8 +38,8 @@ main(int argc, char *argv[])
     for(int i=0; i < 10000000; i++)
     {
         // sprintf(tmp, "%s %s %d\n", "hello", xxx.c_str(), 19230983);
-        more::bprint(tmp,1024,"%1 %2 %3\n", "hello", xxx, 19230983);
-        // more::sprint("%1 %2 %3\n", "hello", xxx, 19230983);
+        // more::bprint(tmp,1024,"%1 %2 %3\n", "hello", xxx, 19230983);
+        more::sprint("%1 %2 %3\n", "hello", xxx, 19230983);
         // boost::format("%1% %2% %3%\n") % "hello" % xxx % 19230983;
     }
     
