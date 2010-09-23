@@ -44,24 +44,19 @@ namespace more {
         template <typename Target, typename Source>
         struct generic_lexical_cast_policy
         {
-            static std::stringstream &
-            _S_ss()
-            {
-                static __thread std::stringstream * ret;
-                if (!ret) 
-                    ret = new std::stringstream;
-                return *ret;
-            }
-
             static 
             Target apply(const Source &arg)
             {
                 Target ret;
-                _S_ss().clear();
+                static __thread std::stringstream * ss;
+                if (!ss) {
+                    ss = new std::stringstream;
+                }
 
-                if(!( _S_ss() << arg &&  _S_ss() >> ret && (_S_ss() >> std::ws).eof() )) 
+                ss->clear();
+                if(!( *ss << arg &&  *ss >> ret && (*ss >> std::ws).eof() )) 
                 {
-                    _S_ss().str(std::string());
+                    ss->str(std::string());
                     throw bad_lexical_cast();
                 }
                 return ret;
