@@ -28,61 +28,94 @@ namespace more {
             bad_lexical_cast()
             {}
 
+            virtual ~bad_lexical_cast() throw()
+            {}
+            
             virtual const char *what() const throw()
             {
                 return "bad lexical cast";
             }
-            
-            virtual ~bad_lexical_cast() throw()
-            {}
     };
 
-    template <typename Target, typename Source>
-    struct lexical_cast_policy
-    {
-        static std::stringstream &
-        _S_ss()
-        {
-            static __thread std::stringstream * ret;
-            if (!ret) 
-                ret = new std::stringstream;
-            return *ret;
-        }
+    /////////////////////////////////////////// policy cast
 
-        static 
-        Target apply(const Source &arg)
-        {
-            Target ret;
-            _S_ss().clear();
+    namespace detail {
 
-            if(!( _S_ss() << arg &&  _S_ss() >> ret && (_S_ss() >> std::ws).eof() )) 
+        template <typename Target, typename Source>
+        struct generic_lexical_cast_policy
+        {
+            static std::stringstream &
+            _S_ss()
             {
-                _S_ss().str(std::string());
-                throw bad_lexical_cast();
+                static __thread std::stringstream * ret;
+                if (!ret) 
+                    ret = new std::stringstream;
+                return *ret;
             }
-            return ret;
-        }
-    };
 
-    // template <typename Target, typename Source>
-    // std::stringstream lexical_cast_policy<Target,Source>::_S_ss;
+            static 
+            Target apply(const Source &arg)
+            {
+                Target ret;
+                _S_ss().clear();
 
-    // null cast optimization...
-    //
-    template <typename T>
-    struct lexical_cast_policy<T,T>
-    {
-        static 
-        const T & apply(const T &arg)
+                if(!( _S_ss() << arg &&  _S_ss() >> ret && (_S_ss() >> std::ws).eof() )) 
+                {
+                    _S_ss().str(std::string());
+                    throw bad_lexical_cast();
+                }
+                return ret;
+            }
+        };
+
+        template <typename Target, typename Source>
+        struct convertible_lexical_cast_policy
         {
-            return arg;
-        }
-    };
+            static 
+            Target apply(const Source &arg)
+            {
+                return arg;
+            };
+        };
+        
+        template <typename T>
+        struct null_lexical_cast_policy
+        {
+            static
+            const T &apply(const T &arg)
+            {
+                return arg;
+            }
+        };
+        
+        /////////////////////////////////////////// lexical_traits
+
+        template <typename Target, typename Source, typename Enable = void> 
+        struct lexical_traits;
+
+        template <typename Target, typename Source> 
+        struct lexical_traits<Target, Source, typename std::enable_if<!std::is_convertible<Source,Target>::value>::type> 
+        {
+            typedef generic_lexical_cast_policy<Target,Source> policy; 
+        };
+
+        template <typename Target, typename Source> 
+        struct lexical_traits<Target, Source, typename std::enable_if<std::is_convertible<Source,Target>::value>::type> 
+        {
+            typedef convertible_lexical_cast_policy<Target,Source> policy; 
+        };
+ 
+        template <typename T> 
+        struct lexical_traits<T,T,void>
+        {
+            typedef null_lexical_cast_policy<T> policy; 
+        };
+    }
 
     template <typename Target, typename Source> 
     Target lexical_cast(const Source &arg)
     {
-        return lexical_cast_policy<Target,Source>::apply(arg);
+        return detail::lexical_traits<Target,Source>::policy::apply(arg);
     }  
 
 } // namespace more

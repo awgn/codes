@@ -23,9 +23,11 @@ thread_routine_boost()
 {
     auto b = chrono::system_clock::now();
 
+    long long int sum = 0;
     for(int i=0; i< max_iter; ++i) 
     {
-        boost::lexical_cast<int>("123456");
+        sum += boost::lexical_cast<int>("123456");
+        // boost::lexical_cast<std::string>("123456");
     }
 
     auto e = chrono::system_clock::now();
@@ -40,10 +42,11 @@ thread_routine_more()
 {    
     auto b = std::chrono::system_clock::now();
 
-    long long int a = 0;
+    long long int sum = 0;
     for(int i=0; i< max_iter; ++i) 
     {
-        a += more::lexical_cast<long long int>("123456");
+        sum += more::lexical_cast<int>("123456");
+        // more::lexical_cast<std::string>("123456");
     }
 
     auto e = std::chrono::system_clock::now();
