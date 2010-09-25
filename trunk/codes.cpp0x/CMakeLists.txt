@@ -1,0 +1,69 @@
+cmake_minimum_required(VERSION 2.4)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    
+    include(CheckIncludeFiles)
+    
+    CHECK_INCLUDE_FILES(pcap.h HAVE_PCAP_H)
+    
+    if (NOT ${HAVE_PCAP_H})
+            message(FATAL_ERROR "libpcap-dev package not installed...")
+    endif(NOT ${HAVE_PCAP_H})
+    
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+include_directories(.)
+
+add_definitions(-D_GLIBCXX_USE_NANOSLEEP -D_GLIBCXX_USE_SCHED_YIELD)
+list(APPEND CMAKE_CXX_FLAGS -std=c++0x)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+        add_executable(algorithm-test algorithm-test.cpp)       
+        add_executable(any-test any-test.cpp)
+        add_executable(colorful-test colorful-test.cpp)
+        add_executable(cursor-test cursor-test.cpp)
+        add_executable(cxa_demangle-test cxa_demangle-test.cpp)
+        add_executable(enumap-test enumap-test.cpp)
+        add_executable(errcode-test errcode-test.cpp)
+        add_executable(error-test error-test.cpp)
+        add_executable(exec-test exec-test.cpp)                 
+        add_executable(exprtempl-test exprtempl-test.cpp)
+        #add_executable(ext_buffer_test ext_buffer-test.cpp)
+        add_executable(factory-test factory-test.cpp)
+        add_executable(format-test format-test.cpp)
+        add_executable(functional-test functional-test.cpp)
+        add_executable(gotopt-test-debug gotopt-test-debug.cpp)
+        add_executable(gotopt-test gotopt-test.cpp)
+        add_executable(iomanip-test iomanip-test.cpp)
+        #add_executable(iovec-utils iovec-utils-test.cpp)
+        
+        add_executable(key_value_test key_value-test.cpp)
+        add_executable(lexical_cast-test lexical_cast-test.cpp)
+        add_executable(lockless-queue-test lockless_queue-test.cpp) 
+        add_executable(matrix matrix-test.cpp)
+
+        add_executable(net-headers-test net-headers-test.cpp)
+        add_executable(nullptr-test nullptr-test.cpp)
+        add_executable(pcap-test-header pcap-test-header.cpp)   
+        add_executable(pcap-test pcap-test.cpp)                 
+        add_executable(singleton-test singleton-test.cpp)       
+        add_executable(socket-test socket-test.cpp)
+        add_executable(spinlock-test spinlock-test.cpp)
+        add_executable(static_allocator-test static_allocator-test.cpp)
+        add_executable(streamer-test streamer-test.cpp)        
+        add_executable(string-utils-test string-utils-test.cpp)
+        add_executable(thread_interrupt-test thread_interrupt-test.cpp)        
+        add_executable(timeval-test timeval-test.cpp)
+        add_executable(tuplarr-test tuplarr-test.cpp)            
+        add_executable(typelist-test typelist-test.cpp)
+        add_executable(typemap-test typemap-test.cpp)
+        add_executable(type_traits_test type_traits-test.cpp)   
+        add_executable(variant-test variant-test.cpp)
+
+target_link_libraries(pcap-test -lpcap)
+target_link_libraries(pcap-test-header -lpcap)
+target_link_libraries(lockless-queue-test -pthread)
+target_link_libraries(spinlock-test -pthread)
+
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
