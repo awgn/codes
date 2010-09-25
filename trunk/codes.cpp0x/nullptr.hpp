@@ -35,6 +35,31 @@ namespace
         }
 
     } nullptr = {};
+
+    template <typename T>
+    bool operator==(T *p, nullptr_t)
+    {
+        return p == (T *)0;
+    }
+
+    template <typename T>
+    bool operator==(nullptr_t, T *p)
+    {
+        return p == (T *)0;
+    }
+
+    template <typename T>
+    bool operator!=(T *p, nullptr_t)
+    {
+        return !(p == nullptr);
+    }
+
+    template <typename T>
+    bool operator!=(nullptr_t, T *p)
+    {
+        return !(p == nullptr);
+    }
+ 
 }
 
 #endif

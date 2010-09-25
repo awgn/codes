@@ -19,8 +19,11 @@ namespace more {
     class noncopyable
     {
     protected:
-        noncopyable() = default;
-        ~noncopyable() = default;
+        noncopyable()
+        {}
+
+        ~noncopyable()
+        {}
 
     private:
         noncopyable(const noncopyable &) = delete;

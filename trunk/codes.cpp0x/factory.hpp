@@ -34,7 +34,7 @@ namespace more {
 
         virtual D * alloc(Arg &&... arg)
         {
-            return new D(arg...);
+            return new D(std::forward<Arg>(arg)...);
         }
     };
 
@@ -89,7 +89,7 @@ namespace more {
             auto it = _M_map.find(key);
             if (it == _M_map.end())
                 return std::shared_ptr<T>();
-            return std::shared_ptr<T>(it->second->alloc(arg...));
+            return std::shared_ptr<T>(it->second->alloc(std::forward<Ti>(arg)...));
         }
 
     private:

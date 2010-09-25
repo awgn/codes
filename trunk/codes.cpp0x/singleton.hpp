@@ -64,8 +64,11 @@ namespace more
         singleton_base &operator=(const singleton_base &) = delete;    // noncopyable  
 
     protected:
-        singleton_base() = default;
-        ~singleton_base() = default;
+        singleton_base()
+        {}
+
+        ~singleton_base()
+        {}
     };
 
     

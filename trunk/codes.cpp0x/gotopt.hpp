@@ -325,14 +325,14 @@ namespace more { namespace gotopt {
     //
        
     template <typename T1, typename T2>
-    typename more::expr::enable_if_expression_2<T1,T2,
+    typename more::expr::enable_if_binary<T1,T2,
         more::expr::binary_expr<
             typename more::expr::unary_expr< T1, more::expr::op_not >, 
                      T2, 
-                     more::expr::op_logical_or > >::type
+                     more::expr::op_or > >::type
     operator>>(T1 _l, T2 _r)
     {
-        return !_l || _r;
+        return !_l |_r;
     } 
 
     // _a % _b (mutex)
@@ -341,13 +341,13 @@ namespace more { namespace gotopt {
     //
 
     template <typename T1, typename T2>
-    typename more::expr::enable_if_expression_2<T1,T2,
+    typename more::expr::enable_if_binary<T1,T2,
         more::expr::unary_expr< 
-            typename more::expr::binary_expr<T1, T2, more::expr::op_logical_and>, 
+            typename more::expr::binary_expr<T1, T2, more::expr::op_and>, 
             more::expr::op_not > >::type
     operator%(T1 _l, T2 _r)
     {
-        return !(_l && _r); 
+        return !(_l & _r); 
     }
 
     // recursive validation of tuple of expression templates

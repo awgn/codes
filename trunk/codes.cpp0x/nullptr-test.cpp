@@ -8,15 +8,15 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <iostream>
 #include <cassert>
 #include <nullptr.hpp>
 
 int
 main(int argc, char *argv[])
 {
-    char  * a = nullptr;
-    assert(a == nullptr);
+    char * a = nullptr;
+    assert( a == nullptr );
+    assert( nullptr == a );
 
     return 0;
 }
