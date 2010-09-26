@@ -56,16 +56,6 @@ namespace more { namespace expr {
         Op _M_op;
     };
 
-    // ensure the type are equal
-    //
-
-    template <typename T1, typename T2> struct equal;
-    template <typename T>
-    struct equal<T,T> 
-    {
-        typedef T type; 
-    };
-
     // binary_expr expression template...
     //
 
@@ -73,7 +63,9 @@ namespace more { namespace expr {
     class binary_expr
     {
     public:
-        typedef typename equal<typename T1::expression_type,typename T2::expression_type>::type expression_type;
+        typedef typename std::conditional<
+            std::is_same<typename T1::expression_type, typename T2::expression_type>::value,
+                typename T1::expression_type, void >::type expression_type;
 
         binary_expr(T1 _l, T2 _r, Op _op = Op() )
         : _M_lhs(_l), _M_rhs(_r), _M_op(_op)
@@ -183,6 +175,30 @@ namespace more { namespace expr {
         T operator()(T _l, T _r) const
         {
             return _l ^ _r;
+        }         
+    };
+    struct op_logic_or
+    {
+        template <typename T>
+        T operator()(T _l, T _r) const
+        {
+            return _l || _r;
+        }         
+    };
+    struct op_logic_and
+    {
+        template <typename T>
+        T operator()(T _l, T _r) const
+        {
+            return _l && _r;
+        }         
+    };
+    struct op_logic_xor
+    {
+        template <typename T>
+        T operator()(T _l, T _r) const
+        {
+            return static_cast<bool>(_l) ^ static_cast<bool>(_r);
         }         
     };
     
@@ -302,7 +318,26 @@ namespace more { namespace expr {
     {
         static const char * symbol()
         { return "^"; }
+    };       
+    template <>
+    struct op_traits<op_logic_or>
+    {
+        static const char * symbol()
+        { return "or"; }
+    };    
+    template <>
+    struct op_traits<op_logic_and>
+    {
+        static const char * symbol()
+        { return "and"; }
+    };    
+    template <>
+    struct op_traits<op_logic_xor>
+    {
+        static const char * symbol()
+        { return "xor"; }
     };
+ 
     template <>
     struct op_traits<op_eq>
     {
@@ -382,6 +417,14 @@ namespace more { namespace expr {
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };
     };
 
+    template <bool value1, bool value2, typename Ty> struct enable_if2
+    {};
+    template <typename Ty>
+    struct enable_if2<true, true, Ty>
+    {
+        typedef Ty type;
+    };
+
     template <typename T, typename Ty>
     class enable_if_unary 
         : public std::enable_if<is_expression_template<T>::value, Ty> 
@@ -389,8 +432,8 @@ namespace more { namespace expr {
 
     template <typename T1, typename T2, typename Ty>
     class enable_if_binary 
-        : public std::enable_if< static_cast<bool>(is_expression_template<T1>::value) && 
-                                 static_cast<bool>(is_expression_template<T2>::value), Ty> 
+        : public enable_if2< is_expression_template<T1>::value, 
+                             is_expression_template<T2>::value, Ty> 
     {};
 
     // operators...
@@ -401,21 +444,45 @@ namespace more { namespace expr {
     operator|(T1 _l, T2 _r)
     {
         return binary_expr<T1, T2, op_or>(_l, _r);
+    }     
+    template <typename T1, typename T2>
+    typename enable_if_binary<T1,T2, 
+             binary_expr<T1, T2, op_logic_or> >::type
+    operator||(T1 _l, T2 _r)
+    {
+        return binary_expr<T1, T2, op_logic_or>(_l, _r);
     }
+ 
     template <typename T1, typename T2>
     typename enable_if_binary<T1,T2, 
              binary_expr<T1, T2, op_and> >::type
     operator&(T1 _l, T2 _r)
     {
         return binary_expr<T1, T2, op_and>(_l, _r);
+    }     
+    template <typename T1, typename T2>
+    typename enable_if_binary<T1,T2, 
+             binary_expr<T1, T2, op_logic_and> >::type
+    operator&&(T1 _l, T2 _r)
+    {
+        return binary_expr<T1, T2, op_logic_and>(_l, _r);
     }
+ 
     template <typename T1, typename T2>
     typename enable_if_binary<T1,T2, 
              binary_expr<T1, T2, op_xor> >::type
     operator^(T1 _l, T2 _r)
     {
         return binary_expr<T1, T2, op_xor>(_l, _r);
+    }     
+    template <typename T1, typename T2>
+    typename enable_if_binary<T1,T2, 
+             binary_expr<T1, T2, op_logic_xor> >::type
+    logic_xor(T1 _l, T2 _r)
+    {
+        return binary_expr<T1, T2, op_logic_xor>(_l, _r);
     }
+ 
     template <typename T1, typename T2>
     typename enable_if_binary<T1,T2, 
              binary_expr<T1, T2, op_eq> >::type

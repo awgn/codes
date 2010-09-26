@@ -37,7 +37,7 @@ main(int argc, char *argv[])
     std::cout << std::boolalpha;
     std::cout << (( !_false ^ _true ) == _false) << " -> " << eval( ( !_false ^ _true ) == _false ) << std::endl;
  
-    std::cout << (_false | _true) << " -> " << eval(_false | _true) << std::endl;
+    std::cout << (_false || _true) << " -> " << eval(_false || _true) << std::endl;
     std::cout << (_true ^ _true) << " -> " << eval(_true ^ _true) << std::endl;
 
     std::cout << (~_false) << " -> " << eval(~_false) << std::endl;
