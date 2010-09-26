@@ -95,7 +95,8 @@ namespace more {
         };
 
         template <typename Target, typename Source> 
-        struct lexical_traits<Target, Source, typename std::enable_if<std::is_convertible<Source,Target>::value>::type> 
+        struct lexical_traits<Target, Source, typename std::enable_if<std::is_convertible<Source,Target>::value && 
+                                                                     !std::is_same<Source,Target>::value>::type> 
         {
             typedef convertible_lexical_cast_policy<Target,Source> policy; 
         };
