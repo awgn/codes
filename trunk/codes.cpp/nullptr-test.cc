@@ -20,12 +20,6 @@ main(int argc, char *argv[])
         std::cout << "nullptr ok" << std::endl;
     }
 
-    int * b = deadptr;
-    if ( b == deadptr )
-    {
-        std::cout << "deadptr ok" << std::endl;
-    }
-
     return 0;
 }
 

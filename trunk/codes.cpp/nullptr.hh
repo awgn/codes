@@ -11,23 +11,55 @@
 #ifndef _NULLPTR_HH_
 #define _NULLPTR_HH_ 
 
-namespace more {
+#if defined(__GNUC__) && !defined(__GXX_EXPERIMENTAL_CXX0X__) || \
+    defined(__GNUC__) && (__GNUC__ == 4 && __CNUC_MINOR__ < 6)  
 
-    template <unsigned int N>
-    struct static_ptr_t
+// c++0x nullptr which can only be assigned to pointers (not yet part of the standard).
+// Nicola
+
+namespace
+{
+    const
+    struct nullptr_t
     {
         template <typename T>
-        operator T *()
+        operator T *() const
         {
-            return reinterpret_cast<T *>(N);
+            return 0;
         }
-    };
+
+        template <class C, class T>
+        operator T C::*() const
+        {
+            return 0;
+        }
+
+    } nullptr = {};
+
+    template <typename T>
+    bool operator==(T *p, nullptr_t)
+    {
+        return p == (T *)0;
+    }
+
+    template <typename T>
+    bool operator==(nullptr_t, T *p)
+    {
+        return p == (T *)0;
+    }
+
+    template <typename T>
+    bool operator!=(T *p, nullptr_t)
+    {
+        return !(p == nullptr);
+    }
+
+    template <typename T>
+    bool operator!=(nullptr_t, T *p)
+    {
+        return !(p == nullptr);
+    }
+ 
 }
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-#define nullptr more::static_ptr_t<0>()
-#endif
-
-#define deadptr more::static_ptr_t<0xdeadbeef>()
-
+#endif  
 #endif /* _NULLPTR_HH_ */

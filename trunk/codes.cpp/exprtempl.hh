@@ -170,28 +170,12 @@ namespace more { namespace expr {
             return _l | _r;
         }         
     };
-    struct op_logical_or
-    {
-        template <typename T>
-        bool operator()(T _l, T _r) const
-        {
-            return _l || _r;
-        }         
-    };
     struct op_and
     {
         template <typename T>
         T operator()(T _l, T _r) const
         {
             return _l & _r;
-        }         
-    };
-    struct op_logical_and
-    {
-        template <typename T>
-        bool operator()(T _l, T _r) const
-        {
-            return _l && _r;
         }         
     };
     struct op_xor
@@ -202,15 +186,6 @@ namespace more { namespace expr {
             return _l ^ _r;
         }         
     };
-    struct op_logical_xor
-    {
-        template <typename T>
-        bool operator()(T _l, T _r) const
-        {
-            return static_cast<bool>(_l) ^ static_cast<bool>(_r);
-        }         
-    };
-
     struct op_eq
     {
         template <typename T>
@@ -317,34 +292,16 @@ namespace more { namespace expr {
         { return "|"; }
     };    
     template <>
-    struct op_traits<op_logical_or>
-    {
-        static const char * symbol()
-        { return "||"; }
-    };
-    template <>
     struct op_traits<op_and>
     {
         static const char * symbol()
         { return "&"; }
     };    
     template <>
-    struct op_traits<op_logical_and>
-    {
-        static const char * symbol()
-        { return "&&"; }
-    };
-    template <>
     struct op_traits<op_xor>
     {
         static const char * symbol()
         { return "^"; }
-    };
-    template <>
-    struct op_traits<op_logical_xor>
-    {
-        static const char * symbol()
-        { return "XOR"; }
     };
 
     template <>
@@ -445,14 +402,6 @@ namespace more { namespace expr {
     }
     template <typename T1, typename T2>
     typename enable_if_expression_2<T1,T2, 
-             binary_expr<T1, T2, op_logical_or> >::type
-    operator||(T1 _l, T2 _r)
-    {
-        return binary_expr<T1, T2, op_logical_or>(_l, _r);
-    }
-
-    template <typename T1, typename T2>
-    typename enable_if_expression_2<T1,T2, 
              binary_expr<T1, T2, op_and> >::type
     operator&(T1 _l, T2 _r)
     {
@@ -460,24 +409,10 @@ namespace more { namespace expr {
     }
     template <typename T1, typename T2>
     typename enable_if_expression_2<T1,T2, 
-             binary_expr<T1, T2, op_logical_and> >::type
-    operator&&(T1 _l, T2 _r)
-    {
-        return binary_expr<T1, T2, op_logical_and>(_l, _r);
-    }
-    template <typename T1, typename T2>
-    typename enable_if_expression_2<T1,T2, 
              binary_expr<T1, T2, op_xor> >::type
     operator^(T1 _l, T2 _r)
     {
         return binary_expr<T1, T2, op_xor>(_l, _r);
-    }
-    template <typename T1, typename T2>
-    typename enable_if_expression_2<T1,T2, 
-             binary_expr<T1, T2, op_logical_xor> >::type
-    logical_xor(T1 _l, T2 _r)
-    {
-        return binary_expr<T1, T2, op_logical_xor>(_l, _r);
     }
     template <typename T1, typename T2>
     typename enable_if_expression_2<T1,T2, 
