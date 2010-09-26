@@ -36,7 +36,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         add_executable(gotopt-test-debug gotopt-test-debug.cpp)
         add_executable(gotopt-test gotopt-test.cpp)
         add_executable(iomanip-test iomanip-test.cpp)
-        #add_executable(iovec-utils iovec-utils-test.cpp)
+        add_executable(iovec iovec-test.cpp)
         
         add_executable(key_value_test key_value-test.cpp)
         add_executable(lexical_cast-test lexical_cast-test.cpp)
