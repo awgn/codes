@@ -299,7 +299,7 @@ namespace more {
         };
 
 
-        template <typename ...Tp> struct copyctor;                   template <typename ...Tp> struct copyctor;
+        template <typename ...Tp> struct copyctor;                   
         template <typename T, typename ...Tp>
         struct copyctor<T, Tp...> 
         {
