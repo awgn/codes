@@ -230,8 +230,8 @@ namespace more {
             virtual ~streamer() {}
         };
 
-        template <typename T> struct streamer_impl : public streamer {
-            
+        template <typename T> struct streamer_impl : public streamer 
+        {
             virtual void printon(std::ostream &out, const any &arg)
             {
                 out << * any_cast<T>(&arg);

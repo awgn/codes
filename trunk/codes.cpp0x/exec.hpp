@@ -22,16 +22,18 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
-#include <cstdio>
 #include <set>
 #include <utility>
 #include <functional>
 #include <type_traits>   
 #include <array>         
 #include <memory>        
+#include <stdexcept>
+#include <cerrno>
+#include <cstring>
+#include <cstdio>
 
 #include <string-utils.hpp>  // more!
-#include <error.hpp>         // more!
 
 using namespace std::placeholders;
 
@@ -145,7 +147,7 @@ namespace more {
             {
                 int fd = _M_redir[i].first;
                 if ( ::pipe( _M_pipe.at(fd) ) < 0 )
-                    throw std::runtime_error(std::string("pipe: ").append(pretty_strerror(errno)));
+                    throw std::runtime_error(std::string("pipe: ").append(strerror(errno)));
             }
             
             // rationale: vfork() shares memory between parent and child.
@@ -168,7 +170,7 @@ namespace more {
                     _M_pipe.at(fd)[1] = 0;
                 }
                 
-                throw std::runtime_error(std::string("fork: ").append(pretty_strerror(errno)));
+                throw std::runtime_error(std::string("fork: ").append(strerror(errno)));
             }
 
             if (_M_pid == 0) { // child
@@ -232,7 +234,7 @@ namespace more {
             }
 
             if (::waitpid(_M_pid,&_M_status,0) < 0 ) {
-                std::clog << "exec::waitpid: " << pretty_strerror(errno) << std::endl;
+                std::clog << "exec::waitpid: " << strerror(errno) << std::endl;
                 return false;
             }   
             return true;
@@ -314,7 +316,7 @@ namespace more {
                 usleep(_M_delay*1000);
 
             if ( _M_exec(argv[0], const_cast<char * const *>(argv)) == -1 ) {
-                std::clog << "exec::exec: " << pretty_strerror(errno) << std::endl;
+                std::clog << "exec::exec: " << strerror(errno) << std::endl;
                 return -1;
             }
 

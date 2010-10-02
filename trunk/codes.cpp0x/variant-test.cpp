@@ -43,13 +43,14 @@ int
 main(int argc, char *argv[])
 {
     {
-        more::variant<hello,int,std::string> abc;
+        more::variant<hello, int, std::string> abc;
         std::cout << "storage size: " << abc.storage_size() << std::endl;
 
         std::cout << "which:" << abc.which() << " typeid:" << abc.type().name() << std::endl;
 
         std::cout << "... store an integer ..." << std::endl;
         abc = 10;
+
         std::cout << "which:" << abc.which() << " typeid:" << abc.type().name() << std::endl;
 
         std::cout << "... store a string ..." << std::endl;
@@ -58,58 +59,63 @@ main(int argc, char *argv[])
 
     }
 
-    //  get<>
-    {   
-        more::variant<int,char> abc;
-        abc = 10;
+     //  get<>
+     {   
+         more::variant<int,char> abc;
+         abc = 10;
+ 
+         std::cout << "int:" << abc.get<int>() << std::endl;
+         abc = 'a';
+ 
+         try 
+         {
+             std::cout << "int:" << abc.get<int>() << std::endl;
+         }
+         catch(std::bad_cast) 
+         {
+             std::cout << "char:" << abc.get<char>() << std::endl;
+         }
+     }   
 
-        std::cout << "int:" << abc.get<int>() << std::endl;
-        abc = 'a';
+     // stream
+     {
+         more::variant<int,double,std::string> abc;
+ 
+         abc = 10;
+         std::cout << "std::cout << " << abc << " << std::endl;" << std::endl;
+ 
+         abc = 1.2;
+         std::cout << "std::cout << " << abc << " << std::endl;" << std::endl;
+ 
+         abc = std::string("hello world!");
+         std::cout << "std::cout << " << abc << " << std::endl;" << std::endl;
+     }
 
-        try {
-            std::cout << "int:" << abc.get<int>() << std::endl;
-        }
-        catch(std::bad_cast) {
-            std::cout << "char:" << abc.get<char>() << std::endl;
-        }
-    }   
+     // visitor 
+     {
+         more::variant<int,std::string> abc;
+ 
+         abc = 10;
+         abc.apply_visitor(visitor());
+ 
+         abc = std::string("hello world!");
+         abc.apply_visitor(visitor());
+     }
+ 
+     // copy constructor | operator= 
+     {
+         more::variant<hello, world> a((hello()));
+         more::variant<hello, world> b((world()));
+ 
+         more::variant<hello, world> c(a);
 
-    // stream
-    {
-        more::variant<int,double,std::string> abc;
+         a.apply_visitor(visitor());
+         b.apply_visitor(visitor());
+         c.apply_visitor(visitor());
 
-        abc = 10;
-        std::cout << "std::cout << " << abc << " << std::endl;" << std::endl;
-
-        abc = 1.2;
-        std::cout << "std::cout << " << abc << " << std::endl;" << std::endl;
-
-        abc = "hello world!";
-        std::cout << "std::cout << " << abc << " << std::endl;" << std::endl;
-    }
-
-    // visitor 
-    {
-        more::variant<int,std::string> abc;
-
-        abc = 10;
-        abc.apply_visitor(visitor());
-
-        abc = "hello world!";
-        abc.apply_visitor(visitor());
-    }
-
-    // copy constructor | operator= 
-    {
-        more::variant<hello, world> a((hello()));
-        more::variant<hello, world> b((world()));
-
-        a = b;
-
-        more::variant<hello, world> copy(a);
-
-        copy.apply_visitor(visitor());
-    }
+         a = b;
+         a.apply_visitor(visitor());
+     }
     return 0;
 }
  

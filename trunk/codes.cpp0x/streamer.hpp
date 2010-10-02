@@ -11,7 +11,6 @@
 #ifndef _STREAMER_HPP_
 #define _STREAMER_HPP_
 
-#include <mtp.hpp>          // more!
 #include <type_traits.hpp>  // more!
 #include <type_traits>
 #include <array>
@@ -77,7 +76,7 @@ namespace std {
     //
 
     template <typename CharT, typename Traits, typename T>
-    inline typename more::mtp::enable_if_c< more::traits::is_container<T>::value && 
+    inline typename std::enable_if< more::traits::is_container<T>::value && 
     !is_same<typename std::string,T>::value, 
     std::basic_ostream<CharT,Traits> >::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
@@ -113,7 +112,7 @@ namespace std {
     // operator<< for tuple: (enabled if T is a tuple<>)... 
 
     template <typename CharT, typename Traits, typename T>
-    typename more::mtp::enable_if< more::traits::is_tuple<T>, std::basic_ostream<CharT,Traits> >::type &
+    typename std::enable_if< more::traits::is_tuple<T>::value, std::basic_ostream<CharT,Traits> >::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &rhs)
     {
         out << "< ";

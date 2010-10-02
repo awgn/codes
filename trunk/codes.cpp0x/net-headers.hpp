@@ -30,43 +30,6 @@
 
 namespace more {
 
-    namespace header_helper {
-
-        //////////////////////////////////////////////////////////
-        // useful metafunctions...
-
-        template <bool V, typename T>
-        struct remove_const_if
-        {
-            typedef typename std::remove_const<T>::type type;
-        };
-
-        template <typename T>
-        struct remove_const_if<false, T>
-        {
-            typedef T type;
-        };
-
-        template <bool V, typename T>
-        struct add_const_if
-        {
-            typedef typename std::add_const<T>::type type;
-        };
-
-        template <typename T>
-        struct add_const_if<false, T>
-        {
-            typedef T type;
-        };
-
-        template <int N>
-        struct int2type
-        {
-            enum { value = N };
-        };
-
-    }
-
     //////////////////////////////////////////////////////////
     // generic network header
 
@@ -77,7 +40,7 @@ namespace more {
         // ctor for static size headers.. ie: ethernet
 
         template <typename P, int N>
-        void ctor(more::cursor<P> &cur, header_helper::int2type<N>)
+        void ctor(more::cursor<P> &cur, std::integral_constant<int,N>)
         {
             if (cur.size() < N)
                 throw std::range_error(T::__name_str().append("::static_size"));
@@ -86,7 +49,7 @@ namespace more {
         }
 
         template <typename P, int N>
-        void ctor(more::cursor<P> &cur, ssize_t size, header_helper::int2type<N>)
+        void ctor(more::cursor<P> &cur, ssize_t size, std::integral_constant<int,N>)
         {
             if ( cur.size() < N)
                 throw std::range_error(T::__name_str().append("::static_size"));
@@ -101,7 +64,7 @@ namespace more {
         // ctor for dynamic size headers.. ie: ip 
 
         template <typename P>
-        void ctor(more::cursor<P> &cur, header_helper::int2type<0>)
+        void ctor(more::cursor<P> &cur, std::integral_constant<int,0>)
         {
             if ( cur.size() < T::__min_size )
                 throw std::range_error(std::string(T::__name_str()).append("::size() [minimal size]"));
@@ -111,7 +74,7 @@ namespace more {
         }
 
         template <typename P>
-        void ctor(more::cursor<P> &cur, ssize_t size, header_helper::int2type<0>)
+        void ctor(more::cursor<P> &cur, ssize_t size, std::integral_constant<int,0>)
         {
             ssize_t n = _M_value.size(cur.size(), size);
             if (cur.size() < n)
@@ -122,26 +85,21 @@ namespace more {
     public:
         template <typename P>
         header(more::cursor<P> &cur)
-        : _M_value( const_cast< 
-                        typename header_helper::remove_const_if< 
-                            std::is_const<T>::value, P
-                            >::type * >(cur.cur()))
+        : _M_value( const_cast< typename std::conditional< std::is_const<T>::value, 
+                                    typename std::remove_const<P>::type, P>::type *>(cur.cur()))
         {
             static_assert(sizeof(P) == 1, "multi_bytes cursor not allowed here");
-            ctor(cur, header_helper::int2type<T::__static_size>());
+            ctor(cur, std::integral_constant<int,T::__static_size>());
         }
 
         template <typename P>
         header(more::cursor<P> & cur, ssize_t size /* set the header size */ )
-        : _M_value( const_cast< 
-                        typename header_helper::remove_const_if< 
-                            std::is_const<T>::value, P
-                            >::type * >(cur.cur()))
+        : _M_value( const_cast< typename std::conditional< std::is_const<T>::value, 
+                                    typename std::remove_const<P>::type, P>::type *>(cur.cur()))
         {
             static_assert(sizeof(P) == 1, "multi_bytes cursor not allowed here");
-            ctor(cur, size, header_helper::int2type<T::__static_size>());
+            ctor(cur, size, std::integral_constant<int,T::__static_size>());
         }
-
 
         T * 
         operator->()
@@ -791,7 +749,6 @@ namespace net {
             return *(reinterpret_cast<char *>(_H_) + 13);
         }
 
-
         attr_reader_uint16(window);
         attr_writer_uint16(window);
 
@@ -1026,7 +983,6 @@ namespace net {
                        " stamp_hi=" << h.tstamp_hi() << "]";
 
     }
-
 
 } // namespace net 
 } // namespace more

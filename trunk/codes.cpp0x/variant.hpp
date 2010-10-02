@@ -11,9 +11,6 @@
 #ifndef _VARIANT_HPP_
 #define _VARIANT_HPP_ 
 
-#include <typelist.hpp>          // more!
-#include <mtp.hpp>               // more!
-
 #include <typeinfo>
 #include <iostream>
 #include <stdexcept>
@@ -25,272 +22,127 @@
 
 namespace more { 
 
-    using namespace std;
-
-    namespace variat_helper {
-
-        struct none {};    
-
-        template <typename T1, typename T2, bool value = (sizeof(T1) > sizeof(T2)) >
-        struct size_max
+    namespace detail 
+    {
+        template <typename ...Ti>  struct max_sizeof;
+        template <typename T0, typename ...Ti>
+        struct max_sizeof<T0, Ti...>
         {
-            typedef T1 value_type;
-        };
-        template <typename T1, typename T2>
-        struct size_max<T1,T2,false>
+            enum { value = sizeof(T0) > max_sizeof<Ti...>::value ? sizeof(T0) : max_sizeof<Ti...>::value };
+        };  
+
+        template <typename T0>
+        struct max_sizeof<T0>
         {
-            typedef T2 value_type;
-        };
+            enum { value = sizeof(T0) };
+        };  
 
         ///////////////////////////////////////////// type index 
-        // 
 
-        template <typename T, typename T0, typename T1, typename T2, typename T3, typename T4, typename T5>
-        struct type_index
+        template <int N, typename T, typename ...Ti> struct __index_of;
+
+        template <int N, typename T, typename T0, typename ...Ti>
+        struct __index_of<N,T,T0,Ti...>
         {
-            typedef TYPELIST(T0,T1,T2,T3,T4,T5) list_type;
-            enum { value = more::TL::index_of<list_type, T>::value };
+            enum { value = std::is_same<T,T0>::value ? N : __index_of<N+1, T, Ti...>::value };
         };
 
-        ///////////////////////////////////////////// store strategy 
-        // 
+        template <int N, typename T, typename T0>
+        struct __index_of<N,T,T0>
+        {
+            enum { value = std::is_same<T,T0>::value ? N : -1 };
+        };
 
-        template <typename T, typename T0, typename T1, typename T2, typename T3, typename T4, typename T5>
-        struct strategy_store
-        {            
-            static void set(T *that, const T0 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 0;
-            }            
-            static void set(T *that, const T1 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 1; 
-            }
-            static void set(T *that, const T2 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 2;
-            }
-            static void set(T *that, const T3 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 3;
-            }
-            static void set(T *that, const T4 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 4;
-            }
-            static void set(T *that, const T5 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 5;
-            }
+        template <typename T, typename ...Ti> struct index_of
+        {
+            enum { value = __index_of<0, T, Ti...>::value };    
+        };
+
+        ////////////////////////////////////////////// get n-th type
+
+        template <int i, int N, typename ...Ti> struct __get_type;
+        template <int i, int N, typename T0, typename ...Ti>
+        struct __get_type<i,N, T0, Ti...>
+        {
+            typedef typename __get_type<i+1, N, Ti...>::type type;
+        };
+        template <int N, typename T0, typename ...Ti>
+        struct __get_type<N,N, T0, Ti...>
+        {
+            typedef T0 type;
+        };
+        template <int N, typename ...Ti> struct get_type
+        {
+            typedef typename __get_type<0,N, Ti...>::type type;
+        };  
  
-        };
+    }   // namespace detail
 
-        template <typename T, typename T0>
-        struct strategy_store<T, T0, none, none, none, none, none>
-        {
-            static void set(T *that, const T0 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 0;
-            }
-        };
-
-        template <typename T, typename T0, typename T1>
-        struct strategy_store<T, T0, T1, none, none, none, none>
-        {
-            static void set(T *that, const T0 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 0;
-            }            
-            static void set(T *that, const T1 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 1;
-            }
-        };
-
-        template <typename T, typename T0, typename T1, typename T2>
-        struct strategy_store<T, T0, T1, T2, none, none, none>
-        {
-            static void set(T *that, const T0 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 0;
-            }            
-            static void set(T *that, const T1 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 1;
-            }
-            static void set(T *that, const T2 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 2;
-            }
-        };
-
-        template <typename T, typename T0, typename T1, typename T2, typename T3>
-        struct strategy_store<T, T0, T1, T2, T3, none, none>
-        {
-            static void set(T *that, const T0 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 0;
-            }            
-            static void set(T *that, const T1 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 1;
-            }
-            static void set(T *that, const T2 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 2;
-            }            
-            static void set(T *that, const T3 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 3;
-            }
-        };
-
-        template <typename T, typename T0, typename T1, typename T2, typename T3, typename T4>
-        struct strategy_store<T, T0, T1, T2, T3, T4, none>
-        {
-            static void set(T *that, const T0 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 0;
-            }            
-            static void set(T *that, const T1 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 1;
-            }
-            static void set(T *that, const T2 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 2;
-            }            
-            static void set(T *that, const T3 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 3;
-            }            
-            static void set(T *that, const T4 &elem)
-            {
-                that->store(elem);
-                that->_M_type = 4;
-            }
-
-        };
-
-    }   // namespace variant_helper
-
-    template <typename T0, typename T1 = variat_helper::none, 
-                           typename T2 = variat_helper::none,
-                           typename T3 = variat_helper::none,
-                           typename T4 = variat_helper::none,
-                           typename T5 = variat_helper::none
-                           >
+    template <typename ...Ti>  
     class variant {
 
     public:
-        friend class variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>;
-
         template <typename CharT, typename Traits>
         friend std::basic_ostream<CharT,Traits> &
-        operator<<(std::basic_ostream<CharT,Traits> &out, const more::variant<T0,T1,T2,T3,T4,T5> & var)
+        operator<<(std::basic_ostream<CharT,Traits> &out, const more::variant<Ti...> & var)
         {
-            var.printon(out);
+            variant<Ti...>::printon<Ti...>::apply(out, var);
             return out; 
         }
 
+    public:
         variant()
         : _M_type(0)
         {
-            this->default_ctor<T0>(_M_storage);
+            ctor<Ti...>::apply(_M_storage, 0);
+        }
+
+        variant(const variant &rhs)
+        : _M_type(rhs._M_type)
+        {
+            copyctor<Ti...>::apply(rhs._M_storage, _M_storage, _M_type); 
+        }
+        
+        variant& operator=(variant rhs)
+        {    
+            rhs.swap(*this);
+            return *this;
+        }
+ 
+        ~variant()
+        {
+            dtor<Ti...>::apply(_M_storage, _M_type);
+        }
+        
+        void swap(variant &rhs)
+        {
+            std::swap_ranges(_M_storage, _M_storage+_S_storage_size, rhs._M_storage);
+            std::swap(_M_type, rhs._M_type);
         }
 
         template <typename T>
         variant(const T &value)
         : _M_type(0)
         {
-            this->default_ctor<T0>(_M_storage);
-            try {
-                variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this,value);
+            ctor<Ti...>::apply(_M_storage, 0);
+            try 
+            {
+                this->store(value);
             }
             catch(...)
             {
-                this->dtor(_M_storage, 0);
+                dtor<Ti...>::apply(_M_storage, 0);
                 throw;
             }
-        }
-
-        ~variant()
-        {
-            this->dtor(_M_storage, _M_type);
-        }
-
-        variant(const variant & rhs)
-        : _M_type(0)
-        {
-            this->default_ctor<T0>(_M_storage);
-            try {
-                switch(rhs._M_type) 
-                {
-                case 0: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, rhs.get<T0>()); break;
-                case 1: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::is_same<T1, variat_helper::none>::value, T0, T1>::type>()); break;
-                case 2: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::is_same<T2, variat_helper::none>::value, T0, T2>::type>()); break;
-                case 3: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::is_same<T3, variat_helper::none>::value, T0, T3>::type>()); break;
-                case 4: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::is_same<T4, variat_helper::none>::value, T0, T4>::type>()); break;
-                case 5: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::is_same<T5, variat_helper::none>::value, T0, T5>::type>()); break;
-                }
-            }
-            catch(...)
-            {
-                this->dtor(_M_storage, 0);
-                throw;
-            }
-
-            this->_M_type = rhs._M_type;
         }
 
         template <typename T>
         variant &operator=(const T& rhs)
         {
-            variat_helper::strategy_store<variant, T0,T1,T2,T3,T4,T5>::set(this, rhs);
+            this->store(rhs);
             return *this;
         }
-
-        variant &operator=(const variant<T0,T1,T2> &rhs)
-        {
-            switch(rhs._M_type) 
-            {
-                case 0: this->store( rhs.get<T0>() ); break;
-                case 1: this->store( rhs.get<T1>() ); break;
-                case 2: this->store( rhs.get<T2>() ); break;
-                case 3: this->store( rhs.get<T3>() ); break;
-                case 4: this->store( rhs.get<T4>() ); break;
-                case 5: this->store( rhs.get<T5>() ); break;
-            }
-
-            _M_type = rhs._M_type;
-            return *this;
-        }
-
+ 
         bool 
         empty() const 
         {
@@ -310,23 +162,15 @@ namespace more {
         const std::type_info &
         type() const
         {
-            switch(_M_type)
-            {
-                case 0: return typeid(T0);
-                case 1: return typeid(T1);
-                case 2: return typeid(T2);
-                case 3: return typeid(T3);
-                case 4: return typeid(T4);
-                case 5: return typeid(T5);
-            }
-
-            return typeid(int); // unreachable
+            return __type<Ti...>::get(_M_type);
         }
+
+        /////////////////////
 
         template <typename T>
         T & get()
         {
-            if ( variat_helper::type_index<T,T0,T1,T2,T3,T4,T5>::value != _M_type )
+            if ( detail::index_of<T,Ti...>::value != _M_type )
                 throw std::bad_cast();
 
             return *reinterpret_cast<T *>(_M_storage);
@@ -335,7 +179,7 @@ namespace more {
         template <typename T>
         const T & get() const
         {
-            if ( variat_helper::type_index<T,T0,T1,T2,T3,T4,T5>::value != _M_type )
+            if ( detail::index_of<T,Ti...>::value != _M_type )
                 throw std::bad_cast();
 
             return *reinterpret_cast<const T *>(_M_storage);
@@ -343,138 +187,211 @@ namespace more {
 
         template <typename F>
         void apply_visitor(F cw)
-        {            
-            switch(_M_type)
-            {
-                case 0: cw(this->get<T0>()); break;
-                case 1: cw(this->get< typename  mtp::if_< std::is_same<T1, variat_helper::none>::value, T0, T1>::type >()); break;
-                case 2: cw(this->get< typename  mtp::if_< std::is_same<T2, variat_helper::none>::value, T0, T2>::type >()); break;
-                case 3: cw(this->get< typename  mtp::if_< std::is_same<T3, variat_helper::none>::value, T0, T3>::type >()); break;
-                case 4: cw(this->get< typename  mtp::if_< std::is_same<T4, variat_helper::none>::value, T0, T4>::type >()); break;
-                case 5: cw(this->get< typename  mtp::if_< std::is_same<T5, variat_helper::none>::value, T0, T5>::type >()); break;
-            }    
+        {
+            visitor<Ti...>::apply(cw, *this);
         }
-
-    private:
 
         template <typename V>
         void store(const V &value)
         {    
-            char storage_tmp[_S_storage_size];
-
-            // copy construct the _M_storage content in storage_tmp:
-            this->copy(_M_storage, storage_tmp, _M_type);
-
+            static_assert(detail::index_of<V, Ti...>::value != -1, "type not in variant");
+            char tmp[_S_storage_size];
+                   
+            // try to construct the new value in a temporary storage
+            //
+            new (tmp) V(value);
+            
             // destroy the object in the _M_storage (as _M_type) ...
-            this->dtor(_M_storage, _M_type);
+            //
+            dtor<Ti...>::apply(_M_storage, _M_type);  
+ 
+            // copy the temporary storage to _M_storage
+            //
+            std::copy(tmp, tmp + _S_storage_size, _M_storage);
+            _M_type = detail::index_of<V, Ti...>::value;
+        }
 
-            try 
+    private:
+
+        template <typename ... Tp> struct __type;
+        template <typename T, typename ... Tp> 
+        struct __type<T, Tp...>
+        {
+            static const std::type_info &
+            get(int tp, int n = 0)
             {
-                // try to construct the new value in _M_storage
-                new (_M_storage) V(value);
+                if (tp == n)
+                    return typeid(T);
+                else
+                    return __type<Tp...>::get(tp, n+1);
             }
-            catch(...)
+        };
+        template <typename T>
+        struct __type<T>
+        {
+            static const std::type_info &
+            get(int tp, int n = 0)
             {
-                // try to copy construct the storage_tmp back in the _M_storage:
-                // since an excpetion could be thrown it is not possibile to provide strong guarantee
-                // of exception safety. 
-
-                try 
-                {
-                    this->copy(storage_tmp, _M_storage, _M_type);
-                }
-                catch(...) 
-                {
-                    throw std::logic_error("exception-safety: basic guarantee!");
-                }
-
-                // destroy storage_tmp...
-                this->dtor(storage_tmp, _M_type);
-
-                throw;  // rethrow the exception 
+                if (tp == n)
+                    return typeid(T);
+                else
+                    throw std::runtime_error("__type: internal error");
             }
-
-            // destroy storage_tmp...
-            this->dtor(storage_tmp, _M_type); 
-        }
-
-        template <typename T> 
-        void default_ctor(char *storage)
+        };
+ 
+        ////////
+        
+        template <typename ...Tp> struct ctor;
+        template <typename T, typename ...Tp>
+        struct ctor<T, Tp...> 
         {
-            new(storage)T;
-        }
-
-        void default_ctor(char *storage, int type)
-        {
-            switch(type)
+            static void apply(char *storage, int type, int n = 0)
             {
-                case 0: new(storage)T0; return;
-                case 1: new(storage)T1; return;
-                case 2: new(storage)T2; return; 
-                case 3: new(storage)T3; return;
-                case 4: new(storage)T4; return;
-                case 5: new(storage)T5; return;
-            }    
-        }
-
-        void dtor(char *storage, int type)
+                if (n == type) 
+                {
+                    new(storage)T;
+                    return;
+                }
+                ctor<Tp...>::apply(storage, type, n+1);    
+            }
+        };
+        template <typename T>
+        struct ctor<T>
         {
-            switch(type)
+            static void apply(char *storage, int type, int n = 0)
             {
-                case 0: reinterpret_cast<T0 *>(storage)->~T0(); break;
-                case 1: reinterpret_cast<T1 *>(storage)->~T1(); break;
-                case 2: reinterpret_cast<T2 *>(storage)->~T2(); break;
-                case 3: reinterpret_cast<T3 *>(storage)->~T3(); break;
-                case 4: reinterpret_cast<T4 *>(storage)->~T4(); break;
-                case 5: reinterpret_cast<T5 *>(storage)->~T5(); break;
-            }    
-        }
-
-        void copy(char *from, char *to, int type)
+                if (n == type) 
+                {
+                    new(storage)T;
+                    return;
+                }
+                throw std::runtime_error("internal error");
+            }
+        };
+ 
+        
+        template <typename ...Tp> struct dtor;
+        template <typename T, typename ...Tp>
+        struct dtor<T, Tp...> 
         {
-            switch(type)
+            static void apply(char *storage, int type, int n = 0)
             {
-                case 0: new (to) T0( *reinterpret_cast<T0 *>(from) ); break;
-                case 1: new (to) T1( *reinterpret_cast<T1 *>(from) ); break;
-                case 2: new (to) T2( *reinterpret_cast<T2 *>(from) ); break;
-                case 3: new (to) T3( *reinterpret_cast<T3 *>(from) ); break;
-                case 4: new (to) T4( *reinterpret_cast<T4 *>(from) ); break;
-                case 5: new (to) T5( *reinterpret_cast<T5 *>(from) ); break;
-            }    
-        }
-
-        void printon(std::ostream &out) const
+                if (n == type) 
+                {
+                    reinterpret_cast<T *>(storage)->~T();
+                    return;
+                }
+                dtor<Tp...>::apply(storage, type, n+1);    
+            }
+        };
+        template <typename T>
+        struct dtor<T>
         {
-             switch(_M_type)
+            static void apply(char *storage, int type, int n = 0)
             {
-                case 0:  out << this->get<T0>(); break;
-                case 1:  out << this->get< typename  mtp::if_< std::is_same<T1, variat_helper::none>::value, T0, T1>::type >(); break;
-                case 2:  out << this->get< typename  mtp::if_< std::is_same<T2, variat_helper::none>::value, T0, T2>::type >(); break;
-                case 3:  out << this->get< typename  mtp::if_< std::is_same<T3, variat_helper::none>::value, T0, T3>::type >(); break;
-                case 4:  out << this->get< typename  mtp::if_< std::is_same<T4, variat_helper::none>::value, T0, T4>::type >(); break;
-                case 5:  out << this->get< typename  mtp::if_< std::is_same<T5, variat_helper::none>::value, T0, T5>::type >(); break;
-            }    
-        }
+                if (n == type) 
+                {
+                    reinterpret_cast<T *>(storage)->~T();
+                    return;
+                }
+                throw std::runtime_error("internal error");
+            }
+        };
 
-        static const int _S_storage_size = 
-            sizeof( typename variat_helper::size_max< 
-                        T0, 
-                        typename variat_helper::size_max<
-                            T1,
-                            typename variat_helper::size_max<
-                                T2,
-                                typename variat_helper::size_max<
-                                    T3,
-                                    typename variat_helper::size_max<
-                                        T4,
-                                        T5
-                                    >::value_type
-                                >::value_type
-                            >::value_type
-                        >::value_type 
-                     >::value_type
-                  );
 
+        template <typename ...Tp> struct copyctor;                   template <typename ...Tp> struct copyctor;
+        template <typename T, typename ...Tp>
+        struct copyctor<T, Tp...> 
+        {
+            static void apply(const char *from, char *to, int type, int n = 0)
+            {
+                if (n == type) 
+                {
+                    new (to) T(*reinterpret_cast<const T *>(from));
+                    return;
+                }
+                copyctor<Tp...>::apply(from, to, type, n+1);    
+            }
+        };
+        template <typename T>
+        struct copyctor<T>
+        {
+            static void apply(const char *from, char *to, int type, int n = 0)
+            {
+                if (n == type) 
+                {
+                    new (to) T(*reinterpret_cast<const T *>(from));
+                    return;
+                }
+                throw std::runtime_error("internal error");
+            }
+        };
+ 
+        
+
+        template <typename ...Tp> struct printon;
+        template <typename T, typename ...Tp>
+        struct printon<T, Tp...> 
+        {
+            template <typename CharT, typename Traits, typename V>
+            static void apply(std::basic_ostream<CharT, Traits> &out, const V &var, int n = 0)
+            {
+                if (n == var._M_type) 
+                {
+                    out << var.get<T>();
+                    return;
+                }
+                printon<Tp...>::apply(out, var, n+1);    
+            }
+        };
+        template <typename T>
+        struct printon<T>
+        {
+            template <typename CharT, typename Traits, typename V>
+            static void apply(std::basic_ostream<CharT, Traits> &out, const V &var, int n = 0)
+            {
+                if (n == var._M_type) 
+                {
+                    out << var.get<T>();
+                    return;
+                }
+                throw std::runtime_error("internal error");
+            }
+        };
+      
+       
+        template <typename ...Tp> struct visitor;
+        template <typename T, typename ...Tp>
+        struct visitor<T, Tp...> 
+        {
+            template <typename F, typename V>
+            static void apply(F cw, const V &var, int n = 0)
+            {
+                if (n == var._M_type) 
+                {
+                    cw(var.get<T>());
+                    return;
+                }
+                visitor<Tp...>::apply(cw, var, n+1);    
+            }
+        };
+        template <typename T>
+        struct visitor<T>
+        {
+            template <typename F, typename V>
+            static void apply(F cw, const V &var, int n = 0)
+            {
+                if (n == var._M_type) 
+                {
+                    cw(var.get<T>());
+                    return;
+                }
+                throw std::runtime_error("internal error");
+            }
+        };
+ 
+        static const int _S_storage_size = detail::max_sizeof<Ti...>::value;
+        
         int  _M_type;
         char _M_storage[_S_storage_size];
     };

@@ -97,6 +97,9 @@ namespace more {
         : _M_value(0)
         {}
 
+        spinlock(const spinlock &) = delete;
+        spinlock& operator=(const spinlock &) = delete;
+
         void lock()
         {   
             int t = Policy::threshold;
@@ -130,6 +133,9 @@ namespace more {
         ticket_spinlock()
         : _M_ticket(0), _M_value(0)
         {}
+        
+        ticket_spinlock(const ticket_spinlock &) = delete;
+        ticket_spinlock& operator=(const ticket_spinlock &) = delete;
 
         void lock()
         {             
