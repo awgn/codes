@@ -16,8 +16,11 @@
 #include <string>
 #include <cstdlib>
 #include <stdexcept>
-#include <mutex>
 #include <memory>    
+
+#ifdef _REENTRANT
+#include <mutex>
+#endif
 
 namespace more { 
 

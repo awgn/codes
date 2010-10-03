@@ -42,8 +42,8 @@ namespace more {
     // utility: auto-register the allocator of E element (derived from B)
     //                to the F factory
 
-    template <typename B  /* element */,  
-              typename E  /* base element */
+    template <typename B  /* Base */,  
+              typename E  /* element */
               >
     struct factory_register
     {
