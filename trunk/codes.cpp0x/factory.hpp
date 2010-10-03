@@ -49,10 +49,10 @@ namespace more {
     {
         static_assert( std::is_base_of<B,E>::value, "base_of relationship violated");
 
-        template <typename F, typename ...Arg>
-        factory_register(F &f, const std::string &k, Arg&& ...)
+        template <typename F, typename K, typename ...Arg>
+        factory_register(F &f, const K &key, Arg&& ...)
         {
-            f.regist(k, new typename more::factory_allocator<B, E, Arg...>);    
+            f.regist(key, new typename more::factory_allocator<B, E, Arg...>);    
         }
     };
 
