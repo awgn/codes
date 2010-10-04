@@ -58,14 +58,14 @@ TYPEMAP_KEY(b::type, block);
 
 TYPEMAP_KEY(std::vector<bs::type>, blocks);
 
-typedef TYPEMAP_KEY_LIST(unsigned_int, integers, booleans, strings, block, blocks, associative) SCRIPT;
+typedef TYPEMAP_KEY_LIST(unsigned_int, integers, booleans, strings, block, blocks, associative) key_list;
 
-struct script : public more::kv::parser<SCRIPT, false /* non-strict: unknown key are ignored */ > {};
+struct myparser : public more::kv::parser<key_list, false /* non-strict: unknown key are ignored */ > {};
 
 int
 main(int argc, char *argv[])
 {
-    script par;
+    myparser par;
 
     if ( !par.parse("key_value_test.txt") ) {
         return -1;
@@ -104,8 +104,8 @@ main(int argc, char *argv[])
 
     std::cout << "-> " << associative::value() << " elem:" << par.get<associative>().size() << std::endl;
 
-    associative::value_type::const_iterator it = par.get<associative>().begin();
-    associative::value_type::const_iterator it_end = par.get<associative>().end();
+    auto it = par.get<associative>().begin();
+    auto it_end = par.get<associative>().end();
 
     for(; it != it_end; ++it)
     {
