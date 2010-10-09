@@ -218,7 +218,7 @@ namespace net {
         // for static-sized headers, just a size() method suffices...
 
         ssize_t
-        size(ssize_t bytes = -1, ssize_t s = 0) const
+        size(ssize_t = -1, ssize_t = 0) const
         {
             return sizeof(ether_header);
         }
@@ -325,7 +325,7 @@ namespace net {
 	    //
 
         ssize_t
-        size(ssize_t bytes = -1, ssize_t s = 0) const
+        size(ssize_t = -1, ssize_t = 0) const
         {
             return sizeof(vlan_header);
         }
@@ -566,7 +566,7 @@ namespace net {
         {} 
 
         ssize_t
-        size(ssize_t bytes = -1, ssize_t s = 0) const
+        size(ssize_t = -1, ssize_t = 0) const
         {
             return sizeof(udphdr);
         }
@@ -873,7 +873,7 @@ namespace net {
         {} 
 
         ssize_t
-        size(ssize_t bytes = -1, ssize_t s = 0) const
+        size(ssize_t = -1, ssize_t = 0) const
         {
             return sizeof(icmphdr);
         }
@@ -943,7 +943,7 @@ namespace net {
         {} 
 
         ssize_t
-        size(ssize_t bytes = -1, ssize_t s = 0) const
+        size(ssize_t = -1, ssize_t = 0) const
         {
             return sizeof(np_packet_hdr);
         }

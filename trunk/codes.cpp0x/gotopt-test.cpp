@@ -39,8 +39,8 @@ main(int argc, char *argv[])
 
     char o;
     while( (o = par(make_tuple(
-                               make_pair( _l >> _w, "--hello -> --world error!"),
-                               make_pair( _a % _b,  "-a and -b are in mutual exclusion!"), // rule with custom error
+                               make_pair( _l >> _w, std::runtime_error("--hello -> --world error!")),
+                               make_pair( _a % _b,  std::runtime_error("-a and -b are in mutual exclusion!")), // rule with custom error
                                _a || _b  // simple rule...
                                )
           )))

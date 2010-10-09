@@ -64,7 +64,7 @@ namespace more {
         struct lock_backoff 
         {
             enum { threshold = N };
-            static void wait(int n, int& t, int len)
+            static void wait(int n, int& t, int)
             {
                 if ((n % t) == 0) {
                     t= t>>1 ? : 1;
@@ -141,7 +141,7 @@ namespace more {
         {             
             const unsigned int my_ticket = _M_ticket++;
             int t = Policy::threshold;
-            for(int n = 1, d = 0; d=(my_ticket-_M_value); n++) 
+            for(int n = 1, d = 0; (d=(my_ticket-_M_value)); n++) 
             { 
                 Policy::wait(n,t,d);
             }

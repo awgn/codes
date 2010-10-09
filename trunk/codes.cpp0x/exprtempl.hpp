@@ -121,7 +121,7 @@ namespace more { namespace expr {
 
     template <typename CharT, typename Traits, typename T, T value>
     inline std::basic_ostream<CharT,Traits> &
-    operator<< (std::basic_ostream<CharT,Traits> &out, const integral<T,value> &un)
+    operator<< (std::basic_ostream<CharT,Traits> &out, const integral<T,value> &)
     {
         return out << value; 
     }

@@ -28,7 +28,7 @@ namespace more {
         template <typename T0, typename ...Ti>
         struct max_sizeof<T0, Ti...>
         {
-            enum { value = sizeof(T0) > max_sizeof<Ti...>::value ? sizeof(T0) : max_sizeof<Ti...>::value };
+            enum { value = (sizeof(T0) > max_sizeof<Ti...>::value) ? static_cast<int>(sizeof(T0)) : max_sizeof<Ti...>::value };
         };  
 
         template <typename T0>

@@ -64,7 +64,7 @@ namespace more {
     namespace detail {
 
         template <typename CharT, typename Traits>
-        void stream_on(std::basic_ostream<CharT, Traits> &out, int, int) 
+        void stream_on(std::basic_ostream<CharT, Traits> &, int, int) 
         {
             throw std::runtime_error("%format error%");
         }

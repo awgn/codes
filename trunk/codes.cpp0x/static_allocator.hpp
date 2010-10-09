@@ -85,7 +85,7 @@ namespace more {
         }
 
         void
-        deallocate(pointer __p, size_type)
+        deallocate(pointer, size_type)
         {}
 
         void
