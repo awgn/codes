@@ -16,8 +16,8 @@
 #error compiler not supported!
 #endif
 
-namespace more { namespace this_cpu { 
-
+namespace more {  
+    
     // assembly policies are taken from the linux kernel 2.6/include/arch-.../
     //
  
@@ -59,6 +59,11 @@ namespace more { namespace this_cpu {
 #endif
     } // detail
 
+    // this_cpu implemented as policy class
+    //
+
+    struct this_cpu
+    {
         typedef detail::cycles_t cycles_type;
 
         static inline cycles_type 
@@ -81,9 +86,9 @@ namespace more { namespace this_cpu {
         bool busywait_for(const cycles_type &d)
         {
             return busywait_until(detail::get_cycles() + d);
-        } 
+        }
+    }; 
 
-} // namespace this_cpu
 } // namespace more
 
 #endif /* _CPU_CYCLES_HPP_ */
