@@ -96,27 +96,6 @@ namespace more { namespace type {
          enum { value = -1 };
      };
 
-
-//     // get_key<int i, typemap>::type
-//     //
-// 
-//     template <int i, typename M> struct get_key;
-//     template <int i, typename K, typename V, typename N>
-//     struct get_key< i, typemap<K,V,N> >
-//     {
-//         typedef typename get_key<i-1, N>::type type;
-//     };
-//     template <typename K, typename V, typename N>
-//     struct get_key<0, typemap<K,V,N> >
-//     {
-//         typedef K type;
-//     };
-//     template <int i>
-//     struct get_key<i, null>
-//     {
-//         typedef null type;
-//     };
-
 }   // namespace type
 }   // namespace more
 
