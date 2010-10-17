@@ -9,45 +9,41 @@
  */
 
 #include <typemap.hpp>
-#include <typeinfo>
 
-TYPEMAP_KEY(std::string,name);
-TYPEMAP_KEY(std::string,nickname);
-TYPEMAP_KEY(int, age);
-TYPEMAP_KEY(int, size);
+#include <string>
+#include <typeinfo>
+#include <cassert>
+#include <iostream>
+
+using namespace more::type;
+
+    struct name     {};
+    struct age      {};
+    struct nickname {};
+    struct null     {};
+    struct address  {};
 
 int
 main(int argc, char *argv[])
 {
-    typedef TYPEMAP(name, std::string, age, int) mymap;
+    typedef typemap< std::pair<name, std::string>, std::pair<age, int>, std::pair<address, std::string> > map0; 
 
-    more::TM::get<name, mymap>::type me = "Nicola";
-    more::TM::get<age , mymap>::type a __attribute__((unused)) = 36;
+    get<map0, name>::type _me = "Nicola";
+    get<map0, age>::type  _age = 38;
 
-    typedef more::TM::null empty;
+    assert( size<map0>::value == 3);
 
-    typedef more::TM::append<size,int, empty >::type  map_1;
-    typedef more::TM::append<age, int, map_1>::type  map_2;
-    // typedef more::TM::append<nickname, int, map_2>::type map_3;
+    typedef append<map0, nickname, std::string>::type map1;
 
-    more::TM::get<size, map_1>::type x __attribute__((unused))= 1;
-    more::TM::get<size, map_2>::type c __attribute__((unused))= 2;
-    more::TM::get<age,  map_2>::type d __attribute__((unused))= 3;
+    get<map1, nickname>::type _nick = "awgn";
 
-    std::cout << "size<map_1>::value  = " << more::TM::size<map_1>::value << std::endl;
-    std::cout << "size<map_2>::value  = " << more::TM::size<map_2>::value << std::endl;
+    assert( size<map1>::value == 4);
 
-    std::cout << "index_of<size,map_2> = " << more::TM::index_of<size, map_2>::value << std::endl;
-    std::cout << "index_of<age, map_2> = " << more::TM::index_of<age, map_2>::value << std::endl;
-    std::cout << "index_of<name,map_2> = " << more::TM::index_of<name, map_2>::value << std::endl;
+    assert( (index_of<map0, name>::value     == 0) );
+    assert( (index_of<map0, age>::value      == 1) );
+    assert( (index_of<map0, address>::value  == 2) );
+    assert( (index_of<map1, nickname>::value == 3) );
 
-    std::cout << "get_key<0, map_2> = " << typeid(more::TM::get_key<0, map_2>::type).name() << std::endl; 
-    std::cout << "get_key<1, map_2> = " << typeid(more::TM::get_key<1, map_2>::type).name() << std::endl; 
-    std::cout << "get_key<2, map_2> = " << typeid(more::TM::get_key<2, map_2>::type).name() << std::endl; 
-
-    std::cout << "key[0] = " << ( more::TM::get_key<0, map_2>::type::value() ? : "NULL" ) << std::endl;
-    std::cout << "key[1] = " << ( more::TM::get_key<1, map_2>::type::value() ? : "NULL" ) << std::endl;
-    std::cout << "key[2] = " << ( more::TM::get_key<2, map_2>::type::value() ? : "NULL" ) << std::endl;
     return 0;
 }
  

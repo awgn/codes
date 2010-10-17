@@ -18,49 +18,58 @@
 
 #include <key_value.hpp>
 
-TYPEMAP_KEY(unsigned int, unsigned_int, 3);   // default value for the key  
+using namespace more::type;
 
-TYPEMAP_KEY(std::vector<int>,         integers);
-TYPEMAP_KEY(std::vector<bool>,        booleans);
-TYPEMAP_KEY(std::list<std::string>,   strings);
+MAP_KEY_VALUE(unsigned int, unsigned_int, 3);   // default value for the key  
+
+MAP_KEY(std::vector<int>,               integers);
+MAP_KEY(std::vector<bool>,              booleans);
+MAP_KEY(std::list<std::string>,         strings);
 
 typedef std::map<std::string,int> map_type;
-TYPEMAP_KEY(map_type, associative);
+MAP_KEY(map_type, associative);
 
-typedef std::pair<int, int> pair_type;
-TYPEMAP_KEY(pair_type, pair_tuple);
+typedef std::pair<int, int> pair_type;  
+MAP_KEY(pair_type, pair_tuple);
 
     // <--- block --->
     namespace b
     {
-        TYPEMAP_KEY(int, one);
-        TYPEMAP_KEY(int, two);
-        TYPEMAP_KEY(int, three);
+        MAP_KEY(int, one);
+        MAP_KEY(int, two);
+        MAP_KEY(int, three);
 
-        typedef TYPEMAP_KEY_LIST(one, two, three) BLOCK; 
-
-        typedef more::kv::block<BLOCK, true /* strict: unknown key are parse errors */ > type;
+        typedef more::kv::block<typemap<one::type, 
+                                        two::type, 
+                                        three::type>, 
+                                        true /* strict: unknown key are parse errors */ > type;
     }
 
-TYPEMAP_KEY(b::type, block);
+MAP_KEY(b::type, block);
 
     // <--- blocks[] --->
     namespace bs
     {
-        TYPEMAP_KEY(int, one);
-        TYPEMAP_KEY(int, two);
-        TYPEMAP_KEY(int, three);
+        MAP_KEY(int, one);
+        MAP_KEY(int, two);
+        MAP_KEY(int, three);
 
-        typedef TYPEMAP_KEY_LIST(one, two, three) BLOCK; 
-
-        typedef more::kv::block<BLOCK, true /* strict: unknown key are parse errors */ > type;
+        typedef more::kv::block<typemap< one::type,
+                                         two::type,
+                                         three::type>,
+                                         true /* strict: unknown key are parse errors */ > type;
     }
 
-TYPEMAP_KEY(std::vector<bs::type>, blocks);
+MAP_KEY(std::vector<bs::type>, blocks);
 
-typedef TYPEMAP_KEY_LIST(unsigned_int, integers, booleans, strings, block, blocks, associative) key_list;
-
-struct myparser : public more::kv::parser<key_list, false /* non-strict: unknown key are ignored */ > {};
+struct myparser : public more::kv::parser< typemap<unsigned_int::type,
+                                                   integers::type,
+                                                   booleans::type,
+                                                   strings::type,
+                                                   associative::type,
+                                                   block::type,
+                                                   blocks::type>,
+                                                   false /* non-strict: unknown key are ignored */ > {};
 
 int
 main(int argc, char *argv[])
