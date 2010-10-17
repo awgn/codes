@@ -11,7 +11,6 @@
 #ifndef _COLORFUL_HPP_
 #define _COLORFUL_HPP_ 
 
-#include <typelist.hpp>
 #include <ostream>
 #include <type_traits>
 
