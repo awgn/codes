@@ -52,40 +52,30 @@ namespace more {
         }
     };
 
-    template <typename T>
-    struct colorful 
-    {
-        typedef T value_type;
-    };
+    template <typename ...Ti> struct colorful {};
+    template <typename ...Ti> struct ecma_param {};
 
-
-    template <typename T>
-    struct ecma_parameter
-    {
-        typedef T value_type; 
-    };
-
-    
     template <typename CharT, typename Traits>
     inline std::basic_ostream<CharT, Traits> & 
-    operator<<(std::basic_ostream<CharT, Traits> &out, ecma_parameter<more::TL::null>)
+    operator<<(std::basic_ostream<CharT, Traits> &out, ecma_param<>)
     {
         return out;
     }
 
-    template <typename CharT, typename Traits, typename T>
+    template <typename CharT, typename Traits, typename T0, typename ...Ti>
     inline std::basic_ostream<CharT, Traits> & 
-    operator<<(std::basic_ostream<CharT, Traits> &out, ecma_parameter<T>)
+    operator<<(std::basic_ostream<CharT, Traits> &out, ecma_param<T0, Ti...>)
     {
-        return out << ";" << T::head::value << ecma_parameter<typename T::tail>();
+        return out << ";" << T0::value << ecma_param<Ti...>();
     }
 
-    template <typename CharT, typename Traits, typename T>
+    template <typename CharT, typename Traits, typename ...Ti>
     inline std::basic_ostream<CharT, Traits> & 
-    operator<<(std::basic_ostream<CharT, Traits> &out, colorful<T>)
+    operator<<(std::basic_ostream<CharT, Traits> &out, colorful<Ti...>)
     {
-        return out << "\E[" << ecma_parameter<T>() << "m";
+        return out << "\E[" << ecma_param<Ti...>() << "m";
     }
+
 
 } // namespace more
 
