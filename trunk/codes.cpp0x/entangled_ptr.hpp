@@ -28,45 +28,43 @@ namespace more {
         entangled_ptr(Tp *p)
         : _M_ptr(p)
         {
-            _M_ptr->add_entangled_for(this);
+            _M_ptr->_M_add_entangled_for(this);
         }
 
         ~entangled_ptr()
         {   
             if(_M_ptr)
-                _M_ptr->remove_entangled_for(this);
+                _M_ptr->_M_remove_entangled_for(this);
         }
 
         entangled_ptr(entangled_ptr &&rhs)
         : _M_ptr(rhs._M_ptr)
         {
             rhs._M_ptr = 0;
-            _M_ptr->remove_entangled_for(&rhs);
-            _M_ptr->add_entangled_for(this);
+            _M_ptr->_M_replace_entangled_for(&rhs,this);
         }
 
         entangled_ptr(const entangled_ptr &rhs)
         : _M_ptr(rhs._M_ptr)
         {
-            _M_ptr->add_entangled_for(this);
+            _M_ptr->_M_add_entangled_for(this);
         }
 
         entangled_ptr &
         operator=(const entangled_ptr &rhs)
         {
-            _M_ptr->remove_entangled_for(this);
+            _M_ptr->_M_remove_entangled_for(this);
             _M_ptr = rhs._M_ptr;
-            _M_ptr->add_entangled_for(this);
+            _M_ptr->_M_add_entangled_for(this);
         }
 
         entangled_ptr &
         operator=(entangled_ptr &&rhs)
         {
-            _M_ptr->remove_entangled_for(this);
+            _M_ptr->_M_remove_entangled_for(this);
             _M_ptr = rhs._M_ptr;
             rhs._M_ptr = 0;
-            _M_ptr->remove_entangled_for(&rhs);
-            _M_ptr->add_entangled_for(this);
+            _M_ptr->_M_replace_entangled_for(&rhs,this);
         }
 
         Tp&
@@ -89,7 +87,7 @@ namespace more {
 
         long use_count() const
         {
-            return _M_ptr->use_count();
+            return _M_ptr->_M_use_count();
         }
 
     private:
@@ -130,23 +128,28 @@ namespace more {
         }
 
     private:
-        // non-copyable idiom
-        enable_entangled_from_this(const enable_entangled_from_this &);
-        enable_entangled_from_this & operator=(const enable_entangled_from_this &);
+        
+        enable_entangled_from_this(const enable_entangled_from_this &) = delete;
+        enable_entangled_from_this & operator=(const enable_entangled_from_this &) = delete;
 
         std::vector<entangled_ptr<Tp> *> _M_ptr;
 
-        void add_entangled_for(entangled_ptr<Tp> *p)
-        {   
-            _M_ptr.push_back(p);
+        void _M_add_entangled_for(entangled_ptr<Tp> *ptr)
+        {                     
+            _M_ptr.push_back(ptr);
         }
 
-        void remove_entangled_for(entangled_ptr<Tp> *p)
+        void _M_remove_entangled_for(entangled_ptr<Tp> *ptr)
         {
-            _M_ptr.erase(std::remove(_M_ptr.begin(), _M_ptr.end(), p), _M_ptr.end());
+            _M_ptr.erase(std::remove(_M_ptr.begin(), _M_ptr.end(), ptr), _M_ptr.end());
         }
 
-        long use_count() const
+        void _M_replace_entangled_for(entangled_ptr<Tp> *ptr_old, entangled_ptr<Tp> *ptr_new)
+        {                                                    
+            std::replace(_M_ptr.begin(), _M_ptr.end(), ptr_old, ptr_new);
+        }
+
+        long _M_use_count() const
         {
             return _M_ptr.size();
         }
