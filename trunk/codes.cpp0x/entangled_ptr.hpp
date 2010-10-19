@@ -131,7 +131,7 @@ namespace more {
         {
             _M_set_entangled_to(0);
             _M_ref = std::move(rhs._M_ref);
-            _M_set_entangled_to(this);
+            _M_set_entangled_to(static_cast<Tp *>(this));
             return *this;
         }
 

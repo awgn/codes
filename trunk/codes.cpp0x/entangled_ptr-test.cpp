@@ -25,6 +25,15 @@ struct test : public more::enable_entangled_from_this<test>
         value = rhs.value;
         rhs.value = 0;
     }
+
+    test& operator=(test &&rhs)
+    {
+        super::operator=(std::move(rhs));
+        
+        value = rhs.value;
+        rhs.value = 0;
+        return *this;
+    }
 };
 
 
@@ -89,7 +98,6 @@ main(int argc, char *argv[])
     {
         std::cout << "done." << std::endl;
     }
-
 
     return 0;
 }
