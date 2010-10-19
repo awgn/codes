@@ -21,7 +21,10 @@ struct test : public more::enable_entangled_from_this<test>
 
     test(test &&rhs)
     : super(std::move(rhs))
-    {}
+    {
+        value = rhs.value;
+        rhs.value = 0;
+    }
 };
 
 
@@ -36,11 +39,11 @@ main(int argc, char *argv[])
     assert( p.get() == &x );
     assert( p->value == x.value);
 
-    std::cout << (void *)p.get() << std::endl;
+    std::cout << "p: " << (void *)p.get() << " " << p->value << std::endl; 
 
     test y = std::move(x);
 
-    std::cout << (void *)p.get() << std::endl;
+    std::cout <<  "p: " << (void *)p.get() << " " << p->value << std::endl; 
 
     assert( p.get() == &y);
     assert( p->value == y.value);
@@ -48,7 +51,10 @@ main(int argc, char *argv[])
     more::entangled_ptr<test> q = y.entangled_from_this();
     assert( q.get() == &y);
     assert( q->value == y.value);
-
+    
+    std::cout <<  "p: " << (void *)p.get() << " " << p->value << std::endl; 
+    std::cout <<  "q: " << (void *)q.get() << " " << q->value << std::endl; 
+    
     test z = std::move(y);
 
     assert( p->value == z.value);
@@ -59,7 +65,31 @@ main(int argc, char *argv[])
     assert( w.get() == &z);
     assert( w->value == z.value);
 
+    std::cout <<  "p: " << (void *)p.get() << " " << p->value << std::endl; 
+    std::cout <<  "q: " << (void *)q.get() << " " << q->value << std::endl; 
+    std::cout <<  "w: " << (void *)w.get() << " " << w->value << std::endl; 
+
+    assert( p.use_count() == 3);
+    assert( q.use_count() == 3);
     assert( w.use_count() == 3);
+
+    {
+        test error;
+        error.value = 11;
+        w = error.entangled_from_this();
+    }
+
+    std::cout << "p: " << (void *)p.get() << " " << p->value << std::endl; 
+    std::cout << "q: " << (void *)q.get() << " " << q->value << std::endl; 
+    try 
+    {
+        std::cout << "w: " << (void *)q.get() << " " << w->value << std::endl; 
+    }
+    catch(...)
+    {
+        std::cout << "done." << std::endl;
+    }
+
 
     return 0;
 }

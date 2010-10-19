@@ -70,13 +70,13 @@ namespace more {
         Tp&
         operator*() const
         {
-            return *_M_ptr;
+            return *_M_check_ptr(_M_ptr);
         }
 
         Tp*
         operator->() const
         {
-            return _M_ptr;
+            return _M_check_ptr(_M_ptr);
         }
 
         Tp*
@@ -87,10 +87,17 @@ namespace more {
 
         long use_count() const
         {
-            return _M_ptr->_M_use_count();
+            return _M_check_ptr(_M_ptr)->_M_use_count();
         }
 
     private:
+        static Tp * _M_check_ptr(Tp *ptr)
+        {
+            if(!ptr)
+                throw std::runtime_error("entangled_ptr::_M_check_ptr");
+            return ptr;
+        }
+
         Tp * _M_ptr;
     };
 
@@ -106,8 +113,15 @@ namespace more {
         : _M_ptr()
         {}
 
-        virtual ~enable_entangled_from_this()
-        {}
+        ~enable_entangled_from_this()
+        {
+            auto it = _M_ptr.begin();
+            auto it_e = _M_ptr.end();
+            for(; it != it_e; ++it)
+            {
+                (*it)->_M_ptr = static_cast<Tp *>(0);
+            }
+        }
 
         enable_entangled_from_this(enable_entangled_from_this &&rhs)
         : _M_ptr(std::move(rhs._M_ptr))
@@ -128,11 +142,11 @@ namespace more {
         }
 
     private:
+        std::vector<entangled_ptr<Tp> *> _M_ptr;
         
         enable_entangled_from_this(const enable_entangled_from_this &) = delete;
         enable_entangled_from_this & operator=(const enable_entangled_from_this &) = delete;
 
-        std::vector<entangled_ptr<Tp> *> _M_ptr;
 
         void _M_add_entangled_for(entangled_ptr<Tp> *ptr)
         {                     
@@ -154,6 +168,15 @@ namespace more {
             return _M_ptr.size();
         }
     };
+
+    // template <typename CharT, typename Traits, typename Tp>
+    // typename std::basic_ostream<CharT, Traits> &
+    // operator<<(std::basic_ostream<CharT,Traits> &out, const enable_entangled_from_this<Tp> &rhs)
+    // {
+    //     out << "[";
+    //     std::copy(rhs._M_ptr.begin(), rhs._M_ptr.end(), std::ostream_iterator<void *>(std::cout, " - "));
+    //     return out << "]";
+    // }
 
 } // namespace more
 
