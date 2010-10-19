@@ -56,6 +56,7 @@ namespace more {
             _M_ptr->_M_remove_entangled_for(this);
             _M_ptr = rhs._M_ptr;
             _M_ptr->_M_add_entangled_for(this);
+            return *this;
         }
 
         entangled_ptr &
@@ -65,6 +66,7 @@ namespace more {
             _M_ptr = rhs._M_ptr;
             rhs._M_ptr = 0;
             _M_ptr->_M_replace_entangled_for(&rhs,this);
+            return *this;
         }
 
         Tp&
@@ -110,28 +112,27 @@ namespace more {
         friend class entangled_ptr<Tp>;
 
         enable_entangled_from_this()
-        : _M_ptr()
+        : _M_ref()
         {}
 
         ~enable_entangled_from_this()
         {
-            auto it = _M_ptr.begin();
-            auto it_e = _M_ptr.end();
-            for(; it != it_e; ++it)
-            {
-                (*it)->_M_ptr = static_cast<Tp *>(0);
-            }
+            _M_set_entangled_to(0);
         }
 
         enable_entangled_from_this(enable_entangled_from_this &&rhs)
-        : _M_ptr(std::move(rhs._M_ptr))
+        : _M_ref(std::move(rhs._M_ref))
         {
-            auto it = _M_ptr.begin();
-            auto it_e = _M_ptr.end();
-            for(; it != it_e; ++it)
-            {
-                (*it)->_M_ptr = static_cast<Tp *>(this);
-            }
+            _M_set_entangled_to(static_cast<Tp *>(this));
+        }
+
+        enable_entangled_from_this&
+        operator=(enable_entangled_from_this &&rhs)
+        {
+            _M_set_entangled_to(0);
+            _M_ref = std::move(rhs._M_ref);
+            _M_set_entangled_to(this);
+            return *this;
         }
 
         entangled_ptr<Tp>
@@ -142,30 +143,39 @@ namespace more {
         }
 
     private:
-        std::vector<entangled_ptr<Tp> *> _M_ptr;
+        std::vector<entangled_ptr<Tp> *> _M_ref;
         
         enable_entangled_from_this(const enable_entangled_from_this &) = delete;
         enable_entangled_from_this & operator=(const enable_entangled_from_this &) = delete;
 
+        void _M_set_entangled_to(Tp *ptr)
+        {
+            auto it = _M_ref.begin();
+            auto it_e = _M_ref.end();
+            for(; it != it_e; ++it)
+            {
+                (*it)->_M_ptr = ptr;
+            }
+        }
 
         void _M_add_entangled_for(entangled_ptr<Tp> *ptr)
         {                     
-            _M_ptr.push_back(ptr);
+            _M_ref.push_back(ptr);
         }
 
         void _M_remove_entangled_for(entangled_ptr<Tp> *ptr)
         {
-            _M_ptr.erase(std::remove(_M_ptr.begin(), _M_ptr.end(), ptr), _M_ptr.end());
+            _M_ref.erase(std::remove(_M_ref.begin(), _M_ref.end(), ptr), _M_ref.end());
         }
 
         void _M_replace_entangled_for(entangled_ptr<Tp> *ptr_old, entangled_ptr<Tp> *ptr_new)
         {                                                    
-            std::replace(_M_ptr.begin(), _M_ptr.end(), ptr_old, ptr_new);
+            std::replace(_M_ref.begin(), _M_ref.end(), ptr_old, ptr_new);
         }
 
         long _M_use_count() const
         {
-            return _M_ptr.size();
+            return _M_ref.size();
         }
     };
 
@@ -174,10 +184,10 @@ namespace more {
     // operator<<(std::basic_ostream<CharT,Traits> &out, const enable_entangled_from_this<Tp> &rhs)
     // {
     //     out << "[";
-    //     std::copy(rhs._M_ptr.begin(), rhs._M_ptr.end(), std::ostream_iterator<void *>(std::cout, " - "));
+    //     std::copy(rhs._M_ref.begin(), rhs._M_ref.end(), std::ostream_iterator<void *>(std::cout, " - "));
     //     return out << "]";
     // }
 
 } // namespace more
 
-#endif /* _MAGNETIC_PTR_HPP_ */
+#endif /* _ENTANGLED_PTR_HPP_ */
