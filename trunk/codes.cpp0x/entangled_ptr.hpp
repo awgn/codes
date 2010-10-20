@@ -22,14 +22,14 @@ namespace more {
     template <typename Tp>
     class entangled_ptr
     {              
-    public:
-        friend class enable_entangled_from_this<Tp>;
-
         entangled_ptr(Tp *p)
         : _M_ptr(p)
         {
             _M_ptr->_M_add_entangled_for(this);
         }
+
+    public:
+        friend class enable_entangled_from_this<Tp>;
 
         ~entangled_ptr()
         {   
