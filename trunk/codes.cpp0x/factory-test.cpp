@@ -77,20 +77,20 @@ more::factory<std::string, base, std::string> factory_1;    // factory of object
 
 namespace 
 {
-    // elegant registration: by means of the factory_register object
+    // automatic hook: by means of the factory_register object
 
     more::factory_register<base, der1> _void_1_(factory_0,"der1");
     more::factory_register<base, der2> _void_2_(factory_0,"der2");
-    more::factory_register<base, der3> _void_3_(factory_1,"der3", std::string());
-    more::factory_register<base, der4> _void_4_(factory_1,"der4", std::string());
+    more::factory_register<base, der3> _void_3_(factory_1,"der3", more::fac_arg<std::string>());
+    more::factory_register<base, der4> _void_4_(factory_1,"der4", more::fac_arg<std::string>());
 }
 
 int
 main(int argc, char *argv[])
 {    
-    // basic registration: by invoking the regist() method on the factory object, providing the "id" and the factory_allocator
+    // basic hook: by invoking the regist() method on the factory object, providing the "id" and the factory_allocator
 
-    // factory_0.regist("der1", new more::factory_allocator<der1, base> ); <- this error is trapped by IsBaseOfConcept
+    // factory_0.regist("der1", new more::factory_allocator<der1, base> ); <- this error detected at compile time 
     // factory_0.regist("der2", new more::factory_allocator<base, der2> );
     // factory_1.regist("der3", new more::factory_allocator<base, der3, std::string> );
     // factory_1.regist("der4", new more::factory_allocator<base, der4, std::string> );

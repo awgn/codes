@@ -42,6 +42,9 @@ namespace more {
     // utility: auto-register the allocator of E element (derived from B)
     //                to the F factory
 
+    template <typename Tp>
+    struct fac_arg {};
+
     template <typename B  /* Base */,  
               typename E  /* element */
               >
@@ -50,7 +53,7 @@ namespace more {
         static_assert( std::is_base_of<B,E>::value, "base_of relationship violated");
 
         template <typename F, typename K, typename ...Arg>
-        factory_register(F &f, const K &key, Arg&& ...)
+        factory_register(F &f, const K &key, fac_arg<Arg>&& ...)
         {
             f.regist(key, new typename more::factory_allocator<B, E, Arg...>);    
         }
