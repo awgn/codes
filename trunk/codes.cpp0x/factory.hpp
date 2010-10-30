@@ -27,14 +27,14 @@ namespace more {
         virtual B * alloc(Arg&& ... ) = 0;
     };
 
-    template <typename B, typename D, typename ... Arg >   // B must be a base class of D 
+    template <typename B, typename E, typename ... Arg >   // B must be a base class of E 
     struct factory_allocator : public factory_base_allocator<B,Arg...>
     {
-        static_assert(std::is_base_of<B,D>::value, "base_of relationship violated");
+        static_assert(std::is_base_of<B,E>::value, "base_of relationship violated");
 
-        virtual D * alloc(Arg &&... arg)
+        virtual E * alloc(Arg &&... arg)
         {
-            return new D(std::forward<Arg>(arg)...);
+            return new E(std::forward<Arg>(arg)...);
         }
     };
 
@@ -62,18 +62,18 @@ namespace more {
     /////////////////////////////////////////
     // factory class: K:key -> T:base_element
 
-    template <typename K, typename T, typename ... Arg> 
+    template <typename K, typename B, typename ... Arg> 
     class factory
     {
     public:
-        typedef std::map<K, std::shared_ptr<factory_base_allocator<T,Arg...>>> map_type;
+        typedef std::map<K, std::shared_ptr<factory_base_allocator<B,Arg...>>> map_type;
 
         factory()  = default;
         ~factory() = default;
 
         bool
-        regist(const K & key, factory_base_allocator<T,Arg...> * value)
-        { return _M_map.insert( make_pair(key, std::shared_ptr<factory_base_allocator<T,Arg...> >(value) ) ).second; }
+        regist(const K & key, factory_base_allocator<B,Arg...> * value)
+        { return _M_map.insert(make_pair(key, std::shared_ptr<factory_base_allocator<B,Arg...> >(value))).second; }
         
         bool
         unregist(const K &key)
@@ -85,14 +85,23 @@ namespace more {
             return _M_map.count(key) != 0;
         }
 
-        template <typename ... Ti>
-        std::shared_ptr<T> 
+        template <typename ...Ti>
+        std::shared_ptr<B> 
         operator()(const K &key, Ti&& ... arg) const
         {
             auto it = _M_map.find(key);
             if (it == _M_map.end())
-                return std::shared_ptr<T>();
-            return std::shared_ptr<T>(it->second->alloc(std::forward<Ti>(arg)...));
+                return std::shared_ptr<B>();
+            return std::shared_ptr<B>(it->second->alloc(std::forward<Ti>(arg)...));
+        }
+
+        // static instances... 
+        template <size_t N>
+        static factory &
+        instance()
+        {
+            factory s;
+            return s;
         }
 
     private:
