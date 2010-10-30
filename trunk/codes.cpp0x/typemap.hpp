@@ -39,21 +39,10 @@ namespace more { namespace type {
     // size<Typemap>::value
     //
     template <typename Tm> struct size;
-
-    template <typename T, typename ...Ti>
-    struct size<typemap<T, Ti...>>
+    template <typename ...Ti>
+    struct size<typemap<Ti...>>
     {
-        enum { value = 1 + size<typemap<Ti...>>::value };
-    };
-    template <typename T>
-    struct size<typemap<T>>
-    {
-        enum { value = 1 };
-    };
-    template <>
-    struct size<typemap<>>
-    {
-        enum { value = 0 };
+        enum { value = sizeof...(Ti) };
     };
 
     // append<Typemap, Key, Value>::type
