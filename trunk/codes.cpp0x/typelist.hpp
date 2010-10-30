@@ -25,21 +25,10 @@ namespace more { namespace type {
     // length<>::value            
     //
     template <typename Tl> struct length;
-
-    template <typename T, typename ...Ti>
-    struct length<typelist<T, Ti...>>
+    template <typename ...Ti>
+    struct length<typelist<Ti...>>
     {
-        enum { value = 1 + length<typelist<Ti...>>::value };
-    };
-    template <typename T>
-    struct length<typelist<T>>
-    {
-        enum { value = 1 };
-    };
-    template <>
-    struct length<typelist<>>
-    {
-        enum { value = 0 };
+        enum { value = sizeof...(Ti) };
     };
 
     // at<>::type
