@@ -32,7 +32,7 @@ namespace more {
     {
         static_assert(std::is_base_of<B,E>::value, "base_of relationship violated");
 
-        virtual E * alloc(Arg &&... arg)
+        virtual E * alloc(Arg && ... arg)
         {
             return new E(std::forward<Arg>(arg)...);
         }
@@ -100,7 +100,7 @@ namespace more {
         static factory &
         instance()
         {
-            factory s;
+            static factory s;
             return s;
         }
 
