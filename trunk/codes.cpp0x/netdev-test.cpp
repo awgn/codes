@@ -42,13 +42,15 @@ main(int argc, char *argv[])
     std::cout << "flags.val   : " << dev.flags().value() << std::endl;
     std::cout << "flags.str   : " << dev.flags().str() << std::endl;
 
-    std::cout << "ip          : " << dev.ipaddr() << std::endl;
+    std::cout << "ip-addr     : " << dev.if_addr() << std::endl;
+    std::cout << "ip-destaddr : " << dev.if_dstaddr() << std::endl;
     std::cout << "netmask     : " << dev.netmask() << std::endl;
     std::cout << "broadcast   : " << dev.broadcast() << std::endl;
-    std::cout << "mac         : " << dev.mac() << std::endl;
+    std::cout << "mac         : " << dev.hwaddr() << std::endl;
     std::cout << "mtu         : " << dev.mtu() << std::endl;
     std::cout << "metric      : " << dev.metric() << std::endl;
     std::cout << "index       : " << dev.index() << std::endl;
+    std::cout << "qlen        : " << dev.qlen() << std::endl;
 
     std::cout << "is_up       : " << dev.is_up() << std::endl;
     std::cout << "is_broadcast: " << dev.is_broadcast() << std::endl;

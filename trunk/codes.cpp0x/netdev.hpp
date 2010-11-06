@@ -156,8 +156,11 @@ namespace more { namespace netdev
             return std::string();
         }
 
-        std::string ipaddr() const
+        std::string if_addr() const
         { return inet_addr<SIOCGIFADDR>(); }
+        
+        std::string if_dstaddr() const
+        { return inet_addr<SIOCGIFDSTADDR>(); }
         
         std::string broadcast() const
         { return inet_addr<SIOCGIFBRDADDR>(); }
@@ -166,7 +169,7 @@ namespace more { namespace netdev
         { return inet_addr<SIOCGIFNETMASK>(); }
 
         std::string
-        mac() const 
+        hwaddr() const 
         {
             if (ioctl(_M_sock->fd, SIOCGIFHWADDR, &_M_ifreq_io) == -1 ) {
                 throw std::runtime_error("ioctl: SIOCGIFHWADDR");
@@ -197,9 +200,18 @@ namespace more { namespace netdev
         index() const
         {
             if (ioctl(_M_sock->fd, SIOCGIFINDEX, &_M_ifreq_io) == -1 ) {
-                throw std::runtime_error("ioctl: SIOCGIFMTU");
+                throw std::runtime_error("ioctl: SIOCGIFINDEX");
             }
             return _M_ifreq_io.ifr_ifindex;
+        }
+
+        int
+        qlen() const
+        {
+            if (ioctl(_M_sock->fd, SIOCGIFTXQLEN, &_M_ifreq_io) == -1 ) {
+                throw std::runtime_error("ioctl: SIOCGIFTXQLEN");
+            }
+            return _M_ifreq_io.ifr_qlen;
         }
 
         /// ethtool...
