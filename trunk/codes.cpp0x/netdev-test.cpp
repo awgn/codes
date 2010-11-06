@@ -10,6 +10,21 @@
 
 #include <netdev.hpp>
 #include <iterator>
+#include <algorithm>
+
+struct dump
+{
+    dump(std::ostream &out)
+    : _M_out(out)
+    {}
+
+    void operator()(const more::netdev::ifr &i)
+    {
+        _M_out << i.name() << ' ';
+    }
+
+    std::ostream &_M_out;
+};
 
   int
 main(int argc, char *argv[])
@@ -19,7 +34,7 @@ main(int argc, char *argv[])
     auto devs = more::netdev::ifr::enumerate();
 
     std::cout << "enum        : ";
-    std::copy(devs.begin(), devs.end(), std::ostream_iterator<std::string>(std::cout, " "));
+    std::for_each(devs.begin(), devs.end(), dump(std::cout));
     std::cout << std::endl;
 
     std::cout << "receive_st  : " << dev.receive_stat() << std::endl;
