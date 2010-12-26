@@ -40,13 +40,13 @@ namespace more
     template <typename T>
     struct is_class_or_union : public std::integral_constant<bool, __is_class_or_union_helper<T>::value>
     {};
-
+    
     // has member type helper (using SFINAE... Vandevoorde/Josuttis)
     #define __has_member_type_helper(abc) \
     template <typename T>   \
     class __has_ ## abc ## _helper : public __sfinae_types   \
     {   \
-        template <typename C> static __one test(typename C::abc *);  \
+        template <typename C> static __one test(typename std::remove_reference<typename C::abc>::type *);  \
         template <typename C> static __two test(...);   \
     \
     public: \
@@ -54,66 +54,82 @@ namespace more
     }
 
     __has_member_type_helper(value_type);
-    __has_member_type_helper(type);
+    __has_member_type_helper(pointer);
+    __has_member_type_helper(reference);
+    __has_member_type_helper(const_reference);
     __has_member_type_helper(iterator);
+    __has_member_type_helper(const_iterator);
+    __has_member_type_helper(reverse_iterator);
+    __has_member_type_helper(const_reverse_iterator);
+    __has_member_type_helper(size_type);
+    __has_member_type_helper(difference_type);
+
+    template <typename T>
+    struct has_value_type : public std::integral_constant<bool, __has_value_type_helper<T>::value>
+    {};
+
+    template <typename T>
+    struct has_pointer : public std::integral_constant<bool, __has_pointer_helper<T>::value>
+    {};
+
+    template <typename T>
+    struct has_reference : public std::integral_constant<bool, __has_reference_helper<T>::value>
+    {};
+
+    template <typename T>
+    struct has_const_reference : public std::integral_constant<bool, __has_const_reference_helper<T>::value>
+    {};
 
     template <typename T>
     struct has_iterator : public std::integral_constant<bool, __has_iterator_helper<T>::value>
     {};
+
     template <typename T>
-    struct has_value_type : public std::integral_constant<bool, __has_value_type_helper<T>::value>
+    struct has_const_iterator : public std::integral_constant<bool, __has_const_iterator_helper<T>::value>
     {};
+
     template <typename T>
-    struct has_type : public std::integral_constant<bool, __has_type_helper<T>::value>
+    struct has_reverse_iterator : public std::integral_constant<bool, __has_reverse_iterator_helper<T>::value>
     {};
+
     template <typename T>
-    struct is_container : public std::integral_constant<bool, __has_iterator_helper<T>::value && 
-                                                         __has_value_type_helper<T>::value >
+    struct has_const_reverse_iterator : public std::integral_constant<bool, __has_const_reverse_iterator_helper<T>::value>
+    {};
+    
+    template <typename T>
+    struct has_size_type : public std::integral_constant<bool, __has_size_type_helper<T>::value>
+    {};
+    
+    template <typename T>
+    struct has_difference_type : public std::integral_constant<bool, __has_difference_type_helper<T>::value>
+    {};
+    
+    template <typename T>
+    struct is_container : public std::integral_constant<bool, __has_value_type_helper<T>::value && 
+                                                              __has_reference_helper<T>::value &&  
+                                                              __has_const_reference_helper<T>::value &&  
+                                                              __has_iterator_helper<T>::value && 
+                                                              __has_const_iterator_helper<T>::value && 
+                                                              __has_pointer_helper<T>::value &&  
+                                                              __has_size_type_helper<T>::value &&  
+                                                              __has_difference_type_helper<T>::value 
+                                                               >
     {};
 
     // is_tuple 
     template <typename T>
     class __is_tuple_helper : public __sfinae_types
     {
-        template <int N>
-        struct int2type {};
-
-        template <typename Tp>
-        struct type2type {};
-
-        template <typename C> static __one test(int2type< std::tuple_size<C>::value > *);
+        template <typename C> static __one test(typename std::tuple_element<std::tuple_size<C>::value-1, C>::type *);
         template <typename C> static __two test(...);
 
     public:
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };
     };
 
-#if defined(MORE_USE_BOOST) || defined(__INTEL_COMPILER) 
-#include <boost/fusion/support/is_sequence.hpp>
-    template <typename T>
-    struct is_tuple : public std::integral_constant<bool, boost::fusion::traits::is_sequence<T>::value>
-    {};
-#else    
     template <typename T>
     struct is_tuple : public std::integral_constant<bool, __is_tuple_helper<T>::value>
     {};
-#endif
-
-    // is_metafunction 
-    template <typename T>
-    class __is_metafunction_helper : public __sfinae_types
-    {
-        template <typename C> static __one test_value(std::integral_constant<bool,C::value> *);
-        template <typename C> static __two test_value(...);
-
-    public:
-        enum { value = __has_type_helper<T>::value || (sizeof(test_value<T>(0)) == sizeof(__one)) };
-    };
-
-    template <typename T>
-    struct is_metafunction : public std::integral_constant<bool, __is_metafunction_helper<T>::value>
-    {};
-
 
     // is_pair
     template <typename T>
