@@ -25,7 +25,7 @@ main(int argc, char *argv[])
     v1.push_back(1);
     v1.push_back(2);
 
-    more::streamer::sep(std::cout, " - ");   // set the separator
+    std::cout << more::streamer::sep(" - ");   // set the separator
 
     std::cout << "vector<int>                   :" << v1 << std::endl;
 
@@ -35,9 +35,9 @@ main(int argc, char *argv[])
     v2.push_back('b');
     v2.push_back('c');
 
-    more::streamer::sep(std::cout, "|");    // set the separator
+    std::cout << more::streamer::sep("|");    // set the separator
     std::cout << "vector<char>                  :" << v2 << std::endl;
-    more::streamer::sep(std::cout);    // set the separator
+    std::cout << more::streamer::sep();       // unset the separator
     std::cout << "vector<char>                  :" << v2 << std::endl;
 
     std::list<std::pair<int,int> > l1;
@@ -46,7 +46,7 @@ main(int argc, char *argv[])
     l1.push_back( std::make_pair(1,1) );
     l1.push_back( std::make_pair(2,2) );
 
-    more::streamer::sep(std::cout);         // remove separator
+    std::cout << more::streamer::sep(NULL);         // remove separator
 
     std::cout << "list< std::pair<int,int> >    :" << l1 << std::endl;
 
@@ -55,7 +55,7 @@ main(int argc, char *argv[])
     m["hello"]=0;
     m["world"]=1;
 
-    more::streamer::sep(std::cout, "|");    // set the separator
+    std::cout << more::streamer::sep("|");    // set the separator
     std::cout << "map<std::string,int>          :" << m << std::endl;
 
     std::cout << "std::tuple<int,double>        :" << std::tuple<int,double>(1,1.1) << std::endl;

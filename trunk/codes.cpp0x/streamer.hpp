@@ -22,52 +22,60 @@
 #include <string>
 #include <cstring>
 
-namespace more {
+namespace more { namespace streamer {
 
-    namespace streamer {
+    // construction-on-the-first idiom ensures sep_index will be unique  
+    //
 
-       // construction-on-the-first idiom ensures sep_index will be unique  
+    struct sep {
+
+        sep(const char *s = NULL)
+        : _M_value(s)
+        {}
+
+        static int index()
+        {
+            static int i = std::ios_base::xalloc();
+            return i;
+        }
+
+        const char * _M_value;    
+    };
+
+    template <typename CharT, typename Traits>
+    std::basic_ostream<CharT, Traits> &
+    operator<<(std::basic_ostream<CharT, Traits> &out, const sep &s)
+    {
+        free(reinterpret_cast<void *>(out.iword(sep::index())));
+        out.iword(sep::index()) = reinterpret_cast<long>(s._M_value ? strdup(s._M_value) : 0);
+        return out;
+    }    
+
+    namespace tuplarr {
+
+        // printon policy 
         //
 
-        static int sep_index()
+        template <typename CharT, typename Traits, typename T, int N>
+        struct printon
         {
-            static int index = std::ios_base::xalloc();
-            return index;
-        }    
+            static void apply(std::basic_ostream<CharT,Traits> &out, const T &tupl)
+            {
+                out << std::get< std::tuple_size<T>::value - N>(tupl) << ' ';
+                printon<CharT, Traits, T,N-1>::apply(out,tupl);
+            }
 
-        template <typename CharT, typename Traits>
-        std::basic_ostream<CharT, Traits> &
-        sep(std::basic_ostream<CharT, Traits> &out, const char * sep = NULL)
+        };
+        template <typename CharT, typename Traits, typename T>
+        struct printon<CharT, Traits, T,0>
         {
-            free(reinterpret_cast<void *>(out.iword(sep_index())));
-            out.iword(sep_index()) = reinterpret_cast<long>(sep ? strdup(sep) : 0);
-            return out;
-        }    
-
-        namespace tuplarr {
-
-            // printon policy 
-            //
-
-            template <typename CharT, typename Traits, typename T, int N>
-            struct printon
-            {
-                static void apply(std::basic_ostream<CharT,Traits> &out, const T &tupl)
-                {
-                    out << std::get< std::tuple_size<T>::value - N>(tupl) << ' ';
-                    printon<CharT, Traits, T,N-1>::apply(out,tupl);
-                }
-
-            };
-            template <typename CharT, typename Traits, typename T>
-            struct printon<CharT, Traits, T,0>
-            {
-                static void apply(std::basic_ostream<CharT, Traits> &, const T &)
-                {}
-            };
-        }
+            static void apply(std::basic_ostream<CharT, Traits> &, const T &)
+            {}
+        };
     }
-}
+
+} // namespace streamer
+} // namespace more
 
 namespace std {
 
@@ -82,7 +90,7 @@ namespace std {
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
     {
         std::copy(v.begin(), v.end(), 
-                  std::ostream_iterator<typename T::value_type>(out, reinterpret_cast<char *>(out.iword(more::streamer::sep_index()))));
+                  std::ostream_iterator<typename T::value_type>(out, reinterpret_cast<char *>(out.iword(more::streamer::sep::index()))));
         return out;
     };
 
