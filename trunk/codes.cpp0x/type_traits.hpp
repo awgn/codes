@@ -128,7 +128,7 @@ namespace more
     };
 
     template <typename T>
-    struct is_tuple : public std::integral_constant<bool, __is_tuple_helper<T>::value>
+    struct is_tuple : public std::integral_constant<bool, __is_tuple_helper<T>::value || std::is_same<T, std::tuple<>>::value >
     {};
 
     // is_pair
