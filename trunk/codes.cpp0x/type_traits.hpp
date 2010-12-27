@@ -117,43 +117,23 @@ namespace more
     {};
 
     // is_tuple 
-    template <typename T>
-    class __is_tuple_helper : public __sfinae_types
-    {
-        template <typename C> static __one test(typename std::tuple_element<std::tuple_size<C>::value-1, C>::type *);
-        template <typename C> static __two test(...);
-
-    public:
-        enum { value = sizeof(test<T>(0)) == sizeof(__one) };
-    };
 
     template <typename T>
-    struct is_tuple : public std::integral_constant<bool, __is_tuple_helper<T>::value || std::is_same<T, std::tuple<>>::value >
+    struct is_tuple : public std::integral_constant<bool, false>
+    {};
+
+    template <typename ...Ti>
+    struct is_tuple<std::tuple<Ti...>> : public std::integral_constant<bool, true>
     {};
 
     // is_pair
-    template <typename T>
-    struct  __is_pair
-    {
-    private:
-        template <typename Ty>
-        struct __is_pair_impl
-        {
-            enum { value = 0 };
-        };
 
-        template <typename T1, typename T2>
-        struct __is_pair_impl<std::pair<T1,T2> >
-        {
-            enum { value = 1 };
-        };
-
-    public:
-        enum { value = __is_pair_impl<T>::value };
-    };
-    
     template <typename T>
-    struct is_pair : public std::integral_constant<bool, __is_pair<T>::value>
+    struct is_pair : public std::integral_constant<bool, false>
+    {};
+
+    template <typename T, typename U>
+    struct is_pair<std::pair<T,U>> : public std::integral_constant<bool, true>
     {};
 
     } // namespace traits
