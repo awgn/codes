@@ -13,6 +13,7 @@
 
 #include <cxxabi.h>
 
+#include <ccomplex>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -22,13 +23,26 @@
 #include <cerrno>
 #include <climits>
 #include <ctime>
+#include <cfenv>
+#include <cfloat>
 #include <cstdint>
+#include <cinttypes>
+#include <clocale>
+#include <csetjmp>
+#include <csignal>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdbool>
+#include <cwchar>
+#include <cwctype>
 
+#include <ios>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <streambuf>
 #include <iomanip>
+#include <exception>
 #include <stdexcept>
 #include <typeinfo>
 #include <memory>
@@ -36,6 +50,9 @@
 #include <numeric>
 #include <utility>
 #include <string>
+#include <locale>
+#include <new>
+#include <system_error>
 
 #include <algorithm>
 #include <functional>
@@ -50,6 +67,8 @@
 #include <stack>
 #include <bitset>
 
+#include <initializer_list>
+
 #include <chrono>
 #include <ratio>
 #include <thread>
@@ -61,11 +80,12 @@
 #include <cstdatomic>
 #elif __GNUC__ == 4 &&  __GNUC_MINOR__ == 5
 #include <atomic>
+#include <future>
 #endif
 
 #include <complex>
-#include <cfenv>
 #include <array>
+#include <valarray>
 #include <tuple>
 #include <type_traits>
 #include <random>
