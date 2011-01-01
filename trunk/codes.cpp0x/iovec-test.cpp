@@ -107,7 +107,32 @@ main(int argc, char *argv[])
     std::vector<char> vec4;
     std::vector<iovec> viov4 = more::get_iovec(vec4.begin(), vec4.end());
     std::copy(viov4.begin(), viov4.end(), std::ostream_iterator<iovec>(std::cout, "-"));
-    
-   return 0;
+
+    // iovec_iterator
+    //
+
+    {
+        std::copy(viov.begin(), viov.end(), std::ostream_iterator<iovec>(std::cout, "-"));
+        std::cout << std::endl;
+        auto it = more::get_iovec_iterator<char>(viov);
+        for(; it != more::get_iovec_iterator<char>(); ++it)
+        {
+            std::cout << *it;
+        }
+    }
+
+    {
+        std::copy(viov3.begin(), viov3.end(), std::ostream_iterator<iovec>(std::cout, "-"));
+        std::cout << std::endl;
+        std::cout << viov3.size() << std::endl;
+
+        auto it = more::get_iovec_iterator<unsigned int>(viov3);
+        for(; it != more::get_iovec_iterator<unsigned int>(); ++it)
+        {
+            std::cout << std::hex << *it << ',';
+        }
+    }
+
+    return 0;
 }
 
