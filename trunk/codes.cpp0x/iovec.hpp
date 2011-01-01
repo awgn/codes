@@ -8,8 +8,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef _MORE_IOVEC_HH_
-#define _MORE_IOVEC_HH_ 
+#ifndef _MORE_IOVEC_HPP_
+#define _MORE_IOVEC_HPP_ 
 
 #include <vector>
 #include <iterator>
@@ -52,7 +52,7 @@ namespace more
         struct size_of 
         {
             template <typename T>
-            static typename std::enable_if< std::is_integral<T>::value, size_t>::type 
+            static typename std::enable_if<std::is_integral<T>::value, size_t>::type 
             value(T)
             {
                 return sizeof(T);
@@ -97,8 +97,9 @@ namespace more
         }    
 
         template <typename Iterator>
-        typename std::enable_if< std::is_integral<typename std::iterator_traits<Iterator>::value_type>::value,
-            std::vector<iovec> >::type
+        typename std::enable_if<
+            std::is_integral<typename std::iterator_traits<Iterator>::value_type>::value,
+                std::vector<iovec> >::type
         get_iovec(Iterator __it, Iterator __end, std::random_access_iterator_tag)
         {
             auto n = std::distance(__it,__end);
@@ -114,7 +115,7 @@ namespace more
         }
     }
 
-    // get_iovec algorithm(begin, end): given a range, return a std::vector<iovec> descriptor!
+    // get_iovec algorithm: given a generic range, return a std::vector<iovec> descriptor!
     //
 
     template <typename Iterator>
@@ -124,6 +125,9 @@ namespace more
         return iovec_detail::get_iovec(__it,__end, 
                typename std::iterator_traits<Iterator>::iterator_category());
     } 
+
+    // iovec_iterator: iterate over the iovec descriptor of T objects (usually T is char).
+    //
 
     template <typename T>
     struct iovec_iterator : public std::iterator<std::forward_iterator_tag, T>
@@ -207,6 +211,9 @@ namespace more
         }
     };
 
+    // return begin/end iterators of a std::vector<iovec>
+    //
+    
     template <typename T>
     inline iovec_iterator<T>
     get_iovec_iterator(std::vector<iovec> &iov)
@@ -234,4 +241,4 @@ namespace std
     }
 }
 
-#endif /* _IOVEC_UTILS_HH_ */
+#endif /* _MORE_IOVEC_HPP_ */
