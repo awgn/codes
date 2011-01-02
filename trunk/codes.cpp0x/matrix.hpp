@@ -315,6 +315,11 @@ namespace more {
         {
             return _M_mat.begin();
         }
+        const_iterator 
+        cbegin() const
+        {
+            return _M_mat.begin();
+        }
 
         iterator 
         end() 
@@ -323,6 +328,11 @@ namespace more {
         }
         const_iterator 
         end() const
+        {
+            return _M_mat.end();
+        }
+        const_iterator 
+        cend() const
         {
             return _M_mat.end();
         }
@@ -569,6 +579,11 @@ namespace more {
         {
             return _M_mat.begin();
         }
+        const_iterator 
+        cbegin() const
+        {
+            return _M_mat.begin();
+        }
 
         iterator 
         end() 
@@ -577,6 +592,11 @@ namespace more {
         }
         const_iterator 
         end() const
+        {
+            return _M_mat.end();
+        }
+        const_iterator 
+        cend() const
         {
             return _M_mat.end();
         }
@@ -765,8 +785,8 @@ namespace more {
     inline typename std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT,Traits> &out, const matrix<Tp,R,C> & rhs)
     {   
-        typename matrix<Tp,R,C>::const_iterator it = rhs.begin();
-        typename matrix<Tp,R,C>::const_iterator it_end = rhs.end();
+        auto it = rhs.cbegin();
+        auto it_end = rhs.cend();
 
         out << *it++ << ' ';
         for(int col = rhs.col(); it != it_end; ++it)

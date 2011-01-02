@@ -126,7 +126,6 @@ namespace more { namespace gotopt {
 
         // iterators...
         //
-
         const_iterator
         begin() const
         {

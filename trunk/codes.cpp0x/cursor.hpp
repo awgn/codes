@@ -184,6 +184,12 @@ namespace more {
             return _M_beg;
         }
 
+        const_iterator
+        cbegin() const
+        { 
+            return _M_beg;
+        }
+
         iterator
         end() 
         {
@@ -192,6 +198,12 @@ namespace more {
 
         const_iterator
         end() const 
+        {
+            return _M_end;
+        }
+
+        const_iterator
+        cend() const 
         {
             return _M_end;
         }

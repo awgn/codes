@@ -26,12 +26,10 @@ namespace more {
     template <typename It, typename Distance >  
     int levenshtein_distance(It __beg, It __end, It __beg2, It __end2, Distance dist)
     {
-        typedef typename std::iterator_traits<It>::difference_type difference_type;
-        typedef typename std::iterator_traits<It>::value_type value_type;
         typedef std::vector<std::vector<int> > matrix_type;
         
-        const difference_type n = std::distance(__beg,  __end);
-        const difference_type m = std::distance(__beg2, __end2);
+        auto n = std::distance(__beg,  __end);
+        auto m = std::distance(__beg2, __end2);
    
         if (!(n && m))
            return n ? : m;
@@ -58,7 +56,6 @@ namespace more {
                 const int left  = matrix[i][j-1];
                 const int diag  = matrix[i-1][j-1];
                 int cell = std::min(above + 1, std::min(left + 1, diag + cost));
-
                 matrix[i][j] = cell;
             }
         }

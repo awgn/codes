@@ -355,7 +355,15 @@ namespace more {
         { return _M_group.begin(); }
 
         const_iterator
+        cbegin() const
+        { return _M_group.begin(); }
+        
+        const_iterator
         end() const
+        { return _M_group.end(); }
+        
+        const_iterator
+        cend() const
         { return _M_group.end(); }
 
         bool add(exec *ptr)
