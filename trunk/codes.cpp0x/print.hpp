@@ -87,36 +87,37 @@ namespace more {
     }
 
     template <typename CharT, typename Traits, typename ... Ts>
-    inline void print(std::basic_ostream<CharT, Traits> &out, const char *fmt, const Ts&... args)
+    void print(std::basic_ostream<CharT, Traits> &out, const char *fmt, const Ts&... args)
     {
-        enum __state { zero, percent, digit } state = zero;
+        enum class state { zero, percent, digit }; 
+        state s = state::zero;
         int n = 0;
 
         for(const char * p = fmt; *p != '\0'; ++p)
         {
             const char c = *p;
-            switch(state)
+            switch(s)
             {
-            case zero: 
+            case state::zero: 
                 {
                     if(c != '%') {
                         out.put(c); continue;
                     }
-                    state = percent; continue;      
+                    s = state::percent; continue;      
                 }
-            case percent:
+            case state::percent:
                 {
                     if(isdigit(c)) {
                         n = (n*10)+(c-'0');
-                        state = digit; continue;
+                        s = state::digit; continue;
                     }
                     if(c == '%')  {
                         out.put('%');
-                        state = zero; continue;
+                        s = state::zero; continue;
                     }
                     throw std::runtime_error("%format error%");
                 }
-            case digit:
+            case state::digit:
                 {
                     if (isdigit(c)) {
                         n = (n*10)+(c-'0');
@@ -124,19 +125,19 @@ namespace more {
                     }
                     if (c == '%') {
                         detail::stream_on(out, n, 1, args...);
-                        n = 0; state = percent; continue;
+                        n = 0; s = state::percent; continue;
                     }
                     detail::stream_on(out, n, 1, args...);
                     out.put(c); 
-                    n = 0; state = zero; continue;
+                    n = 0; s = state::zero; continue;
                 }
             }    
         }
-        if (state == percent)
-            throw std::runtime_error("%format error %");
-
-        if (state == digit)
+        if (s == state::digit)
             detail::stream_on(out, n, 1, args...);
+        
+        if (s == state::percent)
+            throw std::runtime_error("%format error%");
     }
     
     ///////////////////////////////////////////////////////////////////////////
