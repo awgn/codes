@@ -27,7 +27,7 @@
 namespace more { 
     
     ///////////////////////////////////////////////////////////////////////
-    // flags manipulator: example -> as::flag<std::ios::hex>(42)
+    // flags manipulator: example -> flag<std::ios::hex>(42)
     // 
 
     template <std::ios_base::fmtflags Fs, typename Tp>
@@ -40,7 +40,7 @@ namespace more {
     };
 
     template <typename CharT, typename Traits, typename Tp, std::ios_base::fmtflags Fs>
-    typename std::basic_ostream<CharT, Traits> &
+    inline typename std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT,Traits> &out, const _flags<Fs,Tp> & rhs)
     {
         std::ostream tmp(out.rdbuf());
@@ -64,13 +64,13 @@ namespace more {
     namespace detail {
 
         template <typename CharT, typename Traits>
-        void stream_on(std::basic_ostream<CharT, Traits> &, int, int) 
+        inline void stream_on(std::basic_ostream<CharT, Traits> &, int, int) 
         {
             throw std::runtime_error("%format error%");
         }
 
         template <typename CharT, typename Traits, typename T, typename ... Ts>
-        void stream_on(std::basic_ostream<CharT, Traits> &out, int n, int x, const T &arg0, const Ts& ...args) 
+        inline void stream_on(std::basic_ostream<CharT, Traits> &out, int n, int x, const T &arg0, const Ts& ...args) 
         {
             if (n != x) {
                 stream_on(out, n, x+1, args...);
@@ -178,6 +178,6 @@ namespace more {
         *sb.end() = '\0';
     }
  
-} // namespace as
+} // namespace more
 
 #endif /* _MORE_PRINT_HPP_ */
