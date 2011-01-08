@@ -69,6 +69,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         add_executable(type_traits_test type_traits-test.cpp)   
         add_executable(value_ptr-test value_ptr-test.cpp)
         add_executable(variant-test variant-test.cpp)
+        add_executable(yats-test yats-test.cpp)
 
 target_link_libraries(cpufreq-test -lcpufreq)
 target_link_libraries(pcap-test -lpcap)
