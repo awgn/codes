@@ -89,7 +89,8 @@ namespace more
         static typename singleton_base::add_cv_qualifier<T,Ty>::type& 
         instance(Arg&& ... arg)
         {
-            static typename singleton_base::add_cv_qualifier<T,Ty>::type one(typename base_type::tag(), arg...);
+            static typename singleton_base::add_cv_qualifier<T,Ty>::type one(typename base_type::tag(), 
+                                                                             std::forward<Arg>(arg)...);
             return one;
         }
     };
@@ -111,7 +112,8 @@ namespace more
         instance(Arg && ...arg)
         {
             static typename singleton_base::add_cv_qualifier<T,Ty>::type * one = 
-                new typename singleton_base::add_cv_qualifier<T,Ty>::type(typename base_type::tag(), arg...);
+                new typename singleton_base::add_cv_qualifier<T,Ty>::type(typename base_type::tag(), 
+                                                                          std::forward<Arg>(arg)...);
             return *one;
         }
     };

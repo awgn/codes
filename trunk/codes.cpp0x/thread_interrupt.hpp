@@ -107,13 +107,13 @@ namespace more {
 
         // the thread is passed the interrupt request as last argument.
         //
-        std::thread t(args..., req);
+        std::thread th(std::forward<Types>(args)..., req);
 
         // store the request for a later interruption...
         //
-        thread_interrupt::interrupt_request_store(t.get_id(), req);
+        thread_interrupt::interrupt_request_store(th.get_id(), req);
 
-        return std::move(t); 
+        return th; 
     }
 
 } // namespace more

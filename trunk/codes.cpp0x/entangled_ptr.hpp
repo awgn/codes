@@ -138,8 +138,7 @@ namespace more {
         entangled_ptr<Tp>
         entangled_from_this()
         {
-            entangled_ptr<Tp> ret(static_cast<Tp *>(this));
-            return std::move(ret);
+            return entangled_ptr<Tp>(static_cast<Tp *>(this));
         }
 
     private:
