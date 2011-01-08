@@ -26,15 +26,15 @@
 #endif
 
 #define Context(ctx) \
-namespace ctx { static const char __context[] = #ctx; } \
+namespace ctx { static const char _context[] = #ctx; } \
 namespace ctx
  
 #define Test(type) \
 void test_ ## type(const char *); \
 yats::test_register hook_ ## type(test_ ##type, #type); \
-void test_ ## type(const char *__name)
+void test_ ## type(const char *_name)
 
-#define Assert(x,pred)          _Assert(x, pred, __context, __name, __LINE__)
+#define Assert(x,pred)          _Assert(x, pred, _context, _name, __LINE__)
 #define Assert_nothrow(x)       _Assert_nothrow(x, __LINE__)
 #define Assert_throw(x)         _Assert_throw(x, __LINE__)
 #define Assert_throw_type(x,t)  _Assert_throw_type(x, t, __LINE__)
@@ -47,7 +47,7 @@ try \
 catch(std::exception &e) \
 {           \
     std::ostringstream err; \
-    err << std::boolalpha << "Test " << __context << "::" << __name  \
+    err << std::boolalpha << "Test " << _context << "::" << _name  \
                         << " -> exception not expected. Got " \
                         << yats::type_name(e) << "(\"" << e.what() << "\")" \
                         << " error at line " << line; \
@@ -56,7 +56,7 @@ catch(std::exception &e) \
 catch(...) \
 {           \
     std::ostringstream err; \
-    err << std::boolalpha << "Test " << __context << "::" << __name  \
+    err << std::boolalpha << "Test " << _context << "::" << _name  \
                         << " -> exception not expected. Got unknown exception error at line " << line; \
     throw std::runtime_error(err.str()); \
 } 
@@ -75,7 +75,7 @@ catch(...) \
     if (!thrown) \
     {  \
         std::ostringstream e; \
-        e << std::boolalpha << "Test " << __context << "::" << __name  \
+        e << std::boolalpha << "Test " << _context << "::" << _name  \
                             << " -> exception expected. Error at line " << line; \
         throw std::runtime_error(e.str()); \
     }  \
@@ -92,7 +92,7 @@ catch(...) \
     { \
         if (typeid(e).name() != typeid(type).name()) { \
             std::ostringstream err; \
-            err << std::boolalpha << "Test " << __context << "::" << __name  \
+            err << std::boolalpha << "Test " << _context << "::" << _name  \
                             << " -> exception " << yats::type_name<type>()  \
                             <<  " expected. Got " << yats::type_name(e) << " error at line " << line; \
             throw std::runtime_error(err.str()); \
@@ -102,7 +102,7 @@ catch(...) \
     if (!thrown) \
     {  \
         std::ostringstream err; \
-        err << std::boolalpha << "Test " << __context << "::" << __name  \
+        err << std::boolalpha << "Test " << _context << "::" << _name  \
                             << " -> exception " << yats::type_name<type>() << " expected. Error at line " << line; \
         throw std::runtime_error(err.str()); \
     }  \
@@ -207,27 +207,27 @@ namespace yats
     };
 
     template <typename T>
-    void _Assert(T &&__value, const predicate<T> &pred, const char *__ctx, const char *__name, int line)
+    void _Assert(T &&_value, const predicate<T> &pred, const char *_ctx, const char *_name, int line)
     {
-        if (!pred(std::forward<T>(__value))) {
+        if (!pred(std::forward<T>(_value))) {
             std::ostringstream e;
-            e << std::boolalpha << "Test " << __ctx << "::" << __name 
+            e << std::boolalpha << "Test " << _ctx << "::" << _name 
                                 << " -> predicate " << pred.descr << "(" << pred.value 
-                                << ") failed: got (" << __value <<  "). Error at line " << line;
+                                << ") failed: got (" << _value <<  "). Error at line " << line;
             throw std::runtime_error(e.str());
         }
     }
 
     /// standard predicates...
 
-#define std_functional(__name__) \
+#define std_functional(_name_) \
     template <typename T> \
     inline predicate<T> \
-    is_ ## __name__ (T &&value)  \
+    is_ ## _name_ (T &&value)  \
     {                        \
-        return predicate<T>("is_" #__name__,  \
+        return predicate<T>("is_" #_name_,  \
                             std::function<bool(T&&)>( \
-                                std::bind(std::__name__<T>(), _1, std::forward<T>(value))), \
+                                std::bind(std::_name_<T>(), _1, std::forward<T>(value))), \
                                 std::forward<T>(value)); \
     }
 
