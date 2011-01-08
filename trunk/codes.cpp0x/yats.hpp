@@ -97,12 +97,13 @@ catch(...) \
                             <<  " expected. Got " << yats::type_name(e) << " error at line " << line; \
             throw std::runtime_error(err.str()); \
         } \
+        thrown = true; \
     }  \
     if (!thrown) \
     {  \
         std::ostringstream err; \
         err << std::boolalpha << "Test " << __context << "::" << __name  \
-                            << " -> exception expected. Error at line " << line; \
+                            << " -> exception " << yats::type_name<type>() << " expected. Error at line " << line; \
         throw std::runtime_error(err.str()); \
     }  \
 }
