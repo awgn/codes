@@ -222,7 +222,7 @@ namespace yats
 
 #define std_functional(__name__) \
     template <typename T> \
-    predicate<T>           \
+    inline predicate<T> \
     is_ ## __name__ (T &&value)  \
     {                        \
         return predicate<T>("is_" #__name__,  \
@@ -240,7 +240,7 @@ namespace yats
 
     /// boolean...
 
-    predicate<bool>
+    inline predicate<bool>
     is_true()
     {
         return predicate<bool>("is_boolean",  
@@ -248,7 +248,7 @@ namespace yats
                                 std::bind(std::equal_to<bool>(), _1, true)), true); 
     }
     
-    predicate<bool>
+    inline predicate<bool>
     is_false()
     {
         return predicate<bool>("is_boolean",  
