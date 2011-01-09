@@ -30,20 +30,20 @@
 namespace ctx { static const char _context_name[] = #ctx; } \
 namespace ctx
  
-#define Test(type) \
-void test_ ## type(const char *); \
-yats::test_register hook_ ## type(test_ ##type, _context_name, #type); \
-void test_ ## type(const char *_name)
+#define Test(name) \
+void test_ ## name(const char *); \
+yats::task_register hook_ ## name(test_ ## name, task_register::type::test, _context_name, #name); \
+void test_ ## name(const char *_name)
 
 #define Setup(name) \
-void setup_ ## name(); \
-yats::fixture_register fixture_ ## name(setup_ ## name, fixture_register::type::setup, _context_name); \
-void setup_ ## name()
+void setup_ ## name(const char *); \
+yats::task_register fixture_ ## name(setup_ ## name, task_register::type::setup, _context_name); \
+void setup_ ## name(const char *)
 
 #define Teardown(name) \
-void teardown_ ## name(); \
-yats::fixture_register fixture_ ## name(teardown_ ## name, fixture_register::type::teardown, _context_name); \
-void teardown_ ## name()
+void teardown_ ## name(const char *); \
+yats::task_register fixture_ ## name(teardown_ ## name, task_register::type::teardown, _context_name); \
+void teardown_ ## name(const char *)
 
 #define Assert(x,pred)          _Assert(x, pred, _context_name, _name, __LINE__)
 #define Assert_nothrow(x)       _Assert_nothrow(x, __LINE__)
@@ -225,32 +225,27 @@ namespace yats
         return n == tot_task ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
-    struct test_register
+    struct task_register
     {
-        test_register(void(*f)(const char *), const char * ctx, const char *test)
+        enum class type { test, setup, teardown };
+
+        task_register(void(*f)(const char *), type t, const char * ctx, const char *name= "")
         {
             auto i = context::instance().insert(std::make_pair(ctx, context(ctx)));
-            i.first->second.task_list.push_back(std::make_pair(std::bind(f, test), test));        
-        }
-    };
 
-    struct fixture_register
-    {
-        enum class type { setup, teardown };
-
-        fixture_register(void(*f)(), type t, const char * ctx)
-        {
-            auto i = context::instance().insert(std::make_pair(ctx, context(ctx)));
             switch(t)
             {
+            case type::test:    
+                i.first->second.task_list.push_back(std::make_pair(std::bind(f, name), name));        
+                break;
             case type::setup:
-                i.first->second.setup.push_back(std::function<void()>(f)); 
+                i.first->second.setup.push_back(std::bind(f,name)); 
                 break;
             case type::teardown:
-                i.first->second.teardown.push_back(std::function<void()>(f)); 
+                i.first->second.teardown.push_back(std::bind(f,name)); 
                 break;
             default:
-                throw std::runtime_error("fixture_register");
+                throw std::runtime_error("task_register");
             }
         }
     };
