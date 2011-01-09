@@ -35,6 +35,16 @@ void test_ ## type(const char *); \
 yats::test_register hook_ ## type(test_ ##type, _context_name, #type); \
 void test_ ## type(const char *_name)
 
+#define Setup(name) \
+void setup_ ## name(); \
+yats::fixture_register fixture_ ## name(setup_ ## name, fixture_register::type::setup, _context_name); \
+void setup_ ## name()
+
+#define Teardown(name) \
+void teardown_ ## name(); \
+yats::fixture_register fixture_ ## name(teardown_ ## name, fixture_register::type::teardown, _context_name); \
+void teardown_ ## name()
+
 #define Assert(x,pred)          _Assert(x, pred, _context_name, _name, __LINE__)
 #define Assert_nothrow(x)       _Assert_nothrow(x, __LINE__)
 #define Assert_throw(x)         _Assert_throw(x, __LINE__)
@@ -153,8 +163,8 @@ namespace yats
         typedef std::function<void()> task;
 
         std::string name;
-        std::function<void()> setup;
-        std::function<void()> teardown;
+        std::vector<task> setup;
+        std::vector<task> teardown;
         std::vector<std::pair<task,std::string>> task_list;
         
         static std::map<std::string, context> &
@@ -182,11 +192,16 @@ namespace yats
 
         unsigned int n = 0;
         std::cout << "Running " << tot_task << " tests in " << context::instance().size() << " contexts." << std::endl;
-        
+
+        // iterate over contexts:        
         for(; it != it_e; ++it) 
         {
             auto i = it->second.task_list.begin(),
                  i_e = it->second.task_list.end();
+
+            // run setup:
+            std::for_each(it->second.setup.begin(), it->second.setup.end(), 
+                          std::mem_fn(&context::task::operator()));
 
             for(; i != i_e; ++i)
             {
@@ -200,6 +215,10 @@ namespace yats
                     std::cerr << e.what() << std::endl;
                 }
             }
+            
+            // run teardown:
+            std::for_each(it->second.teardown.begin(), it->second.teardown.end(), 
+                          std::mem_fn(&context::task::operator()));
         }
 
         std::cerr << tot_task - n << " tests failed." << std::endl;
@@ -215,20 +234,45 @@ namespace yats
         }
     };
 
+    struct fixture_register
+    {
+        enum class type { setup, teardown };
+
+        fixture_register(void(*f)(), type t, const char * ctx)
+        {
+            auto i = context::instance().insert(std::make_pair(ctx, context(ctx)));
+            switch(t)
+            {
+            case type::setup:
+                i.first->second.setup.push_back(std::function<void()>(f)); 
+                break;
+            case type::teardown:
+                i.first->second.teardown.push_back(std::function<void()>(f)); 
+                break;
+            default:
+                throw std::runtime_error("fixture_register");
+            }
+        }
+    };
+
     template <typename T>
     struct predicate
     {
-        T value;
+        std::pair<T,bool> value;
         const char * descr;
         std::function<bool(T&&)> fun;
 
         predicate(const char * _descr, std::function<bool(T&&)> _fun, T _value)
-        : value(_value), descr(_descr), fun(_fun)
+        : value(std::make_pair(_value, true)), descr(_descr), fun(_fun)
         {}
-
-        bool operator()(T &&value) const
+        
+        predicate(const char * _descr, std::function<bool(T&&)> _fun)
+        : value(), descr(_descr), fun(_fun)
+        {}
+        
+        bool operator()(T &&_value) const
         {
-            return fun(std::forward<T>(value));
+            return fun(std::forward<T>(_value));
         }
     };
 
@@ -236,11 +280,13 @@ namespace yats
     void _Assert(T &&_value, const predicate<T> &pred, const char *_ctx, const char *_name, int line)
     {
         if (!pred(std::forward<T>(_value))) {
-            std::ostringstream e;
-            e << std::boolalpha << "Test " << _ctx << "::" << _name 
-                                << " -> predicate " << pred.descr << "(" << pred.value 
-                                << ") failed: got (" << _value <<  "). Error at line " << line;
-            throw std::runtime_error(e.str());
+            std::ostringstream err;
+            err << std::boolalpha << "Test " << _ctx << "::" << _name 
+                                << " -> predicate " << pred.descr; 
+            if (pred.value.second)
+                err << '(' << pred.value.first << ')'; 
+            err << " failed: got (" << _value <<  "). Error at line " << line;
+            throw std::runtime_error(err.str());
         }
     }
 
@@ -281,6 +327,15 @@ namespace yats
                             std::function<bool(bool)>(
                                 std::bind(std::equal_to<bool>(), _1, false)), false); 
     }
+
+    // generic predicate: bool(Tp)
+
+    template <typename Tp, typename Fn>
+    inline predicate<Tp>
+    generic_predicate(const char *name, Fn fun)
+    {
+        return predicate<Tp>(name, std::function<bool(Tp &&)>(fun));
+    } 
 }
 
 #endif /* _YATS_HPP_ */

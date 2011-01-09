@@ -14,6 +14,7 @@ using namespace yats;
 
 Context(good_context)
 {
+
     Test(test_0)
     {
         Assert(std::vector<int>().empty(), is_true());
@@ -76,8 +77,27 @@ Context(good_context)
     }
 }
 
+
 Context(bad_context)
 {
+    Setup(first)
+    {
+        std::cout << "_________________________________" << std::endl;
+    }
+    Setup(init)
+    {
+        std::cout << "[*] Starting bad_context tests..." << std::endl;
+    }
+
+    Teardown(fini)
+    {
+        std::cout << "[*] bad_context tests finished." << std::endl;
+    }
+    Teardown(last)
+    {
+        std::cout << "_________________________________" << std::endl;
+    }
+    
     Test(test_0)
     {
         Assert(std::vector<int>().empty(), is_false());
@@ -154,6 +174,18 @@ Context(bad_context)
     Test(test_12)
     {
         Assert_throw_type(fun_nothrow(), std::logic_error);
+    }
+   
+    // generic predicate:
+
+    bool is_even(int n)
+    {
+        return !(n&1);
+    }
+
+    Test(test_13)
+    {
+        Assert(11, generic_predicate<int>("is_even", is_even));
     }
 }
 
