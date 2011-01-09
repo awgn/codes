@@ -20,21 +20,22 @@
 #include <typeinfo>
 #include <vector>
 #include <memory>
+#include <map>
 
 #ifdef __linux__
 #include <cxxabi.h>
 #endif
 
 #define Context(ctx) \
-namespace ctx { static const char _context[] = #ctx; } \
+namespace ctx { static const char _context_name[] = #ctx; } \
 namespace ctx
  
 #define Test(type) \
 void test_ ## type(const char *); \
-yats::test_register hook_ ## type(test_ ##type, #type); \
+yats::test_register hook_ ## type(test_ ##type, _context_name, #type); \
 void test_ ## type(const char *_name)
 
-#define Assert(x,pred)          _Assert(x, pred, _context, _name, __LINE__)
+#define Assert(x,pred)          _Assert(x, pred, _context_name, _name, __LINE__)
 #define Assert_nothrow(x)       _Assert_nothrow(x, __LINE__)
 #define Assert_throw(x)         _Assert_throw(x, __LINE__)
 #define Assert_throw_type(x,t)  _Assert_throw_type(x, t, __LINE__)
@@ -47,7 +48,7 @@ try \
 catch(std::exception &e) \
 {           \
     std::ostringstream err; \
-    err << std::boolalpha << "Test " << _context << "::" << _name  \
+    err << std::boolalpha << "Test " << _context_name << "::" << _name  \
                         << " -> exception not expected. Got " \
                         << yats::type_name(e) << "(\"" << e.what() << "\")" \
                         << " error at line " << line; \
@@ -56,7 +57,7 @@ catch(std::exception &e) \
 catch(...) \
 {           \
     std::ostringstream err; \
-    err << std::boolalpha << "Test " << _context << "::" << _name  \
+    err << std::boolalpha << "Test " << _context_name << "::" << _name  \
                         << " -> exception not expected. Got unknown exception error at line " << line; \
     throw std::runtime_error(err.str()); \
 } 
@@ -75,7 +76,7 @@ catch(...) \
     if (!thrown) \
     {  \
         std::ostringstream e; \
-        e << std::boolalpha << "Test " << _context << "::" << _name  \
+        e << std::boolalpha << "Test " << _context_name << "::" << _name  \
                             << " -> exception expected. Error at line " << line; \
         throw std::runtime_error(e.str()); \
     }  \
@@ -92,7 +93,7 @@ catch(...) \
     { \
         if (typeid(e).name() != typeid(type).name()) { \
             std::ostringstream err; \
-            err << std::boolalpha << "Test " << _context << "::" << _name  \
+            err << std::boolalpha << "Test " << _context_name << "::" << _name  \
                             << " -> exception " << yats::type_name<type>()  \
                             <<  " expected. Got " << yats::type_name(e) << " error at line " << line; \
             throw std::runtime_error(err.str()); \
@@ -102,7 +103,7 @@ catch(...) \
     if (!thrown) \
     {  \
         std::ostringstream err; \
-        err << std::boolalpha << "Test " << _context << "::" << _name  \
+        err << std::boolalpha << "Test " << _context_name << "::" << _name  \
                             << " -> exception " << yats::type_name<type>() << " expected. Error at line " << line; \
         throw std::runtime_error(err.str()); \
     }  \
@@ -147,27 +148,51 @@ namespace yats
         return cxa_demangle(typeid(t).name());
     }
     
-    typedef std::function<void()> test_fun;
-
-    struct test
+    struct context
     {
-        static std::vector<std::pair<test_fun,std::string>> &
-        list()
+        typedef std::function<void()> task;
+
+        std::string name;
+        std::function<void()> setup;
+        std::function<void()> teardown;
+        std::vector<std::pair<task,std::string>> task_list;
+        
+        static std::map<std::string, context> &
+        instance()
         {
-            static std::vector<std::pair<test_fun,std::string>> ret;
-            return ret; 
+            static std::map<std::string, context> m;
+            return m;
+        }
+        
+        context(const std::string &n)
+        : name(n), setup(), teardown(), task_list()
+        {}
+    };
+
+    static int run()
+    {
+        auto it = context::instance().begin(),
+             it_e = context::instance().end();
+
+        unsigned int tot_task = 0;
+        for(auto i = it; i != it_e; ++i)
+        {
+            tot_task += i->second.task_list.size();
         }
 
-        static int run()
+        unsigned int n = 0;
+        std::cout << "Running " << tot_task << " tests in " << context::instance().size() << " contexts." << std::endl;
+        
+        for(; it != it_e; ++it) 
         {
-            unsigned int n = 0;
-            std::cout << "Running " << list().size() << " tests." << std::endl;
-            
-            for(auto it = list().begin(), it_e = list().end(); it != it_e; ++it)
+            auto i = it->second.task_list.begin(),
+                 i_e = it->second.task_list.end();
+
+            for(; i != i_e; ++i)
             {
                 try
                 {
-                    it->first.operator()();
+                    i->first.operator()();
                     n++;  
                 }   
                 catch(std::exception &e)
@@ -175,17 +200,18 @@ namespace yats
                     std::cerr << e.what() << std::endl;
                 }
             }
-
-            std::cerr << list().size() - n << " tests failed." << std::endl;
-            return n == list().size() ? EXIT_SUCCESS : EXIT_FAILURE;
         }
-    };
+
+        std::cerr << tot_task - n << " tests failed." << std::endl;
+        return n == tot_task ? EXIT_SUCCESS : EXIT_FAILURE;
+    }
 
     struct test_register
     {
-        test_register(void(*f)(const char *), const char *name)
+        test_register(void(*f)(const char *), const char * ctx, const char *test)
         {
-            test::list().push_back(std::make_pair(std::bind(f, name), name));        
+            auto i = context::instance().insert(std::make_pair(ctx, context(ctx)));
+            i.first->second.task_list.push_back(std::make_pair(std::bind(f, test), test));        
         }
     };
 
