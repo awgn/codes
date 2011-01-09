@@ -162,10 +162,6 @@ Context(bad_context)
     {
         Assert_throw(fun_nothrow());
     }
-    Test(test_10_ok)
-    {
-        Assert_throw(fun_throw(0));
-    }
 
     Test(test_11)
     {
