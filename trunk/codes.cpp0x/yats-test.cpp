@@ -9,7 +9,6 @@
  */
 
 #include <yats.hpp>
-
 using namespace yats;
 
 Context(good_context)
@@ -68,12 +67,12 @@ Context(good_context)
     
     Test(test_9)
     {
-        Assert_nothrow(fun_nothrow());
+        Assert_Nothrow(fun_nothrow());
     }
     
     Test(test_12)
     {
-        Assert_throw_type(fun_throw(std::logic_error("ok")), std::logic_error);
+        Assert_Throw_Type(fun_throw(std::logic_error("ok")), std::logic_error);
     }
 }
 
@@ -151,25 +150,25 @@ Context(bad_context)
 
     Test(test_8)
     {
-        Assert_nothrow(fun_throw(std::runtime_error("error")));
+        Assert_Nothrow(fun_throw(std::runtime_error("error")));
     }
     Test(test_9)
     {
-        Assert_nothrow(fun_throw(0));
+        Assert_Nothrow(fun_throw(0));
     }
  
     Test(test_10)
     {
-        Assert_throw(fun_nothrow());
+        Assert_Throw(fun_nothrow());
     }
 
     Test(test_11)
     {
-        Assert_throw_type(fun_throw(std::runtime_error("error")), std::logic_error);
+        Assert_Throw_Type(fun_throw(std::runtime_error("error")), std::logic_error);
     }
     Test(test_12)
     {
-        Assert_throw_type(fun_nothrow(), std::logic_error);
+        Assert_Throw_Type(fun_nothrow(), std::logic_error);
     }
    
     // generic predicate:

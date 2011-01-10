@@ -45,12 +45,12 @@ void teardown_ ## name(const char *); \
 yats::task_register fixture_ ## name(teardown_ ## name, task_register::type::teardown, _context_name); \
 void teardown_ ## name(const char *)
 
-#define Assert(x,pred)          _Assert(x, pred, _context_name, _name, __LINE__)
-#define Assert_nothrow(x)       _Assert_nothrow(x, __LINE__)
-#define Assert_throw(x)         _Assert_throw(x, __LINE__)
-#define Assert_throw_type(x,t)  _Assert_throw_type(x, t, __LINE__)
+#define Assert(value,pred)      _Assert(value, pred, _context_name, _name, __LINE__)
+#define Assert_Nothrow(x)       _Assert_Nothrow(x, __LINE__)
+#define Assert_Throw(x)         _Assert_Throw(x, __LINE__)
+#define Assert_Throw_Type(x,t)  _Assert_Throw_Type(x, t, __LINE__)
 
-#define _Assert_nothrow(x,line) \
+#define _Assert_Nothrow(x,line) \
 try \
 { \
     x; \
@@ -72,7 +72,7 @@ catch(...) \
     throw std::runtime_error(err.str()); \
 } 
 
-#define _Assert_throw(x,line) \
+#define _Assert_Throw(x,line) \
 { \
     bool thrown = false; \
     try \
@@ -92,7 +92,7 @@ catch(...) \
     }  \
 }
 
-#define _Assert_throw_type(x, type, line) \
+#define _Assert_Throw_Type(x, type, line) \
 { \
     bool thrown = false; \
     try \
@@ -255,26 +255,26 @@ namespace yats
     {
         std::pair<typename std::remove_reference<T>::type,bool> value;
         const char * descr;
-        std::function<bool(T&&)> fun;
+        std::function<bool(const T&)> fun;
 
-        predicate(const char * _descr, std::function<bool(T&&)> _fun, T&& _value)
+        predicate(const char * _descr, std::function<bool(const T&)> _fun, const T& _value)
         : value(std::make_pair(_value, true)), descr(_descr), fun(_fun)
         {}
         
-        predicate(const char * _descr, std::function<bool(T&&)> _fun)
+        predicate(const char * _descr, std::function<bool(const T&)> _fun)
         : value(), descr(_descr), fun(_fun)
         {}
         
-        bool operator()(T &&_value) const
+        bool operator()(const T &_value) const
         {
-            return fun(std::forward<T>(_value));
+            return fun(_value);
         }
     };
 
-    template <typename T>
-    void _Assert(T &&_value, const predicate<T> &pred, const char *_ctx, const char *_name, int line)
+    template <typename T1, typename T2>
+    void _Assert(const T1 &_value, const predicate<T2> &pred, const char *_ctx, const char *_name, int line)
     {
-        if (!pred(std::forward<T>(_value))) {
+        if (!pred(_value)) {
             std::ostringstream err;
             err << std::boolalpha << "Test " << _ctx << "::" << _name 
                                 << " -> predicate " << pred.descr; 
@@ -290,12 +290,12 @@ namespace yats
 #define std_functional(_name_) \
     template <typename T> \
     inline predicate<T> \
-    is_ ## _name_ (T &&value)  \
+    is_ ## _name_ (const T &value)  \
     {                        \
         return predicate<T>("is_" #_name_,  \
-                            std::function<bool(T&&)>( \
-                                std::bind(std::_name_<T>(), _1, std::forward<T>(value))), \
-                                std::forward<T>(value)); \
+                            std::function<bool(const T&)>( \
+                                std::bind(std::_name_<T>(), _1, value)), \
+                                value); \
     }
 
     std_functional(greater)
@@ -329,7 +329,7 @@ namespace yats
     inline predicate<Tp>
     generic_predicate(const char *name, Fn fun)
     {
-        return predicate<Tp>(name, std::function<bool(Tp &&)>(fun));
+        return predicate<Tp>(name, std::function<bool(const Tp &)>(fun));
     } 
 }
 
