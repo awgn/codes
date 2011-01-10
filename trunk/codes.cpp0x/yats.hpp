@@ -253,11 +253,11 @@ namespace yats
     template <typename T>
     struct predicate
     {
-        std::pair<T,bool> value;
+        std::pair<typename std::remove_reference<T>::type,bool> value;
         const char * descr;
         std::function<bool(T&&)> fun;
 
-        predicate(const char * _descr, std::function<bool(T&&)> _fun, T _value)
+        predicate(const char * _descr, std::function<bool(T&&)> _fun, T&& _value)
         : value(std::make_pair(_value, true)), descr(_descr), fun(_fun)
         {}
         
