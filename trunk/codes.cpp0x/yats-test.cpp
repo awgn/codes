@@ -13,10 +13,9 @@ using namespace yats;
 
 Context(good_context)
 {
-
     Test(test_0)
     {
-        Assert(std::vector<int>().empty(), is_true());
+        Assert(std::vector<int>().empty());
     }
 
     Test(test_1)
@@ -56,45 +55,33 @@ Context(good_context)
     
     ////////////////// exceptions
 
-    void fun_nothrow()
-    {}
-
-    template <typename Tp>
-    void fun_throw(const Tp &n)
+    Test(test_8)
     {
-        throw n;
+        AssertNothrow(0);
     }
-    
+
     Test(test_9)
     {
-        Assert_Nothrow(fun_nothrow());
-    }
-    
-    Test(test_12)
+        AssertThrow( throw std::runtime_error("ok") );
+    }    
+
+    Test(test_10)
     {
-        Assert_Throw_Type(fun_throw(std::logic_error("ok")), std::logic_error);
+        AssertThrow( throw std::logic_error("ok"), std::logic_error("ok"));
     }
 }
 
 
 Context(bad_context)
 {
-    Setup(first)
-    {
-        std::cout << "_________________________________" << std::endl;
-    }
     Setup(init)
     {
-        std::cout << "[*] Starting bad_context tests..." << std::endl;
+        std::cout << "[*] Starting bad_context tests.. __________________________" << std::endl;
     }
 
     Teardown(fini)
     {
-        std::cout << "[*] bad_context tests finished." << std::endl;
-    }
-    Teardown(last)
-    {
-        std::cout << "_________________________________" << std::endl;
+        std::cout << "[*] bad_context tests finished. ___________________________" << std::endl;
     }
     
     Test(test_0)
@@ -139,36 +126,23 @@ Context(bad_context)
     
     ////////////////// exceptions
 
-    void fun_nothrow()
-    {}
-
-    template <typename Tp>
-    void fun_throw(const Tp &n)
-    {
-        throw n;
-    }
-
     Test(test_8)
     {
-        Assert_Nothrow(fun_throw(std::runtime_error("error")));
+        AssertNothrow(throw 0);
     }
     Test(test_9)
     {
-        Assert_Nothrow(fun_throw(0));
+        AssertThrow(0);
     }
  
     Test(test_10)
     {
-        Assert_Throw(fun_nothrow());
+        AssertThrow(throw std::runtime_error("error"), std::logic_error("bad"));
     }
 
     Test(test_11)
     {
-        Assert_Throw_Type(fun_throw(std::runtime_error("error")), std::logic_error);
-    }
-    Test(test_12)
-    {
-        Assert_Throw_Type(fun_nothrow(), std::logic_error);
+        AssertThrow(throw std::runtime_error("error"), std::runtime_error("not ok"));
     }
    
     // generic predicate:
@@ -178,7 +152,7 @@ Context(bad_context)
         return !(n&1);
     }
 
-    Test(test_13)
+    Test(test_12)
     {
         Assert(11, generic_predicate<int>("is_even", is_even));
     }
