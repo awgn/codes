@@ -31,6 +31,10 @@ namespace more {
     public:
         friend class enable_entangled_from_this<Tp>;
 
+        entangled_ptr()
+        : _M_ptr(0)
+        {}
+
         ~entangled_ptr()
         {   
             if(_M_ptr)
@@ -41,31 +45,37 @@ namespace more {
         : _M_ptr(rhs._M_ptr)
         {
             rhs._M_ptr = 0;
-            _M_ptr->_M_replace_entangled_for(&rhs,this);
+            if(_M_ptr)
+                _M_ptr->_M_replace_entangled_for(&rhs,this);
         }
 
         entangled_ptr(const entangled_ptr &rhs)
         : _M_ptr(rhs._M_ptr)
         {
-            _M_ptr->_M_add_entangled_for(this);
+            if(_M_ptr)
+                _M_ptr->_M_add_entangled_for(this);
         }
 
         entangled_ptr &
         operator=(const entangled_ptr &rhs)
         {
-            _M_ptr->_M_remove_entangled_for(this);
+            if(_M_ptr)
+                _M_ptr->_M_remove_entangled_for(this);
             _M_ptr = rhs._M_ptr;
-            _M_ptr->_M_add_entangled_for(this);
+            if(_M_ptr)
+                _M_ptr->_M_add_entangled_for(this);
             return *this;
         }
 
         entangled_ptr &
         operator=(entangled_ptr &&rhs)
         {
-            _M_ptr->_M_remove_entangled_for(this);
+            if(_M_ptr)
+                _M_ptr->_M_remove_entangled_for(this);
             _M_ptr = rhs._M_ptr;
             rhs._M_ptr = 0;
-            _M_ptr->_M_replace_entangled_for(&rhs,this);
+            if(_M_ptr)
+                _M_ptr->_M_replace_entangled_for(&rhs,this);
             return *this;
         }
 
@@ -87,7 +97,7 @@ namespace more {
             return _M_ptr;
         }
 
-        long use_count() const
+        int use_count() const
         {
             return _M_check_ptr(_M_ptr)->_M_use_count();
         }
@@ -149,8 +159,8 @@ namespace more {
 
         void _M_set_entangled_to(Tp *ptr)
         {
-            auto it = _M_ref.begin();
-            auto it_e = _M_ref.end();
+            auto it = _M_ref.begin(),
+                 it_e = _M_ref.end();
             for(; it != it_e; ++it)
             {
                 (*it)->_M_ptr = ptr;

@@ -16,6 +16,7 @@
 #include <iterator>
 #include <vector>
 #include <string>
+#include <tuple>
 
 namespace more { 
 
@@ -145,6 +146,17 @@ namespace more {
         operator()(Tp n) const
         {
             return n.second; 
+        }
+    };
+
+
+    template <size_t N, typename Tp>
+    struct get_th : public std::unary_function<Tp, typename std::tuple_element<N,Tp>::type>
+    {
+        typename std::tuple_element<N,Tp>::type
+        operator()(const Tp &n) const 
+        {
+            return std::get<N>(n);
         }
     };
 

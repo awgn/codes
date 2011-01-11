@@ -38,7 +38,7 @@ namespace more {
                 throw std::runtime_error(what);
         }
     };
-    
+
     ///////////////////////////////////////////////////////////////////////////////
     // matrix iterators
     ///////////////////////////////////////////////////////////////////////////////
@@ -247,6 +247,13 @@ namespace more {
         : _M_assert(), _M_mat()
         {}
 
+        matrix(std::initializer_list<Tp> lst)
+        : _M_assert(), _M_mat()
+        {
+            scoped_assert(lst.size() == R * C, "matrix::op= size mismatch!");    
+            std::copy(lst.begin(), lst.end(), _M_mat.begin());
+        }
+        
         matrix(const matrix &rhs)
         : _M_assert(), _M_mat(rhs._M_mat)
         {}
@@ -973,6 +980,13 @@ namespace more {
             }
         }
         return _det;
+    }
+
+    template <size_t R, size_t C, typename Tp>
+    inline matrix<Tp, R, C>
+    mat(std::initializer_list<Tp> l)
+    {
+        return matrix<Tp, R, C>(l);
     }
 
 } // namespace more

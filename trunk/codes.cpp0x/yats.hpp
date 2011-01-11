@@ -72,12 +72,12 @@ catch(...) \
     throw std::runtime_error(err.str()); \
 } 
 
-#define _Assert_Throw(x,line) \
+#define _Assert_Throw(exp,line) \
 { \
     bool thrown = false; \
     try \
     { \
-        x; \
+        do { exp; } while(0); \
     } \
     catch(...) \
     {                \
@@ -92,12 +92,12 @@ catch(...) \
     }  \
 }
 
-#define _Assert_Throw_Type(x, type, line) \
+#define _Assert_Throw_Type(exp, type, line) \
 { \
     bool thrown = false; \
     try \
     { \
-        x; \
+        do { exp; } while(0); \
     } \
     catch(std::exception &e) \
     { \
