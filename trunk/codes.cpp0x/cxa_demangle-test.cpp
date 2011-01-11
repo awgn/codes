@@ -10,14 +10,30 @@
 
 #include <cxa_demangle.hpp>
 #include <iostream>
-#include <cassert>
+
+#include <yats.hpp>
+
+using namespace yats;
+
+Context(demangle_test)
+{
+    Test(int)
+    {
+        Assert(more::cxa_demangle(typeid(int).name()), is_equal_to(std::string("int")));
+    }
+
+    struct class_in_namespace {};
+
+    Test(class_in_namespace)
+    {
+        Assert(more::cxa_demangle(typeid(class_in_namespace).name()), 
+               is_equal_to(std::string("demangle_test::class_in_namespace")));
+    }
+}
 
 int
 main(int argc, char *argv[])
 {
-    struct cpp_demangled_struct_name {} a;
-    std::cout << more::cxa_demangle(typeid(a).name()) << std::endl;
-    assert(more::cxa_demangle(typeid(a).name()) == "main::cpp_demangled_struct_name");
-    return 0;
+    return yats::run();
 }
  

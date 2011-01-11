@@ -11,6 +11,10 @@
 #include <iostream>
 #include <enumap.hpp>
 
+#include <yats.hpp>
+using namespace yats;
+
+
 struct table : more::enumap<table>
 {
     enumap_init(table,2);
@@ -19,40 +23,63 @@ struct table : more::enumap<table>
 };
 
 
+Context(enumap_class_test)
+{
+    Test(eval_string)
+    {
+        Assert(table::eval("hello"), is_equal_to(0));
+        Assert(table::eval("world"), is_equal_to(1));
+    }
+
+    Test(eval_num)
+    {
+        Assert(table::eval(0), is_equal_to(std::string("hello")));
+        Assert(table::eval(1), is_equal_to(std::string("world")));
+    }
+
+    Test(eval_enum)
+    {
+        Assert(table::hello, is_equal_to(0));
+        Assert(table::world, is_equal_to(1));
+    }
+    
+    Test(eval_get_value)
+    {
+        Assert(table::get<0>(), is_equal_to(std::string("hello")));
+        Assert(table::get<1>(), is_equal_to(std::string("world")));
+    }
+
+    Test(direct_iterator)
+    {
+        std::cout << "\ndirect map:\n";
+        auto it = table::direct.begin();
+        for(; it != table::direct.end(); ++it)
+        {
+            std::cout << "   <" << it->first << "," << it->second << ">\n";
+        }
+    }
+
+    Test(reverse_iterator)
+    {
+        std::cout << "\nreverse map:\n";
+        auto ot = table::reverse.begin();
+        for(; ot != table::reverse.end(); ++ot)
+        {
+            std::cout << "   <" << ot->first << "," << ot->second << ">\n";
+        }
+    }
+
+    Test(has_method)
+    {
+        Assert(table::has("hello"), is_true());
+        Assert(table::has(0), is_true());
+        Assert(table::has(42), is_false());
+    }
+
+}
+
 int
 main(int argc, char *argv[])
 {
-    std::cout << "\nruntime:\n";
-    std::cout << "    hello -> " << table::eval("hello") << std::endl;
-    std::cout << "    world -> " << table::eval("world") << std::endl;
-
-    std::cout << "    0 <- " << table::eval(0) << std::endl;
-    std::cout << "    1 <- " << table::eval(1) << std::endl;
-
-    std::cout << "\ncompile-time:\n";
-    std::cout << "    table::hello => " << table::hello << std::endl;
-    std::cout << "    table::world => " << table::world << std::endl;
-
-    std::cout << "    0 <= " << table::get<0>() << std::endl;
-    std::cout << "    1 <= " << table::get<1>() << std::endl;
-
-    std::cout << "\ndirect map:\n";
-    auto it = table::direct.begin();
-    for(; it != table::direct.end(); ++it)
-    {
-        std::cout << "   <" << it->first << "," << it->second << ">\n";
-    }
-
-    std::cout << "\nreverse map:\n";
-    auto ot = table::reverse.begin();
-    for(; ot != table::reverse.end(); ++ot)
-    {
-        std::cout << "   <" << ot->first << "," << ot->second << ">\n";
-    }
-
-    std::cout << "\ntable::has(\"hello\") = " << std::boolalpha << table::has("hello") << std::endl;
-    std::cout << "table::has(0) = " << std::boolalpha << table::has(0) << std::endl;
-
-    return 0;
+    return yats::run();
 }
- 

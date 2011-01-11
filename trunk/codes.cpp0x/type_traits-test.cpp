@@ -11,19 +11,11 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <cassert>
 
 #include <type_traits.hpp> // !more
 
-#define RED    "\e[0;31;1m"
-#define BLACK  "\e[0;29;1m"
-#define RESET  "\e[0m"
-
-std::string verdict( std::false_type )
-{ return "[" RED "false" RESET "]"; }
-
-std::string verdict( std::true_type )
-{ return "[" BLACK "true" RESET "]"; }
+#include <yats.hpp>
+using namespace yats;
 
 
 template <typename T>
@@ -34,43 +26,50 @@ struct false_container
 
 struct s {};
 
+Context(more_typetraits_test)
+{
+    Test(is_class_or_union)
+    {
+        Assert(more::traits::is_class_or_union<int>::value , is_false());
+        Assert(more::traits::is_class_or_union<s>::value , is_true());
+    }
+
+    Test(is_a_container)
+    {
+        Assert(more::traits::is_container<int>::value , is_false() );
+        Assert(more::traits::is_container<false_container<int> >::value , is_false());
+        Assert(more::traits::is_container<std::vector<int> >::value , is_true());
+    }
+
+    Test(has_value_type)
+    {
+        Assert(more::traits::has_value_type<false_container<int> >::value , is_true());
+    }
+
+    Test(has_iterator)
+    {
+        Assert(more::traits::has_iterator<false_container<int> >::value , is_false());
+    }
+
+    typedef std::tuple<long long int, long int, short int> mytuple;
+    
+    Test(is_a_tuple)
+    {
+        Assert( more::traits::is_tuple< int >::value , is_false());
+        Assert( more::traits::is_tuple< mytuple >::value , is_true());
+    }
+
+    Test(is_a_pair)
+    {
+        Assert((more::traits::is_pair< std::pair<int,int> >::value) , is_true());
+        Assert( more::traits::is_pair< int >::value , is_false() );
+    }
+
+}
+
 int
 main(int argc, char *argv[])
 {
-    std::cout << "int is a class on union? " << verdict( more::traits::is_class_or_union<int>()) << std::endl; 
-    assert(more::traits::is_class_or_union<int>::value == false);
-    
-    std::cout << "struct is a class or union? " << verdict(more::traits::is_class_or_union<s>()) << std::endl; 
-    assert(more::traits::is_class_or_union<s>::value == true);
-
-    std::cout << "int is a container ? " << verdict( more::traits::is_container<int>())  << std::endl; 
-    assert(more::traits::is_container<int>::value == false );
-    
-    std::cout << "false_container<int> is a container ? " << verdict( more::traits::is_container<false_container<int> >())  << std::endl; 
-    assert( more::traits::is_container<false_container<int> >::value == false);
-    
-    std::cout << "false_container<int> has value_type ? " << verdict( more::traits::has_value_type<false_container<int> >())  << std::endl; 
-    assert( more::traits::has_value_type<false_container<int> >::value == true);
-    
-    std::cout << "false_container<int> has interator ? " << verdict( more::traits::has_iterator<false_container<int> >())  << std::endl; 
-    assert(more::traits::has_iterator<false_container<int> >::value == false);
-
-    std::cout << "std::vector<int> is a container ? " << verdict( more::traits::is_container< std::vector<int> >()) << std::endl; 
-    assert(more::traits::is_container<std::vector<int> >::value == true);
-
-    typedef std::tuple<long long int, long int, short int> mytuple;
-
-    std::cout << "int is a tuple ? " << verdict( more::traits::is_tuple< int >())  << std::endl; 
-    assert( more::traits::is_tuple< int >::value == false);
-    
-    std::cout << "mytuple is a tuple ? " << verdict( more::traits::is_tuple< mytuple >())  << std::endl; 
-    assert ( more::traits::is_tuple< mytuple >::value == true);
-
-    std::cout << "is_pair? " << verdict( more::traits::is_pair< std::pair<int,int> >()) << std::endl; 
-    assert((more::traits::is_pair< std::pair<int,int> >::value) == true);
-    
-    std::cout << "is_pair? " << verdict( more::traits::is_pair< int >()) << std::endl; 
-    assert( more::traits::is_pair< int >::value == false );
-
-    return 0;
+    return yats::run();
 }
+ 

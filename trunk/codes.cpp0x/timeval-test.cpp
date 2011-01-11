@@ -15,79 +15,89 @@
 #include <iterator>
 #include <vector>
 
+#include <yats.hpp>
+
+using namespace yats;
 using namespace more;
 
+Context(more_timeval_test)
+{
+    Test(timeval_now)
+    {
+        more::Timeval a = Timeval::now();
+        Assert( static_cast<bool>(a), is_true() );
+    }
+    
+    Test(timeval_null)
+    {
+        Timeval b;    
+        Assert( static_cast<bool>(b), is_false() );
+    }
+
+    Test(timeval_streamable)
+    {
+        more::Timeval a = Timeval::now();
+        std::cout <<  a << std::endl;    
+    }
+
+    more::Timeval a;
+    more::Timeval b;
+    more::Timeval c;
+
+    Test(timeval_assignable)
+    {
+        a = Timeval::now();
+        b = a;
+    }
+
+    Test(operations)
+    {
+        Timeval half(0,500000);
+        b += half;
+
+        Assert( (b - half) == a, is_true() );
+    }
+
+    Test(update)
+    {
+        b.update();
+        usleep(500000);
+        c = Timeval::now();
+    
+        Assert( c == c, is_true() );
+        
+        Assert( (c > b)  , is_true() );
+        Assert( (c >= b) , is_true() );
+        Assert( (c >= c) , is_true() );
+        Assert( (c != b) , is_true() );   
+        Assert( (b < c ) , is_true() );
+        Assert( (b <= c) , is_true() );
+        Assert( (b <= b) , is_true() );
+    }
+
+    Test(container)
+    {
+        std::vector<more::Timeval> vec;
+
+        vec.push_back(c);
+        vec.push_back(b);
+
+        std::sort(vec.begin(), vec.end());
+    }
+
+    Test(swap)
+    {
+        more::Timeval b1 = b;
+        more::Timeval c1 = c;
+        std::swap(b,c);
+
+        Assert( b1 == c, is_true() );
+        Assert( c1 == b, is_true() );
+    }
+}
+ 
 int
 main(int argc, char *argv[])
 {
-    more::Timeval a( Timeval::now() );
-
-    Timeval b;    
-
-    std::cout << "a = " << a << std::endl;    
-    std::cout << "b = " << b << std::endl;        
-
-    if(!b) {
-        std::cout << "b is not set! (ok)" << std::endl; 
-    }
- 
-    b = a;
-
-    std::cout << "b = " << b << std::endl;        
-
-    Timeval half(0,500000);
-
-    b+= half;
-
-    std::cout << "b = " << b << std::endl;        
-
-    std::cout << "b - 0.5 sec = " << ( b - half ) << std::endl;
-
-    b.update();
-
-    std::cout << "b = " << b << std::endl;        
-
-    usleep(500000);
-
-    Timeval c( Timeval::now() );
-
-    std::cout << "c = " << c << std::endl;        
-
-    std::cout << "diff = " << (c-b) << std::endl;
-
-    std::cout << std::boolalpha << (c == c) << std::endl;
-
-    std::cout << (c > b)  << std::endl;
-    std::cout << (c >= b) << std::endl;
-    std::cout << (c >= c) << std::endl;
-
-    std::cout << (c != b) << std::endl;    
-    
-    std::cout << (b < c ) << std::endl;
-    std::cout << (b <= c) << std::endl;
-    std::cout << (b <= b) << std::endl;
-
-    std::vector<more::Timeval> vec;
-
-    vec.push_back(c);
-    vec.push_back(b);
-
-    std::sort(vec.begin(), vec.end());
-
-    std::cout << "vec: ";
-    std::copy(vec.begin(), vec.end(), std::ostream_iterator<Timeval>(std::cout, " "));
-    std::cout << std::endl;
-
-    std::cout << "b.to_usec() = " << b.to_usec() << std::endl;
-
-    std::cout << "b = " << b << std::endl;        
-    std::cout << "c = " << c << std::endl; 
-    
-    std::swap(b,c);
-
-    std::cout << "b = " << b << std::endl;        
-    std::cout << "c = " << c << std::endl; 
-
-    return 0;
+    return yats::run();
 }
- 

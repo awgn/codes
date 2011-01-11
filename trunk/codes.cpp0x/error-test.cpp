@@ -9,32 +9,36 @@
  */
 
 #include <error.hpp>
-
 #include <iostream>
-#include <cassert>
+#include <yats.hpp>
+using namespace yats;
 
+Context(syscall_error_class)
+{
+    Setup(init)
+    {    
+        for(int i=0; i < 132; i++) 
+        {
+            std::cout << more::pretty_strerror(i) << std::endl; 
+        }
+
+        for(int i=0; i > -15; i--) 
+        {
+            std::cout << more::pretty_gai_strerror(i) << std::endl; 
+        }
+    }
+
+    Test(exception)
+    {
+        auto e = more::syscall_error("test", EINVAL);
+
+        Assert(e.what(), is_equal_to(std::string("test: Invalid argument [EINVAL]")));
+        Assert(e.code(), is_equal_to(EINVAL));
+    }
+}
+ 
 int
 main(int argc, char *argv[])
 {
-    for(int i=0; i < 132; i++) 
-    {
-        std::cout << more::pretty_strerror(i) << std::endl; 
-    }
-
-    for(int i=0; i > -15; i--) 
-    {
-        std::cout << more::pretty_gai_strerror(i) << std::endl; 
-    }
-
-    try 
-    {
-        throw more::syscall_error("test",EINVAL);
-    }
-    catch(more::syscall_error &e)
-    {
-        assert(e.code() == EINVAL);
-    }
-
-    return 0;
+    return yats::run();
 }
- 

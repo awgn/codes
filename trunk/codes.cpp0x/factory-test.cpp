@@ -10,6 +10,8 @@
 
 #include <iostream>
 #include <factory.hpp>
+#include <yats.hpp>
+using namespace yats;
 
 struct base 
 {
@@ -85,9 +87,12 @@ namespace
     more::factory_register<base, der4> _void_4_(factory_1,"der4", more::fac_arg<std::string>());
 }
 
-int
-main(int argc, char *argv[])
-{    
+Context(factory_test)
+{
+
+    Test(simple)
+    {
+
     // basic hook: by invoking the regist() method on the factory object, providing the "id" and the factory_allocator
 
     // factory_0.regist("der1", new more::factory_allocator<der1, base> ); <- this error detected at compile time 
@@ -114,11 +119,17 @@ main(int argc, char *argv[])
     factory_0.unregist("der2");
     factory_1.unregist("der4");
     
-    std::cout << std::boolalpha << "der1 is_registered: " <<  factory_0.is_registered("der1") << std::endl;
-    std::cout << std::boolalpha << "der2 is_registered: " <<  factory_0.is_registered("der2") << std::endl;
-    std::cout << std::boolalpha << "der3 is_registered: " <<  factory_1.is_registered("der3") << std::endl;
-    std::cout << std::boolalpha << "der4 is_registered: " <<  factory_1.is_registered("der4") << std::endl;
+    Assert(factory_0.is_registered("der1"), is_true());
+    Assert(factory_0.is_registered("der2"), is_false());
+    Assert(factory_1.is_registered("der3"), is_true());
+    Assert(factory_1.is_registered("der4"), is_false());
 
-    return 0;
+    }
+}
+ 
+int
+main(int argc, char *argv[])
+{
+    return yats::run();
 }
  

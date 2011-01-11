@@ -14,21 +14,25 @@
 #include <string>
 #include <cassert>
 
+#include <yats.hpp>
+using namespace yats;
+
+Context(error_code_class_test)
+{
+    Test(string_error_code)
+    {
+        Assert( more::strerrcode(ENOTRECOVERABLE), is_equal_to(std::string("ENOTRECOVERABLE")) );
+        Assert( more::gai_strerrcode(EAI_AGAIN),   is_equal_to(std::string("EAI_AGAIN")) );
+    } 
+
+    Test(exception)
+    {
+        Assert_Throw(more::strerrcode(180));
+    }
+}
+ 
 int
 main(int argc, char *argv[])
 {
-    assert( std::string("ENOTRECOVERABLE") == more::strerrcode(ENOTRECOVERABLE) );
-    assert( std::string("EAI_AGAIN") == more::gai_strerrcode(EAI_AGAIN) );
-    
-    try 
-    {
-        more::strerrcode(180);
-    }
-    catch(...) 
-    {
-        std::cout << "ok." << std::endl;
-    }
-
-    return 0;
+    return yats::run();
 }
- 

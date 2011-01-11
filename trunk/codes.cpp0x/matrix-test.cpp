@@ -8,54 +8,42 @@
  * ----------------------------------------------------------------------------
  */
  
-#include <cassert>
 #include <iostream>
 
 #include <matrix.hpp>
+#include <yats.hpp>
 
-  int
-main(int argc, char *argv[])
+using namespace yats;
+using namespace more;
+
+Context(more_matrix_test)
 {
-    more::matrix<int,2,2> a;
-    more::matrix<int> b(2,2);
-    more::matrix<int> c(a);
+    
+   Test(generic)
+   {
+        more::matrix<int,2,2> a;
+        more::matrix<int> b(2,2);
+        more::matrix<int> c(a);
 
-    c = { 1, 0, 0, 1 };
-    a = { 1, 2, 3, 4 };
+        c = { 1, 0, 0, 1 };
+        a = { 1, 2, 3, 4 };
 
-    try 
-    {
-        more::matrix<int,3,3> d(c);
-        assert(0);
-    }
-    catch(std::exception &e)
-    {
-        std::cout << "exception: " << e.what() << " (ok)" << std::endl;
-    }
+        b = a;
+        Assert(b == a, is_true());
 
-    // op=
-    b = a;
-    assert(b == a);
-
-    try 
-    {
         more::matrix<int,3,3> d;
         // d = a;   // not allowed!
-        d = b;      // scoped assert
-        assert(0);
-    }
-    catch(std::exception &e)
-    {
-        std::cout << "exception: " << e.what() << " (ok)" << std::endl;
-    }
 
-    // op()
+        Assert_Throw( (d = b) );      // scoped assert
+   }
+
+    Test(matrix_stream)
     { 
-        more::matrix<int,3,5> m;
-        std::cout << m;
+        more::matrix<int,2,2> m;
+        Assert( (m == mat<2,2>({0,0,0,0})), is_true() );
     }        
-    /////////////////////////
 
+    Test(operations)
     {
         more::matrix<int, 2, 2> m;
 
@@ -66,192 +54,155 @@ main(int argc, char *argv[])
 
         more::matrix<int> m2(m);
 
-        std::cout << "----" << std::endl;
-
         m += m;
-        std::cout << m;
-
-        std::cout << "----" << std::endl;
+        Assert( (m == mat<2,2>({ 2, 4, 6, 8 })), is_true() );
 
         m -= m2;
-        std::cout << m;
+        Assert( (m == mat<2,2>({ 1, 2, 3, 4 })), is_true() );
 
-        std::cout << "----" << std::endl;
         m *= 2;
-        std::cout << m;
+        Assert( (m == mat<2,2>({ 2, 4, 6, 8 })), is_true() );
 
-        std::cout << "----" << std::endl;
         m /= 2;
-        std::cout << m;
+        Assert( (m == mat<2,2>({ 1, 2, 3, 4 })), is_true() );
     }
 
+    Test(operations_dyn)
     {
         more::matrix<int> m(2,2);
         m = {1, 2, 3, 4};
 
         more::matrix<int,2,2> m2(m);
 
-        std::cout << "----" << std::endl;
-
         m += m;
-        std::cout << m;
-
-        std::cout << "----" << std::endl;
+        Assert( (m == mat<2,2>({ 2, 4, 6, 8 })), is_true() );
 
         m -= m2;
-        std::cout << m;
+        Assert( (m == mat<2,2>({ 1, 2, 3, 4 })), is_true() );
 
-        std::cout << "----" << std::endl;
         m *= 2;
-        std::cout << m;
+        Assert( (m == mat<2,2>({ 2, 4, 6, 8 })), is_true() );
 
-        std::cout << "----" << std::endl;
         m /= 2;
-        std::cout << m;
+        Assert( (m == mat<2,2>({ 1, 2, 3, 4 })), is_true() );
     }
 
-    {
-        more::matrix<int,2,2> m;
-        m = {1, 2, 3, 4};
-
-        std::cout << "----" << std::endl;
-        std::cout << (m + m);
-    }
+    Test(scalar_product_dyn)
     {
         more::matrix<int> m(2,2);
         m = {1, 2, 3, 4};
 
-        std::cout << "----" << std::endl;
-        std::cout << (m - m);
+        Assert( (m * 2 == mat<2,2>({ 2, 4, 6, 8 })), is_true() );
+        Assert( (2 * m == mat<2,2>({ 2, 4, 6, 8 })), is_true() );
     }
-    {
-        more::matrix<int> m(2,2);
-        m = {1, 2, 3, 4};
-
-        std::cout << "----" << std::endl;
-        std::cout << 2 * m;
-        std::cout << m * 2;
-    }
+    
+    Test(scalar_division)
     {
         more::matrix<double> m(2,2);
         m = {1.0, 2.0, 3.0, 4.0};
 
-        std::cout << "----" << std::endl;
-        std::cout << m/2;
+        Assert( (m/2 == mat<2,2>({ 0.5, 1.0, 1.5, 2.0 })), is_true() );
     }
 
+    Test(sign)
     {
-        more::matrix<double> m(2,2);
+        more::matrix<int> m(2,2);
         m = {1, 2, 3, 4};
 
-        std::cout << "----" << std::endl;
-        std::cout << -m;
+        m = -m;
+
+        Assert( ( m == mat<2,2>({ -1, -2, -3, -4 })), is_true() );
     }
 
+    Test(tr_dynamic)
     {
-        more::matrix<double> m(2,2);
+        more::matrix<int> m(2,2);
         m = {1, 2, 3, 4};
 
-        std::cout << "----" << std::endl;
-        std::cout << tr(m);
+        Assert( ( tr(m) == mat<2,2>({ 1, 3, 2, 4 })), is_true() );
     }
 
+    Test(tr_static)
     {
-        more::matrix<double,2,3> m;
+        more::matrix<int,2,3> m;
         m = {1, 2, 0, 3, 4, 0};
 
-        std::cout << "----" << std::endl;
-        std::cout << tr(m);
-        std::cout << "----" << std::endl;
-        std::cout << tr(tr(m));
+        Assert( ( tr(m) == mat<3,2>({ 1, 3, 2, 4, 0, 0 })), is_true() );
+        Assert( ( tr(tr(m)) == mat<2,3>({ 1, 2, 0, 3, 4, 0 })), is_true() );
     }
-
+    
+    Test(is_simmetric)
     {
         more::matrix<double,2,2> m;
+
         m = {1, 2, 3, 4};
-
-        std::cout << std::boolalpha;
-        std::cout << is_simmetric(m) << std::endl;
-        assert(!is_simmetric(m));
-    }
-
-    {
-        more::matrix<double,2,2> m;
+        Assert(is_simmetric(m), is_false());
+        
         m = {1, 2, 2, 1};
-
-        std::cout << std::boolalpha;
-        std::cout << is_simmetric(m) << std::endl;
-        assert(is_simmetric(m));
+        Assert(is_simmetric(m), is_true());
     }
 
+    Test(is_simmetric_static)
     {
         more::matrix<double> m(2,2);
         m = {1, 2, 3, 4};
 
-        std::cout << std::boolalpha;
-        std::cout << is_simmetric(m) << std::endl;
-        assert(!is_simmetric(m));
-    }
-
-    {
-        more::matrix<double> m(2,2);
+        m = {1, 2, 3, 4};
+        Assert(is_simmetric(m), is_false());
+        
         m = {1, 2, 2, 1};
-
-        std::cout << std::boolalpha;
-        std::cout << is_simmetric(m) << std::endl;
-        assert(is_simmetric(m));
+        Assert(is_simmetric(m), is_true());
     }
 
+    Test(op_equal)
     {
         more::matrix<double> m(2,3);
         m = {1, 2, 0, 3, 4, 0};
          
-        assert(m == m);
-        assert(!(m!=m));
-        assert(!(m == tr(m)));
-        assert((m != tr(m)));
-
-        std::cout << (m == m) << std::endl;
-        std::cout << (m != m) << std::endl;
-        std::cout << (m == tr(m)) << std::endl;
-        std::cout << (m != tr(m)) << std::endl;
+        Assert(m == m,      is_true());
+        Assert(m != m,      is_false());
+        Assert(m == tr(m),  is_false());
+        Assert(m != tr(m),  is_true());
     }
 
-    assert( !more::is_matrix<int>::value );
-    assert(  more::is_matrix< more::matrix<int> >::value );
+    Test(matrix_traits)
+    {
+        Assert( more::is_matrix<int>::value,                    is_false() );
+        Assert( more::is_matrix< more::matrix<int> >::value,    is_true() );
+    }
 
+    Test(row_iterator)
     {        
         std::vector<int> r1 = {1, 2};
         std::vector<int> r2 = {3, 4};
  
-        more::matrix<int,2,2> a;
-        a = { 1, 2, 3, 4 };
+        more::matrix<int,2,2> a = {1, 2, 3, 4};
+        more::matrix<int> b(2,2); 
+        b = {1, 2, 3, 4 };
 
-        more::matrix<int> b(2,2);
-        b = { 1, 2, 3, 4 };
-
-        assert( std::equal(a.row_begin(0), a.row_end(0), r1.begin()) );
-        assert( std::equal(a.row_begin(1), a.row_end(1), r2.begin()) );
-        assert( std::equal(b.row_begin(0), b.row_end(0), r1.begin()) );
-        assert( std::equal(b.row_begin(1), b.row_end(1), r2.begin()) );
+        Assert( std::equal(a.row_begin(0), a.row_end(0), r1.begin()), is_true() );
+        Assert( std::equal(a.row_begin(1), a.row_end(1), r2.begin()), is_true() );
+        Assert( std::equal(b.row_begin(0), b.row_end(0), r1.begin()), is_true() );
+        Assert( std::equal(b.row_begin(1), b.row_end(1), r2.begin()), is_true() );
     }
 
+    Test(const_col_iterator)
     {        
         std::vector<int> r1 = {1, 3};
         std::vector<int> r2 = {2, 4};
  
-        more::matrix<int,2,2> a;
-        a = { 1, 2, 3, 4 };
+        more::matrix<int,2,2> a = { 1, 2, 3, 4 };
 
         more::matrix<int,2,2>::const_col_iterator it1_beg = a.col_begin(0);
         more::matrix<int,2,2>::const_col_iterator it1_end = a.col_end(0);
         more::matrix<int,2,2>::const_col_iterator it2_beg = a.col_begin(1);
         more::matrix<int,2,2>::const_col_iterator it2_end = a.col_end(1);
 
-        assert( std::equal(it1_beg, it1_end, r1.begin()) );
-        assert( std::equal(it2_beg, it2_end, r2.begin()) );
+        Assert( std::equal(it1_beg, it1_end, r1.begin()), is_true() );
+        Assert( std::equal(it2_beg, it2_end, r2.begin()), is_true() );
     }
 
+    Test(const_col_iterator_dyn)
     {        
         std::vector<int> r1 = {1, 3};
         std::vector<int> r2 = {2, 4};
@@ -264,11 +215,11 @@ main(int argc, char *argv[])
         more::matrix<int>::const_col_iterator it2_beg = a.col_begin(1);
         more::matrix<int>::const_col_iterator it2_end = a.col_end(1);
 
-        assert( std::equal(it1_beg, it1_end, r1.begin()) );
-        assert( std::equal(it2_beg, it2_end, r2.begin()) );
+        Assert( std::equal(it1_beg, it1_end, r1.begin()) , is_true());
+        Assert( std::equal(it2_beg, it2_end, r2.begin()) , is_true());
     }
     
-    // product: static * static
+    Test(product_static_static)
     {
         more::matrix<int,2,3> a;
         a = { 1, 2, 3, 4, 5, 6 };
@@ -277,14 +228,12 @@ main(int argc, char *argv[])
         b = { 1, 1, 1, 1, 1, 1 };
 
         more::matrix<int,2,2> p;
-
         p = { 6, 6, 15, 15 };
 
-        std::cout << (a*b);
-        assert( (a * b) == p);
+        Assert( a * b, is_equal_to(p));
     }
 
-    // product: dynamic * dynamic
+    Test(product_dyn_dyn)
     {
         more::matrix<int> a(2,3);
         a = { 1, 2, 3, 4, 5, 6 };
@@ -296,11 +245,10 @@ main(int argc, char *argv[])
 
         p = { 6, 6, 15, 15 };
 
-        std::cout << (a*b);
-        assert((a * b) == p);
+        Assert( a * b, is_equal_to(p));
     }
 
-    // product: dynamic * static
+    Test(product_dyn_static)
     {
         more::matrix<int> a(2,3);
         a = { 1, 2, 3, 4, 5, 6 };
@@ -312,11 +260,10 @@ main(int argc, char *argv[])
 
         p = { 6, 6, 15, 15 };
 
-        std::cout << (a*b);
-        assert((a * b) == p);
+        Assert( a * b, is_equal_to(p));
     }
  
-    // product: static * dynamic 
+    Test(product_satatic_dyn)
     {
         more::matrix<int,2,3> a;
         a = { 1, 2, 3, 4, 5, 6 };
@@ -328,25 +275,29 @@ main(int argc, char *argv[])
 
         p = { 6, 6, 15, 15 };
 
-        std::cout << (a*b);
-        assert( (a * b) == p);
+        Assert( a * b, is_equal_to(p));
     }
 
-    // is_square:
+    Test(is_square)
     {
         more::matrix<int,2,3> a;
         more::matrix<int> b(2,2);
 
-        assert( is_square(a) == false );
-        assert( is_square(b) == true  );
+        Assert( is_square(a) , is_false());
+        Assert( is_square(b) , is_true() );
     }
 
+    Test(det)
     {
         more::matrix<double> a(3,3);
         a = {1, 7, 3, 2, 5, 2, 3, 8, 10};
-        assert( det(a) == -61 );
+        Assert( det(a), is_equal_to(-61) );
     }
+}
 
-    return 0;
+int
+main(int argc, char *argv[])
+{
+    return yats::run();
 }
 

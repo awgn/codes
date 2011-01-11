@@ -15,6 +15,9 @@
 #include <cassert>
 #include <iostream>
 
+#include <yats.hpp>
+
+using namespace yats;
 using namespace more::type;
 
     struct name     {};
@@ -23,27 +26,38 @@ using namespace more::type;
     struct null     {};
     struct address  {};
 
-int
-main(int argc, char *argv[])
+Context(more_typemap_test)
 {
     typedef typemap< std::pair<name, std::string>, std::pair<age, int>, std::pair<address, std::string> > map0; 
 
-    get<map0, name>::type _me = "Nicola";
-    get<map0, age>::type  _age = 38;
+    Test(size)
+    {
+        get<map0, name>::type _me = "Nicola";
+        get<map0, age>::type  _age = 38;
 
-    assert( size<map0>::value == 3);
+        Assert( size<map0>::value, is_equal_to(3));
+    }
 
     typedef append<map0, nickname, std::string>::type map1;
 
-    get<map1, nickname>::type _nick = "awgn";
+    Test(append)
+    {
+        get<map1, nickname>::type _nick = "awgn";
+        Assert( size<map1>::value, is_equal_to(4));
+    }
+     
 
-    assert( size<map1>::value == 4);
-
-    assert( (index_of<map0, name>::value     == 0) );
-    assert( (index_of<map0, age>::value      == 1) );
-    assert( (index_of<map0, address>::value  == 2) );
-    assert( (index_of<map1, nickname>::value == 3) );
-
-    return 0;
-}
+    Test(index_of)
+    {
+        Assert( (index_of<map0, name>::value    ) , is_equal_to(0) );
+        Assert( (index_of<map0, age>::value     ) , is_equal_to(1) );
+        Assert( (index_of<map0, address>::value ) , is_equal_to(2) );
+        Assert( (index_of<map1, nickname>::value) , is_equal_to(3) );
+    }
  
+}
+int
+main(int argc, char *argv[])
+{
+    return yats::run();
+}

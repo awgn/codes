@@ -12,67 +12,85 @@
 #include <sstream>
 
 #include <iomanip.hpp>
+#include <yats.hpp>
+using namespace yats;
 
+Context(more_iomanip_test)
+{
+    Test(spaces)
+    {
+        std::ostringstream out;
+        out << more::spaces(4);
+        Assert(out.str(), is_equal_to(std::string("    ")));   
+    }
+
+    Test(string_token)
+    {
+        std::istringstream in("this line is ignored\none:two: three \nfour");
+        in >> more::ignore_line;  // <- ignore_line
+
+        std::vector<std::string> vec = { "one", "two", "three", "four" };
+        std::vector<std::string> out;
+        
+        more::string_token tok("\n: "); // <- string_token
+
+        while(in >> tok)
+            out.push_back(tok.str());
+
+        Assert((std::equal(out.begin(), out.end(), vec.begin())), is_true());
+    }
+
+    Test(wstring_token)
+    {
+        std::wistringstream in(L"this line is ignored\none:two: three \nfour");
+        in >> more::ignore_line;  // <- ignore_line
+
+        std::vector<std::wstring> vec = { L"one", L"two", L"three", L"four" };
+        std::vector<std::wstring> out;
+        
+        more::wstring_token tok(L"\n: "); // <- string_token
+
+        while(in >> tok)
+            out.push_back(tok.str());
+
+        Assert((std::equal(out.begin(), out.end(), vec.begin())), is_true());
+    }
+
+    Test(string_line)
+    {
+        std::istringstream in("this line is ignored\none:two: three \nfour\nescaped\\\nnewline");
+        in >> more::ignore_line;  // <- ignore_line
+
+        std::vector<std::string> vec = { "one:two: three ", "four", "escaped\nnewline" };
+        std::vector<std::string> out;
+
+        more::string_line line; // <- string_token
+
+        while(in >> line)
+            out.push_back(line.str());
+
+        Assert((std::equal(out.begin(), out.end(), vec.begin())), is_true());
+    }
+
+    Test(wstring_line)
+    {
+        std::wistringstream in(L"this line is ignored\none:two: three \nfour\nescaped\\\nnewline");
+        in >> more::ignore_line;  // <- ignore_line
+
+        std::vector<std::wstring> vec = { L"one:two: three ", L"four", L"escaped\nnewline" };
+        std::vector<std::wstring> out;
+
+        more::wstring_line line; // <- string_token
+
+        while(in >> line)
+            out.push_back(line.str());
+
+        Assert((std::equal(out.begin(), out.end(), vec.begin())), is_true());
+    }
+}
+ 
 int
 main(int argc, char *argv[])
 {
-    // string...
-    {
-        std::string str("this line is ignored\none:two: three \nfour");
-        std::istringstream sstr(str);
-
-        sstr >> more::ignore_line;  // <- ignore_line
-
-        more::string_token tok("\n: "); // <- string_token
-        while (sstr >> tok)
-        {
-            std::cout << more::spaces(4) << "string_token: [" << tok.str() << "]" << std::endl;  // <- spaces
-        }
-    }
-
-    // wstring...
-    {
-        std::wstring str(L"this line is ignored\none:two: three \nfour");
-        std::wistringstream sstr(str);
-
-        sstr >> more::ignore_line;  // <- ignore_line
-
-        more::wstring_token tok(L"\n: "); // <- string_token
-        while (sstr >> tok)
-        {
-            std::wcout << more::spaces(3) << L"string_wtoken: [" << tok.str() << L"]" << std::endl;  // <- spaces
-        }
-    }
-
-    // string...
-    {
-        std::string str("this line is ignored\none:two: three \nfour\nescaped\\\nnewline");
-        std::istringstream sstr(str);
-
-        sstr >> more::ignore_line;  // <- ignore_line
-
-        more::string_line line; // <- token_line
-        while (sstr >> line)
-        {
-            std::cout << more::spaces(5) << "string_line: [" << line.str() << "]" << std::endl;  // <- spaces
-        }
-    }
-
-    // wstring...
-    {
-        std::wstring str(L"this line is ignored\none:two: three \nfour\nescaped\\\nnewline");
-        std::wistringstream sstr(str);
-
-        sstr >> more::ignore_line;  // <- ignore_line
-
-        more::wstring_line line; // <- token_line
-        while (sstr >> line)
-        {
-            std::wcout << more::spaces(4) << L"wstring_line: [" << line.str() << L"]" << std::endl;  // <- spaces
-        }
-    }
-
-
-    return 0;
+    return yats::run();
 }
- 

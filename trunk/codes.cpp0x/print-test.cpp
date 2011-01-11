@@ -27,7 +27,7 @@ main(int argc, char *argv[])
     more::bprint(buffer,4, "%1!", 42);
     std::cout << buffer << std::endl;
 
-
+#ifdef PERFORMANCE_TEST
     std::string xxx("world");
 
     std::cout << "performance test: " << std::flush;
@@ -46,6 +46,7 @@ main(int argc, char *argv[])
     auto diff = std::chrono::system_clock::now() - tstart;
     
     std::cout << static_cast<double>(static_cast<std::chrono::microseconds>(diff).count())/1000000 << " sec." << std::endl;
+#endif
     return 0;
 }
  

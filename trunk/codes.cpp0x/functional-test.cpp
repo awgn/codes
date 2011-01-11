@@ -13,89 +13,122 @@
 #include <memory>
 
 #include <functional.hpp>
+#include <yats.hpp>
 
+using namespace yats;
 using namespace std::placeholders;
 
-struct test
+Context(functional_tests)
 {
-    int value;
-    test(int n)
-    : value(n)
-    {}
+    Test(logical_xor)
+    {
+        Assert(more::logical_xor(0,0) , is_equal_to(0));
+        Assert(more::logical_xor(1,0) , is_equal_to(1));
+        Assert(more::logical_xor(0,1) , is_equal_to(1));
+        Assert(more::logical_xor(1,42), is_equal_to(0));
+    }
 
-    void hello() { std::cout << "Hello World! (" << value << ")" << std::endl; }
-};
+    Test(chop)
+    {
+        more::chop<int> chopper(0,2);
+        Assert(chopper(-1) , is_equal_to(0));
+        Assert(chopper(1)  , is_equal_to(1));
+        Assert(chopper(3)  , is_equal_to(2));
+    }
 
+    Test(flipflop)
+    {
+        more::flipflop<int> ff( (std::logical_not<int>()) );
+
+        Assert( ff(1) , is_equal_to(0)); 
+        Assert( ff(1) , is_equal_to(0)); 
+        Assert( ff(0) , is_equal_to(1)); 
+        Assert( ff(1) , is_equal_to(1)); 
+        Assert( ff(1) , is_equal_to(1)); 
+        Assert( ff(0) , is_equal_to(0)); 
+        Assert( ff(1) , is_equal_to(0)); 
+        Assert( ff(1) , is_equal_to(0)); 
+    }
+
+    Test(flipflop2)
+    {
+        more::flipflop2<int> ff2( std::bind(std::equal_to<int>(), _1, 0), 
+                                  std::bind(std::equal_to<int>(), _1, 3) );    
+
+        Assert( ff2(-2) , is_equal_to(0));
+        Assert( ff2(-1) , is_equal_to(0));
+        Assert( ff2(0)  , is_equal_to(1));
+        Assert( ff2(1)  , is_equal_to(1));
+        Assert( ff2(2)  , is_equal_to(1));
+        Assert( ff2(3)  , is_equal_to(0));
+        Assert( ff2(4)  , is_equal_to(0));
+    }
+
+    Test(norm)
+    {
+        more::norm<unsigned int> dist;
+
+        unsigned int a = 10;
+        unsigned int b = 52;
+
+        Assert( dist(a,b) , is_equal_to(42));
+        Assert( dist(b,a) , is_equal_to(42));
+    }
+
+
+    Test(identity)
+    {
+        Assert( more::identity<int>()(42), is_equal_to(42) );
+    }                                                                    
+
+    Test(select)
+    {
+        auto n = std::make_pair(11,42);                  
+
+        auto p1 = more::select1st< std::pair<int,int> >(); 
+        auto p2 = more::select2nd< std::pair<int,int> >();
+
+        Assert( p1(n), is_equal_to(11) );
+        Assert( p2(n), is_equal_to(42) );
+    }
+
+    Test(get_th)
+    {
+        auto p = std::make_tuple(10, 'c', std::string("hello"));
+
+        auto t0 = more::get_th< 0, decltype(p)>();
+        auto t1 = more::get_th< 1, decltype(p)>();
+        auto t2 = more::get_th< 2, decltype(p)>();
+
+        Assert( t0(p), is_equal_to(10) );
+        Assert( t1(p), is_equal_to('c') );
+        Assert( t2(p), is_equal_to(std::string("hello")) );
+    }
+
+    struct test
+    {
+        int value;
+        test(int n)
+        : value(n)
+        {}
+    
+        void hello() { std::cout << "Hello World! (" << value << ")" << std::endl; }
+    };
+
+    Test(call_if)
+    {
+        std::vector<test *> vec = { new test(1), 0, 0, new test(2) };
+
+        using namespace std::placeholders;
+        std::for_each(vec.begin(), vec.end(), 
+                  std::bind( more::call_if(std::mem_fn(&test::hello)), _1, _1));
+    }
+
+}
+ 
 int
 main(int argc, char *argv[])
 {
-    // logical xor
-    std::cout << "logical_xor: " << more::logical_xor(0,0) << std::endl;
-    std::cout << "logical_xor: " << more::logical_xor(1,0) << std::endl;
-    std::cout << "logical_xor: " << more::logical_xor(0,1) << std::endl;
-    std::cout << "logical_xor: " << more::logical_xor(1,42) << std::endl;
-
-    // chop
-    more::chop<int> chopper(0,2);
-    std::cout << "chop: " << chopper(-1) << std::endl;
-    std::cout << "chop: " << chopper(1) << std::endl;
-    std::cout << "chop: " << chopper(3) << std::endl;
-
-    // flipflop
-    more::flipflop<int> ff1( (std::logical_not<int>()) );
-
-    std::cout << "flipflop: " << ff1(1) << std::endl; 
-    std::cout << "flipflop: " << ff1(1) << std::endl; 
-    std::cout << "flipflop: " << ff1(0) << std::endl; 
-    std::cout << "flipflop: " << ff1(1) << std::endl; 
-    std::cout << "flipflop: " << ff1(1) << std::endl; 
-    std::cout << "flipflop: " << ff1(0) << std::endl; 
-    std::cout << "flipflop: " << ff1(1) << std::endl; 
-    std::cout << "flipflop: " << ff1(1) << std::endl; 
-
-    // flipflop2
-    more::flipflop2<int> ff2( std::bind(std::equal_to<int>(),_1, 0), std::bind(std::equal_to<int>(), _1, 3) );    
-
-    std::cout << "flipflop2: " << -2 << " " << ff2(-2) << std::endl;
-    std::cout << "flipflop2: " << -1 << " " << ff2(-1) << std::endl;
-    std::cout << "flipflop2: " << 0  << " " << ff2(0)  << std::endl;
-    std::cout << "flipflop2: " << 1  << " " << ff2(1)  << std::endl;
-    std::cout << "flipflop2: " << 2  << " " << ff2(2)  << std::endl;
-    std::cout << "flipflop2: " << 3  << " " << ff2(3)  << std::endl;
-    std::cout << "flipflop2: " << 4  << " " << ff2(4)  << std::endl;
-
-    // norm
-
-    unsigned int a = 10;
-    unsigned int b = 52;
-    
-    more::norm<unsigned int> dist;
-
-    std::cout << "norm: |10-52| = " << dist(a,b) << std::endl;
-    std::cout << "norm: |52-10| = " << dist(b,a) << std::endl;
-
-    // identity
-
-    std::cout << "idenity<int>(42) = " << more::identity<int>()(42) << std::endl;
-
-    // select1st, select2nd
-
-    std::cout << "select1st<pair<int,int> >(make_pair(11,42)) = " << more::select1st< std::pair<int,int> >()(std::make_pair(11,42)) << std::endl;
-    std::cout << "select2nd<pair<int,int> >(make_pair(11,42)) = " << more::select2nd< std::pair<int,int> >()(std::make_pair(11,42)) << std::endl;
-
-    // call_if test:
-
-    std::vector<test *> vec;
-
-    vec.push_back(new test(1));
-    vec.push_back(0);
-    vec.push_back(0);
-    vec.push_back(new test(2));
-
-    using namespace std::placeholders;
-    std::for_each(vec.begin(), vec.end(), 
-                  std::bind( more::call_if(std::mem_fn(&test::hello)), _1, _1));
-
-    return 0;
+    return yats::run();
 }
  

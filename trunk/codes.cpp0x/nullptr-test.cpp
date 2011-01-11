@@ -10,14 +10,23 @@
 
 #include <cassert>
 #include <nullptr.hpp>
+#include <yats.hpp>
+using namespace yats;
+
+Context(more_nullptr_test)
+{
+    Test(simple)
+    {
+        char * a = nullptr;
+        Assert( a == nullptr , is_true());
+        Assert( nullptr == a , is_true());
+    }
+
+}
 
 int
 main(int argc, char *argv[])
 {
-    char * a = nullptr;
-    assert( a == nullptr );
-    assert( nullptr == a );
-
-    return 0;
+    return yats::run();
 }
 

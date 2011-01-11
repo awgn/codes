@@ -16,10 +16,12 @@
 #include <vector>
 #include <list>
 
-int
-main(int argc, char *argv[])
+#include <yats.hpp>
+using namespace yats;
+
+Context(more_static_allocator)
 {
-    /// vector test
+    Test(vector_with_static_buffer)
     {
         int buffer[4];
 
@@ -32,7 +34,7 @@ main(int argc, char *argv[])
 
         std::make_heap(abc.begin(), abc.end());
 
-        std::cout << "max:" << abc[0] << std::endl;
+        Assert( abc[0], is_equal_to(3));
 
         std::pop_heap(abc.begin(), abc.end());
 
@@ -41,13 +43,12 @@ main(int argc, char *argv[])
         abc.push_back(5);
         std::push_heap(abc.begin(), abc.end());
 
-        std::cout << "max:" << abc[0] << std::endl;
+        Assert( abc[0], is_equal_to(5));
 
-
-        std::copy(abc.begin(), abc.end(), std::ostream_iterator<int>(std::cout," ")), std::cout << std::endl;
+        Assert( (std::equal(abc.begin(), abc.end(), (int *)buffer)), is_true() );
     }
 
-    /// list test
+    Test(list_with_static_buffer)
     {
         char buffer[128];
 
@@ -56,19 +57,23 @@ main(int argc, char *argv[])
         abc.push_back(1);
         abc.push_back(2);
 
-        std::copy(abc.begin(), abc.end(), std::ostream_iterator<int>(std::cout, " ")), std::cout << std::endl;
+        int out[] = { 1, 2 };
+        Assert( (std::equal(abc.begin(), abc.end(), out)), is_true() );
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-    /// vector with initializer_list<int>
+    Test(vector_with_initializer_list)
     {
         int buffer[4];
-        std::vector<int, more::static_allocator<int> > abc( {1,2,3,4}, more::static_allocator<int>(buffer,16) );
+        std::vector<int, more::static_allocator<int> > abc({1,2,3,4}, more::static_allocator<int>(buffer,16) );
         
-        std::copy(abc.begin(), abc.end(), std::ostream_iterator<int>(std::cout, " ")), std::cout << std::endl;
+        int out[] = { 1, 2, 3, 4 };
+        Assert( (std::equal(abc.begin(), abc.end(), out)), is_true() );
     }
-#endif 
 
-    return 0;
 }
  
+int
+main(int argc, char *argv[])
+{
+    return yats::run();
+}

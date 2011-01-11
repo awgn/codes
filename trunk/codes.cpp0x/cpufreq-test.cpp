@@ -39,6 +39,7 @@ main(int argc, char *argv[])
 
     std::cout << "freq_kernel: " << cpu0.freq_kernel() << std::endl;
     std::cout << "setting governor 'performance'..." << std::endl;
+
     cpu0.set_policy_governor("performance");
     std::cout << "freq_kernel: " << cpu0.freq_kernel() << std::endl;
     

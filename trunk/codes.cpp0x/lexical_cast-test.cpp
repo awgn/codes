@@ -14,68 +14,37 @@
 #include <thread>
 #include <iostream>
 
-using namespace std;
+#include <yats.hpp>
+using namespace yats;
 
-const int max_iter = 10000000;
-
-void 
-thread_routine_boost()
+Context(more_lexical_cast)
 {
-    auto b = chrono::system_clock::now();
-
-    long long int sum = 0;
-    for(int i=0; i< max_iter; ++i) 
+    Test(integer)
     {
-        sum += boost::lexical_cast<int>("123456");
-        // boost::lexical_cast<std::string>("123456");
+        Assert( more::lexical_cast<int>("123"), is_equal_to(123) );
+        Assert_Throw( more::lexical_cast<int>("123A"));
     }
 
-    auto e = chrono::system_clock::now();
-    
-    auto diff = chrono::duration_cast<chrono::milliseconds>(e-b);
-
-    std::cout << max_iter << " boost::lexical_cast<int>() " << diff.count() << " msec" << std::endl;
-}
-
-void 
-thread_routine_more()
-{    
-    auto b = std::chrono::system_clock::now();
-
-    long long int sum = 0;
-    for(int i=0; i< max_iter; ++i) 
+    Test(unsigned_integer)
     {
-        sum += more::lexical_cast<int>("123456");
-        // more::lexical_cast<std::string>("123456");
+        Assert( more::lexical_cast<unsigned int>("123"), is_equal_to(123) );
     }
 
-    auto e = std::chrono::system_clock::now();
-    auto diff = chrono::duration_cast<chrono::milliseconds>(e-b);
-    
-    std::cout << max_iter << " more::lexical_cast<int>() " << diff.count() << " msec" << std::endl;
-}
+    Test(int_to_string)
+    {
+        Assert( more::lexical_cast<std::string>(123), is_equal_to(std::string("123")) );
+        Assert( more::lexical_cast<std::string>(-123), is_equal_to(std::string("-123")) );
+    }
 
+    Test(double_to_string)
+    {
+        Assert( more::lexical_cast<std::string>(4.2), is_equal_to(std::string("4.2")) );
+    }
+}
 
 int
 main(int argc, char *argv[])
 {
-#ifndef _REENTRANT
-    thread_routine_boost();
-    thread_routine_more();
-#else
-
-    std::thread a(thread_routine_boost);
-    std::thread b(thread_routine_boost);
-
-    a.join();
-    b.join();
-
-    std::thread c(thread_routine_more);
-    std::thread d(thread_routine_more);
-
-    c.join();
-    d.join();
-#endif
-    return 0;
+    return yats::run();
 }
- 
+

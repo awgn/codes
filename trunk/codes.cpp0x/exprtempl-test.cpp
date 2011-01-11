@@ -11,6 +11,8 @@
 #include <iostream>
 #include <exprtempl.hpp>
 
+#include <yats.hpp>
+using namespace yats;
 using namespace more::expr;
 
 //////////////////// example ///////////////////////
@@ -20,33 +22,39 @@ using namespace more::expr;
 
 namespace 
 {
-    static integral<int, 0> _0 __attribute__((unused));
-    static integral<int, 1> _1 __attribute__((unused));
-    static integral<int, 2> _2 __attribute__((unused));
-    static integral<int, 3> _3 __attribute__((unused));
-    static integral<int, 4> _4 __attribute__((unused));
-    static integral<int, 5> _5 __attribute__((unused));
-    static integral<int, 6> _6 __attribute__((unused));
-    static integral<int, 7> _7 __attribute__((unused));
-    static integral<int, 8> _8 __attribute__((unused));
+    static exp_integral<int, 0> __0 __attribute__((unused));
+    static exp_integral<int, 1> __1 __attribute__((unused));
+    static exp_integral<int, 2> __2 __attribute__((unused));
+    static exp_integral<int, 3> __3 __attribute__((unused));
+    static exp_integral<int, 4> __4 __attribute__((unused));
+    static exp_integral<int, 5> __5 __attribute__((unused));
+    static exp_integral<int, 6> __6 __attribute__((unused));
+    static exp_integral<int, 7> __7 __attribute__((unused));
+    static exp_integral<int, 8> __8 __attribute__((unused));
+}
+
+Context(expression_template_tests)
+{
+    
+    Test(boolean)
+    {
+        Assert( eval( ( !_false ^ _true ) == _false ), is_true());
+        Assert( eval( _false || _true ), is_true());
+        Assert( eval( _true  ^ _true ), is_false());
+        Assert( eval( _false ^ _false), is_false());
+        Assert( eval( ~_false ), is_true());
+    }
+
+    Test(integer)
+    {
+        Assert( eval( (__1 + __2) * __2 == ((__8 / __2) + __2) ), is_true());
+        Assert( eval( __1 < __2 ), is_true());
+        Assert( eval( __1 >= __2 ), is_false());
+    }
 }
 
 int
 main(int argc, char *argv[])
 {
-    std::cout << std::boolalpha;
-    std::cout << (( !_false ^ _true ) == _false) << " -> " << eval( ( !_false ^ _true ) == _false ) << std::endl;
- 
-    std::cout << (_false || _true) << " -> " << eval(_false || _true) << std::endl;
-    std::cout << (_true ^ _true) << " -> " << eval(_true ^ _true) << std::endl;
-
-    std::cout << (~_false) << " -> " << eval(~_false) << std::endl;
-
-    std::cout << ( (_1 + _2) * _2 == ((_8 / _2) + _2) ) << " -> " << eval( (_1 + _2) * _2 == ((_8 / _2) + _2) ) << std::endl;
-
-    std::cout << ( _1 < _2 ) << " -> " << eval( _1 < _2 ) << std::endl;
-    std::cout << ( _1 >= _2 ) << " -> " << eval( _1 >= _2 ) << std::endl;
-
-    return 0;
+    return yats::run();
 }
-

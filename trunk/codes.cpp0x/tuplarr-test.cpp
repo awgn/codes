@@ -64,7 +64,6 @@ main(int argc, char *argv[])
         more::tuplarr::count(t, 1) 
         << std::endl;
 
-
     // count_if
 
     std::cout << "count_if: " << 

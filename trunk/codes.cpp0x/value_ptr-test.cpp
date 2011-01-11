@@ -11,6 +11,9 @@
 #include <iostream>
 #include <value_ptr.hpp>
 
+#include <yats.hpp>
+using namespace yats;
+
 struct base 
 {
     virtual 
@@ -26,42 +29,49 @@ struct derived : public base
     }
 };
 
+Context(more_value_ptr_test)
+{
+
+    Test(transferable)
+    {
+        more::value_ptr<int, more::transfer_ptr> b (new int(2));
+        more::value_ptr<int, more::transfer_ptr> c;
+        
+        Assert( static_cast<bool>(b.get()), is_true() );
+
+        int * copy = b.get();
+        c = b;
+
+        Assert( static_cast<bool>(b.get()), is_false() );
+        Assert( static_cast<bool>(c.get()), is_true() );
+        Assert( c.get() == copy, is_true());
+    }
+
+    Test(value)
+    {
+        more::value_ptr<int,more::deepcopyable_ptr> a = new int(42);
+        more::value_ptr<int,more::deepcopyable_ptr> x = a;
+
+        Assert( *a, is_equal_to(42) );
+        Assert( *x, is_equal_to(42) ); 
+        Assert( a.get() != x.get(), is_true());
+    }
+
+    Test(cloneable)
+    {
+        // cloneable: object must provide
+        // the virtual object * clone() const method
+
+        more::value_ptr<base, more::cloneable_ptr> x =  new derived;
+        more::value_ptr<base, more::cloneable_ptr> q = x;
+
+        Assert( x.get() != q.get(), is_true());
+    }
+}
+ 
 int
 main(int argc, char *argv[])
 {
-    more::value_ptr<int> a(new int(1));
-
-    more::value_ptr<int, more::transfer_ptr> b(new int(2));
-    std::cout << "b:" << static_cast<void *>(b.get()) << std::endl;
-
-    more::value_ptr<int, more::transfer_ptr> c(b);
-    
-    std::cout << "b:" << static_cast<void *>(b.get()) << std::endl;
-    std::cout << "c:" << static_cast<void *>(c.get()) << std::endl;
-
-    b = c;    
-
-    std::cout << "b:" << static_cast<void *>(b.get()) << std::endl;
-    std::cout << "c:" << static_cast<void *>(c.get()) << std::endl;
-
-    more::value_ptr<int,more::deepcopyable_ptr> abc ( new int(10) );
-    more::value_ptr<int,more::deepcopyable_ptr> xxx = abc;
-
-    std::cout << *xxx << std::endl;
-    std::cout << *abc << std::endl;
-
-    * xxx = 20;
-    * abc = 30;
-
-    std::cout << *xxx << std::endl;
-    std::cout << *abc << std::endl;
-
-    // cloneable: object must provide
-    // the virtual object * clone() const method
-
-    more::value_ptr<base, more::cloneable_ptr> x( new derived );
-    more::value_ptr<base, more::cloneable_ptr> q = x;
-
-    return 0;
+    return yats::run();
 }
  
