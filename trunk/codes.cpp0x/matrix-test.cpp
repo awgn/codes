@@ -34,7 +34,7 @@ Context(more_matrix_test)
         more::matrix<int,3,3> d;
         // d = a;   // not allowed!
 
-        Assert_Throw( (d = b) );      // scoped assert
+        AssertThrow( (d = b) );      // scoped assert
    }
 
     Test(matrix_stream)

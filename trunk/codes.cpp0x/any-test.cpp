@@ -41,7 +41,7 @@ Context(any_class_test)
     Test(any_cast)
     {
         Assert(more::any_cast<int>(a), is_equal_to(1));
-        Assert_Throw(more::any_cast<int>(b));
+        AssertThrow(more::any_cast<int>(b));
     }
 
     Test(any_out)

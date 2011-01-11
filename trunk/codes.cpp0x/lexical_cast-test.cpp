@@ -22,7 +22,7 @@ Context(more_lexical_cast)
     Test(integer)
     {
         Assert( more::lexical_cast<int>("123"), is_equal_to(123) );
-        Assert_Throw( more::lexical_cast<int>("123A"));
+        AssertThrow( more::lexical_cast<int>("123A"));
     }
 
     Test(unsigned_integer)

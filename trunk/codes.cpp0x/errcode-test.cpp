@@ -27,7 +27,7 @@ Context(error_code_class_test)
 
     Test(exception)
     {
-        Assert_Throw(more::strerrcode(180));
+        AssertThrow(more::strerrcode(180));
     }
 }
  
