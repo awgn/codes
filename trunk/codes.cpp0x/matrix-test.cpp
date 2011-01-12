@@ -167,8 +167,8 @@ Context(more_matrix_test)
 
     Test(matrix_traits)
     {
-        Assert( more::is_matrix<int>::value,                    is_false() );
-        Assert( more::is_matrix< more::matrix<int> >::value,    is_true() );
+        Assert( static_cast<bool>(more::is_matrix<int>::value), is_false() );
+        Assert( static_cast<bool>(more::is_matrix< more::matrix<int> >::value), is_true() );
     }
 
     Test(row_iterator)

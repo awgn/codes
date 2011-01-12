@@ -36,38 +36,38 @@ Context(more_typelist_test)
 
     Test(length)
     {
-        Assert( length<list0>::value, is_equal_to(0) );
-        Assert( length<list1>::value, is_equal_to(1) );
-        Assert( length<list2>::value, is_equal_to(2) );
+        Assert( static_cast<int>(length<list0>::value), is_equal_to(0) );
+        Assert( static_cast<int>(length<list1>::value), is_equal_to(1) );
+        Assert( static_cast<int>(length<list2>::value), is_equal_to(2) );
     }
 
     typedef append<list2, short>::type  list3;
     
     Test(append)
     {
-        Assert( length<list3>::value, is_equal_to(3) );
+        Assert( static_cast<int>(length<list3>::value), is_equal_to(3) );
     }
 
     typedef insert<list3, char>::type list4;
     Test(insert)
     {
-        Assert( length<list4>::value, is_equal_to(4) );
+        Assert( static_cast<int>(length<list4>::value), is_equal_to(4) );
     }
     
     Test(index_of)
     {
-        Assert( (indexof<list0, int>::value) , is_equal_to(-1) );
-        Assert( (indexof<list1, int>::value) , is_equal_to(0)  );
-        Assert( (indexof<list1, char>::value), is_equal_to(-1) );
+        Assert( static_cast<int>(indexof<list0, int>::value) , is_equal_to(-1) );
+        Assert( static_cast<int>(indexof<list1, int>::value) , is_equal_to(0)  );
+        Assert( static_cast<int>(indexof<list1, char>::value), is_equal_to(-1) );
     }
 
     Test(is_same)
     {
-        Assert( (is_same<typelist<>,      typelist<>>::value)      , is_true() );
-        Assert( (is_same<typelist<list0>, typelist<list0>>::value) , is_true() );
-        Assert( (is_same<typelist<list1>, typelist<list1>>::value) , is_true() );
-        Assert( (is_same<typelist<list2>, typelist<list2>>::value) , is_true() );
-        Assert( (is_same<typelist<list3>, typelist<list3>>::value) , is_true() );
+        Assert( static_cast<int>(is_same<typelist<>,      typelist<>>::value)      , is_true() );
+        Assert( static_cast<int>(is_same<typelist<list0>, typelist<list0>>::value) , is_true() );
+        Assert( static_cast<int>(is_same<typelist<list1>, typelist<list1>>::value) , is_true() );
+        Assert( static_cast<int>(is_same<typelist<list2>, typelist<list2>>::value) , is_true() );
+        Assert( static_cast<int>(is_same<typelist<list3>, typelist<list3>>::value) , is_true() );
 
         // or std::is_same is good enough...
         Assert( (std::is_same<typelist<list3>, typelist<list3>>::value), is_true() );

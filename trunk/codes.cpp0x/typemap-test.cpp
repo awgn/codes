@@ -35,7 +35,7 @@ Context(more_typemap_test)
         get<map0, name>::type _me = "Nicola";
         get<map0, age>::type  _age = 38;
 
-        Assert( size<map0>::value, is_equal_to(3));
+        Assert( static_cast<int>(size<map0>::value), is_equal_to(3));
     }
 
     typedef append<map0, nickname, std::string>::type map1;
@@ -43,16 +43,16 @@ Context(more_typemap_test)
     Test(append)
     {
         get<map1, nickname>::type _nick = "awgn";
-        Assert( size<map1>::value, is_equal_to(4));
+        Assert( static_cast<int>(size<map1>::value), is_equal_to(4));
     }
      
 
     Test(index_of)
     {
-        Assert( (index_of<map0, name>::value    ) , is_equal_to(0) );
-        Assert( (index_of<map0, age>::value     ) , is_equal_to(1) );
-        Assert( (index_of<map0, address>::value ) , is_equal_to(2) );
-        Assert( (index_of<map1, nickname>::value) , is_equal_to(3) );
+        Assert( static_cast<int>(index_of<map0, name>::value    ) , is_equal_to(0) );
+        Assert( static_cast<int>(index_of<map0, age>::value     ) , is_equal_to(1) );
+        Assert( static_cast<int>(index_of<map0, address>::value ) , is_equal_to(2) );
+        Assert( static_cast<int>(index_of<map1, nickname>::value) , is_equal_to(3) );
     }
  
 }

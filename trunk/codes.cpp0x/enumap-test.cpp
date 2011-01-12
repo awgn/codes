@@ -39,8 +39,8 @@ Context(enumap_class_test)
 
     Test(eval_enum)
     {
-        Assert(table::hello, is_equal_to(0));
-        Assert(table::world, is_equal_to(1));
+        Assert(static_cast<int>(table::hello), is_equal_to(0));
+        Assert(static_cast<int>(table::world), is_equal_to(1));
     }
     
     Test(eval_get_value)
