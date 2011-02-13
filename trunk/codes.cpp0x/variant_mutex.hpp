@@ -13,6 +13,7 @@
 
 #include <cassert>
 #include <stdexcept>
+#include <functional>
 
 namespace more { 
 
@@ -79,7 +80,6 @@ namespace more {
         
         struct ctor_action
         {
-            typedef void result_type;
             template <typename Tx>
             void operator()(Tx &that)
             {
@@ -89,7 +89,6 @@ namespace more {
 
         struct dtor_action
         {
-            typedef void result_type;
             template <typename Tx>
             void operator()(Tx &that)
             {                     
@@ -99,7 +98,6 @@ namespace more {
 
         struct lock_action
         {
-            typedef void result_type;
             template <typename Tx>
             void operator()(Tx &that)
             {
@@ -109,7 +107,6 @@ namespace more {
 
         struct unlock_action
         {
-            typedef void result_type;
             template <typename Tx>
             void operator()(Tx &that)
             {
@@ -119,7 +116,6 @@ namespace more {
 
         struct try_lock_action
         {
-            typedef bool result_type;
             template <typename Tx>
             bool operator()(Tx &that)
             {
@@ -131,7 +127,8 @@ namespace more {
         template <typename Fun, typename T, typename ...Tp>
         struct apply<Fun, T, Tp...> 
         {
-            static inline typename Fun::result_type 
+            static inline 
+            typename std::result_of<Fun(T&)>::type 
             on(char *s, int type, int t = 0)
             {
                 if (t == type) { return Fun().operator()(*reinterpret_cast<T *>(s)); }
@@ -143,7 +140,7 @@ namespace more {
         struct apply<Fun, T>
         {
             static inline 
-            typename Fun::result_type 
+            typename std::result_of<Fun(T&)>::type 
             on(char *s, int, int = 0)
             {
                 return Fun().operator()(*reinterpret_cast<T *>(s)); 
