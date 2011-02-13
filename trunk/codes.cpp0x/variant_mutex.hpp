@@ -49,27 +49,27 @@ namespace more {
                 if (n >= sizeof...(Ts))
                     throw std::runtime_error("variant_mutex: bad index");                
 
-                apply<Ts...>::ctor(m_storage, m_type);
+                apply<ctor_action, Ts...>::on(m_storage, m_type);
             }
 
             ~variant_mutex()
             {
-                apply<Ts...>::dtor(m_storage, m_type);
+                apply<dtor_action, Ts...>::on(m_storage, m_type);
             }
 
             void lock()
             {
-                apply<Ts...>::lock(m_storage, m_type);
+                apply<lock_action, Ts...>::on(m_storage, m_type);
             }
 
             void unlock()
             {
-                apply<Ts...>::unlock(m_storage, m_type);
+                apply<unlock_action, Ts...>::on(m_storage, m_type);
             }
 
             bool try_lock()
             {
-                return apply<Ts...>::try_lock(m_storage, m_type);
+                return apply<try_lock_action, Ts...>::on(m_storage, m_type);
             }
 
         private:
@@ -77,69 +77,80 @@ namespace more {
         const unsigned int  m_type;
         char m_storage[ detail::max_sizeof<Ts...>::value ];
         
-        template <typename ...Tp> struct apply;
-        template <typename T, typename ...Tp>
-        struct apply<T, Tp...> 
+        struct ctor_action
         {
-            static void ctor(char *s, int type, int t = 0)
+            typedef void result_type;
+            template <typename Tx>
+            void operator()(Tx &that)
             {
-                if (t == type) { new(s)T; return; }
-                apply<Tp...>::ctor(s, type, t+1);    
+                new (&that)Tx;
             }
-
-            static void dtor(char *s, int type, int t = 0)
-            {
-                if (t == type) { reinterpret_cast<T *>(s)->~T(); return; }
-                apply<Tp...>::dtor(s, type, t+1);
-            }
-
-            static void lock(char *s, int type, int t = 0)
-            {
-                if (t == type) {  reinterpret_cast<T *>(s)->lock(); return; }
-                apply<Tp...>::lock(s, type, t+1);
-            }
-
-            static void unlock(char *s, int type, int t = 0)
-            {
-                if (t == type) {  reinterpret_cast<T *>(s)->unlock(); return; }
-                apply<Tp...>::unlock(s, type, t+1);
-            }
-
-            static bool try_lock(char *s, int type, int t = 0)
-            {
-                if (t == type) {  return reinterpret_cast<T *>(s)->try_lock(); }
-                return apply<Tp...>::try_lock(s, type, t+1);
-            }
-
         };
-        template <typename T>
-        struct apply<T>
+
+        struct dtor_action
         {
-            static void ctor(char *s, int, int = 0)
-            {
-                new(s)T; 
+            typedef void result_type;
+            template <typename Tx>
+            void operator()(Tx &that)
+            {                     
+                that.~Tx();
             }
-            static void dtor(char *s, int, int = 0)
-            {
-                reinterpret_cast<T *>(s)->~T(); 
-            }
-            
-            static void lock(char *s, int, int = 0)
-            {
-                reinterpret_cast<T *>(s)->lock(); 
-            }
+        };
 
-            static void unlock(char *s, int, int = 0)
+        struct lock_action
+        {
+            typedef void result_type;
+            template <typename Tx>
+            void operator()(Tx &that)
             {
-                reinterpret_cast<T *>(s)->unlock(); 
+                that.lock();
             }
+        };
 
-            static bool try_lock(char *s, int, int = 0)
+        struct unlock_action
+        {
+            typedef void result_type;
+            template <typename Tx>
+            void operator()(Tx &that)
             {
-                return reinterpret_cast<T *>(s)->try_lock(); 
+                that.unlock();
+            }
+        };
+
+        struct try_lock_action
+        {
+            typedef bool result_type;
+            template <typename Tx>
+            bool operator()(Tx &that)
+            {
+                return that.try_lock();
+            }
+        };
+
+        template <typename Fun, typename ...Tp> struct apply;
+        template <typename Fun, typename T, typename ...Tp>
+        struct apply<Fun, T, Tp...> 
+        {
+            static inline typename Fun::result_type 
+            on(char *s, int type, int t = 0)
+            {
+                if (t == type) { return Fun().operator()(*reinterpret_cast<T *>(s)); }
+                apply<Fun, Tp...>::on(s,type, t+1);
+            }
+        };
+
+        template <typename Fun, typename T>
+        struct apply<Fun, T>
+        {
+            static inline 
+            typename Fun::result_type 
+            on(char *s, int, int = 0)
+            {
+                return Fun().operator()(*reinterpret_cast<T *>(s)); 
             }
         };
     };
+      
 
 } // namespace more
 
