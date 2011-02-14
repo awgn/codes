@@ -80,46 +80,51 @@ namespace more {
         
         struct ctor_action
         {
+            typedef void result_type;
             template <typename Tx>
-            void operator()(Tx &that)
+            void operator()(Tx *that)
             {
-                new (&that)Tx;
+                new (that)Tx;
             }
         };
 
         struct dtor_action
         {
+            typedef void result_type;
             template <typename Tx>
-            void operator()(Tx &that)
+            void operator()(Tx *that)
             {                     
-                that.~Tx();
+                that->~Tx();
             }
         };
 
         struct lock_action
         {
+            typedef void result_type;
             template <typename Tx>
-            void operator()(Tx &that)
+            void operator()(Tx *that)
             {
-                that.lock();
+                that->lock();
             }
         };
 
         struct unlock_action
         {
+            typedef void result_type;
             template <typename Tx>
-            void operator()(Tx &that)
+            void operator()(Tx *that)
             {
-                that.unlock();
+                that->unlock();
             }
         };
 
         struct try_lock_action
         {
+            typedef bool result_type;
             template <typename Tx>
-            bool operator()(Tx &that)
+            bool operator()(Tx *that)
             {
-                return that.try_lock();
+                return that->try_lock();
             }
         };
 
@@ -131,7 +136,7 @@ namespace more {
             typename std::result_of<Fun(T&)>::type 
             on(char *s, int type, int t = 0)
             {
-                if (t == type) { return Fun().operator()(*reinterpret_cast<T *>(s)); }
+                if (t == type) { return Fun().operator()(reinterpret_cast<T *>(s)); }
                 apply<Fun, Tp...>::on(s,type, t+1);
             }
         };
@@ -143,12 +148,11 @@ namespace more {
             typename std::result_of<Fun(T&)>::type 
             on(char *s, int, int = 0)
             {
-                return Fun().operator()(*reinterpret_cast<T *>(s)); 
+                return Fun().operator()(reinterpret_cast<T *>(s)); 
             }
         };
     };
       
-
 } // namespace more
 
 #endif /* _VARIANT_MUTEX_HPP_ */
