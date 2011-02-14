@@ -19,7 +19,7 @@ namespace more {
 
     namespace detail 
     {
-        // template metafunction that return the max sizeof a list of types.
+        // template metafunction that returns the max sizeof() of a list of types.
         //
 
         template <typename ...Ts> struct max_sizeof;
