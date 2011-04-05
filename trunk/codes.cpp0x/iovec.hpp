@@ -192,7 +192,7 @@ namespace more
             return *this;
         }
 
-        iovec_iterator &
+        iovec_iterator 
         operator++(int)
         {
             iovec_iterator c(*this);

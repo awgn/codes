@@ -24,7 +24,7 @@ std::atomic_bool stop(false);
 
 void thread_producer()
 {
-    for(int i=0; i<1000000; ) {
+    for(int i=0; i<5000000; ) {
 retry:
         if ( queue.push_back(0) ) {
             i++;
