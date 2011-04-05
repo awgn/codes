@@ -12,7 +12,12 @@
 #include <iostream>
 #include <cassert>
 #include <chrono>
+
+#if __GNUC__ == 4 &&  __GNUC_MINOR__ == 4
+#include <cstdatomic>
+#elif __GNUC__ == 4 &&  __GNUC_MINOR__ >= 5
 #include <atomic>
+#endif
 
 using namespace more;
 
