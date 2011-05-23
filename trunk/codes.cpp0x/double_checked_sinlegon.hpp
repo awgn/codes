@@ -43,7 +43,7 @@ namespace more {
                     !(instance = m_instance.load(std::memory_order_acquire)))
                 {
                     std::lock_guard<std::mutex> lock(m_mutex);
-                    if (!m_instance.load(std::memory_order_relaxed))
+                    if (!(instance = m_instance.load(std::memory_order_relaxed)))
                     {
                         instance = new Tp(std::forward<Ti>(arg)...);
                         m_instance.store(instance, std::memory_order_release);    
