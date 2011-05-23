@@ -16,8 +16,10 @@
 
 namespace more { 
 
-    // this is a simple implementation of the famous double-checked singleton.
-    // it should be race free. Nicola
+    // This is a simple implementation of the famous double-checked lock singleton.
+    // Race fixed by John Calsbeek, see http://stackoverflow.com/questions/6086912/double-checked-lock-singleton-in-c11
+    // 
+    // It should be race free. Nicola
 
     namespace double_checked
     {
@@ -31,17 +33,24 @@ namespace more {
             static Tp &
             instance(Ti && ...arg)
             {
-                if (!m_instance.load(std::memory_order_relaxed))
+                // thread_local improves the performance of about a factor 10 
+                // (load with acquire semantic is indeed called just one time per thread). 
+                // Though not yet supported, g++ has its non-standard keyword __thread. Nicola
+
+                static __thread Tp *instance;
+
+                if (!instance && 
+                    !(instance = m_instance.load(std::memory_order_acquire)))
                 {
                     std::lock_guard<std::mutex> lock(m_mutex);
-                    if (!m_instance.load(std::memory_order_acquire))
+                    if (!m_instance.load(std::memory_order_relaxed))
                     {
-                        Tp * i = new Tp(std::forward<Ti>(arg)...);
-                        m_instance.store(i, std::memory_order_release);    
+                        instance = new Tp(std::forward<Ti>(arg)...);
+                        m_instance.store(instance, std::memory_order_release);    
                     }    
                 }
 
-                return * m_instance.load(std::memory_order_relaxed);
+                return * instance;
             }
 
         private:
@@ -50,6 +59,9 @@ namespace more {
 
             ~singleton()
             {}
+
+            singleton(const singleton&) = delete;
+            singleton& operator=(const singleton&) = delete;
 
             static std::atomic<Tp *> m_instance;
             static std::mutex m_mutex;            
