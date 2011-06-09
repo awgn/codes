@@ -12,7 +12,6 @@
 #define _KEY_VALUE_HPP_ 
 
 #include <typemap.hpp>          // more!
-#include <iomanip.hpp>          // more!
 
 #include <iostream>
 #include <fstream>
@@ -36,7 +35,7 @@
     static const bool has_default = true; \
     static const char * value() \
     { return # k; } \
-    static const t default_value() \
+    static t default_value() \
     { return v; } \
 };
 
@@ -45,33 +44,42 @@ using namespace more::type;
 //////////////////////////////////
 //  key-value config file parser 
 
-namespace more { namespace kv {
+namespace more { namespace key_value {
 
+    template <class charT, class Traits>
+    inline
+    std::basic_istream<charT,Traits> &
+    ignore_line(std::basic_istream<charT,Traits> &__in)
+    {
+        __in.ignore(std::numeric_limits<std::streamsize>::max(), __in.widen('\n'));
+        return __in;
+    }
+    
     class line_streambuf : public std::streambuf 
     {
-        std::streambuf * _M_in;
-        int _M_line;
+        std::streambuf * m_in;
+        int m_line;
 
     public:
         line_streambuf(std::streambuf *in)
-        : _M_in(in), _M_line(1)
+        : m_in(in), m_line(1)
         {}
 
         virtual int_type underflow()
         {
-            return  _M_in->sgetc();
+            return  m_in->sgetc();
         }
 
         virtual int_type uflow()
         {
-            int_type c = _M_in->sbumpc();
+            int_type c = m_in->sbumpc();
             if ( c == '\n' )
-                _M_line++;
+                m_line++;
             return c;
         }
 
         int line() const
-        { return _M_line; }
+        { return m_line; }
     };
 
     template <class charT, class Traits>
@@ -221,14 +229,14 @@ namespace more { namespace kv {
 
         typedef parser<typemap<Ti...>, Strict, Separator, Comment> parser_type;
 
-        parser_type  _M_parser;
-        key_type     _M_key;
-        value_type   _M_value;
+        parser_type  m_parser;
+        key_type     m_key;
+        value_type   m_value;
 
         parser()
-        : _M_parser(),
-        _M_key(),
-        _M_value(get_default<key_type, value_type, key_type::has_default>::value()) 
+        : m_parser(),
+        m_key(),
+        m_value(get_default<key_type, value_type, key_type::has_default>::value()) 
         {}
 
         virtual ~parser()
@@ -248,12 +256,12 @@ namespace more { namespace kv {
         template <typename Key, int N>
         typename std::add_lvalue_reference<typename more::type::get<map_type, Key>::type>::type
         __get(std::integral_constant<int,N>) 
-        { return _M_parser.__get<Key>(std::integral_constant<int, N-1>()); }
+        { return m_parser.__get<Key>(std::integral_constant<int, N-1>()); }
 
         template <typename Key>
         typename std::add_lvalue_reference<value_type>::type
         __get(std::integral_constant<int,0>) 
-        { return _M_value; } 
+        { return m_value; } 
 
     protected:
 
@@ -261,35 +269,35 @@ namespace more { namespace kv {
         // run-time parser 
 
         bool parse_key_value(std::istream &in, const std::string &fname, const std::string &key)
-        { return __parse(in, fname, key, *this); }
+        { return parse_key_value_(in, fname, key, *this); }
 
         template <typename _T0, typename ..._Ti, bool _Strict >
-        static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<typemap<_T0, _Ti...>,_Strict,Separator,Comment> &that)
+        static bool parse_key_value_(std::istream &in, const std::string &fname, const std::string &key, parser<typemap<_T0, _Ti...>,_Strict,Separator,Comment> &that)
         {
             if (key == _T0::first_type::value()) {
-                if (!lex_parse(in,that._M_value) || in.fail() ) {
+                if (!lex_parse(in,that.m_value) || in.fail() ) {
                     std::clog << fname << ": parse error: key[" << 
                     _T0::first_type::value() << "] unexpected argument (line " << 
-                    more::kv::line_number(in) << ")" << std::endl;
+                    more::key_value::line_number(in) << ")" << std::endl;
                     return false;
                 }
                 return true;
             }
-            return __parse(in, fname, key, that._M_parser);
+            return parse_key_value_(in, fname, key, that.m_parser);
         }
         template <bool _Strict>
-        static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<typemap<>,_Strict,Separator,Comment> &)
+        static bool parse_key_value_(std::istream &in, const std::string &fname, const std::string &key, parser<typemap<>,_Strict,Separator,Comment> &)
         {
             // unknown key-value...
 
             if (_Strict) {   // strict mode: dump-error 
                 std::clog << fname << ": parse error: key[" << key << "] unknown (line " << 
-                more::kv::line_number(in) << ")" << std::endl;
+                more::key_value::line_number(in) << ")" << std::endl;
                 return false;
             }
 
             // non-strict mode: skip this line
-            in >> more::ignore_line;
+            in >> ignore_line;
             return true;
         }
 
@@ -330,7 +338,7 @@ namespace more { namespace kv {
                 // skip comments/empty lines
                 //
                 if (key.empty() || key[0] == Comment ) {
-                    si >> more::ignore_line;
+                    si >> ignore_line;
                     continue;
                 }
 
@@ -339,7 +347,7 @@ namespace more { namespace kv {
                 if (key == "{") {
                     if (block) {
                         std::clog << fname << ": parse error: { nested block are not supported (line " << 
-                        more::kv::line_number(si) << ")" << std::endl;
+                        more::key_value::line_number(si) << ")" << std::endl;
                         return false;
                     }
                     block = true;
@@ -350,7 +358,7 @@ namespace more { namespace kv {
                     if (block)
                         break;
                     std::clog << fname << ": parse error: expected `{' before the end-of-block } (line "<< 
-                    more::kv::line_number(si) << ")" << std::endl;
+                    more::key_value::line_number(si) << ")" << std::endl;
                     return false;
                 }
 
@@ -359,7 +367,7 @@ namespace more { namespace kv {
                     si >> c; 
                     if ( c != Separator ) {
                         std::clog << fname << ": parse error: key[" << key << "] missing separator '" 
-                        << Separator << "' (line "<< more::kv::line_number(si) << ")" << std::endl;
+                        << Separator << "' (line "<< more::key_value::line_number(si) << ")" << std::endl;
                         return false;
                     }
                 }
@@ -381,7 +389,7 @@ namespace more { namespace kv {
     struct block : public parser<T, Strict, ':', '#'> 
     {}; 
 
-} // namespace kv
+} // namespace key_value
 } // namespace more
 
 #endif /* _KEYVALUE_HPP_ */
