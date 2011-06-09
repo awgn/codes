@@ -39,10 +39,9 @@ MAP_KEY(pair_type, pair_tuple);
         MAP_KEY(int, two);
         MAP_KEY(int, three);
 
-        typedef more::kv::block<typemap<one::type, 
+        typedef more::key_value::block<typemap<one::type, 
                                         two::type, 
-                                        three::type>, 
-                                        true /* strict: unknown key are parse errors */ > type;
+                                        three::type>> type;
     }
 
 MAP_KEY(b::type, block);
@@ -54,22 +53,20 @@ MAP_KEY(b::type, block);
         MAP_KEY(int, two);
         MAP_KEY(int, three);
 
-        typedef more::kv::block<typemap< one::type,
+        typedef more::key_value::block<typemap< one::type,
                                          two::type,
-                                         three::type>,
-                                         true /* strict: unknown key are parse errors */ > type;
+                                         three::type> > type;
     }
 
 MAP_KEY(std::vector<bs::type>, blocks);
 
-struct myparser : public more::kv::parser< typemap<unsigned_int::type,
+struct myparser : public more::key_value::parser< typemap<unsigned_int::type,
                                                    integers::type,
                                                    booleans::type,
                                                    strings::type,
                                                    associative::type,
                                                    block::type,
-                                                   blocks::type>,
-                                                   false /* non-strict: unknown key are ignored */ > {};
+                                                   blocks::type> > {};
 
 int
 main(int argc, char *argv[])

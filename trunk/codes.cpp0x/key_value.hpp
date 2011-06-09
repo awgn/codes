@@ -22,6 +22,7 @@
 #include <map>
 #include <functional>
 #include <type_traits>
+#include <tuple>
 
 #define MAP_KEY(t,k)  struct k { \
     typedef std::pair<k,t> type; \
@@ -106,67 +107,67 @@ namespace more { namespace key_value {
         { return TYPE(); }
     };
 
-    template <typename T, bool S> struct block;
+    template <typename T> struct block;
 
     /////////////////////////////////////////////////////////////////////////////////
     // overloaded lex_parse functions must be provided to parse user-defined types
-    //      note: specializations do not partecipate to overloading
+    //      note: specializations do not participate in overloading
 
     template <typename E>
-    inline bool lex_parse(std::istream &in, E &elem)
+    inline bool lex_parse(std::istream &in, E &elem, const std::tuple<bool,char,char> &)
     { 
         return (in >> elem);
     }        
 
-    template <typename T, bool S>
-    inline bool lex_parse(std::istream &in, block<T,S> &b)
+    template <typename T>
+    inline bool lex_parse(std::istream &in, block<T> &b, const std::tuple<bool,char,char> &mode)
     { 
-        return b.parse(in, "block");
+        return b.parse(in, mode, "block");
     }
 
     // generic container that supports push_back()
     //
     template <typename E, 
-             template <typename _Tp, typename Alloc = std::allocator<_Tp> > class C >
-             inline bool lex_parse(std::istream &in, C<E> &elems)
-             {
-                 E tmp;
-                 if ( lex_parse(in,tmp) ) {
-                     elems.push_back(tmp);
-                     return true;
-                 }
-                 return false;
-             }
+    template <typename _Tp, typename Alloc = std::allocator<_Tp> > class C >
+    inline bool lex_parse(std::istream &in, C<E> &elems, const std::tuple<bool,char,char> &mode)
+    {
+        E tmp;
+        if ( lex_parse(in,tmp,mode) ) {
+            elems.push_back(tmp);
+            return true;
+        }
+        return false;
+    }
 
     // generic associative container that supports insert(std::pair<K,V>)
     //
     template <typename K, typename V,  
-             template <typename _Key, typename _Tp,
-             typename _Compare = std::less<_Key>,
-             typename _Alloc = std::allocator<std::pair<const _Key, _Tp> > > class Cont >
-             inline bool lex_parse(std::istream &in, Cont<K,V> &elems)
-             {
-                 K key;
-                 V value;
+        template <typename _Key, typename _Tp,
+        typename _Compare = std::less<_Key>,
+        typename _Alloc = std::allocator<std::pair<const _Key, _Tp>>> class Cont >
+    inline bool lex_parse(std::istream &in, Cont<K,V> &elems, const std::tuple<bool,char,char> &mode)
+    {
+        K key;
+        V value;
 
-                 if ( !lex_parse(in,key) )
-                     return false;
+        if ( !lex_parse(in, key, mode) )
+            return false;
 
-                 std::string sep;
-                 if (!(in >> sep) || sep != "=>" )
-                     return false;
+        std::string sep;
+        if (!(in >> sep) || sep != "=>" )
+            return false;
 
-                 if ( !lex_parse(in,value) )
-                     return false;
+        if ( !lex_parse(in, value, mode) )
+            return false;
 
-                 elems.insert( std::make_pair(key,value) );
-                 return true;
-             }
+        elems.insert( std::make_pair(key,value) );
+        return true;
+    }
 
     // specialization for boolean
     //
     template <>
-    inline bool lex_parse<bool>(std::istream &in, bool &elem)
+    inline bool lex_parse<bool>(std::istream &in, bool &elem, const std::tuple<bool,char,char> &)
     {
         in >> std::noboolalpha;
         if (!(in >> elem)) {
@@ -176,10 +177,10 @@ namespace more { namespace key_value {
         return true;
     }
 
-    // specialization for strings, " support
+    // specialization for "strings"
     //
     template <>
-    inline bool lex_parse<std::string>(std::istream &in, std::string &elem)
+    inline bool lex_parse<std::string>(std::istream &in, std::string &elem, const std::tuple<bool,char,char> &)
     {
         char c;
 
@@ -215,19 +216,17 @@ namespace more { namespace key_value {
     //////////////////////////////////////////////////////////////////////////
     //   parser class
 
-    template <typename Tm,  bool Strict     = false /*  mode     */, 
-                            char Separator  = '='  /* separator */, 
-                            char Comment    = '#' /* comment   */ > struct parser;
+    template <typename Tm> struct parser;
 
-    template <typename T0, typename ...Ti, bool Strict, char Separator, char Comment>
-    struct parser<typemap<T0, Ti...>, Strict, Separator, Comment>
+    template <typename T0, typename ...Ti>
+    struct parser<typemap<T0, Ti...>>
     {
     public:
         typedef typemap<T0, Ti...>         map_type;
         typedef typename T0::first_type    key_type;
         typedef typename T0::second_type   value_type;
 
-        typedef parser<typemap<Ti...>, Strict, Separator, Comment> parser_type;
+        typedef parser<typemap<Ti...>> parser_type;
 
         parser_type  m_parser;
         key_type     m_key;
@@ -235,8 +234,8 @@ namespace more { namespace key_value {
 
         parser()
         : m_parser(),
-        m_key(),
-        m_value(get_default<key_type, value_type, key_type::has_default>::value()) 
+          m_key(),
+          m_value(get_default<key_type, value_type, key_type::has_default>::value()) 
         {}
 
         virtual ~parser()
@@ -248,19 +247,19 @@ namespace more { namespace key_value {
         template <typename Key>
         typename std::add_lvalue_reference<typename more::type::get<map_type, Key>::type>::type
         get() 
-        { return __get<Key>(std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); }
+        { return get_<Key>(std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); }
 
         // the following methods cannot be protected...
         //
 
         template <typename Key, int N>
         typename std::add_lvalue_reference<typename more::type::get<map_type, Key>::type>::type
-        __get(std::integral_constant<int,N>) 
-        { return m_parser.__get<Key>(std::integral_constant<int, N-1>()); }
+        get_(std::integral_constant<int,N>) 
+        { return m_parser.get_<Key>(std::integral_constant<int, N-1>()); }
 
         template <typename Key>
         typename std::add_lvalue_reference<value_type>::type
-        __get(std::integral_constant<int,0>) 
+        get_(std::integral_constant<int,0>) 
         { return m_value; } 
 
     protected:
@@ -268,14 +267,15 @@ namespace more { namespace key_value {
         //////////////////////////////////////////////////////////////////////////
         // run-time parser 
 
-        bool parse_key_value(std::istream &in, const std::string &fname, const std::string &key)
-        { return parse_key_value_(in, fname, key, *this); }
+        bool parse_key_value(std::istream &in, const std::string &fname, const std::string &key, const std::tuple<bool,char,char> &mode)
+        { return parse_key_value_(in, fname, key, *this, mode); }
 
-        template <typename _T0, typename ..._Ti, bool _Strict >
-        static bool parse_key_value_(std::istream &in, const std::string &fname, const std::string &key, parser<typemap<_T0, _Ti...>,_Strict,Separator,Comment> &that)
+        template <typename _T0, typename ..._Ti>
+        static bool parse_key_value_(std::istream &in, const std::string &fname, const std::string &key, 
+                                     parser<typemap<_T0, _Ti...>> &that, const std::tuple<bool,char,char> &mode)
         {
             if (key == _T0::first_type::value()) {
-                if (!lex_parse(in,that.m_value) || in.fail() ) {
+                if (!lex_parse(in,that.m_value,mode) || in.fail() ) {
                     std::clog << fname << ": parse error: key[" << 
                     _T0::first_type::value() << "] unexpected argument (line " << 
                     more::key_value::line_number(in) << ")" << std::endl;
@@ -283,14 +283,14 @@ namespace more { namespace key_value {
                 }
                 return true;
             }
-            return parse_key_value_(in, fname, key, that.m_parser);
+            return parse_key_value_(in, fname, key, that.m_parser, mode);
         }
-        template <bool _Strict>
-        static bool parse_key_value_(std::istream &in, const std::string &fname, const std::string &key, parser<typemap<>,_Strict,Separator,Comment> &)
+
+        static bool parse_key_value_(std::istream &in, const std::string &fname, const std::string &key, 
+                                     parser<typemap<>> &, const std::tuple<bool,char,char> &mode)
         {
             // unknown key-value...
-
-            if (_Strict) {   // strict mode: dump-error 
+            if (std::get<0>(mode)) {   // strict mode: dump-error 
                 std::clog << fname << ": parse error: key[" << key << "] unknown (line " << 
                 more::key_value::line_number(in) << ")" << std::endl;
                 return false;
@@ -302,7 +302,7 @@ namespace more { namespace key_value {
         }
 
     public:
-        bool parse(const std::string &fname)
+        bool parse(const std::string &fname, const std::tuple<bool, char, char> &mode = std::make_tuple(false, '=', '#'))
         {
             std::ifstream sc(fname.c_str());
             if (!sc) {
@@ -312,10 +312,10 @@ namespace more { namespace key_value {
 
             line_streambuf sb(sc.rdbuf());
             std::istream in(&sb);    
-            return parse(in, fname);
+            return parse(in, mode, fname);
         }
 
-        bool parse(std::istream &si, const std::string &fname = "unnamed")
+        bool parse(std::istream &si, const std::tuple<bool, char, char> &mode = std::make_tuple(false, '=', '#'), const std::string &fname = "unnamed")
         {
             bool block = false;
 
@@ -331,13 +331,13 @@ namespace more { namespace key_value {
                 // parse KEY 
                 //
                 char c('\0');
-                while ( si >> c && !isspace(c) && c != Separator ) {
+                while ( si >> c && !isspace(c) && c != std::get<1>(mode) ) {
                     key.push_back(c);
                 }
 
                 // skip comments/empty lines
                 //
-                if (key.empty() || key[0] == Comment ) {
+                if (key.empty() || key[0] == std::get<2>(mode)) {
                     si >> ignore_line;
                     continue;
                 }
@@ -362,18 +362,18 @@ namespace more { namespace key_value {
                     return false;
                 }
 
-                // parse Separator ('=')
-                if ( c != Separator ) {
+                // parse separator ('=')
+                if (c != std::get<1>(mode)) {
                     si >> c; 
-                    if ( c != Separator ) {
+                    if (c != std::get<1>(mode)) {
                         std::clog << fname << ": parse error: key[" << key << "] missing separator '" 
-                        << Separator << "' (line "<< more::key_value::line_number(si) << ")" << std::endl;
+                        << std::get<1>(mode) << "' (line "<< more::key_value::line_number(si) << ")" << std::endl;
                         return false;
                     }
                 }
 
                 // parse value... 
-                if ( !parse_key_value(si, fname, key) ) 
+                if (!parse_key_value(si, fname, key, mode)) 
                     return false;
             }
             // std::cout << "EOF\n";
@@ -381,13 +381,11 @@ namespace more { namespace key_value {
         }
     };
 
-    template <bool Strict, char Separator, char Comment>
-    class parser< typemap<>, Strict, Separator, Comment> 
-    {};
+    template <>
+    class parser< typemap<> > {};
 
-    template <typename T, bool Strict = false> 
-    struct block : public parser<T, Strict, ':', '#'> 
-    {}; 
+    template <typename T> 
+    struct block : public parser<T> {}; 
 
 } // namespace key_value
 } // namespace more

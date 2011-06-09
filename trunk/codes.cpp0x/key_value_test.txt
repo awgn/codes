@@ -24,21 +24,21 @@ booleans = false
 booleans = 1  
 
 block = {  
-          one:   1
-          two:   2 
+          one =   1
+          two =   2 
           # hello:  abc       
         } 
 
 blocks = {  
-          one:   1 
-          two:   1 
-          three: 1 
+          one =   1 
+          two =   1 
+          three = 1 
         } 
 
 blocks = {  
-          one:   2 
-          two:   2 
-          three: 2
+          one =   2 
+          two =   2 
+          three = 2
         } 
 
  unknown = key  # ignored in non-strict mode 
