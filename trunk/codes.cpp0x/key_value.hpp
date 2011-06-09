@@ -213,8 +213,10 @@ namespace more { namespace key_value {
         }
         return true;
     }
+
     //////////////////////////////////////////////////////////////////////////
     //   parser class
+
 
     template <typename Tm> struct parser;
 
@@ -386,6 +388,18 @@ namespace more { namespace key_value {
 
     template <typename T> 
     struct block : public parser<T> {}; 
+
+    template <typename ...Ti>
+    struct parser_pack 
+    {
+        typedef parser<typemap<typename Ti::type... >> type;
+    };
+
+    template <typename ...Ti>
+    struct block_pack 
+    {
+        typedef block<typemap<typename Ti::type... >> type;
+    }; 
 
 } // namespace key_value
 } // namespace more

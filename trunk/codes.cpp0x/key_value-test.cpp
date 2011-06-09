@@ -39,9 +39,7 @@ MAP_KEY(pair_type, pair_tuple);
         MAP_KEY(int, two);
         MAP_KEY(int, three);
 
-        typedef more::key_value::block<typemap<one::type, 
-                                        two::type, 
-                                        three::type>> type;
+        typedef more::key_value::block_pack<one, two, three >::type type;
     }
 
 MAP_KEY(b::type, block);
@@ -53,27 +51,25 @@ MAP_KEY(b::type, block);
         MAP_KEY(int, two);
         MAP_KEY(int, three);
 
-        typedef more::key_value::block<typemap< one::type,
-                                         two::type,
-                                         three::type> > type;
+        typedef more::key_value::block_pack< one, two, three >::type type;
     }
 
 MAP_KEY(std::vector<bs::type>, blocks);
-
-struct myparser : public more::key_value::parser< typemap<unsigned_int::type,
-                                                   integers::type,
-                                                   booleans::type,
-                                                   strings::type,
-                                                   associative::type,
-                                                   block::type,
-                                                   blocks::type> > {};
+    
+typedef more::key_value::parser_pack<unsigned_int,
+                                     integers,
+                                     booleans,
+                                     strings,
+                                     associative,
+                                     block,
+                                     blocks >::type parser;
 
 int
 main(int argc, char *argv[])
 {
-    myparser par;
+    parser par;
 
-    if ( !par.parse("key_value_test.txt") ) {
+    if (!par.parse("key_value_test.txt") ) {
         return -1;
     }
 
