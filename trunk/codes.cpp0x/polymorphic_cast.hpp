@@ -1,7 +1,7 @@
 #ifndef _POLYMORPHIC_CAST_HH_
 #define _POLYMORPHIC_CAST_HH_ 
 
-#include <tr1_memory.hh>    // more!
+#include <memory>    
 
 #include <cassert>
 #include <stdexcept>
