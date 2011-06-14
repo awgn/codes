@@ -25,13 +25,13 @@ namespace more {
     class static_allocator
     { 
     public:
-      typedef size_t     size_type;
-      typedef ptrdiff_t  difference_type;
-      typedef Tp*        pointer;
-      typedef const Tp*  const_pointer;
-      typedef Tp&        reference;
-      typedef const Tp&  const_reference;
-      typedef Tp         value_type;
+      typedef size_t            size_type;
+      typedef std::ptrdiff_t    difference_type;
+      typedef Tp*               pointer;
+      typedef const Tp*         const_pointer;
+      typedef Tp&               reference;
+      typedef const Tp&         const_reference;
+      typedef Tp                value_type;
 
      template<typename Tp1>
         struct rebind

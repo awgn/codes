@@ -37,7 +37,7 @@ namespace more {
 #if defined(__LP64__)    
             typedef unsigned long long cycles_t;
         
-            static const cycles_t get_cycles() 
+            static cycles_t get_cycles() 
             {
                 cycles_t val;
                 unsigned long __a,__d;

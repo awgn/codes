@@ -33,8 +33,8 @@ namespace more { namespace type {
 
     // at<>::type
     //
-    template <typename T, size_t N> struct at;
-    template <typename T, typename ...Ti, size_t N>
+    template <typename T, std::size_t N> struct at;
+    template <typename T, typename ...Ti, std::size_t N>
     struct at<typelist<T, Ti...>, N>
     {
         typedef typename at<typelist<Ti...>, N-1>::type type;

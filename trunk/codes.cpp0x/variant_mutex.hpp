@@ -35,6 +35,33 @@ namespace more {
         {
             enum { value = sizeof(T) };
         };
+        
+        template <typename Fun, typename ...Tp> struct apply;
+        template <typename Fun, typename T, typename ...Tp>
+        struct apply<Fun, T, Tp...> 
+        {
+            static 
+            typename std::result_of<Fun(T*)>::type 
+            on(char *s, int type, int t)
+            {
+                if (t == type) 
+                { 
+                    return Fun()(reinterpret_cast<T *>(s)); 
+                }
+                else
+                    return apply<Fun, Tp...>::on(s,type,t+1);
+            }
+        };
+        template <typename Fun, typename T>
+        struct apply<Fun, T>
+        {
+            static 
+            typename std::result_of<Fun(T*)>::type 
+            on(char *s, int, int)
+            {
+                return Fun()(reinterpret_cast<T *>(s)); 
+            }
+        };
     }
      
     // Variant mutex for Lockable object. 
@@ -43,41 +70,6 @@ namespace more {
     template <typename ...Ts>
     class variant_mutex
     {
-        public:
-            variant_mutex(unsigned int n)
-            : m_type(n)
-            {
-                if (n >= sizeof...(Ts))
-                    throw std::runtime_error("variant_mutex: bad index");                
-
-                apply<ctor_action, Ts...>::on(m_storage, m_type);
-            }
-
-            ~variant_mutex()
-            {
-                apply<dtor_action, Ts...>::on(m_storage, m_type);
-            }
-
-            void lock()
-            {
-                apply<lock_action, Ts...>::on(m_storage, m_type);
-            }
-
-            void unlock()
-            {
-                apply<unlock_action, Ts...>::on(m_storage, m_type);
-            }
-
-            bool try_lock()
-            {
-                return apply<try_lock_action, Ts...>::on(m_storage, m_type);
-            }
-
-        private:
-
-        const unsigned int  m_type;
-        char m_storage[ detail::max_sizeof<Ts...>::value ];
-        
         struct ctor_action
         {
             typedef void result_type;
@@ -128,31 +120,44 @@ namespace more {
             }
         };
 
-        template <typename Fun, typename ...Tp> struct apply;
-        template <typename Fun, typename T, typename ...Tp>
-        struct apply<Fun, T, Tp...> 
+    public:
+        variant_mutex(unsigned int n)
+        : m_type(n)
         {
-            static inline 
-            typename std::result_of<Fun(T&)>::type 
-            on(char *s, int type, int t = 0)
-            {
-                if (t == type) { return Fun().operator()(reinterpret_cast<T *>(s)); }
-                apply<Fun, Tp...>::on(s,type, t+1);
-            }
-        };
+            if (n >= sizeof...(Ts))
+                throw std::runtime_error("variant_mutex: bad index");                
 
-        template <typename Fun, typename T>
-        struct apply<Fun, T>
+            detail::apply<ctor_action, Ts...>::on(m_storage, m_type, 0);
+        }
+
+        ~variant_mutex()
         {
-            static inline 
-            typename std::result_of<Fun(T&)>::type 
-            on(char *s, int, int = 0)
-            {
-                return Fun().operator()(reinterpret_cast<T *>(s)); 
-            }
-        };
+            detail::apply<dtor_action, Ts...>::on(m_storage, m_type, 0);
+        }
+
+        variant_mutex(const variant_mutex &) = delete;
+        variant_mutex& operator=(const variant_mutex &) = delete;
+
+        void lock()
+        {
+            detail::apply<lock_action, Ts...>::on(m_storage, m_type, 0);
+        }
+
+        void unlock()
+        {
+            detail::apply<unlock_action, Ts...>::on(m_storage, m_type, 0);
+        }
+
+        bool try_lock()
+        {
+            return detail::apply<try_lock_action, Ts...>::on(m_storage, m_type, 0);
+        }
+
+    private:
+        const unsigned int m_type;
+        char m_storage[ detail::max_sizeof<Ts...>::value ];
     };
-      
+
 } // namespace more
 
 #endif /* _VARIANT_MUTEX_HPP_ */

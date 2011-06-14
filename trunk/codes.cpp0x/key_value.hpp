@@ -23,6 +23,7 @@
 #include <functional>
 #include <type_traits>
 #include <tuple>
+#include <limits>
 
 #define MAP_KEY(t,k)  struct k { \
     typedef std::pair<k,t> type; \

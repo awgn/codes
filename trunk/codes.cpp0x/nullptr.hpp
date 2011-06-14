@@ -12,14 +12,13 @@
 #define _MORE_NULLPTR_HPP_ 
 
 #if defined(__GNUC__) && !defined(__GXX_EXPERIMENTAL_CXX0X__) || \
-    defined(__GNUC__) && (__GNUC__ == 4 && __CNUC_MINOR__ < 6)  
+    defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 6)  
 
 // c++0x nullptr which can only be assigned to pointers (not yet part of the standard).
 // Nicola
 
 namespace
 {
-    const
     struct nullptr_t
     {
         template <typename T>
@@ -34,7 +33,8 @@ namespace
             return 0;
         }
 
-    } nullptr = {};
+    } 
+    const nullptr = {};
 
     template <typename T>
     bool operator==(T *p, nullptr_t)
