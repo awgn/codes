@@ -14,12 +14,25 @@
 
 #include <pcap++.hpp>
 
-class mycap : public more::pcap_live
+class mycap : public more::pcap::pcap_live
 {
 public:
     mycap()
-    : more::pcap_live("wlan0", 64, true, 0)
+    : more::pcap::pcap_live("eth0", 64, true, 0)
     {}
+
+    mycap(mycap &&other)
+    : more::pcap::pcap_live(std::move(other))
+    {}
+
+    mycap& operator=(mycap &&other)
+    {
+        if (this != &other)
+        {
+            static_cast<more::pcap::pcap_live *>(this)->operator=(std::move(other));
+        }
+        return *this;
+    }
 
     virtual
     void packet_handler(const struct pcap_pkthdr *h, const u_char *p)
@@ -29,10 +42,10 @@ public:
 };
 
 
-struct replay : public more::pcap_offline
+struct replay : public more::pcap::pcap_offline
 {
     replay(const std::string &fname)
-    : more::pcap_offline(fname)
+    : more::pcap::pcap_offline(fname)
     {}
 
     virtual
@@ -50,25 +63,28 @@ void simple_handler(u_char *user, const struct pcap_pkthdr * h, const u_char *by
     std::cout << "simple handler: " << *h << std::endl;
 }
 
-int
+
+  int
 main(int argc, char *argv[])
 {
-    // std::string dev = more::pcap::lookupdev();
-    // std::cout << "lookup device: " << dev << std::endl;
+    // test for moveability...
+    //
 
-    mycap handle;
-    
-    std::cout << "device: " << handle.device() << std::endl;
-    std::cout << "errbuf: [" << handle.errbuf() << "]" << std::endl;
+    std::vector<mycap> handle;
 
-    handle.nonblock(false);
+    handle.push_back(mycap());
 
-    std::cout << "non-blocking mode: " << handle.nonblock() << std::endl;
+    std::cout << "device: " << handle[0].device() << std::endl;
+    std::cout << "errbuf: [" << handle[0].errbuf() << "]" << std::endl;
 
-    std::list<more::pcap_if> l = more::pcap::findalldevs();
+    handle[0].nonblock(false);
+
+    std::cout << "non-blocking mode: " << handle[0].is_nonblock() << std::endl;
+
+    std::vector<more::pcap::interface> l = more::pcap::findalldevs();
 
     std::cout << "findalldevs: ";
-    std::copy(l.begin(), l.end(), std::ostream_iterator<more::pcap_if>(std::cout, "\n             "));
+    std::copy(l.begin(), l.end(), std::ostream_iterator<more::pcap::interface>(std::cout, "\n             "));
     std::cout << std::endl;
 
     bpf_u_int32 net, mask;
@@ -77,26 +93,26 @@ main(int argc, char *argv[])
     std::cout << "lookupnet: " << more::pcap::ipv4_dotform(net) << " " << more::pcap::ipv4_dotform(mask) << std::endl;
     std::cout << "dispatch: " << std::endl;
 
-    std::cout << "datalink type:" << handle.datalink() << " len:" << handle.datalink_len() << " bytes" << std::endl;
+    std::cout << "datalink type:" << handle[0].datalink() << " len:" << handle[0].datalink_len() << " bytes" << std::endl;
 
     // for(;;) {
-    //     handle.dispatch(10);
+    //     handle[0].dispatch(10);
     // }
 
     {
-        more::bpf_prog icmp_only("icmp");
-        handle.filter(icmp_only);
+        more::pcap::bpf_prog icmp_only("icmp");
+        handle[0].filter(icmp_only);
     }
 
     std::cout << "dumping 10 icmp to cout..." << std::endl;
 
-    handle.loop(10);        
-    // handle.loop(10, simple_handler);  // use direct loop
+    handle[0].loop(10);        
+    // handle[0].loop(10, simple_handler);  // use direct loop
  
     std::cout << "dumping 10 icmp to file..." << std::endl;
     {
-        more::pcap_dumper test(handle, "test.pcap");
-        handle.loop(10, more::pcap_dumper::handler, reinterpret_cast<u_char *>(&test) );  // use direct loop
+        more::pcap::pcap_dumper test(handle[0], "test.pcap");
+        handle[0].loop(10, more::pcap::pcap_dumper::handler, reinterpret_cast<u_char *>(&test) );  // use direct loop
         test.flush();
     }
 
