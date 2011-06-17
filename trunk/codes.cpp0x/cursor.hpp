@@ -160,11 +160,11 @@ namespace more {
         ////////////////////////////////////////////////
         // readers...
 
-        // ssize_t
-        // size() const
-        // {
-        //     return std::distance(m_beg, m_cur);
-        // }
+        ssize_t
+        size() const
+        {
+            return std::distance(m_beg, m_cur);
+        }
 
         ssize_t
         capacity() const
