@@ -24,8 +24,8 @@ main(int argc, char *argv[])
 
         more::cursor<char> cur(buf, buf+68);
 
-        more::header<ethernet> h_eth(cur);
-        more::header<eth802_1q> h_vlan(cur);
+        more::net::header<ethernet> h_eth(cur);
+        more::net::header<eth802_1q> h_vlan(cur);
 
         h_eth->dhost("0:1:2:3:4:5");
         h_eth->shost("a:b:c:d:e:f");
@@ -37,7 +37,7 @@ main(int argc, char *argv[])
         std::cout << "eth: " << h_eth->size() << " bytes " << *h_eth << std::endl;
         std::cout << "vlan: " << *h_vlan << std::endl;
 
-        more::header<ipv4> h_ip(cur,20);
+        more::net::header<ipv4> h_ip(cur,20);
 
         h_ip->version(4);
 
@@ -51,17 +51,15 @@ main(int argc, char *argv[])
         std::cout << "ip_checksum: " << h_ip->check_verify() << std::endl;
 
         // {
-        //     more::header<udp> h(cur);
-
+        //     more::net::header<udp> h(cur);
         //     h->source(1024);
         //     h->dest(31337);
         //     h->len(64);
         //     h->check(0);
-
         //     std::cout << "udp:  " << h->size() << " bytes " << *h << std::endl;
         // }
 
-        more::header<tcp> h_tcp(cur,20);
+        more::net::header<tcp> h_tcp(cur,20);
 
         h_tcp->source(1024);
         h_tcp->dest(31337);
@@ -73,12 +71,12 @@ main(int argc, char *argv[])
         h_tcp->cwr(true);
         h_tcp->syn(true);
 
-        h_tcp->check_update(*h_ip, cur.size() /* bytes of tcp segment */);
+        h_tcp->check_update(*h_ip, cur.capacity() /* bytes of tcp segment */);
 
         std::cout << "tcp: " << h_tcp->size() << " bytes " << *h_tcp << std::endl;
 
-        std::cout << "tcp_checksum: " << h_tcp->check_verify(*h_ip, cur.size()) << std::endl;  
-        std::cout << "payload: " << cur.size() << " bytes" << ", offset: " << (cur.cur()-cur.begin()) << std::endl;
+        std::cout << "tcp_checksum: " << h_tcp->check_verify(*h_ip, cur.capacity()) << std::endl;  
+        std::cout << "payload: " << cur.capacity() << " bytes" << ", offset: " << (cur.cur()-cur.begin()) << std::endl;
 
         // std::cout << "eth_min_size: " << ethernet::__min_size << std::endl;
         // std::cout << " ip_min_size: " << ipv4::__min_size << std::endl;
@@ -93,9 +91,9 @@ main(int argc, char *argv[])
 
         more::cursor<char> cur(buf, buf+54);
 
-        more::header<ethernet> h_eth(cur);
-        more::header<ipv4>     h_ip(cur);
-        more::header<tcp>      h_tcp(cur);
+        more::net::header<ethernet> h_eth(cur);
+        more::net::header<ipv4>     h_ip(cur);
+        more::net::header<tcp>      h_tcp(cur);
 
     }
 

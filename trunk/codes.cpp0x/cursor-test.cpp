@@ -21,9 +21,9 @@ main(int argc, char *argv[])
         
     * cur++ = 0;
     * cur++ = 1;
-    // * cur++ = 2;
 
-    std::cout << "size: " << cur.size() << " bytes left." << std::endl;
+    std::cout << "size: " << cur.size() << " slot consumed." << std::endl;
+    std::cout << "size: " << cur.capacity() << " slot left." << std::endl;
 
     const char c_buffer[4] = { '\0' };
 

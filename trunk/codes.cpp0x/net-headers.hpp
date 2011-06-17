@@ -28,7 +28,7 @@
 
 #include <cursor.hpp>            // more!
 
-namespace more {
+namespace more { namespace net {
 
     //////////////////////////////////////////////////////////
     // generic network header
@@ -37,13 +37,13 @@ namespace more {
     class header
     {
         ////////////////////////////////////////////////
-        // ctor for static size headers.. ie: ethernet
+        // ctor for static headers.. ie: ethernet
 
         template <typename P, int N>
         void ctor(more::cursor<P> &cur, std::integral_constant<int,N>)
         {
-            if (cur.size() < N)
-                throw std::range_error(T::__name_str().append("::static_size"));
+            if (cur.capacity() < N)
+                throw std::range_error(T::m_name_str().append("::static_size"));
            
             cur += N; 
         }
@@ -51,107 +51,104 @@ namespace more {
         template <typename P, int N>
         void ctor(more::cursor<P> &cur, ssize_t size, std::integral_constant<int,N>)
         {
-            if ( cur.size() < N)
-                throw std::range_error(T::__name_str().append("::static_size"));
+            if ( cur.capacity() < N)
+                throw std::range_error(T::m_name_str().append("::static_size"));
             
             if ( size && size != N )
-                throw std::range_error(std::string("size != ").append(T::__name_str()).append("::static_size"));
+                throw std::range_error(std::string("size != ").append(T::m_name_str()).append("::static_size"));
 
             cur += N;
         }
 
         ///////////////////////////////////////////
-        // ctor for dynamic size headers.. ie: ip 
+        // ctor for dynamic headers.. ie: ip 
 
         template <typename P>
         void ctor(more::cursor<P> &cur, std::integral_constant<int,0>)
         {
-            if ( cur.size() < T::__min_size )
-                throw std::range_error(std::string(T::__name_str()).append("::size() [minimal size]"));
+            if ( cur.capacity() < T::m_min_size )
+                throw std::range_error(std::string(T::m_name_str()).append("::size() [minimal size]"));
 
-            ssize_t n = _M_value.size(cur.size());
+            ssize_t n = m_value.size(cur.capacity());
             cur += n;
         }
 
         template <typename P>
         void ctor(more::cursor<P> &cur, ssize_t size, std::integral_constant<int,0>)
         {
-            ssize_t n = _M_value.size(cur.size(), size);
-            if (cur.size() < n)
-                throw std::range_error(std::string(T::__name_str()).append("::size() [dynamic size]"));
+            ssize_t n = m_value.size(cur.capacity(), size);
+            if (cur.capacity() < n)
+                throw std::range_error(std::string(T::m_name_str()).append("::size() [dynamic size]"));
             cur += n;
         }
 
     public:
         template <typename P>
         header(more::cursor<P> &cur)
-        : _M_value( const_cast< typename std::conditional< std::is_const<T>::value, 
+        : m_value( const_cast< typename std::conditional< std::is_const<T>::value, 
                                     typename std::remove_const<P>::type, P>::type *>(cur.cur()))
         {
             static_assert(sizeof(P) == 1, "multi_bytes cursor not allowed here");
-            ctor(cur, std::integral_constant<int,T::__static_size>());
+            ctor(cur, std::integral_constant<int,T::m_static_size>());
         }
 
         template <typename P>
         header(more::cursor<P> & cur, ssize_t size /* set the header size */ )
-        : _M_value( const_cast< typename std::conditional< std::is_const<T>::value, 
+        : m_value( const_cast< typename std::conditional< std::is_const<T>::value, 
                                     typename std::remove_const<P>::type, P>::type *>(cur.cur()))
         {
             static_assert(sizeof(P) == 1, "multi_bytes cursor not allowed here");
-            ctor(cur, size, std::integral_constant<int,T::__static_size>());
+            ctor(cur, size, std::integral_constant<int,T::m_static_size>());
         }
 
         T * 
         operator->()
         {
-            return &_M_value;
+            return &m_value;
         }
 
         T &
         operator *()
         {
-            return _M_value;
+            return m_value;
         }
 
     private:
-        T _M_value;
+        T m_value;
     };
-
-
-namespace net {
 
     struct raw_t {};  // to read raw fields
     namespace 
     {
-        raw_t raw;
+        raw_t raw = {};
     }
 
-#define attr_reader(_type, _member) \
+#define MORE_NET_READER(_type, _member) \
     _type \
     _member() const\
     { return _H_->_member; }
 
-#define attr_reader_uint16(_member) \
+#define MORE_NET_READER_uint16(_member) \
     uint16_t \
     _member() const\
     { return ntohs(_H_->_member); }
 
-#define attr_reader_uint32(_member) \
+#define MORE_NET_READER_uint32(_member) \
     uint32_t \
     _member() const\
     { return ntohl(_H_->_member); }
 
-#define attr_writer(_type, _member) \
+#define MORE_NET_WRITER(_type, _member) \
     void \
     _member(const _type &value)\
     { _H_->_member = value; }
 
-#define attr_writer_uint16(_member) \
+#define MORE_NET_WRITER_uint16(_member) \
     void \
     _member(const uint16_t value)\
     { _H_->_member = htons(value); }
 
-#define attr_writer_uint32(_member) \
+#define MORE_NET_WRITER_uint32(_member) \
     void \
     _member(const uint32_t value)\
     { _H_->_member = htonl(value); }
@@ -197,17 +194,17 @@ namespace net {
 	    static const uint16_t type_8021q = 0x8100;
 
     protected:
-        static const int   __static_size = sizeof(ether_header);    // static size
-        static const int   __min_size = sizeof(ether_header);       // min size
+        static const int  m_static_size = sizeof(ether_header);    // static size
+        static const int  m_min_size = sizeof(ether_header);       // min size
         
         static inline
-        std::string __name_str() 
+        std::string m_name_str() 
         {
             return "ether";
         }
 
-        friend class ::more::header<ethernet>;
-        friend class ::more::header<const ethernet>;
+        friend class header<ethernet>;
+        friend class header<const ethernet>;
 
     public:
         template <typename T>
@@ -303,17 +300,17 @@ namespace net {
             uint16_t ether_type;	
         };
 
-        static const int   __static_size = sizeof(vlan_header);	// static size
-        static const int   __min_size = sizeof(vlan_header);  	// min size
+        static const int   m_static_size = sizeof(vlan_header);	// static size
+        static const int   m_min_size = sizeof(vlan_header);  	// min size
         
         static inline
-        std::string __name_str() 
+        std::string m_name_str() 
         {
             return "eth802_1q";
         }
 
-        friend class ::more::header<eth802_1q>;
-        friend class ::more::header<const eth802_1q>;
+        friend class header<eth802_1q>;
+        friend class header<const eth802_1q>;
 
     public:
         template <typename T>
@@ -375,17 +372,17 @@ namespace net {
     class ipv4
     {
     protected:
-        static const int __static_size = 0;            // dynamic size
-        static const int __min_size = sizeof(iphdr);   // min size
+        static const int m_static_size = 0;            // dynamic size
+        static const int m_min_size = sizeof(iphdr);   // min size
 
         static inline
-        std::string __name_str() 
+        std::string m_name_str() 
         {
             return "ipv4";
         }
 
-        friend class ::more::header<ipv4>;
-        friend class ::more::header<const ipv4>;
+        friend class header<ipv4>;
+        friend class header<const ipv4>;
 
     public:
         template <typename T>
@@ -396,7 +393,7 @@ namespace net {
         ssize_t
         size(ssize_t bytes = -1) const
         {
-            // throw if there are no sufficient bytes to calc the size
+            // throw if there are not enough bytes to calculate the size
 
             if ( bytes != -1 && bytes < 1 )
                 throw std::range_error("ip::size()");
@@ -421,34 +418,34 @@ namespace net {
         }
 
     public:
-        attr_reader(int,version);
-        attr_writer(int,version);
+        MORE_NET_READER(int,version);
+        MORE_NET_WRITER(int,version);
     
-        attr_reader(int,ihl);       // header len in words: 5 -> * 4 = 20 bytes
+        MORE_NET_READER(int,ihl);       // header len in words: 5 -> * 4 = 20 bytes
     private:
-        attr_writer(int,ihl);       // the size, in case, is set during construction  
+        MORE_NET_WRITER(int,ihl);       // the size, in case, is set during construction  
     public:
 
-        attr_reader(uint8_t,tos);
-        attr_writer(uint8_t,tos);
+        MORE_NET_READER(uint8_t,tos);
+        MORE_NET_WRITER(uint8_t,tos);
 
-        attr_reader_uint16(tot_len);
-        attr_writer_uint16(tot_len);
+        MORE_NET_READER_uint16(tot_len);
+        MORE_NET_WRITER_uint16(tot_len);
 
-        attr_reader_uint16(id);
-        attr_writer_uint16(id);
+        MORE_NET_READER_uint16(id);
+        MORE_NET_WRITER_uint16(id);
 
-        attr_reader_uint16(frag_off);
-        attr_writer_uint16(frag_off);
+        MORE_NET_READER_uint16(frag_off);
+        MORE_NET_WRITER_uint16(frag_off);
 
-        attr_reader(uint8_t,ttl);
-        attr_writer(uint8_t,ttl);
+        MORE_NET_READER(uint8_t,ttl);
+        MORE_NET_WRITER(uint8_t,ttl);
 
-        attr_reader(uint8_t,protocol);
-        attr_writer(uint8_t,protocol);
+        MORE_NET_READER(uint8_t,protocol);
+        MORE_NET_WRITER(uint8_t,protocol);
 
-        attr_reader_uint16(check);
-        attr_writer_uint16(check);
+        MORE_NET_READER_uint16(check);
+        MORE_NET_WRITER_uint16(check);
 
         void
         check_update()
@@ -489,7 +486,6 @@ namespace net {
         {
             _H_->saddr = htonl(addr);
         }
-
 
         std::string
         daddr() const
@@ -547,17 +543,17 @@ namespace net {
     class udp
     {
     protected:
-        static const int __static_size = sizeof(udphdr);   // static size
-        static const int __min_size = sizeof(udphdr);      // min size
+        static const int m_static_size = sizeof(udphdr);   // static size
+        static const int m_min_size = sizeof(udphdr);      // min size
 
         static inline
-        std::string __name_str() 
+        std::string m_name_str() 
         {
             return "udp";
         }
 
-        friend class more::header<udp>;
-        friend class more::header<const udp>;
+        friend class header<udp>;
+        friend class header<const udp>;
             
     public:
         template <typename T>
@@ -573,17 +569,17 @@ namespace net {
 
         //////////////////////////////////////////////////////
 
-        attr_reader_uint16(source);
-        attr_writer_uint16(source);
+        MORE_NET_READER_uint16(source);
+        MORE_NET_WRITER_uint16(source);
 
-        attr_reader_uint16(dest);
-        attr_writer_uint16(dest);
+        MORE_NET_READER_uint16(dest);
+        MORE_NET_WRITER_uint16(dest);
 
-        attr_reader_uint16(len);
-        attr_writer_uint16(len);
+        MORE_NET_READER_uint16(len);
+        MORE_NET_WRITER_uint16(len);
 
-        attr_reader_uint16(check);
-        attr_writer_uint16(check);
+        MORE_NET_READER_uint16(check);
+        MORE_NET_WRITER_uint16(check);
 
     private:
         udphdr * _H_;
@@ -616,17 +612,17 @@ namespace net {
             uint16_t length;
         } __attribute__((packed));
 
-        static const int __static_size = 0;                // dynamic size
-        static const int __min_size = sizeof(tcphdr);      // min size
+        static const int m_static_size = 0;                // dynamic size
+        static const int m_min_size = sizeof(tcphdr);      // min size
 
         static inline
-        std::string __name_str() 
+        std::string m_name_str() 
         {
             return "tcp";
         }
 
-        friend class ::more::header<tcp>;
-        friend class ::more::header<const tcp>;
+        friend class header<tcp>;
+        friend class header<const tcp>;
 
     public:
         template <typename T>
@@ -662,29 +658,29 @@ namespace net {
         }
 
     public:
-        attr_reader_uint16(source);
-        attr_writer_uint16(source);
+        MORE_NET_READER_uint16(source);
+        MORE_NET_WRITER_uint16(source);
 
-        attr_reader_uint16(dest);
-        attr_writer_uint16(dest);
+        MORE_NET_READER_uint16(dest);
+        MORE_NET_WRITER_uint16(dest);
 
-        attr_reader_uint32(seq);
-        attr_writer_uint32(seq);
+        MORE_NET_READER_uint32(seq);
+        MORE_NET_WRITER_uint32(seq);
 
-        attr_reader_uint32(ack_seq);
-        attr_writer_uint32(ack_seq);
+        MORE_NET_READER_uint32(ack_seq);
+        MORE_NET_WRITER_uint32(ack_seq);
 
 
-        attr_reader(uint16_t,doff);
+        MORE_NET_READER(uint16_t,doff);
     private:
-        attr_writer(uint16_t,doff);  // the size, in case, is set during construction
+        MORE_NET_WRITER(uint16_t,doff);  // the size, in case, is set during construction
     public:
 
-        attr_reader(uint16_t,res1);
-        attr_writer(uint16_t,res1);
+        MORE_NET_READER(uint16_t,res1);
+        MORE_NET_WRITER(uint16_t,res1);
 
-        attr_reader(uint16_t,res2);
-        attr_writer(uint16_t,res2);
+        MORE_NET_READER(uint16_t,res2);
+        MORE_NET_WRITER(uint16_t,res2);
 
         bool 
         cwr() const
@@ -710,23 +706,23 @@ namespace net {
             _H_->res2 = ( _H_->res2 & 1 ) | (value<<1);
         } 
 
-        attr_reader(bool,urg);
-        attr_writer(bool,urg);
+        MORE_NET_READER(bool,urg);
+        MORE_NET_WRITER(bool,urg);
 
-        attr_reader(bool,ack);
-        attr_writer(bool,ack);
+        MORE_NET_READER(bool,ack);
+        MORE_NET_WRITER(bool,ack);
 
-        attr_reader(bool,psh);
-        attr_writer(bool,psh);
+        MORE_NET_READER(bool,psh);
+        MORE_NET_WRITER(bool,psh);
 
-        attr_reader(bool,rst);
-        attr_writer(bool,rst);
+        MORE_NET_READER(bool,rst);
+        MORE_NET_WRITER(bool,rst);
 
-        attr_reader(bool,syn);
-        attr_writer(bool,syn);
+        MORE_NET_READER(bool,syn);
+        MORE_NET_WRITER(bool,syn);
 
-        attr_reader(bool,fin);
-        attr_writer(bool,fin);
+        MORE_NET_READER(bool,fin);
+        MORE_NET_WRITER(bool,fin);
 
         void
         flags_reset() 
@@ -749,11 +745,11 @@ namespace net {
             return *(reinterpret_cast<char *>(_H_) + 13);
         }
 
-        attr_reader_uint16(window);
-        attr_writer_uint16(window);
+        MORE_NET_READER_uint16(window);
+        MORE_NET_WRITER_uint16(window);
 
-        attr_reader_uint16(check);
-        attr_writer_uint16(check);
+        MORE_NET_READER_uint16(check);
+        MORE_NET_WRITER_uint16(check);
 
         void 
         check_update(const ipv4 & ip, ssize_t data_len) 
@@ -816,8 +812,8 @@ namespace net {
         }
 
     public:
-        attr_reader_uint16(urg_ptr);
-        attr_writer_uint16(urg_ptr);
+        MORE_NET_READER_uint16(urg_ptr);
+        MORE_NET_WRITER_uint16(urg_ptr);
 
     private:
         tcphdr * _H_;
@@ -854,17 +850,17 @@ namespace net {
     class icmp 
     {
     protected:
-        static const int __static_size = sizeof(icmphdr);   // static size
-        static const int __min_size = sizeof(icmphdr);      // min size
+        static const int m_static_size = sizeof(icmphdr);   // static size
+        static const int m_min_size = sizeof(icmphdr);      // min size
 
         static inline
-        std::string __name_str() 
+        std::string m_name_str() 
         {
             return "icmp";
         }
 
-        friend class more::header<icmp>;
-        friend class more::header<const icmp>;
+        friend class header<icmp>;
+        friend class header<const icmp>;
     
     public:
         template <typename T>
@@ -880,14 +876,14 @@ namespace net {
 
         //////////////////////////////////////////////////////
 
-        attr_reader(uint8_t,type);
-        attr_writer(uint8_t,type);
+        MORE_NET_READER(uint8_t,type);
+        MORE_NET_WRITER(uint8_t,type);
 
-        attr_reader(uint8_t,code);
-        attr_writer(uint8_t,code);
+        MORE_NET_READER(uint8_t,code);
+        MORE_NET_WRITER(uint8_t,code);
 
-        attr_reader_uint16(checksum);
-        attr_writer_uint16(checksum);
+        MORE_NET_READER_uint16(checksum);
+        MORE_NET_WRITER_uint16(checksum);
 
     private:
         icmphdr * _H_;
@@ -924,17 +920,17 @@ namespace net {
 
         } __attribute__((packed));
 
-        static const int __static_size = sizeof(np_packet_hdr);   // static size
-        static const int __min_size = sizeof(np_packet_hdr);      // min size
+        static const int m_static_size = sizeof(np_packet_hdr);   // static size
+        static const int m_min_size = sizeof(np_packet_hdr);      // min size
         
         static inline 
-        std::string __name_str() 
+        std::string m_name_str() 
         { 
             return "np_mon"; 
         }
 
-        friend class more::header<np_packet>;
-        friend class more::header<const np_packet>;
+        friend class header<np_packet>;
+        friend class header<const np_packet>;
 
     public:
         template <typename T>
@@ -950,23 +946,23 @@ namespace net {
 
         //////////////////////////////////////////////////////
 
-        attr_reader_uint16(reserved);
-        attr_writer_uint16(reserved);
+        MORE_NET_READER_uint16(reserved);
+        MORE_NET_WRITER_uint16(reserved);
 
-        attr_reader_uint16(flow_id);
-        attr_writer_uint16(flow_id);
+        MORE_NET_READER_uint16(flow_id);
+        MORE_NET_WRITER_uint16(flow_id);
 
-        attr_reader_uint16(frag_len);
-        attr_writer_uint16(frag_len);
+        MORE_NET_READER_uint16(frag_len);
+        MORE_NET_WRITER_uint16(frag_len);
 
-        attr_reader_uint16(pack_len);
-        attr_writer_uint16(pack_len);
+        MORE_NET_READER_uint16(pack_len);
+        MORE_NET_WRITER_uint16(pack_len);
 
-        attr_reader_uint32(tstamp_lo);
-        attr_writer_uint32(tstamp_lo);
+        MORE_NET_READER_uint32(tstamp_lo);
+        MORE_NET_WRITER_uint32(tstamp_lo);
 
-        attr_reader_uint32(tstamp_hi);
-        attr_writer_uint32(tstamp_hi);
+        MORE_NET_READER_uint32(tstamp_hi);
+        MORE_NET_WRITER_uint32(tstamp_hi);
 
     private:
         np_packet_hdr * _H_;
@@ -987,11 +983,11 @@ namespace net {
 } // namespace net 
 } // namespace more
 
-#undef attr_reader
-#undef attr_reader_uint16
-#undef attr_reader_uint32
-#undef attr_writer
-#undef attr_writer_uint16
-#undef attr_writer_uint32
+#undef MORE_NET_READER
+#undef MORE_NET_READER_uint16
+#undef MORE_NET_READER_uint32
+#undef MORE_NET_WRITER
+#undef MORE_NET_WRITER_uint16
+#undef MORE_NET_WRITER_uint32
 
 #endif /* _MORE_NET_HEADERS_HH_ */
