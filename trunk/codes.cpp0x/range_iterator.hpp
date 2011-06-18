@@ -30,10 +30,12 @@ namespace more {
         typedef typename std::iterator_traits<Iter>::pointer         pointer;
         typedef typename std::iterator_traits<Iter>::reference       reference;
 
+        static_assert(!std::is_const<typename std::remove_pointer<pointer>::type>::value, "const qualified value_type"); 
+
         template <typename It>
         range_iterator_adapter(It beg, It end)
         : m_begin(beg), m_current(beg), m_end(end)
-        {
+        {             
             static_assert(
                 std::is_same<iterator_category, 
                              typename std::iterator_traits<It>::iterator_category>::value,
@@ -191,14 +193,14 @@ namespace more {
         {
             m_range_check();
         }
-        const_range_iterator_adapter(const range_iterator_adapter<Iter>& other)
+        explicit const_range_iterator_adapter(const range_iterator_adapter<Iter>& other)
         : m_begin(other.m_begin), m_current(other.m_current), m_end(other.m_end)
         {
             m_range_check();
         }
 
         const_range_iterator_adapter& 
-        operator=(const range_iterator_adapter<Iter>& other)  
+        operator=(const const_range_iterator_adapter& other)  
         {  
             if (this != &other)
             {
@@ -210,7 +212,7 @@ namespace more {
             return *this;
         }
         const_range_iterator_adapter& 
-        operator=(const const_range_iterator_adapter& other)  
+        operator=(const range_iterator_adapter<Iter>& other)  
         {  
             if (this != &other)
             {
