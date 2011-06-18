@@ -314,15 +314,18 @@ namespace more {
         Iter m_end;
     };
 
+    ////////////////////////////////////////////////////
+    // helper factories
+
     template <typename Iter>
-    range_iterator_adapter<Iter>
+    inline range_iterator_adapter<Iter>
     range_iterator(Iter start, Iter stop)
     {
         return range_iterator_adapter<Iter>(start,stop);
     }
 
     template <typename Iter>
-    const_range_iterator_adapter<Iter>
+    inline const_range_iterator_adapter<Iter>
     const_range_iterator(Iter start, Iter stop)
     {
         return const_range_iterator_adapter<Iter>(start,stop);

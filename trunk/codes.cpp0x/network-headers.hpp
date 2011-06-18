@@ -169,7 +169,7 @@ namespace more { namespace net {
     class ipv4;
     class tcp;
     class udp;
-    class icmp;
+    class basic_icmp;
 
     template <typename Tp>
     struct header_traits ;
@@ -210,13 +210,16 @@ namespace more { namespace net {
         static inline const char *name() { return "tcp"; }
     };
     template <>
-    struct header_traits<icmp>
+    struct header_traits<basic_icmp>
     {
         static const int static_size = sizeof(icmphdr);           // static size
         static const int min_size = sizeof(icmphdr);              // min size
-        static inline const char *name() { return "icmp"; }
+        static inline const char *name() { return "basic_icmp"; }
     };
 
+    //////////////////////////////////////////////////////////
+    // header/const_header classes
+    //////////////////////////////////////////////////////////
 
     template <typename Tp>
     class header
@@ -362,9 +365,7 @@ namespace more { namespace net {
         size_t size(ssize_t, size_t) = delete; 
 
     public:
-	    
         static const uint16_t type_8021q = 0x8100;
-        
         
         ethernet(void *h)
         : m_header(static_cast<ether_header *>(h))
@@ -439,7 +440,6 @@ namespace more { namespace net {
         " type="  << std::hex << h.ether_type() << std::dec <<  "]";
     }
 
-
     //////////////////////////////////////////////////////////
     // ethernet 802.1q
 
@@ -508,7 +508,6 @@ namespace more { namespace net {
         return out << "[vlan_tag=" << std::hex << h.vlan_tag() << 
         " ether_type="  << h.ether_type() << std::dec <<  "]";
     }
-
 
     //////////////////////////////////////////////////////////
     // ipv4 header
@@ -671,7 +670,6 @@ namespace more { namespace net {
         " saddr="    << h.saddr() << 
         " daddr="    << h.daddr() << "]" << std::dec;
     }
-
 
     //////////////////////////////////////////////////////////
     // tcp header
@@ -952,7 +950,7 @@ namespace more { namespace net {
     //////////////////////////////////////////////////////////
     // basic icmp header
 
-    class icmp 
+    class basic_icmp 
     {
         icmphdr * m_header;
 
@@ -968,7 +966,7 @@ namespace more { namespace net {
         size_t size(ssize_t, size_t) = delete; 
 
     public:
-        icmp(void *h)
+        basic_icmp(void *h)
         : m_header(static_cast<icmphdr *>(h))
         {} 
 
@@ -992,7 +990,7 @@ namespace more { namespace net {
 
     template <typename CharT, typename Traits>
     inline std::basic_ostream<CharT, Traits> &
-    operator<<(std::basic_ostream<CharT, Traits> &out, const icmp & h)
+    operator<<(std::basic_ostream<CharT, Traits> &out, const basic_icmp & h)
     {
         return out << std::hex << 
         "[type=" << static_cast<int>(h.type()) << 
