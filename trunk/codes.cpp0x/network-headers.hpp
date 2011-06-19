@@ -300,7 +300,7 @@ namespace more { namespace net {
     {
         // static size headers...
         template <typename I, int N>
-        void check(more::const_range_iterator_adapter<I> &it, std::integral_constant<int,N>)
+        void check(more::range_const_iterator_adapter<I> &it, std::integral_constant<int,N>)
         {
             if (it.capacity() < N)
                 throw std::range_error(std::string(header_traits<typename std::remove_cv<Tp>::type>::name()).append("::static_size"));
@@ -309,7 +309,7 @@ namespace more { namespace net {
 
         // dynamic size headers...
         template <typename I>
-        void check(more::const_range_iterator_adapter<I> &it, std::integral_constant<int,0>)
+        void check(more::range_const_iterator_adapter<I> &it, std::integral_constant<int,0>)
         {
             if ( it.capacity() < header_traits<typename std::remove_cv<Tp>::type>::min_size )
                 throw std::range_error(std::string(header_traits<typename std::remove_cv<Tp>::type>::name()).
@@ -319,7 +319,7 @@ namespace more { namespace net {
 
     public:
         template <typename It>
-        const_header(more::const_range_iterator_adapter<It> &it)
+        const_header(more::range_const_iterator_adapter<It> &it)
         : m_header(&(*it))
         {
             static_assert(sizeof(typename more::range_iterator_adapter<It>::value_type) == 1, "invalid range_iterator"); 

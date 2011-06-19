@@ -76,7 +76,7 @@ main(int argc, char *argv[])
     {
         char buf[54] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x45, 0x45, 0x45};
 
-        auto cur = more::const_range_iterator(buf, buf+54);
+        auto cur = more::range_const_iterator(buf, buf+54);
 
         more::net::const_header<ethernet> h_eth(cur);
         more::net::const_header<ipv4>     h_ip(cur);
