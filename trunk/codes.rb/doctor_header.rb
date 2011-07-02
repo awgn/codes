@@ -3,7 +3,7 @@
 $compiler = '/usr/bin/g++'
 $cflags   = %w{-I . -Wall -std=c++0x}
 $verbose  = false
-$version  = "0.2"
+$version  = "0.3"
 
 #
 # generic header test
@@ -50,7 +50,7 @@ class HeaderTest
 
     def compile(*files)
         if compile?(true, *files) != 0
-            raise RuntimeError, "Compier error!"
+            raise RuntimeError, "Compiler error!"
         end
     end
 
@@ -76,9 +76,9 @@ class HeaderTest
                     if i != n && !skip.include?(i)
                         h.puts line
                     else
+                        #puts "test: # #{n} line:#{i} skip include -> #{line}"
                         @test_include = line
                     end
-
                 else
                     h.puts line
                 end
@@ -178,6 +178,8 @@ class PointlessInclude < HeaderTest
         begin
             (1.. max_incl).each do |n|
 
+                # puts "skip headers: #{skip.join(' ')}" 
+                                       
                 if skip.include? n
                     next
                 end
@@ -200,7 +202,7 @@ class PointlessInclude < HeaderTest
                 remove_test_header n
                 
                 if ret == 0
-                   print "#{@header}: ->      #{ti.chomp} /* pointless */\n"
+                   print "#{@header}: ->      #{ti.chomp} // possibly pointless\n"
                    skip << n
                    raise LocalJumpError
                 end
@@ -216,24 +218,44 @@ if __FILE__ == $0
 
     puts "Doctor Header #{$version}!"
 
+    $use_test = false
+    $test_file = nil
+
     begin
     ARGV.each do |arg|
-    
-        test_list = []
-        # test_list << SimpleInclude.new(arg)
+   
+        if arg == "--test"
+            $use_test = true
+            next
+        end
 
+        if arg == "--help"
+            puts "doctor_header [--test test.cpp] header.hpp..."
+            next
+        end
+
+        if $use_test
+           $test_file = arg
+           $use_test = false
+           next
+        end
+
+        test_list = []
+        
+        test_list << SimpleInclude.new(arg)
         test_list << MultipleInclusion.new(arg)
         test_list << MultipleTranslationUnit.new(arg)
     
-        tmp = arg.gsub(/\.h.*/, "-test.cpp")
-        if File.exist? tmp
+        if $test_file and File.exist? $test_file
             #run a custom test if available...
-            test_list << PointlessInclude.new(arg,tmp)
+            test_list << PointlessInclude.new(arg,$test_file)
         else
             test_list << PointlessInclude.new(arg)
         end
 
         test_list.each { |test| test.run }
+
+        $test_file = nil
     end
     rescue Exception => msg 
         STDERR.puts msg
