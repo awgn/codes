@@ -3,7 +3,7 @@
 $compiler = '/usr/bin/g++'
 $cflags   = %w{-I . -Wall -std=c++0x}
 $verbose  = false
-$version  = "0.1"
+$version  = "0.2"
 
 #
 # generic header test
@@ -88,8 +88,16 @@ class HeaderTest
         @test_include
     end
 
+    def create_test(test, orig_test, new_header)
+        File.open(test, "w") do |t|
+            File.open(orig_test, "r" ).each_line do |line|
+                    t.puts line.gsub(/#{@header}/, new_header)
+            end
+        end
+    end
+
     def remove_test_header(n)
-        File.unlink(test_header_name n)
+        File.unlink(test_header_name(n))
     end
 end
 
@@ -157,8 +165,9 @@ end
 
 class PointlessInclude < HeaderTest
 
-    def initialize(header)
-        super('Pointless includes', header)
+    def initialize(header,test = nil)
+        super("Pointless includes [#{test}]", header)
+        @test = test  
     end
 
     def run_test()
@@ -175,11 +184,16 @@ class PointlessInclude < HeaderTest
                 
                 ti = create_test_header n, skip 
 
-                create 'translation_unit.cpp', 
+                if @test == nil
+                    create 'translation_unit.cpp', 
 
                         "#include<#{test_header_name n}>
                          int main() 
                          { return 0; }"
+
+                else  
+                    create_test 'translation_unit.cpp', @test, test_header_name(n)  
+                end
 
                 ret = compile? false, 'translation_unit.cpp'
                 
@@ -207,9 +221,17 @@ if __FILE__ == $0
     
         test_list = []
         # test_list << SimpleInclude.new(arg)
+
         test_list << MultipleInclusion.new(arg)
         test_list << MultipleTranslationUnit.new(arg)
-        test_list << PointlessInclude.new(arg)
+    
+        tmp = arg.gsub(/\.h.*/, "-test.cpp")
+        if File.exist? tmp
+            #run a custom test if available...
+            test_list << PointlessInclude.new(arg,tmp)
+        else
+            test_list << PointlessInclude.new(arg)
+        end
 
         test_list.each { |test| test.run }
     end
