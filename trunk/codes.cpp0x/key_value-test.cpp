@@ -20,10 +20,10 @@
 
 MAP_KEY_VALUE(unsigned int, unsigned_int, 3);   // default value for the key  
 
-MAP_KEY(std::vector<int>,               integers);
+MAP_KEY(std::vector<int>, integers);
 
-MAP_KEY(std::vector<bool>,              booleans);
-MAP_KEY(std::list<std::string>,         strings);
+MAP_KEY(std::vector<bool>, booleans);
+MAP_KEY(std::list<std::string>, strings);
  
 typedef std::map<std::string,int> map_type;
 MAP_KEY(map_type, associative);
@@ -34,19 +34,31 @@ MAP_KEY(pair_type, simple_pair);
 typedef std::tuple<bool, int, double, std::string> tuple_type;
 MAP_KEY(tuple_type, simple_tuple);
 
-typedef more::key_value_parser<unsigned_int,
+namespace simple_block {
+
+    MAP_KEY(int, first);
+    MAP_KEY(int, second);
+
+    typedef more::key_value_pack<first, second>  type;
+}
+
+MAP_KEY(simple_block::type, block); 
+
+typedef more::key_value_pack<unsigned_int,
                                integers,
                                booleans,
                                strings, 
                                associative,
                                simple_pair,
-                               simple_tuple> my_config;
+                               simple_tuple,
+                               block> my_config;
 
 int
 main(int argc, char *argv[])
 {
     const my_config conf("key_value_test.txt");
 
+    // or...
     // if (!conf.open("key_value_test.txt") ) {
     //     return -1;
     // }
@@ -80,6 +92,8 @@ main(int argc, char *argv[])
                                                           std::get<2>( more::get<simple_tuple>(conf) ) << " , " <<
                                                           std::get<3>( more::get<simple_tuple>(conf) ) << std::endl;
 
+    std::cout << "   block -> first:  " << more::get<simple_block::first>(more::get<block>(conf)) << '\n' <<
+                 "            second: " << more::get<simple_block::second>(more::get<block>(conf)) << std::endl;
     return 0;
 }
 

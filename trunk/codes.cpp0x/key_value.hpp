@@ -49,10 +49,10 @@ namespace more {
         template <class CharT, class Traits>
         inline
         std::basic_istream<CharT,Traits> &
-        ignore_line(std::basic_istream<CharT,Traits> &__in)
+        ignore_line(std::basic_istream<CharT,Traits> &in__)
         {
-            __in.ignore(std::numeric_limits<std::streamsize>::max(), __in.widen('\n'));
-            return __in;
+            in__.ignore(std::numeric_limits<std::streamsize>::max(), in__.widen('\n'));
+            return in__;
         }
     
         class line_streambuf : public std::streambuf 
@@ -94,13 +94,13 @@ namespace more {
         }
 
         template <typename KEY, typename TYPE, bool has_default>
-        struct get_default_value
+        struct get_default
         {
             static TYPE value()
             { return KEY::default_value(); }
         };
         template <typename KEY, typename TYPE>
-        struct get_default_value<KEY, TYPE, false>
+        struct get_default<KEY, TYPE, false>
         {
             static TYPE value()
             { return TYPE(); }
@@ -148,30 +148,30 @@ namespace more {
             }
         };
 
-
     } // namespace details
 
     /////////////////////////////////////////////////////////////////////////////////////////
+    
+    template <typename ...T> struct key_value_pack;
+
+    typedef std::tuple<bool,        // whether it is strict or non strict parsing 
+                       char,        // assign separator -> default =
+                       char,        // comment          -> defualt #
+                       std::string> parse_options;
 
     template <typename CharT, typename Traits>
-    class __lexer 
+    class lexer__ 
     {
         std::basic_istream<CharT, Traits> & m_in;
-        const std::tuple<bool, char, char> & m_option;
+        parse_options m_option;
 
     public:
 
-        std::basic_istream<CharT, Traits> &
-        stream() 
-        {
-            return m_in;
-        }
-
-        __lexer(std::basic_istream<CharT, Traits> &in, const std::tuple<bool,char,char> &opt)
+        lexer__(std::basic_istream<CharT, Traits> &in, const parse_options &opt)
         : m_in(in), m_option(opt)
         {}
 
-        ~__lexer()
+        ~lexer__()
         {}
 
         bool _(char c)
@@ -184,6 +184,7 @@ namespace more {
             std::string _s; return (m_in >> std::skipws >> _s && _s.compare(s) == 0) ? true : false;
         }
 
+
         // very generic parser for types supporting operator>> ...
         //
         template <typename E>
@@ -194,6 +195,7 @@ namespace more {
 #endif
             return m_in >> std::skipws >> elem;
         }        
+        
 
         // generic parser for "strings"
         //
@@ -238,6 +240,7 @@ namespace more {
             return true;
         }
 
+
         // generic parser for boolean
         //
         inline bool parse_lexeme(bool &elem)
@@ -252,6 +255,7 @@ namespace more {
             }
             return true;
         }
+
 
         // parser for generic pairs
         // 
@@ -292,6 +296,7 @@ namespace more {
             return ok;
         }
 
+
         // generic parser for containers that support push_back()
         //
         template <typename E, 
@@ -307,6 +312,7 @@ namespace more {
                 elems.push_back(tmp);
             return ok;
         }
+
 
         // generic parser for associative containers that support insert(std::pair<K,V>)
         //
@@ -328,49 +334,126 @@ namespace more {
                 elems.insert( std::make_pair(key,value) );
             return ok;
         }
+        
+
+        // recursive parser for key_value_pack
+        //
+        template <typename ...Ti>
+        bool parse_lexeme(key_value_pack<Ti...> &elem, bool bracket = true)
+        {
+#ifdef LEX_DEBUG
+            std::cout << __PRETTY_FUNCTION__ << std::endl;
+#endif
+            m_in.unsetf(std::ios::dec);
+            m_in.unsetf(std::ios::hex);
+            m_in.unsetf(std::ios::oct);
+
+            key_value_pack<Ti...> tmp;
+
+            if (bracket &&  ! _('{')) {
+                std::clog << std::get<3>(m_option) << ": parse error: missing open bracket (line "<< details::line_number(m_in) << ")" << std::endl;
+                return false;
+            }
+
+            while(m_in) {
+
+                std::string key;
+                m_in >> std::noskipws >> std::ws;
+
+                // parse the key 
+                //
+                char c('\0');
+                while (m_in >> c && !isspace(c) && c != std::get<1>(m_option) ) {
+                    key.push_back(c);
+                }
+
+                // skip comments/empty lines
+                //
+                if (key.empty() || key[0] == std::get<2>(m_option)) {
+                    m_in >> details::ignore_line;
+                    continue;
+                }
+
+                if (bracket && !key.compare("}")) {
+                    bracket = false;
+                    break;
+                }
+#ifdef LEX_DEBUG
+                std::cout << ":: key[" << key << "]\n";
+#endif
+                m_in >> std::skipws;
+
+                // parse separator ('=')
+                //
+                if (c != std::get<1>(m_option)) {
+                    m_in >> c; 
+                    if (c != std::get<1>(m_option)) {
+                        std::clog << std::get<3>(m_option) << ": parse error: key[" << key << "] missing separator '" 
+                        << std::get<1>(m_option) << "' (line "<< details::line_number(m_in) << ")" << std::endl;
+                        return false;
+                    }
+                }
+
+                // parse value...
+                // 
+                if (!tmp.parse(m_in, key, m_option, *this)) 
+                    return false;
+            }
+
+            if (bracket) { 
+                std::clog << std::get<3>(m_option) << ": parse error: missing close bracket (line "<< details::line_number(m_in) << ")" << std::endl;
+                return false;
+            }
+
+            // parse ok...
+            //
+
+            elem  = tmp;
+            return true;
+        }
     };
 
     template <typename CharT, typename Traits>
-    __lexer<CharT, Traits> 
-    lexer(std::basic_istream<CharT, Traits> &in, const std::tuple<bool,char,char> &opt)
+    lexer__<CharT, Traits> 
+    lexer(std::basic_istream<CharT, Traits> &in, const parse_options &opt)
     {
-        return __lexer<CharT, Traits>(in, opt);
+        return lexer__<CharT, Traits>(in, opt);
     }
 
     //////////////////////////////////////////////////////////////////////////
-    //   parser class
+    //   parser: key_value_pack
 
-    template <typename ...T> struct key_value_parser;
+    template <typename ...T> struct key_value_pack;
 
     template <typename T0, typename ...Ti>
-    struct key_value_parser<T0, Ti...>
+    struct key_value_pack<T0, Ti...>
     {
     public:
         typedef more::type::typemap<typename T0::type, typename Ti::type...>    map_type;
         typedef typename T0::type::first_type                                   key_type;
         typedef typename T0::type::second_type                                  value_type;
 
-        typedef key_value_parser<Ti...>                                         parser_type;
+        typedef key_value_pack<Ti...>                                           parser_type;
 
         parser_type  m_parser;
         key_type     m_key;
         value_type   m_value;
 
-        key_value_parser()
+        key_value_pack()
         : m_parser(),
-          m_key(), m_value(details::get_default_value<key_type, value_type, key_type::has_default>::value()) 
+          m_key(), m_value(details::get_default<key_type, value_type, key_type::has_default>::value()) 
         {}
                           
-        key_value_parser(const char *name, 
-            const std::tuple<bool, char, char> &mode = std::make_tuple(false, '=', '#')) 
+        key_value_pack(const char *name, 
+            const parse_options &mode = std::make_tuple(false, '=', '#', "pack")) 
         : m_parser(),
-          m_key(), m_value(details::get_default_value<key_type, value_type, key_type::has_default>::value()) 
+          m_key(), m_value(details::get_default<key_type, value_type, key_type::has_default>::value()) 
         {
             if(!this->open(name, mode))
-                throw std::runtime_error("key_value_parser");
+                throw std::runtime_error("key_value_pack");
         }
 
-        virtual ~key_value_parser()
+        virtual ~key_value_pack()
         {}
 
         //////////////////////////////////////////////////////////////////////////
@@ -386,7 +469,7 @@ namespace more {
             typename std::add_const<
                 typename more::type::get<map_type, Key>::type>::type>::type
         get() const
-        { return const_cast<key_value_parser *>(this)->get__<Key>
+        { return const_cast<key_value_pack *>(this)->get__<Key>
             (std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); }
         
         template <typename Key, int N>
@@ -399,42 +482,39 @@ namespace more {
         get__(std::integral_constant<int,0>) 
         { return m_value; } 
 
-    protected:
-
+    public:
         //////////////////////////////////////////////////////////////////////////
         // run-time parser 
 
         template <typename CharT, typename Traits>
-        bool parse_value(std::basic_istream<CharT, Traits> &in, const char *fname, const std::string &key, const std::tuple<bool,char,char> &mode)
-        { return s_parse_value(in, fname, key, *this, mode); }
+        bool parse(std::basic_istream<CharT, Traits> &in, const std::string &key, 
+                         const parse_options &mode, lexer__<CharT, Traits> &lex)
+        { return parse__(in, key, *this, mode, lex); }
 
         template <typename CharT, typename Traits, typename _T0, typename ..._Ti>
-        static bool s_parse_value(std::basic_istream<CharT, Traits> &in, 
-                                  const std::string &fname, const std::string &key, 
-                                  key_value_parser<_T0, _Ti...> &that, const std::tuple<bool,char,char> &mode)
+        static bool parse__(std::basic_istream<CharT, Traits> &in, const std::string &key, 
+                                  key_value_pack<_T0, _Ti...> &that, const parse_options &mode, lexer__<CharT, Traits> &lex)
         {
             if (key == _T0::type::first_type::str()) {
                 
-                auto lex = lexer(in, mode);
-
                 if (!lex.parse_lexeme(that.m_value) || in.fail() ) {
-                    std::clog << fname << ": parse error: key[" << 
+                    std::clog << std::get<3>(mode) << ": parse error: key[" << 
                     _T0::type::first_type::str() << "] unexpected argument (line " << 
                     details::line_number(in) << ")" << std::endl;
                     return false;
                 }
                 return true;
             }
-            return s_parse_value(in, fname, key, that.m_parser, mode);
+            return parse__(in, key, that.m_parser, mode, lex);
         }
 
         template <typename CharT, typename Traits>
-        static bool s_parse_value(std::basic_istream<CharT, Traits> &in, const std::string &fname, const std::string &key, 
-                                     key_value_parser<> &, const std::tuple<bool,char,char> &mode)
+        static bool parse__(std::basic_istream<CharT, Traits> &in, const std::string &key, 
+                                  key_value_pack<> &, const parse_options &mode, lexer__<CharT, Traits>&)
         {
             // unknown key-value...
             if (std::get<0>(mode)) {   // strict mode: dump-error 
-                std::clog << fname << ": parse error: key[" << key << "] unknown (line " << 
+                std::clog << std::get<3>(mode) << ": parse error: key[" << key << "] unknown (line " << 
                 details::line_number(in) << ")" << std::endl;
                 return false;
             }
@@ -444,12 +524,12 @@ namespace more {
         }
 
     public:
-
         bool 
-        open(const char *name, 
-            const std::tuple<bool, char, char> &mode = std::make_tuple(false, '=', '#')) 
+        open(const char *name, parse_options mode = std::make_tuple(false, '=', '#')) 
         {
             std::ifstream sc(name);
+            std::get<3>(mode) = std::string(name);
+            
             if (!sc) {
                 std::clog << name << ": parse error: no such file" << std::endl;
                 return false;
@@ -457,68 +537,25 @@ namespace more {
 
             details::line_streambuf sb(sc.rdbuf());
             std::istream in(&sb);    
-            return open(in, mode, name);
+            return open(in, mode);
         }
 
         template <typename CharT, typename Traits>
-        bool open(std::basic_istream<CharT, Traits> &si, 
-                 const std::tuple<bool, char, char> &mode = std::make_tuple(false, '=', '#'), 
-                 const char *name = "unnamed") 
+        bool open(std::basic_istream<CharT, Traits> &in, parse_options mode = std::make_tuple(false, '=', '#', "unnamed")) 
         {
-            si.unsetf(std::ios::dec);
-            si.unsetf(std::ios::hex);
-            si.unsetf(std::ios::oct);
-
-            for(; si ;) {
-
-                std::string key;
-                si >> std::noskipws >> std::ws;
-
-                // parse the key 
-                //
-                char c('\0');
-                while (si >> c && !isspace(c) && c != std::get<1>(mode) ) {
-                    key.push_back(c);
-                }
-
-                // skip comments/empty lines
-                //
-                if (key.empty() || key[0] == std::get<2>(mode)) {
-                    si >> details::ignore_line;
-                    continue;
-                }
-
-                si >> std::skipws;
-
-                // parse separator ('=')
-                //
-                if (c != std::get<1>(mode)) {
-                    si >> c; 
-                    if (c != std::get<1>(mode)) {
-                        std::clog << name << ": parse error: key[" << key << "] missing separator '" 
-                        << std::get<1>(mode) << "' (line "<< details::line_number(si) << ")" << std::endl;
-                        return false;
-                    }
-                }
-
-                // parse value...
-                // 
-                if (!parse_value(si, name, key, mode)) 
-                    return false;
-            }
-            // std::cout << "EOF\n";
-            return true;
+            auto lex = lexer(in, mode);
+            return lex.parse_lexeme(*this, false);
         }
     };
 
     template <>
-    class key_value_parser<> {};
+    class key_value_pack<> {};
 
     template<typename T, typename ...Ti>
     inline 
     typename std::add_lvalue_reference<
-        typename more::type::get<typename key_value_parser<Ti...>::map_type, T>::type>::type 
-    get(key_value_parser<Ti...> &p) 
+        typename more::type::get<typename key_value_pack<Ti...>::map_type, T>::type>::type 
+    get(key_value_pack<Ti...> &p) 
     {                                           
         return p.get<T>();
     }
@@ -527,12 +564,11 @@ namespace more {
     inline 
     typename std::add_lvalue_reference<
         typename std::add_const<
-            typename more::type::get<typename key_value_parser<Ti...>::map_type, T>::type>::type>::type 
-    get(const key_value_parser<Ti...> &p) 
+            typename more::type::get<typename key_value_pack<Ti...>::map_type, T>::type>::type>::type 
+    get(const key_value_pack<Ti...> &p) 
     {       
         return p.get<T>();
     }
-
 
 } // namespace more
 
