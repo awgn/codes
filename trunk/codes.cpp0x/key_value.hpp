@@ -351,7 +351,9 @@ namespace more {
             key_value_pack<Ti...> tmp;
 
             if (bracket &&  ! _('{')) {
-                std::clog << std::get<3>(m_option) << ": parse error: missing open bracket (line "<< details::line_number(m_in) << ")" << std::endl;
+                std::clog << std::get<3>(m_option) << 
+                    ": parse error: missing open bracket (line " << 
+                        details::line_number(m_in) << ")" << std::endl;
                 return false;
             }
 
@@ -362,16 +364,22 @@ namespace more {
 
                 // parse the key 
                 //
-                char c('\0');
+                char c;
                 while (m_in >> c && !isspace(c) && c != std::get<1>(m_option) ) {
                     key.push_back(c);
                 }
+                
+                if (!m_in)
+                    break;
 
                 // skip comments/empty lines
                 //
                 if (key.empty() || key[0] == std::get<2>(m_option)) {
-                    m_in >> details::ignore_line;
-                    continue;
+
+                    if (c != '\n') 
+                        m_in >> details::ignore_line;
+                
+                    continue;    
                 }
 
                 if (bracket && !key.compare("}")) {
@@ -386,8 +394,7 @@ namespace more {
                 // parse separator ('=')
                 //
                 if (c != std::get<1>(m_option)) {
-                    m_in >> c; 
-                    if (c != std::get<1>(m_option)) {
+                    if (!(m_in >> c) || c != std::get<1>(m_option)) {
                         std::clog << std::get<3>(m_option) << ": parse error: key[" << key << "] missing separator '" 
                         << std::get<1>(m_option) << "' (line "<< details::line_number(m_in) << ")" << std::endl;
                         return false;
