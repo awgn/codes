@@ -74,7 +74,7 @@ main(int argc, char *argv[])
 
     // read test
     {
-        char buf[54] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x45, 0x45, 0x45};
+        const char buf[54] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x45, 0x45, 0x45};
 
         auto cur = more::range_const_iterator(buf, buf+54);
 

@@ -320,9 +320,15 @@ namespace more { namespace net {
     public:
         template <typename It>
         const_header(more::range_const_iterator_adapter<It> &it)
-        : m_header(&(*it))
+        : m_header(const_cast<
+                   typename std::add_pointer<
+                        typename std::remove_const<
+                            typename std::remove_pointer<
+                                typename more::range_const_iterator_adapter<It>::pointer>::type
+                            >::type
+                   >::type >(&*it))
         {
-            static_assert(sizeof(typename more::range_iterator_adapter<It>::value_type) == 1, "invalid range_iterator"); 
+            static_assert(sizeof(typename more::range_const_iterator_adapter<It>::value_type) == 1, "invalid range_iterator"); 
             check(it, std::integral_constant<int, header_traits<typename std::remove_cv<Tp>::type>::static_size>());  
         }
 
