@@ -16,7 +16,7 @@ integers = 010
 strings =  hello
 strings = "hello world" 
 strings = "\"quoted string\"" 
-strings = 'alternate " quotation mark'
+strings = 'alternate quotation mark'
 
 booleans = false  
 booleans = 1  

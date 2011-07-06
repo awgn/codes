@@ -74,7 +74,7 @@ main(int argc, char *argv[])
     std::cout << std::endl;
 
     std::cout << "-> " << strings::str() << " = ";
-    std::copy(conf.get<strings>().begin(), conf.get<strings>().end(), std::ostream_iterator<std::string>(std::cout," - "));
+    std::copy(conf.get<strings>().begin(), conf.get<strings>().end(), std::ostream_iterator<std::string>(std::cout,"|"));
     std::cout << std::endl;
 
     std::cout << "-> " << associative::str() << " elem:" << conf.get<associative>().size() << std::endl;

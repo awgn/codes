@@ -206,24 +206,21 @@ namespace more {
 #endif
             char c; char quote;
 
-            m_in >> std::skipws;
+            m_in >> std::noskipws >> std::ws;
 
-            if ( !(m_in >> c) ) {
+            if (!(m_in >> c)) {
                 return false;
             }    
             
-            m_in >> std::noskipws;    
-
             if ( c == '"' || c == '\'') {   // quoted string
                 quote = c;
                 while (m_in >> c && c != quote) {
                     if ( c == '\\') {
-                        if ( !(m_in >> c) )
+                        if (!(m_in >> c))
                             break;
                     }
                     elem.push_back(c);
                 }
-                m_in >> std::skipws;
                 if (c != quote) {
                     std::clog << "parse: error at string '" << elem << ": missing quotation mark\n";
                     return false;
@@ -231,16 +228,15 @@ namespace more {
             } else { // simple string
                 elem.push_back(c); 
                 std::string tmp;
-                if ( !(m_in >> tmp) ) 
+                if (!(m_in >> tmp)) 
                     return false;
                 elem.append(tmp);
-                m_in >> std::skipws;
                 return true;
             }
             return true;
         }
 
-
+        
         // generic parser for boolean
         //
         inline bool parse_lexeme(bool &elem)
@@ -248,7 +244,7 @@ namespace more {
 #ifdef LEX_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            m_in >> std::noboolalpha;
+            m_in >> std::skipws >> std::noboolalpha;
             if (!(m_in >> elem)) {
                 m_in.clear();
                 return m_in >> std::boolalpha >> elem;
@@ -347,8 +343,7 @@ namespace more {
             m_in.unsetf(std::ios::dec);
             m_in.unsetf(std::ios::hex);
             m_in.unsetf(std::ios::oct);
-
-            key_value_pack<Ti...> tmp;
+            m_in >> std::skipws;
 
             if (bracket &&  ! _('{')) {
                 std::clog << std::get<3>(m_option) << 
@@ -357,21 +352,22 @@ namespace more {
                 return false;
             }
 
+            key_value_pack<Ti...> tmp;
+            
             while(m_in) {
 
-                std::string key;
                 m_in >> std::noskipws >> std::ws;
+                
+                std::string key;
 
                 // parse the key 
                 //
-                char c;
-                while (m_in >> c && !isspace(c) && c != std::get<1>(m_option) ) {
+                char c = '\0';
+
+                while ((m_in >> c) && !isspace(c) && c != std::get<1>(m_option) ) {
                     key.push_back(c);
                 }
                 
-                if (!m_in)
-                    break;
-
                 // skip comments/empty lines
                 //
                 if (key.empty() || key[0] == std::get<2>(m_option)) {
@@ -389,17 +385,19 @@ namespace more {
 #ifdef LEX_DEBUG
                 std::cout << ":: key[" << key << "]\n";
 #endif
-                m_in >> std::skipws;
 
                 // parse separator ('=')
                 //
                 if (c != std::get<1>(m_option)) {
-                    if (!(m_in >> c) || c != std::get<1>(m_option)) {
+                    m_in >> std::ws >> c;
+                    if (c != std::get<1>(m_option)) {
                         std::clog << std::get<3>(m_option) << ": parse error: key[" << key << "] missing separator '" 
                         << std::get<1>(m_option) << "' (line "<< details::line_number(m_in) << ")" << std::endl;
                         return false;
                     }
                 }
+
+                m_in >> std::ws;
 
                 // parse value...
                 // 
