@@ -29,7 +29,7 @@ namespace more { namespace streamer {
 
     struct sep {
 
-        sep(const char *s = NULL)
+        sep(const char *s = nullptr)
         : _M_value(s)
         {}
 

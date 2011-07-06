@@ -27,8 +27,8 @@ struct option opts[] =
     option(-'w', "world", 0, "world option"),
     option(),
     option("General:"),
-    option(+'a', NULL ,   0),
-    option(+'b', NULL ,   0, "this is the b options"),
+    option(+'a', nullptr ,   0),
+    option(+'b', nullptr ,   0, "this is the b options"),
     option(+'h', "help" , 0, "print this help.")
 };
 

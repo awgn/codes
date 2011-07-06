@@ -13,26 +13,25 @@
 #include <algorithm>
 
 #include <pcap++.hpp>
-#include <net-headers.hpp>
+#include <network-headers.hpp>
 
 using namespace more::net;
 
-class mycap : public more::pcap_live
+class mycap : public more::pcap::pcap_live
 {
 public:
     mycap()
-    : more::pcap_live("eth0", 2048, true, 0)
+    : more::pcap::pcap_live("eth0", 2048, true, 0)
     {}
 
     virtual
     void packet_handler(const struct pcap_pkthdr *h, const u_char *p)
     {
-        more::cursor<const char> cur(p, p + h->caplen);
+        auto cur = more::range_const_iterator(p, p + h->caplen);
 
-        more::header<const ethernet> eth_h (cur);
-        more::header<const ipv4> ip_h(cur);
-        more::header<const tcp> tcp_h(cur);
-        // more::header<const icmp> icmp_h(cur);
+        more::net::header<const ethernet> eth_h (cur);
+        more::net::header<const ipv4> ip_h(cur);
+        more::net::header<const tcp> tcp_h(cur);
 
         std::cout << *h << "\n    " <<  *eth_h << 
                            "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check_verify() << 

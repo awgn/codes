@@ -390,7 +390,7 @@ namespace more {
             int status;
             pid_t p = waitpid(0, &status, 0);
             if (p < 0)
-                return NULL;
+                return nullptr;
 
             auto it = _M_group.begin();
             for(; it != _M_group.end(); ++it) 
@@ -401,7 +401,7 @@ namespace more {
                     return *it;
                 }
             }    
-            return NULL;
+            return nullptr;
         }
 
     private:

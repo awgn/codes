@@ -21,7 +21,7 @@ struct option opts[] =
     option("Section:"),
     option('h', "hello", 1, "hello option"),
     option('w', "world", 0, "world option"),
-    option('s', "abc"  , 0, NULL)
+    option('s', "abc"  , 0, nullptr)
 };
 
 

@@ -77,7 +77,7 @@ namespace more {
             hints.ai_protocol = 0;
             hints.ai_flags    = 0;
 
-            if (getaddrinfo(host.c_str(), NULL, &hints, &res) < 0) 
+            if (getaddrinfo(host.c_str(), nullptr, &hints, &res) < 0) 
             {
                 throw std::runtime_error(std::string("getaddrinfo: ").append(pretty_gai_strerror(errno)));
             }
@@ -126,7 +126,7 @@ namespace more {
             hints.ai_protocol = 0;
             hints.ai_flags    = 0;
 
-            if (getaddrinfo(h.c_str(), NULL, &hints, &res) < 0) 
+            if (getaddrinfo(h.c_str(), nullptr, &hints, &res) < 0) 
             {
                 throw std::runtime_error(std::string("getaddrinfo: ").append(pretty_gai_strerror(errno)));
             }

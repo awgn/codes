@@ -46,7 +46,7 @@ main(int argc, char *argv[])
     l1.push_back( std::make_pair(1,1) );
     l1.push_back( std::make_pair(2,2) );
 
-    std::cout << more::streamer::sep(NULL);         // remove separator
+    std::cout << more::streamer::sep(nullptr);         // remove separator
 
     std::cout << "list< std::pair<int,int> >    :" << l1 << std::endl;
 

@@ -113,7 +113,7 @@ Context(entangled_ptr_tests)
 
     Test(dangling_pointer)
     {
-        Assert(w.get(), is_equal_to(static_cast<test *>(NULL)));
+        Assert(w.get(), is_equal_to(static_cast<test *>(nullptr)));
         AssertThrow(*w);
     }
 }

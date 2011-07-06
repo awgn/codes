@@ -393,7 +393,7 @@ namespace more { namespace net {
         void
         dhost(const char *a)
         {
-            if (ether_aton_r(a, reinterpret_cast<struct ether_addr *>(m_header->ether_dhost)) == NULL)
+            if (ether_aton_r(a, reinterpret_cast<struct ether_addr *>(m_header->ether_dhost)) == nullptr)
                 throw std::runtime_error("dhost: ether_aton_r");
         }
 
@@ -414,7 +414,7 @@ namespace more { namespace net {
         void
         shost(const char *a)
         {
-            if(ether_aton_r(a, reinterpret_cast<struct ether_addr *>(m_header->ether_shost)) == NULL)
+            if(ether_aton_r(a, reinterpret_cast<struct ether_addr *>(m_header->ether_shost)) == nullptr)
                 throw std::runtime_error("shost: ether_aton_r");
         }
 

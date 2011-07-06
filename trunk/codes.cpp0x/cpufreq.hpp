@@ -122,7 +122,7 @@ namespace more {
             std::shared_ptr<cpufreq_available_governors> 
                 gov( cpufreq_get_available_governors(_M_cpu), cpufreq_put_available_governors);
 
-            for(cpufreq_available_governors * p = gov.get() ;p != NULL; p=p->next)
+            for(cpufreq_available_governors * p = gov.get() ;p != nullptr; p=p->next)
                 ret.push_back(p->governor);
             
             return ret; 
@@ -140,7 +140,7 @@ namespace more {
             std::list<unsigned long> ret;
             std::shared_ptr<cpufreq_available_frequencies> 
                 q ( cpufreq_get_available_frequencies(_M_cpu), cpufreq_put_available_frequencies);
-            for( cpufreq_available_frequencies * p = q.get() ;p != NULL; p=p->next)
+            for( cpufreq_available_frequencies * p = q.get() ;p != nullptr; p=p->next)
             {
                 ret.push_back(p->frequency);
             }

@@ -50,7 +50,7 @@ namespace more { namespace gotopt {
         : opt(), name(), args(), description()
         {}
 
-        option(char _opt, const char *_name, int _args, const char *_descr = NULL)
+        option(char _opt, const char *_name, int _args, const char *_descr = nullptr)
         : opt(_opt), name(_name), args(_args), description(_descr)
         {}
 

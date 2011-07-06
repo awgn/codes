@@ -39,7 +39,7 @@ namespace more {
         template <std::size_t N>
         int send(const std::array<iovec,N> &iov, int flags) const
         { 
-            const msghdr msg = { NULL, 0, const_cast<iovec *>(&iov.front()), N, NULL, 0, 0 };    
+            const msghdr msg = { nullptr, 0, const_cast<iovec *>(&iov.front()), N, nullptr, 0, 0 };    
             return ::sendmsg(_M_fd, &msg, flags); 
         }
 
@@ -52,7 +52,7 @@ namespace more {
         template <std::size_t N>
         int recv(std::array<iovec,N> &iov, int flags) const
         { 
-            msghdr msg = { NULL, 0, &iov.front(), N, NULL, 0, 0 };    
+            msghdr msg = { nullptr, 0, &iov.front(), N, nullptr, 0, 0 };    
             return ::recvmsg(_M_fd, &msg, flags); 
         }
 

@@ -37,7 +37,7 @@ namespace more { namespace pcap {
         explicit sockaddr(const ::sockaddr *s)
         : m_storage()
         {
-            if (s == NULL)
+            if (s == nullptr)
                 return;
 
             if (s->sa_family == AF_INET)
@@ -259,7 +259,7 @@ namespace more { namespace pcap {
         pcap_base(pcap_base &&other)
         : m_errbuf(), m_handle(std::move(other.m_handle))
         {
-            other.m_handle = NULL;
+            other.m_handle = nullptr;
         }
 
         pcap_base& operator=(pcap_base &&other)
@@ -272,7 +272,7 @@ namespace more { namespace pcap {
                 m_handle = std::move(other.m_handle);
                 memcpy(m_errbuf, other.m_errbuf, sizeof(m_errbuf));
 
-                other.m_handle = NULL;
+                other.m_handle = nullptr;
             }
             return *this;
         }
@@ -352,7 +352,7 @@ namespace more { namespace pcap {
         next(struct pcap_pkthdr *h)
         {
             // Unfortunately, there is no way to determine whether an error occurred or not.
-            // NULL is returned if no packers were read from a live capture, or if no more packets
+            // nullptr is returned if no packers were read from a live capture, or if no more packets
             // are available in a ``savefile``.
 
             return pcap_next(m_handle, h); 
@@ -527,7 +527,7 @@ namespace more { namespace pcap {
     {
         char errbuf[PCAP_ERRBUF_SIZE];
         char *dev = pcap_lookupdev(errbuf);
-        if (dev == NULL)
+        if (dev == nullptr)
             throw std::runtime_error(std::string("pcap: ").append(errbuf)); 
         
         return std::string(dev);
@@ -617,7 +617,7 @@ namespace more { namespace pcap {
             this->clear_errbuf();
 
             m_handle = pcap_open_live(m_device.c_str(), m_snaplen, m_promisc, m_to_ms, m_errbuf);
-            if (m_handle == NULL)
+            if (m_handle == nullptr)
                 throw std::runtime_error(std::string("pcap: ").append(m_errbuf));
 
             if ( this->warning() )
@@ -704,7 +704,7 @@ namespace more { namespace pcap {
             this->clear_errbuf();
 
             m_handle = pcap_open_dead(linktype, m_snaplen);
-            if (m_handle == NULL)
+            if (m_handle == nullptr)
                 throw std::runtime_error(std::string("pcap: ").append(m_errbuf));
 
             if ( this->warning() )
@@ -762,7 +762,7 @@ namespace more { namespace pcap {
         {
             clear_errbuf();
             m_handle = pcap_open_offline(m_device.c_str(), m_errbuf);
-            if ( m_handle == NULL )
+            if ( m_handle == nullptr )
                 throw std::runtime_error(std::string("pcap: ").append(m_errbuf));
  
             if ( this->warning() )
@@ -827,7 +827,7 @@ namespace more { namespace pcap {
         : m_dumper(0)
         {
             pcap_t * h = source.handle();
-            if ( (m_dumper = pcap_dump_open(h, fname)) == NULL )
+            if ( (m_dumper = pcap_dump_open(h, fname)) == nullptr )
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(h)));
         }
 
