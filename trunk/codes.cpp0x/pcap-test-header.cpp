@@ -29,13 +29,13 @@ public:
     {
         auto cur = more::range_const_iterator(p, p + h->caplen);
 
-        more::net::header<const ethernet> eth_h (cur);
-        more::net::header<const ipv4> ip_h(cur);
-        more::net::header<const tcp> tcp_h(cur);
+        more::net::const_header<ethernet> eth_h(cur);
+        more::net::const_header<ipv4> ip_h(cur);
+        more::net::const_header<tcp> tcp_h(cur);
 
         std::cout << *h << "\n    " <<  *eth_h << 
-                           "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check_verify() << 
-                           "\n    " <<  *tcp_h << " csum_correct:" << std::boolalpha << tcp_h->check_verify(*ip_h, cur.size()) << std::endl;
+                           "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->chksum_verify() << 
+                           "\n    " <<  *tcp_h << " csum_correct:" << std::boolalpha << tcp_h->chksum_verify(*ip_h, cur.size()) << std::endl;
 
         // std::cout << *h << "\n    " <<  *eth_h << 
         //                   "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check(net::verify()) << 
@@ -44,10 +44,10 @@ public:
 };
 
 
-struct replay : public more::pcap_offline
+struct replay : public more::pcap::pcap_offline
 {
     replay(const std::string &fname)
-    : more::pcap_offline(fname)
+    : more::pcap::pcap_offline(fname)
     {}
 
     virtual
@@ -78,12 +78,12 @@ main(int argc, char *argv[])
 
     handle.nonblock(false);
 
-    std::cout << "non-blocking mode: " << handle.nonblock() << std::endl;
+    std::cout << "non-blocking mode: " << handle.is_nonblock() << std::endl;
 
-    std::list<more::pcap_if> l = more::pcap::findalldevs();
+    auto l = more::pcap::findalldevs();
 
     std::cout << "findalldevs: ";
-    std::copy(l.begin(), l.end(), std::ostream_iterator<more::pcap_if>(std::cout, "\n             "));
+    std::copy(l.begin(), l.end(), std::ostream_iterator<more::pcap::interface>(std::cout, "\n             "));
     std::cout << std::endl;
 
     bpf_u_int32 net, mask;
@@ -99,7 +99,7 @@ main(int argc, char *argv[])
     // }
 
     {
-        more::bpf_prog icmp_only("tcp");
+        more::pcap::bpf_prog icmp_only("tcp");
         handle.filter(icmp_only);
     }
 
@@ -109,8 +109,8 @@ main(int argc, char *argv[])
  
     std::cout << "dumping 5 tcp-segments to file..." << std::endl;
     {
-        more::pcap_dumper test(handle, "test.pcap");
-        handle.loop(5, more::pcap_dumper::handler, reinterpret_cast<u_char *>(&test) );  // use direct loop
+        more::pcap::pcap_dumper test(handle, "test.pcap");
+        handle.loop(5, more::pcap::pcap_dumper::handler, reinterpret_cast<u_char *>(&test) );  // use direct loop
         test.flush();
     }
 
