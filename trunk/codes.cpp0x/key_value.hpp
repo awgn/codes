@@ -157,17 +157,17 @@ namespace more {
     typedef std::tuple<bool,        // whether it is strict or non strict parsing 
                        char,        // assign separator -> default =
                        char,        // comment          -> defualt #
-                       std::string> parse_options;
+                       std::string> parser_options;
 
     template <typename CharT, typename Traits>
     class lexer__ 
     {
         std::basic_istream<CharT, Traits> & m_in;
-        parse_options m_option;
+        parser_options m_option;
 
     public:
 
-        lexer__(std::basic_istream<CharT, Traits> &in, const parse_options &opt)
+        lexer__(std::basic_istream<CharT, Traits> &in, const parser_options &opt)
         : m_in(in), m_option(opt)
         {}
 
@@ -443,9 +443,52 @@ namespace more {
 
     template <typename CharT, typename Traits>
     lexer__<CharT, Traits> 
-    lexer(std::basic_istream<CharT, Traits> &in, const parse_options &opt)
+    lexer(std::basic_istream<CharT, Traits> &in, const parser_options &opt)
     {
         return lexer__<CharT, Traits>(in, opt);
+    }
+    
+    //////////////////////////////////////////////////////////////////////////
+    //   options 
+    namespace opt {
+
+        struct options
+        {
+            parser_options m_opt;
+
+            options()
+            : m_opt(false,'=', '#', std::string())
+            {}
+
+            options &
+            strict() { std::get<0>(m_opt) = true; return *this; }
+
+            options &
+            non_strict() { std::get<0>(m_opt) = false; return *this; }
+ 
+            options &
+            separator(char c) { std::get<1>(m_opt) = c; return *this; }
+            
+            options &
+            comment(char c) { std::get<2>(m_opt) = c; return *this; }
+
+            operator parser_options()
+            {
+                return m_opt;
+            }
+        };
+
+        static inline options
+        strict() { return options().strict(); }
+
+        static inline options
+        non_strict() { return options().non_strict(); }
+
+        static inline options
+        separator(char c) { return options().separator(c); }
+        
+        static inline options
+        comment(char c) { return options().comment(c); }
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -473,7 +516,7 @@ namespace more {
         {}
                           
         key_value_pack(const char *name, 
-            const parse_options &mode = std::make_tuple(false, '=', '#', "pack")) 
+            const parser_options &mode = std::make_tuple(false, '=', '#', "pack")) 
         : m_parser(),
           m_key(), m_value(details::get_default<key_type, value_type, key_type::has_default>::value()) 
         {
@@ -516,12 +559,12 @@ namespace more {
 
         template <typename CharT, typename Traits>
         bool parse(std::basic_istream<CharT, Traits> &in, const std::string &key, 
-                         const parse_options &mode, lexer__<CharT, Traits> &lex)
+                         const parser_options &mode, lexer__<CharT, Traits> &lex)
         { return parse__(in, key, *this, mode, lex); }
 
         template <typename CharT, typename Traits, typename _T0, typename ..._Ti>
         static bool parse__(std::basic_istream<CharT, Traits> &in, const std::string &key, 
-                                  key_value_pack<_T0, _Ti...> &that, const parse_options &mode, lexer__<CharT, Traits> &lex)
+                                  key_value_pack<_T0, _Ti...> &that, const parser_options &mode, lexer__<CharT, Traits> &lex)
         {
             if (key == _T0::type::first_type::str()) {
                 
@@ -538,7 +581,7 @@ namespace more {
 
         template <typename CharT, typename Traits>
         static bool parse__(std::basic_istream<CharT, Traits> &in, const std::string &key, 
-                                  key_value_pack<> &, const parse_options &mode, lexer__<CharT, Traits>&)
+                                  key_value_pack<> &, const parser_options &mode, lexer__<CharT, Traits>&)
         {
             // unknown key-value...
             if (std::get<0>(mode)) {   // strict mode: dump-error 
@@ -553,7 +596,7 @@ namespace more {
 
     public:
         bool 
-        open(const char *name, parse_options mode = std::make_tuple(false, '=', '#')) 
+        open(const char *name, parser_options mode = std::make_tuple(false, '=', '#')) 
         {
             std::ifstream sc(name);
             std::get<3>(mode) = std::string(name);
@@ -569,7 +612,7 @@ namespace more {
         }
 
         template <typename CharT, typename Traits>
-        bool open(std::basic_istream<CharT, Traits> &in, parse_options mode = std::make_tuple(false, '=', '#', "unnamed")) 
+        bool open(std::basic_istream<CharT, Traits> &in, parser_options mode = std::make_tuple(false, '=', '#', "unnamed")) 
         {
             auto lex = lexer(in, mode);
             return lex.parse_lexeme(*this, false);

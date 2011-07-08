@@ -63,7 +63,7 @@ typedef more::key_value_pack<unsigned_int,
 int
 main(int argc, char *argv[])
 {
-    const my_config conf("key_value_test.txt");
+    const my_config conf("key_value_test.txt", more::opt::strict());
 
     // or...
     // if (!conf.open("key_value_test.txt") ) {
@@ -85,6 +85,7 @@ main(int argc, char *argv[])
     std::cout << std::endl;
 
     std::cout << "-> " << associative::str() << " elem:" << conf.get<associative>().size() << std::endl;
+
     auto it = conf.get<associative>().begin();
     auto it_end = conf.get<associative>().end();
     for(; it != it_end; ++it)
@@ -101,7 +102,6 @@ main(int argc, char *argv[])
 
     std::cout << "   block -> first:  " << more::get<simple_block::first>(more::get<block>(conf)) << '\n' <<
                  "            second: " << more::get<simple_block::second>(more::get<block>(conf)) << std::endl;
-
 
     std::cout << " -> " << raw_double::str() << " => " << std::boolalpha << static_cast<bool>(more::get<raw_double>(conf));
     if (more::get<raw_double>(conf))
