@@ -44,6 +44,11 @@ namespace simple_block {
 
 MAP_KEY(simple_block::type, block); 
 
+// smart pointer support
+
+MAP_KEY(double *, raw_double);
+MAP_KEY(std::shared_ptr<int>, shared_int);
+
 typedef more::key_value_pack<unsigned_int,
                                integers,
                                booleans,
@@ -51,7 +56,9 @@ typedef more::key_value_pack<unsigned_int,
                                associative,
                                simple_pair,
                                simple_tuple,
-                               block> my_config;
+                               block,
+                               raw_double,
+                               shared_int> my_config;
 
 int
 main(int argc, char *argv[])
@@ -94,6 +101,17 @@ main(int argc, char *argv[])
 
     std::cout << "   block -> first:  " << more::get<simple_block::first>(more::get<block>(conf)) << '\n' <<
                  "            second: " << more::get<simple_block::second>(more::get<block>(conf)) << std::endl;
+
+
+    std::cout << " -> " << raw_double::str() << " => " << std::boolalpha << static_cast<bool>(more::get<raw_double>(conf));
+    if (more::get<raw_double>(conf))
+        std::cout << " value:" << *more::get<raw_double>(conf);
+    std::cout << std::endl;
+
+    std::cout << " -> " << shared_int::str() << " => " << std::boolalpha << static_cast<bool>(more::get<shared_int>(conf));
+    if( more::get<shared_int>(conf) )
+        std::cout << " value:" << *more::get<shared_int>(conf);
+    std::cout << std::endl;
     return 0;
 }
 

@@ -184,7 +184,6 @@ namespace more {
             std::string _s; return (m_in >> std::skipws >> _s && _s.compare(s) == 0) ? true : false;
         }
 
-
         // very generic parser for types supporting operator>> ...
         //
         template <typename E>
@@ -195,7 +194,31 @@ namespace more {
 #endif
             return m_in >> std::skipws >> elem;
         }        
-        
+
+        // pointers support 
+        //
+
+        // raw pointer    
+        template <typename T>
+        inline bool parse_lexeme(T *& elem)
+        {
+            if (!elem)
+                elem = new T;
+            if (!parse_lexeme(*elem))
+                return false;
+            return true;
+        }
+
+        // shared_ptr<T>
+        template <typename T>
+        inline bool parse_lexeme(std::shared_ptr<T> &elem)
+        {
+            if (!elem)
+                elem.reset(new T);
+            if (!parse_lexeme(*elem))
+                return false;
+            return true;
+        }
 
         // generic parser for "strings"
         //

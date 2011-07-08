@@ -30,6 +30,10 @@ block = {
         second = 42
         }
 
+raw_double = 13.2
+
+shared_int = 42
+
 # unknown = key  # ignored in non-strict mode 
 
 
