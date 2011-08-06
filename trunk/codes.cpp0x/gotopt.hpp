@@ -36,6 +36,17 @@ namespace more { namespace gotopt {
 
     using namespace more::expr;
 
+    class gotopt_error : public std::runtime_error
+    {
+    public:
+        explicit gotopt_error(const std::string &m)
+        :  std::runtime_error(m) 
+        {}
+
+        virtual ~gotopt_error() throw()
+        {}
+    };
+
     // gotopt option decriptor
     //
 
@@ -379,7 +390,7 @@ namespace more { namespace gotopt {
         if (!more::expr::eval(elem, ctx)) 
         {
             std::stringstream in; in << "Assert " <<  elem << " failed!";
-            throw std::runtime_error(in.str());
+            throw gotopt_error(in.str());
         }
     }
 
@@ -388,7 +399,7 @@ namespace more { namespace gotopt {
     {
         if (!more::expr::eval(elem.first,ctx)) 
         {
-            throw elem.second;
+            throw gotopt_error(elem.second);
         }
     }
 
