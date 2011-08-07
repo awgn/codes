@@ -91,14 +91,23 @@ namespace more { namespace gotopt {
         {
             if (options[i].opt) {
 
-                if (options[i].opt > 0)
-                    out << "   -" << options[i].opt  << ",";
-                else
-                    out << "      ";
+                std::string opt;
 
-                out << ( options[i].name ? "  --" : "    " ) << 
-                    std::setw(maxlen+5) << std::left << ( options[i].name ? : "" ) <<
-                        (options[i].description ? : "") << std::endl;
+                if (options[i].opt > 0)
+                    opt.append("   -").append(1,options[i].opt);
+                else
+                    opt.append("       ");
+              
+                if (options[i].name) {
+                    if (options[i].opt > 0)
+                        opt.append(", ");
+                    opt.append("--").append(options[i].name);
+                }
+
+                if (options[i].args > 0)
+                    opt.append(" ARG");
+
+                out <<  std::setw(maxlen+16) << std::left << opt << options[i].description << std::endl; 
                 continue;
             }
 
