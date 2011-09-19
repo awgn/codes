@@ -1,8 +1,8 @@
 #!/usr/bin/ruby1.9.1
 
 $compiler = '/usr/bin/g++'
-$cflags   = %w{-I . -Wall -std=c++0x}
-$version  = "0.4"
+$cflags   = %w{-I. -I.. -Wall -std=c++0x}
+$version  = "0.5"
 
 #
 # generic header test
@@ -43,6 +43,12 @@ class HeaderTest
         $?
     end
 
+    def compile(*files)
+        if compile?(true, *files) != 0
+            raise RuntimeError, "Compiler error!"
+        end
+    end
+ 
     def subheaders(*files)
         cmd = "#{$compiler} #{$cflags.join(' ')} -o #{@exe} #{files.join(' ')} -H 2>&1" 
         io = IO.popen(cmd, "r")
@@ -55,16 +61,10 @@ class HeaderTest
         list.sort.uniq
     end
 
-    def compile(*files)
-        if compile?(true, *files) != 0
-            raise RuntimeError, "Compiler error!"
-        end
-    end
-
     def count_includes()
         n = 0
         File.open(@header, "r" ).each_line do |line|
-            n += 1 if line.index("#include")
+            n += 1 if line.chomp.index("#include") == 0
         end
         n
     end
@@ -77,7 +77,7 @@ class HeaderTest
         i = 0
         File.open(test_header_name(n), "w") do |h|
             File.open(@header, "r" ).each_line do |line|
-                if (line.index("#include"))
+                if (line.chomp.index("#include") == 0)
                     i += 1
                     if i != n && !skip.include?(i)
                         h.puts line
@@ -135,7 +135,7 @@ class SimpleInclude < HeaderTest
 
         compile 'DH_translation_unit.cpp'
 
-        remove  'DH_translation_unit.cpp', @exe
+        remove 'DH_translation_unit.cpp', @exe
    end
 end
 
@@ -218,20 +218,25 @@ class UnnecessaryInclude < HeaderTest
                 end
 
                 ret = compile? false, 'DH_translation_unit.cpp'
-                sub = subheaders 'DH_translation_unit.cpp'
-
-                remove 'DH_translation_unit.cpp', @exe
+                sub = []
+                if ret == 0
+                    sub = subheaders 'DH_translation_unit.cpp'
+                end
 
                 remove_test_header n
                 
+                remove 'DH_translation_unit.cpp', @exe
+
                 test_include = test_include.gsub(/.*</,'').gsub(/>.*/,'')
                                 
-                #puts "HEADER: #{test_include.chomp}"
+                print "#{@header}: <#{test_include.chomp}> "
 
                 if ret == 0 and !sub.include?(test_include.chomp)
-                   print "#{@header}: -> #{test_include.chomp} // possibly unnecessary\n"
+                   print "-> // possibly unnecessary\n"
                    skip << n
                    raise LocalJumpError
+                else
+                   print "\n";
                 end
             end
         rescue LocalJumpError
@@ -249,6 +254,7 @@ if __FILE__ == $0
     $test_file = nil
 
     begin
+
     ARGV.each do |arg|
    
         if arg == "--test"
@@ -256,7 +262,7 @@ if __FILE__ == $0
             next
         end
 
-        if arg == "--help"
+        if arg == "--help" or arg == "-h"
             puts "doctor_header [--test test.cpp] header.hpp..."
             next
         end
