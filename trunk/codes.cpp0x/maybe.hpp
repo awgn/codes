@@ -82,7 +82,7 @@ public:
         return !(*this == other);
     }
 
-    operator Tp()
+    explicit operator Tp()
     {
         if (!m_state)
             throw std::runtime_error("Maybe<>: Nothing");
