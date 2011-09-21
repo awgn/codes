@@ -233,6 +233,7 @@ namespace yats
         }
 
         unsigned int n = 0;
+
         std::cout << "Running " << tot_task << " tests in " << context::instance().size() << " contexts." << std::endl;
 
         // iterate over contexts:        
@@ -248,13 +249,14 @@ namespace yats
             for(; i != i_e; ++i)
             {
                 try
-                {
+                {    
+                    // run the test...
                     i->first.operator()();
                     n++;  
                 }   
                 catch(std::exception &e)
                 {
-                    std::cerr << e.what() << std::endl;
+                    std::cerr << "Test(" << i->second << ") -> exception thrown: '" << e.what() << "'" << std::endl;
                 }
             }
             
