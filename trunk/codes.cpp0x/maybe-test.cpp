@@ -13,56 +13,84 @@
 #include <cassert>
 #include <iostream>
 
-int
-main(int argc, char *argv[])
+#include <yats.hpp>
+using namespace yats;
+
+Context(maybe_test)
 {
     Maybe<int> x;
 
-    assert(Nothing == Nothing);
-    assert(Nothing == x);
-    assert(x == Nothing);
-    assert(x == x);
+    Test(nothing)
+    {
+        Assert(Nothing == Nothing);
+        Assert(Nothing == x);
+        Assert(x == Nothing);
+        Assert(x == x);
+    }
 
     Maybe<int> y(1);
-
-    assert(y != Nothing);
-    assert(Nothing != y);
     
-    assert(y != x);
-    assert(x != y);
+    Test(just)
+    {
+        Assert(y != Nothing);
+        Assert(Nothing != y);
+        
+        Assert(y != x);
+        Assert(x != y);
 
-    assert(y == y);
-    assert(y == Just(1));
-    assert(Just(1) == y);
+        Assert(y == y);
+        Assert(y == Just(1));
+        Assert(Just(1) == y);
+    }
 
-    assert(y == 1);
-    assert(1 == y);
+    // Assert(y == 1);  only explicit conversion..
+    // Assert(1 == y);
 
-    x = Just(1);
+    Test(explicit_conversion)
+    {
+        Assert(static_cast<int>(y) == 1);  // only explicit conversion..
+    }    
 
-    assert(y == x);
-    assert(x == y);
+    Test(maybe_assign)
+    {
+        x = Just(1);
 
-    Maybe<int> z(x);
+        Assert(y == x);
+        Assert(x == y);
+    }
+
     Maybe<int> w(Nothing);
+    
+    Test(copy_constructor)
+    {
+        Maybe<int> z(x);
+        
+        Assert( x == z );
+        Assert( z == x );
+
+        Assert(w == Nothing);
+        Assert(Nothing == w);
+    }
+
+    // Assert(!q);  deleted
+    // Assert(q);   deleted
+    
     Maybe<int> q(Just(0));
 
-    assert( x == z );
-    assert( z == x );
+    Test(copy_constructor_extra)
+    {
+        Assert(q.value() == 0);
+        Assert(q == Just(0));
+        Assert(q != Just(1));
+        Assert(q != Nothing);
 
-    assert(w == Nothing);
-    assert(Nothing == w);
+        Assert(Nothing != Just(1));
+    }
+}
 
-    // assert(!q);  deleted
-    // assert(q);   deleted
-
-    assert(q == 0);
-    assert(q == Just(0));
-    assert(q != Just(1));
-    assert(q != Nothing);
-
-    assert(Nothing != Just(1));
-
-    return 0;
+int
+main(int argc, char *argv[])
+{
+    return yats::run();
 }
 
