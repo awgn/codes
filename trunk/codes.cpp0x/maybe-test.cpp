@@ -79,13 +79,54 @@ Context(maybe_test)
 
     Test(copy_constructor_extra)
     {
-        Assert(q.value() == 0);
+        Assert(q.just() == 0);
         Assert(q == Just(0));
         Assert(q != Just(1));
         Assert(q != Nothing);
 
         Assert(Nothing != Just(1));
     }
+
+    Test(test_stream)
+    {
+        Maybe<int> x = Nothing;
+
+        std::cout << x << std::endl;
+        std::cout << Nothing << std::endl;
+        std::cout << Just(1) << std::endl;
+    }
+
+    Test(less)
+    {
+        Maybe<int> n = Nothing;
+
+        Assert(Nothing < Nothing, is_false());
+        Assert(Nothing < n, is_false());
+        Assert(n < Nothing, is_false());
+
+        Assert(Nothing < Just(1), is_true());
+        Assert(Just(1) < Nothing, is_false());
+
+        Assert(n < Just(1), is_true());
+        Assert(Just(1) < n, is_false());
+    }
+
+    Test(greater)
+    {
+        Maybe<int> n = Nothing;
+
+        Assert(Nothing > Nothing, is_false());
+        Assert(Nothing > n, is_false());
+        Assert(n > Nothing, is_false());
+
+        Assert(Nothing > Just(1), is_false());
+        Assert(Just(1) > Nothing, is_true());
+
+        Assert(n > Just(1), is_false());
+        Assert(Just(1) > n, is_true());
+    }
+
+
 }
 
 int
