@@ -12,6 +12,8 @@
 
 #include <cassert>
 #include <iostream>
+#include <algorithm>
+#include <vector>
 
 #include <yats.hpp>
 using namespace yats;
@@ -126,6 +128,24 @@ Context(maybe_test)
         Assert(Just(1) > n, is_true());
     }
 
+    Test(vector_of_maybe)
+    {
+        Maybe<int> n;
+
+        std::vector<Maybe<int>> xs = { n, Just(42), Just(0), Nothing };
+        std::sort(xs.begin(), xs.end());
+
+        std::vector<Maybe<int>> out = { Nothing, Nothing, Just(0), Just(42) };
+
+        Assert(std::equal(xs.begin(), xs.end(), out.begin()) );
+
+        std::cout << "-> ";
+        for(auto & x : xs)
+        {
+            std::cout << x << ' ';
+        }
+        std::cout << std::endl;
+    }
 
 }
 
