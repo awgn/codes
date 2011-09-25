@@ -58,15 +58,15 @@
 #define XPASTE(a,b)     PASTE(a,b)
 #endif
 
-#define YATS_assert_1(value)            yats::assert_predicate(value, is_true(),_context_name, _name, __LINE__)
-#define YATS_assert_2(value,pred)       yats::assert_predicate(value, pred,     _context_name, _name, __LINE__)
+#define YATS_ASSERT_1(value)            yats::assert_predicate(value, is_true(),_context_name, _name, __LINE__)
+#define YATS_ASSERT_2(value,pred)       yats::assert_predicate(value, pred,     _context_name, _name, __LINE__)
 
-#define YATS_assert_throw_1(value)      YATS_assert_throw_any (value, __LINE__)
-#define YATS_assert_throw_2(value,obj)  YATS_assert_throw_type(value, obj, __LINE__)
+#define YATS_ASSERT_THROW_1(value)      YATS_ASSERT_THROW_ANY (value, __LINE__)
+#define YATS_ASSERT_THROW_2(value,obj)  YATS_ASSERT_THROW_TYPE(value, obj, __LINE__)
 
-#define YATS_error(context, name) "Context " << context << ": test " << name   
+#define YATS_ERROR(context, name) "Context " << context << ": test " << name   
 
-#define YATS_assert_nothrow(exp,line) \
+#define YATS_ASSERT_NOTHROW(exp,line) \
 try \
 { \
     exp; \
@@ -74,7 +74,7 @@ try \
 catch(std::exception &e) \
 {           \
     std::ostringstream err; \
-    err << std::boolalpha << YATS_error(_context_name, _name) \
+    err << std::boolalpha << YATS_ERROR(_context_name, _name) \
                         << " -> exception not expected. Got " \
                         << yats::type_name(e) << "(\"" << e.what() << "\")" \
                         << " error at line " << line; \
@@ -83,12 +83,12 @@ catch(std::exception &e) \
 catch(...) \
 {           \
     std::ostringstream err; \
-    err << std::boolalpha << YATS_error(_context_name, _name) \
+    err << std::boolalpha << YATS_ERROR(_context_name, _name) \
                         << " -> exception not expected: got unknown exception. Error at line " << line; \
     throw std::runtime_error(err.str()); \
 } 
 
-#define YATS_assert_throw_any(exp,line) \
+#define YATS_ASSERT_THROW_ANY(exp,line) \
 { \
     bool thrown = false; \
     try \
@@ -102,13 +102,13 @@ catch(...) \
     if (!thrown) \
     {  \
         std::ostringstream e; \
-        e << std::boolalpha << YATS_error(_context_name, _name) \
+        e << std::boolalpha << YATS_ERROR(_context_name, _name) \
                             << " -> exception expected. Error at line " << line; \
         throw std::runtime_error(e.str()); \
     }  \
 }
 
-#define YATS_assert_throw_type(exp, obj, line) \
+#define YATS_ASSERT_THROW_TYPE(exp, obj, line) \
 { \
     bool thrown = false; \
     try \
@@ -119,7 +119,7 @@ catch(...) \
     { \
         if (std::string(e.what()).compare(obj.what())) { \
             std::ostringstream err; \
-            err << std::boolalpha << YATS_error(_context_name, _name) \
+            err << std::boolalpha << YATS_ERROR(_context_name, _name) \
                             << " -> " << yats::type_name(obj)  \
                             <<  " caught but reasons mismatching! Got '" << e.what() << "' while '" << obj.what()  << "' is expected. Error at line " << line; \
             throw std::runtime_error(err.str()); \
@@ -129,7 +129,7 @@ catch(...) \
     catch(...) \
     { \
         std::ostringstream err; \
-        err << std::boolalpha << YATS_error(_context_name, _name) \
+        err << std::boolalpha << YATS_ERROR(_context_name, _name) \
                         << " -> " << yats::type_name(obj)  \
                         <<  " expected. Got a different exception. Error at line " << line; \
         throw std::runtime_error(err.str()); \
@@ -138,15 +138,19 @@ catch(...) \
     if (!thrown) \
     {  \
         std::ostringstream err; \
-        err << std::boolalpha << YATS_error(_context_name, _name) \
+        err << std::boolalpha << YATS_ERROR(_context_name, _name) \
                             << " -> exception " << yats::type_name(obj) << " expected. Error at line " << line; \
         throw std::runtime_error(err.str()); \
     }  \
 }
 
-#define Assert(...)                     XPASTE(YATS_assert_       ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
-#define AssertThrow(...)                XPASTE(YATS_assert_throw_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
-#define AssertNothrow(value)            YATS_assert_nothrow(value, __LINE__)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#define Assert(...)                     XPASTE(YATS_ASSERT_       ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
+#define AssertThrow(...)                XPASTE(YATS_ASSERT_THROW_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
+#define AssertNothrow(value)            YATS_ASSERT_NOTHROW(value, __LINE__)
 
 #define Context(ctx) \
 namespace ctx { static const char _context_name[] = #ctx; } \
@@ -320,7 +324,7 @@ namespace yats
     {
         if (!pred(_value)) {
             std::ostringstream err;
-            err << std::boolalpha << YATS_error(_ctx, _name) 
+            err << std::boolalpha << YATS_ERROR(_ctx, _name) 
                                 << " -> predicate " << pred.descr; 
             if (pred.value.second)
                 err << '(' << pred.value.first << ')'; 
