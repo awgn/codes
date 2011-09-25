@@ -13,6 +13,24 @@ using namespace yats;
 
 Context(good_context)
 {
+
+    // Example: noncopyable class...
+    //
+    
+    struct NonCopyable
+    {
+        NonCopyable() {};
+        NonCopyable(const NonCopyable&) = delete;
+        NonCopyable& operator=(const NonCopyable&) = delete;
+    };
+
+    // StaticError goes here (needs runtime YATS)
+    //
+    
+    // StaticError( NonCopyable x = NonCopyable(), "non copyable class!");
+    StaticError(NonCopyable x, "non copyable class!");
+
+
     Test(test_0)
     {
         Assert(std::vector<int>().empty());
@@ -144,7 +162,7 @@ Context(bad_context)
     {
         AssertThrow(throw std::runtime_error("error"), std::runtime_error("not ok"));
     }
-   
+
     // generic predicate:
 
     bool is_even(int n)
@@ -156,6 +174,12 @@ Context(bad_context)
     {
         Assert(11, generic_predicate<int>("is_even", is_even));
     }
+    
+    Test(test_13)
+    {
+        throw std::runtime_error("unexpected exception");
+    }   
+
 }
 
 int
