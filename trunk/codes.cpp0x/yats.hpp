@@ -335,7 +335,7 @@ namespace yats
 
     /// standard predicates...
 
-#define YATS_functional(_name_) \
+#define YATS_FUNCTIONAL(_name_) \
     template <typename T> \
     inline predicate<T> \
     is_ ## _name_ (const T &value)  \
@@ -346,12 +346,12 @@ namespace yats
                                 value); \
     }
 
-    YATS_functional(greater);
-    YATS_functional(greater_equal);
-    YATS_functional(less);
-    YATS_functional(less_equal);
-    YATS_functional(equal_to);
-    YATS_functional(not_equal_to);
+    YATS_FUNCTIONAL(greater);
+    YATS_FUNCTIONAL(greater_equal);
+    YATS_FUNCTIONAL(less);
+    YATS_FUNCTIONAL(less_equal);
+    YATS_FUNCTIONAL(equal_to);
+    YATS_FUNCTIONAL(not_equal_to);
 
     /// boolean...
 
