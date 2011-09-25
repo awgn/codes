@@ -23,6 +23,7 @@
 #include <limits>
 #include <stdexcept>
 
+
 #define MAP_KEY(t,k)  struct k { \
     typedef std::pair<k,t> type; \
     static const bool has_default = false; \
@@ -335,25 +336,49 @@ namespace more {
 
         // generic parser for associative containers that support insert(std::pair<K,V>)
         //
-        template <typename K, typename V,  
-        template <typename _Key, typename _Tp,
-        typename _Compare = std::less<_Key>,
-        typename _Alloc = std::allocator<std::pair<const _Key, _Tp>>> class Cont >
-        inline bool parse_lexeme(Cont<K,V> &elems)
+        template <typename _Key, typename _Tp, typename _Compare = std::less<_Key>,
+                 typename _Alloc = std::allocator<std::pair<const _Key, _Tp> >, 
+                 template <typename, typename, typename, typename > class Cont >
+                 inline 
+                 bool parse_lexeme(Cont<_Key,_Tp, _Compare, _Alloc> &elems)
+                 {
+#ifdef LEX_DEBUG
+                     std::cout << __PRETTY_FUNCTION__ << std::endl;
+#endif
+                     std::string sep; _Key key; _Tp value;
+
+                     bool ok = parse_lexeme(key)     && 
+                               _("->")               && 
+                              parse_lexeme(value);
+                     if (ok)
+                         elems.insert(std::make_pair(key,value));
+                     return ok;
+                 }
+
+        // generic parser for unordered associative containers:
+        //
+        //
+
+        template<class _Key, class _Tp,
+            class _Hash = std::hash<_Key>,
+            class _Pred = std::equal_to<_Key>,
+            class _Alloc = std::allocator<std::pair<const _Key, _Tp> >,
+            template <typename, typename, typename, typename, typename> class UnordCont >
+        inline 
+        bool parse_lexeme(UnordCont<_Key,_Tp, _Hash, _Pred, _Alloc> &elems)
         {
 #ifdef LEX_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            std::string sep; K key; V value;
+            std::string sep; _Key key; _Tp value;
 
             bool ok = parse_lexeme(key)     && 
                       _("->")               && 
                       parse_lexeme(value);
             if (ok)
-                elems.insert( std::make_pair(key,value) );
+                elems.insert(std::make_pair(key,value));
             return ok;
         }
-        
 
         // recursive parser for key_value_pack
         //
@@ -408,7 +433,6 @@ namespace more {
 #ifdef LEX_DEBUG
                 std::cout << ":: key[" << key << "]\n";
 #endif
-
                 // parse separator ('=')
                 //
                 if (c != std::get<1>(m_option)) {
@@ -450,7 +474,7 @@ namespace more {
     
     //////////////////////////////////////////////////////////////////////////
     //   options 
-    namespace opt {
+    namespace key_value_opt {
 
         struct options
         {

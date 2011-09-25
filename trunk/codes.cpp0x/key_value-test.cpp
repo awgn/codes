@@ -63,7 +63,7 @@ typedef more::key_value_pack<unsigned_int,
 int
 main(int argc, char *argv[])
 {
-    const my_config conf("key_value_test.txt", more::opt::strict());
+    const my_config conf("key_value_test.txt", more::key_value_opt::strict());
 
     // or...
     // if (!conf.open("key_value_test.txt") ) {
