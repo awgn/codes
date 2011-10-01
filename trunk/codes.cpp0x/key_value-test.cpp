@@ -15,6 +15,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <set>
 
 #include <key_value.hpp>
 
@@ -24,7 +25,9 @@ MAP_KEY(std::vector<int>, integers);
 
 MAP_KEY(std::vector<bool>, booleans);
 MAP_KEY(std::list<std::string>, strings);
- 
+
+MAP_KEY(std::set<int>, intset);
+
 typedef std::map<std::string,int> map_type;
 MAP_KEY(map_type, associative);
  
@@ -49,16 +52,20 @@ MAP_KEY(simple_block::type, block);
 MAP_KEY(double *, raw_double);
 MAP_KEY(std::shared_ptr<int>, shared_int);
 
+MAP_KEY(const char *, literal);
+
 typedef more::key_value_pack<unsigned_int,
                                integers,
                                booleans,
                                strings, 
+                               intset,
                                associative,
                                simple_pair,
                                simple_tuple,
                                block,
                                raw_double,
-                               shared_int> my_config;
+                               shared_int,
+                               literal> my_config;
 
 int
 main(int argc, char *argv[])
@@ -85,12 +92,19 @@ main(int argc, char *argv[])
     std::cout << std::endl;
 
     std::cout << "-> " << associative::str() << " elem:" << conf.get<associative>().size() << std::endl;
-
     auto it = conf.get<associative>().begin();
     auto it_end = conf.get<associative>().end();
     for(; it != it_end; ++it)
     {
         std::cout << "   key:" << (*it).first << " -> value:" << (*it).second << std::endl; 
+    }
+
+    std::cout << "-> " << intset::str() << " elem:" << conf.get<intset>().size() << std::endl;
+    auto sit = conf.get<intset>().begin();
+    auto sit_end = conf.get<intset>().end();
+    for(; sit != sit_end; ++sit)
+    {
+        std::cout << "   value:" << (*sit) << std::endl; 
     }
 
     std::cout << "-> " << simple_pair::str() << " = " << conf.get<simple_pair>().first << " , " << conf.get<simple_pair>().second << std::endl;
@@ -112,6 +126,12 @@ main(int argc, char *argv[])
     if( more::get<shared_int>(conf) )
         std::cout << " value:" << *more::get<shared_int>(conf);
     std::cout << std::endl;
+
+    std::cout << " -> " << literal::str() << " => " << std::boolalpha << static_cast<bool>(more::get<literal>(conf));
+    if( more::get<literal>(conf) )
+        std::cout << " value:" << more::get<literal>(conf);
+    std::cout << std::endl;
+    
     return 0;
 }
 
