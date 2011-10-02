@@ -150,6 +150,22 @@ namespace more {
             }
         };
 
+        struct sfinae_types
+        {
+            typedef char one_;
+            typedef struct { char arr[2]; } two_;
+        };
+
+        template <typename T>
+        class has_extraction_operator : public sfinae_types
+        {
+            template <typename C> static one_ test(typename std::remove_reference<decltype(std::cin >> std::declval<C &>())>::type *);
+            template <typename C> static two_ test(...);
+
+        public:
+            enum { value = sizeof(test<T>(0)) == sizeof(one_) };
+        };
+
     } // namespace details
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -188,13 +204,15 @@ namespace more {
 
         // very generic parser for types supporting operator>> ...
         //
-        template <typename E>
-        inline bool parse_lexeme(E &elem)
+        template <typename T>
+        inline bool parse_lexeme(T &elem)
         { 
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            return m_in >> std::skipws >> const_cast<typename std::remove_const<E>::type &>(elem);
+            static_assert(details::has_extraction_operator<T>::value, "parse_lexeme: *** T must have a valid extraction operator>>() ***");
+
+            return m_in >> std::skipws >> const_cast<typename std::remove_const<T>::type &>(elem);
         }        
 
         // parser for string literal:    
