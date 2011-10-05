@@ -16,6 +16,7 @@
 #include <sstream>
 #include <cassert>
 #include <string>
+#include <type_traits>
 
 /////////////////////////////////////////////////////////////
 // lexical_cast ala boost, inspired to that of Kevlin Henney
@@ -45,7 +46,8 @@ namespace more {
         struct generic_lexical_cast_policy
         {
             static 
-            Target apply(const Source &arg)
+            Target 
+            apply(const Source &arg)
             {
                 Target ret;
                 static __thread std::stringstream * ss;
@@ -109,9 +111,10 @@ namespace more {
     }
 
     template <typename Target, typename Source> 
-    Target lexical_cast(const Source &arg)
+    typename
+    std::remove_reference<Target>::type lexical_cast(const Source &arg)
     {
-        return detail::lexical_traits<Target,Source>::policy::apply(arg);
+        return detail::lexical_traits<typename std::remove_reference<Target>::type,Source>::policy::apply(arg);
     }  
 
 } // namespace more
