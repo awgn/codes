@@ -54,6 +54,9 @@ MAP_KEY(std::shared_ptr<int>, shared_int);
 
 MAP_KEY(const char *, literal);
 
+
+MAP_KEY(std::vector<std::vector<int>>, matrix);
+
 typedef more::key_value_pack<unsigned_int,
                                integers,
                                booleans,
@@ -65,7 +68,8 @@ typedef more::key_value_pack<unsigned_int,
                                block,
                                raw_double,
                                shared_int,
-                               literal> my_config;
+                               literal,
+                               matrix> my_config;
 
 int
 main(int argc, char *argv[])
@@ -107,15 +111,15 @@ main(int argc, char *argv[])
         std::cout << "   value:" << (*sit) << std::endl; 
     }
 
-    std::cout << "-> " << simple_pair::str() << " = " << conf.get<simple_pair>().first << " , " << conf.get<simple_pair>().second << std::endl;
+    std::cout << "-> " << simple_pair::str() << " = (" << conf.get<simple_pair>().first << " , " << conf.get<simple_pair>().second << ")" << std::endl;
 
-    std::cout << "-> " << simple_tuple::str() << " = " << std::get<0>( more::get<simple_tuple>(conf) ) << " , " <<
-                                                          std::get<1>( more::get<simple_tuple>(conf) ) << " , " <<
-                                                          std::get<2>( more::get<simple_tuple>(conf) ) << " , " <<
-                                                          std::get<3>( more::get<simple_tuple>(conf) ) << std::endl;
+    std::cout << "-> " << simple_tuple::str() << " = (" << std::get<0>( more::get<simple_tuple>(conf) ) << " , " <<
+    std::get<1>( more::get<simple_tuple>(conf) ) << " , " <<
+    std::get<2>( more::get<simple_tuple>(conf) ) << " , " <<
+    std::get<3>( more::get<simple_tuple>(conf) ) << ")" << std::endl;
 
     std::cout << "   block -> first:  " << more::get<simple_block::first>(more::get<block>(conf)) << '\n' <<
-                 "            second: " << more::get<simple_block::second>(more::get<block>(conf)) << std::endl;
+    "            second: " << more::get<simple_block::second>(more::get<block>(conf)) << std::endl;
 
     std::cout << " -> " << raw_double::str() << " => " << std::boolalpha << static_cast<bool>(more::get<raw_double>(conf));
     if (more::get<raw_double>(conf))
@@ -131,7 +135,12 @@ main(int argc, char *argv[])
     if( more::get<literal>(conf) )
         std::cout << " value:" << more::get<literal>(conf);
     std::cout << std::endl;
-    
+
+    std::cout << " -> " << matrix::str() << " =\n";
+    auto m = more::get<matrix>(conf);
+    std::cout << "     " << m[0][0] << ' ' << m[0][1] << std::endl;
+    std::cout << "     " << m[1][0] << ' ' << m[1][1] << std::endl;
+
     return 0;
 }
 

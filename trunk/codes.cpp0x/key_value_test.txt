@@ -1,45 +1,45 @@
 #
 # key_value file example
 #
+
 unsigned_int = 42
-
-associative = goofy  -> 1 
-associative = mickey -> 2 
-
-integers = 10     
-integers = 0x10     
-integers = 010     
-
-intset  = 1
-intset  = 2
-intset  = 3
-
-# strings: use quotation " to include spaces, use \" to include
-#          quotation
-
-strings =  hello
-strings = "hello world" 
-strings = "\"quoted string\"" 
-strings = 'alternate quotation mark'
-
-booleans = false  
-booleans = 1  
-
-simple_pair = (0.2 2.3)
+ 
+associative = [ goofy  -> 1 
+                mickey -> 2  ]
+ 
+integers = [ 20 ]      
+ 
+ 
+intset  = [2 3 4]
+  
+  # strings: use quotation " to include spaces, use \" to include
+  #          quotation
+  
+strings =  [ hello
+             "hello world" 
+             "\"quoted string\"" 
+             'alternate quotation mark' ]
+  
+booleans = [ false 1 ]  
+  
+simple_pair = ( 0.2 2.3)
 
 simple_tuple = (true 2 3.5 hello! )
-
+ 
 block = {
-        first = 12
-        second = 42
-        }
-
+         first = 12
+         second = 42
+         }
+ 
 raw_double = 13.2
-
+ 
 shared_int = 42
-
+ 
 literal = string_literal
 
-# unknown = key  # ignored in non-strict mode 
 
+matrix = [[1 2] 
+          [3 4]]
+
+# unknown = key  # ignored in non-strict mode 
 

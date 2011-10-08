@@ -1,6 +1,4 @@
-/* $Id$ */
-/*
- * ----------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
@@ -23,7 +21,7 @@
 #include <tuple>
 #include <limits>
 #include <stdexcept>
-
+#include <cassert>
 
 #define MAP_KEY(t,k)  struct k { \
     typedef std::pair<k,t> type; \
@@ -75,7 +73,7 @@ namespace more {
             virtual int_type uflow()
             {
                 int_type c = m_in->sbumpc();
-                if ( c == '\n' )
+                if (c == '\n')
                     m_line++;
                 return c;
             }
@@ -88,8 +86,7 @@ namespace more {
         inline int line_number(std::basic_istream<CharT,Traits> &in)
         {
             line_streambuf * ln = dynamic_cast<line_streambuf *>(in.rdbuf());
-            if (ln)
-            {
+            if (ln) {
                 return ln->line();
             }
             return -1;
@@ -194,16 +191,28 @@ namespace more {
 
         bool _(char c)
         {
-            char _c; return (m_in >> std::skipws >> _c && _c == c) ? true : false;
+            char _c;
+            if(!(m_in >> std::ws))
+                return false;
+            _c = m_in.peek();
+            if (!m_in)
+                return false;
+            if (c == _c) {
+                m_in >> _c;
+                assert(m_in);
+                return true;
+            }
+            return false;
         }
 
         bool _(const char *s)
         {
-            std::string _s; return (m_in >> std::skipws >> _s && _s.compare(s) == 0) ? true : false;
+            std::string _s; return (m_in >> _s && _s.compare(s) == 0) ? true : false;
         }
 
         // very generic parser for types supporting operator>> ...
         //
+        
         template <typename T>
         inline bool parse_lexeme(T &elem)
         { 
@@ -212,7 +221,7 @@ namespace more {
 #endif
             static_assert(details::has_extraction_operator<T>::value, "parse_lexeme: *** T must have a valid extraction operator>>() ***");
 
-            return m_in >> std::skipws >> const_cast<typename std::remove_const<T>::type &>(elem);
+            return m_in >> const_cast<typename std::remove_const<T>::type &>(elem);
         }        
 
         // parser for string literal:    
@@ -289,7 +298,6 @@ namespace more {
             char c; char quote;
 
             m_in >> std::noskipws >> std::ws;
-
             if (!(m_in >> c)) {
                 return false;
             }    
@@ -313,8 +321,10 @@ namespace more {
                 if (!(m_in >> tmp)) 
                     return false;
                 elem.append(tmp);
+                m_in >> std::skipws;
                 return true;
-            }
+            }    
+            m_in >> std::skipws;
             return true;
         }
 
@@ -326,7 +336,7 @@ namespace more {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            m_in >> std::skipws >> std::noboolalpha;
+            m_in >> std::noboolalpha;
             if (!(m_in >> elem)) {
                 m_in.clear();
                 return m_in >> std::boolalpha >> elem;
@@ -349,6 +359,7 @@ namespace more {
                         parse_lexeme(first)     &&
                         parse_lexeme(second)    &&
                         _(')');  
+            
             if (ok)
                 elem = std::make_pair(first,second);
             return ok;
@@ -384,10 +395,19 @@ namespace more {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            E tmp; bool ok = parse_lexeme(tmp);
-
-            if (ok)
-                cont.push_back(tmp);
+            bool ok = true;
+            if (!_('[')) 
+                return false;
+            
+            do {
+                if (_(']')) break;
+                
+                E value;
+                ok = parse_lexeme(value);
+                if (ok)
+                    cont.push_back(value);
+            }
+            while(ok);
             return ok;
         }
         
@@ -403,10 +423,19 @@ namespace more {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            _Key key; 
-            bool ok = parse_lexeme(key);    
-            if (ok)
-                cont.insert(key);
+            bool ok = true;
+            if (!_('['))
+               return false;
+
+            do {
+                if (_(']')) break;
+
+                _Key key; 
+                ok = parse_lexeme(key);
+                if (ok)
+                    cont.insert(key);
+            }
+            while(ok);
             return ok;
         }
 
@@ -422,13 +451,23 @@ namespace more {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            _Key key; _Tp value;
-
-            bool ok = parse_lexeme(key)     && 
-                      _("->")               && 
+            bool ok = true;
+            if (!_('['))
+               return false;
+            
+            do {
+                if (_(']')) break;
+                
+                _Key key; _Tp value;
+                
+                ok = parse_lexeme(key)  &&
+                     _("->")            &&
                      parse_lexeme(value);
-            if (ok)
-                cont.insert(std::make_pair(key,value));
+
+                if (ok) 
+                    cont.insert(std::make_pair(key,value));
+            }
+            while(ok);
             return ok;
         }
 
@@ -446,13 +485,22 @@ namespace more {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            _Key key; _Tp value;
-
-            bool ok = parse_lexeme(key)     && 
-                      _("->")               && 
-                      parse_lexeme(value);
-            if (ok)
-                cont.insert(std::make_pair(key,value));
+            bool ok = true;
+            if (!_('['))
+               return false;
+            
+            do {
+                if (_(']')) break;
+                
+                _Key key; _Tp value;
+                
+                ok = parse_lexeme(key)  &&
+                     _("->")            &&
+                     parse_lexeme(value);
+                if (ok) 
+                    cont.insert(std::make_pair(key,value));
+            }
+            while(ok);
             return ok;
         }
 
@@ -467,7 +515,6 @@ namespace more {
             m_in.unsetf(std::ios::dec);
             m_in.unsetf(std::ios::hex);
             m_in.unsetf(std::ios::oct);
-            m_in >> std::skipws;
 
             if (bracket &&  ! _('{')) {
                 std::clog << std::get<3>(m_option) << 
@@ -479,7 +526,7 @@ namespace more {
             key_value_pack<Ti...> tmp;
             
             while(m_in) {
-
+                
                 m_in >> std::noskipws >> std::ws;
                 
                 std::string key;
@@ -495,10 +542,8 @@ namespace more {
                 // skip comments/empty lines
                 //
                 if (key.empty() || key[0] == std::get<2>(m_option)) {
-
                     if (c != '\n') 
                         m_in >> details::ignore_line;
-                
                     continue;    
                 }
 
@@ -509,17 +554,18 @@ namespace more {
 #ifdef LEXEME_DEBUG
                 std::cout << ":: key[" << key << "]\n";
 #endif
+                m_in >> std::skipws;
+
                 // parse separator ('=')
                 //
                 if (c != std::get<1>(m_option)) {
-                    m_in >> std::ws >> c;
+                    m_in >> c;
                     if (c != std::get<1>(m_option)) {
                         std::clog << std::get<3>(m_option) << ": parse error: key[" << key << "] missing separator '" 
                         << std::get<1>(m_option) << "' (line "<< details::line_number(m_in) << ")" << std::endl;
                         return false;
                     }
                 }
-
                 m_in >> std::ws;
 
                 // parse value...
@@ -533,8 +579,7 @@ namespace more {
                 return false;
             }
 
-            // parse ok...
-            //
+            // parsing correct...
 
             elem  = tmp;
             return true;
