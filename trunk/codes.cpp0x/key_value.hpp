@@ -273,6 +273,20 @@ namespace more {
         {
             std::string _s; return (m_in >> _s && _s.compare(s) == 0) ? true : false;
         }
+        
+        // skip comment lines
+
+        void skip_comments()
+        {
+            for(;;) {
+                m_in >> std::ws;
+                if (m_in.peek() == std::get<2>(m_option)) {
+                    m_in >> details::ignore_line;
+                    continue;
+                }
+                break;
+            }
+        }
 
         // very generic parser for types supporting operator>> ...
         //
@@ -480,8 +494,11 @@ namespace more {
                 return false;
             
             do {
-                if (_(']')) break;
-                
+                skip_comments();
+
+                if (_(']')) 
+                    break;
+        
                 typename details::mutable_type<
                     typename C::value_type>::type value;
 
@@ -526,8 +543,9 @@ namespace more {
             while(m_in) {
                 
                 m_in >> std::noskipws >> std::ws;
-                
+
                 std::string key;
+                key.reserve(16);
 
                 // parse the key 
                 //
