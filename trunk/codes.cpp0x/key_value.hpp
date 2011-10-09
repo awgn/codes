@@ -213,7 +213,7 @@ namespace more {
         typename std::enable_if<more::traits::has_key_type<C>::value ,bool>::type 
         insert(C &cont, std::pair<T,V> && value)
         {
-            return cont.insert(std::forward<std::pair<T,V>>(value)).second;
+            return cont.insert(std::move(value)).second;
         }
 
     } // namespace details
