@@ -5,8 +5,10 @@
 unsigned_int = 42
  
 associative = [ goofy  -> 1 
-                mickey -> 2  ]
- 
+                mickey -> 2  
+                (minnie 3)
+                ]
+
 integers = [ 20 ]      
  
  
