@@ -33,7 +33,7 @@ namespace more { namespace streamer {
         {
             static void apply(std::basic_ostream<CharT,Traits> &out, const T &tupl)
             {
-                out << std::get< std::tuple_size<T>::value - N>(tupl) << " ";
+                out << std::get< std::tuple_size<T>::value - N>(tupl) << ',';
                 printon<CharT, Traits, T,N-1>::apply(out,tupl);
             }
         }; 
