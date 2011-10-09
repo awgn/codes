@@ -18,16 +18,14 @@
 int 
 main(int argc, char *argv[])
 {
-    std::cout << "string                        :" << std::string("hello world") << std::endl; 
+    std::cout << "string                     : " << std::string("hello world") << std::endl; 
     std::vector<int> v1;
 
     v1.push_back(0);
     v1.push_back(1);
     v1.push_back(2);
 
-    std::cout << more::streamer::sep(" - ");   // set the separator
-
-    std::cout << "vector<int>                   :" << v1 << std::endl;
+    std::cout << "vector<int>                : " << v1 << std::endl;
 
     std::vector<char> v2;
 
@@ -35,10 +33,7 @@ main(int argc, char *argv[])
     v2.push_back('b');
     v2.push_back('c');
 
-    std::cout << more::streamer::sep("|");    // set the separator
-    std::cout << "vector<char>                  :" << v2 << std::endl;
-    std::cout << more::streamer::sep();       // unset the separator
-    std::cout << "vector<char>                  :" << v2 << std::endl;
+    std::cout << "vector<char>               : " << v2 << std::endl;
 
     std::list<std::pair<int,int> > l1;
 
@@ -46,20 +41,17 @@ main(int argc, char *argv[])
     l1.push_back( std::make_pair(1,1) );
     l1.push_back( std::make_pair(2,2) );
 
-    std::cout << more::streamer::sep(nullptr);         // remove separator
-
-    std::cout << "list< std::pair<int,int> >    :" << l1 << std::endl;
+    std::cout << "list< std::pair<int,int> > : " << l1 << std::endl;
 
     std::map<std::string,int> m;
 
     m["hello"]=0;
     m["world"]=1;
 
-    std::cout << more::streamer::sep("|");    // set the separator
-    std::cout << "map<std::string,int>          :" << m << std::endl;
+    std::cout << "map<std::string,int>       : " << m << std::endl;
 
-    std::cout << "std::tuple<int,double>        :" << std::tuple<int,double>(1,1.1) << std::endl;
-    std::cout << "std::array<int,3>             :" << std::array<int,3>() << std::endl;
+    std::cout << "std::tuple<int,double>     : " << std::tuple<int,double>(1,1.1) << std::endl;
+    std::cout << "std::array<int,3>          : " << std::array<int,3>() << std::endl;
 
     return 0;
 }
