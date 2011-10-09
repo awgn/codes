@@ -49,10 +49,10 @@ namespace more {
         template <class CharT, class Traits>
         inline
         std::basic_istream<CharT,Traits> &
-        ignore_line(std::basic_istream<CharT,Traits> &in__)
+        ignore_line(std::basic_istream<CharT,Traits> &in_)
         {
-            in__.ignore(std::numeric_limits<std::streamsize>::max(), in__.widen('\n'));
-            return in__;
+            in_.ignore(std::numeric_limits<std::streamsize>::max(), in_.widen('\n'));
+            return in_;
         }
     
         class line_streambuf : public std::streambuf 
@@ -111,7 +111,7 @@ namespace more {
         struct tuple_helper
         {
             template <typename L, typename ...Ti>
-            static bool parse_lexeme(L &lexer,  std::tuple<Ti...> &tup)
+            static bool parse_lexeme(L &lex,  std::tuple<Ti...> &tup)
             {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -120,19 +120,19 @@ namespace more {
                                              typename std::tuple<Ti...>   
                                                 >::type elem;
 
-                bool ok = lexer.parse_lexeme(elem);
+                bool ok = lex.parse_lexeme(elem);
                 if (!ok)
                     return false;
 
                 std::get<sizeof...(Ti) - N>(tup) = elem;
-                return tuple_helper<N-1>::parse_lexeme(lexer, tup);
+                return tuple_helper<N-1>::parse_lexeme(lex, tup);
             }
         };
         template <>
         struct tuple_helper<1>
         {
             template <typename L, typename ...Ti>
-            static bool parse_lexeme(L &lexer,  std::tuple<Ti...> &tup)
+            static bool parse_lexeme(L &lex,  std::tuple<Ti...> &tup)
             {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -140,7 +140,7 @@ namespace more {
                 typename std::tuple_element<sizeof...(Ti)-1,
                                              typename std::tuple<Ti...>   
                                                 >::type elem;
-                bool ok = lexer.parse_lexeme(elem);
+                bool ok = lex.parse_lexeme(elem);
                 if (ok)
                     std::get<sizeof...(Ti) - 1>(tup) = elem;
                 return ok;
@@ -175,18 +175,18 @@ namespace more {
                        std::string> parser_options;
 
     template <typename CharT, typename Traits>
-    class lexer__ 
+    class lexer 
     {
         std::basic_istream<CharT, Traits> & m_in;
         parser_options m_option;
 
     public:
 
-        lexer__(std::basic_istream<CharT, Traits> &in, const parser_options &opt)
+        lexer(std::basic_istream<CharT, Traits> &in, const parser_options &opt)
         : m_in(in), m_option(opt)
         {}
 
-        ~lexer__()
+        ~lexer()
         {}
 
         bool _(char c)
@@ -587,10 +587,10 @@ namespace more {
     };
 
     template <typename CharT, typename Traits>
-    lexer__<CharT, Traits> 
-    lexer(std::basic_istream<CharT, Traits> &in, const parser_options &opt)
+    lexer<CharT, Traits> 
+    make_lexer(std::basic_istream<CharT, Traits> &in, const parser_options &opt)
     {
-        return lexer__<CharT, Traits>(in, opt);
+        return lexer<CharT, Traits>(in, opt);
     }
     
     //////////////////////////////////////////////////////////////////////////
@@ -678,24 +678,24 @@ namespace more {
         template <typename Key>
         typename std::add_lvalue_reference<typename more::type::get<map_type, Key>::type>::type
         get() 
-        { return get__<Key>(std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); }
+        { return get_<Key>(std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); }
         template <typename Key>
 
         typename std::add_lvalue_reference<
             typename std::add_const<
                 typename more::type::get<map_type, Key>::type>::type>::type
         get() const
-        { return const_cast<key_value_pack *>(this)->get__<Key>
+        { return const_cast<key_value_pack *>(this)->get_<Key>
             (std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); }
         
         template <typename Key, int N>
         typename std::add_lvalue_reference<typename more::type::get<map_type, Key>::type>::type
-        get__(std::integral_constant<int,N>) 
-        { return m_parser.get__<Key>(std::integral_constant<int, N-1>()); }
+        get_(std::integral_constant<int,N>) 
+        { return m_parser.get_<Key>(std::integral_constant<int, N-1>()); }
 
         template <typename Key>
         typename std::add_lvalue_reference<value_type>::type
-        get__(std::integral_constant<int,0>) 
+        get_(std::integral_constant<int,0>) 
         { return m_value; } 
 
     public:
@@ -704,12 +704,12 @@ namespace more {
 
         template <typename CharT, typename Traits>
         bool parse(std::basic_istream<CharT, Traits> &in, const std::string &key, 
-                         const parser_options &mode, lexer__<CharT, Traits> &lex)
-        { return parse__(in, key, *this, mode, lex); }
+                         const parser_options &mode, lexer<CharT, Traits> &lex)
+        { return parse_(in, key, *this, mode, lex); }
 
         template <typename CharT, typename Traits, typename _T0, typename ..._Ti>
-        static bool parse__(std::basic_istream<CharT, Traits> &in, const std::string &key, 
-                                  key_value_pack<_T0, _Ti...> &that, const parser_options &mode, lexer__<CharT, Traits> &lex)
+        static bool parse_(std::basic_istream<CharT, Traits> &in, const std::string &key, 
+                                  key_value_pack<_T0, _Ti...> &that, const parser_options &mode, lexer<CharT, Traits> &lex)
         {
             if (key == _T0::type::first_type::str()) {
                 
@@ -721,12 +721,12 @@ namespace more {
                 }
                 return true;
             }
-            return parse__(in, key, that.m_parser, mode, lex);
+            return parse_(in, key, that.m_parser, mode, lex);
         }
 
         template <typename CharT, typename Traits>
-        static bool parse__(std::basic_istream<CharT, Traits> &in, const std::string &key, 
-                                  key_value_pack<> &, const parser_options &mode, lexer__<CharT, Traits>&)
+        static bool parse_(std::basic_istream<CharT, Traits> &in, const std::string &key, 
+                                  key_value_pack<> &, const parser_options &mode, lexer<CharT, Traits>&)
         {
             // unknown key-value...
             if (std::get<0>(mode)) {   // strict mode: dump-error 
@@ -759,7 +759,7 @@ namespace more {
         template <typename CharT, typename Traits>
         bool open(std::basic_istream<CharT, Traits> &in, parser_options mode = std::make_tuple(false, '=', '#', "unnamed")) 
         {
-            auto lex = lexer(in, mode);
+            auto lex = make_lexer(in, mode);
             return lex.parse_lexeme(*this, false);
         }
     };
