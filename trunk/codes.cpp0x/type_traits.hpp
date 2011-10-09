@@ -54,6 +54,10 @@ namespace more
     }
 
     __has_member_type_helper(value_type);
+    __has_member_type_helper(key_type);
+    __has_member_type_helper(mapped_type);
+    __has_member_type_helper(container_type);
+
     __has_member_type_helper(pointer);
     __has_member_type_helper(reference);
     __has_member_type_helper(const_reference);
@@ -66,6 +70,18 @@ namespace more
 
     template <typename T>
     struct has_value_type : public std::integral_constant<bool, __has_value_type_helper<T>::value>
+    {};
+
+    template <typename t>
+    struct has_key_type : public std::integral_constant<bool, __has_key_type_helper<t>::value>
+    {};
+
+    template <typename t>
+    struct has_mapped_type : public std::integral_constant<bool, __has_mapped_type_helper<t>::value>
+    {};
+
+    template <typename t>
+    struct has_container_type : public std::integral_constant<bool, __has_container_type_helper<t>::value>
     {};
 
     template <typename T>
@@ -104,6 +120,9 @@ namespace more
     struct has_difference_type : public std::integral_constant<bool, __has_difference_type_helper<T>::value>
     {};
     
+
+    // is_container 
+    
     template <typename T>
     struct is_container : public std::integral_constant<bool, __has_value_type_helper<T>::value && 
                                                               __has_reference_helper<T>::value &&  
@@ -136,6 +155,8 @@ namespace more
     struct is_pair<std::pair<T,U>> : public std::integral_constant<bool, true>
     {};
 
+#if __GNUC__ == 4 &&  __GNUC_MINOR__ > 4
+
     // has_insertion_operator: operator<<()
     
     template <typename T>
@@ -157,6 +178,8 @@ namespace more
     public:    
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };
     };
+
+#endif
 
     } // namespace traits
 
