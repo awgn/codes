@@ -233,7 +233,7 @@ namespace more {
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
             std::string s;
-            if (!(m_in >> s))
+            if (!parse_lexeme(s))
                return false;
             str = strdup(s.c_str());    
             return true;
