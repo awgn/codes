@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
-#include <cstring>
 
 namespace more { namespace streamer {
 
