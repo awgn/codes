@@ -10,7 +10,8 @@
 
 #ifndef _TYPE_TRAITS_HPP_
 #define _TYPE_TRAITS_HPP_ 
- 
+
+#include <iostream>
 #include <type_traits>   
 #include <utility>
 #include <tuple>         
