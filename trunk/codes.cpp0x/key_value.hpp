@@ -268,7 +268,7 @@ namespace more {
         
         template <typename T>
         inline 
-        typename std::enable_if<!more::traits::has_value_type<T>::value,bool>::type 
+        typename std::enable_if<!more::traits::is_container<T>::value,bool>::type 
         parse_lexeme(T &lex)
         { 
 #ifdef LEXEME_DEBUG
@@ -458,7 +458,7 @@ namespace more {
         //
 
         template <typename C>
-        inline typename std::enable_if<more::traits::has_value_type<C>::value,bool>::type 
+        inline typename std::enable_if<more::traits::is_container<C>::value,bool>::type 
         parse_lexeme(C & lex)
         {
 #ifdef LEXEME_DEBUG
