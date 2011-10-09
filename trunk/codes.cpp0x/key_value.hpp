@@ -174,6 +174,17 @@ namespace more {
 
         //////////////// insert helpers
 
+        template <typename T>
+        bool insert_check(const std::pair<T,bool> &p)
+        {
+            return p.second;
+        }
+        template <typename T>
+        bool insert_check(const T &)
+        {
+            return true;
+        }
+
         // enabled for std::vector, std::dequeue, std::list
         // 
         template <typename C, typename V>
@@ -203,7 +214,7 @@ namespace more {
         typename std::enable_if<more::traits::has_key_type<C>::value ,bool>::type 
         insert(C &cont, K && value)
         {
-            return cont.insert(std::forward<K>(value)).second;
+            return insert_check(cont.insert(std::forward<K>(value)));
         }
 
         // enabled for std::map, std::multimap, std::unordered_map,
@@ -213,7 +224,7 @@ namespace more {
         typename std::enable_if<more::traits::has_key_type<C>::value ,bool>::type 
         insert(C &cont, std::pair<T,V> && value)
         {
-            return cont.insert(std::move(value)).second;
+            return insert_check(cont.insert(std::move(value)));
         }
 
     } // namespace details
@@ -476,7 +487,7 @@ namespace more {
 
                 ok = parse_lexeme(value);
                 if (ok) {
-                    if (!details::insert(lex,value)) {
+                    if (!details::insert(lex,std::move(value))) {
                         std::clog << std::get<3>(m_option) << 
                             ": insert error (dup value at line " << 
                             details::line_number(m_in) << ")" << std::endl;
