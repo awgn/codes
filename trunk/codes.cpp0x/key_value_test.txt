@@ -4,10 +4,10 @@
 
 unsigned_int = 42
  
-associative = [ goofy  -> 1 
-                mickey -> 2  
+associative = [ [ goofy  -> 1 ] 
+                [ mickey -> 2 ] 
                 (minnie 3)
-                ]
+              ]
 
 integers = [ 20 ]      
  
@@ -18,15 +18,16 @@ intset  = [2 3 4]
   #          quotation
   
 strings =  [ hello
-             "hello world" 
-             "\"quoted string\"" 
+              hello\ world
+             "hello world!"
+             "\"Hello, world!\"" 
              'alternate quotation mark' ]
   
 booleans = [ false 1 ]  
   
 simple_pair = ( 0.2 2.3)
 
-simple_tuple = (true 2 3.5 hello! )
+simple_tuple = (true 2 3.5 'hello!' )
  
 block = {
          first = 12
@@ -37,7 +38,7 @@ raw_double = 13.2
  
 shared_int = 42
  
-literal = string_literal
+literal = 'string_literal'
 
 
 matrix = [[1 2] 

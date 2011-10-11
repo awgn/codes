@@ -383,6 +383,9 @@ namespace more {
                 quote = c;
                 m_in.get();
                 c = m_in.peek();
+#ifdef LEXEME_DEBUG
+            std::cout << details::BLUE << ":: quote -> " << quote << std::endl;
+#endif
             }
 
             while(c != traits_type::eof() && (
@@ -398,10 +401,14 @@ namespace more {
                    str.push_back(c);
                    c = m_in.peek();
             }
+            
 
-            if (quote && !traits_type::eq(c, quote)) { 
-                std::clog << "parse: error at string '" << lex << ": missing quotation mark?!\n";
-                return false;
+            if (quote) {
+                c = m_in.get();
+                if (!traits_type::eq(c, quote)) { 
+                    std::clog << "parse: error at string '" << str << "': missing quotation mark?!\n"; 
+                    return false;
+                }
             }
 
             lex = std::move(str);
