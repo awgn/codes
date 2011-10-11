@@ -303,11 +303,13 @@ namespace more {
 #if __GNUC__ == 4 &&  __GNUC_MINOR__ > 4
             static_assert(more::traits::has_extraction_operator<T>::value, "parse_lexeme: *** T must have a valid extraction operator>>() ***");
 #endif
+            typename std::remove_const<T>::type e;
 
-            m_in >> const_cast<typename std::remove_const<T>::type &>(lex);
+            if(m_in >> e)
+                lex = std::move(e);
 
 #ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex[" << lex << "]" << details::RESET << std::endl;
+            std::cout << details::BLUE << ":: lex<T>[" << lex << "]" << details::RESET << std::endl;
 #endif
             return m_in;
         }        
@@ -361,51 +363,56 @@ namespace more {
 
         // parser for std::string:
         //
-
         inline bool parse_lexeme(std::string &lex)
         {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            char c; char quote;
-            lex.reserve(32);
-
             m_in >> std::noskipws >> std::ws;
-            if (!(m_in >> c)) {
-                return false;
-            }    
-            
-            if ( c == '"' || c == '\'') {   // quoted string
+
+            std::string str;
+            str.reserve(32);
+
+            typedef std::string::traits_type traits_type;
+            traits_type::char_type c, quote = traits_type::char_type('\0');
+
+            c = m_in.peek();
+
+            if ( traits_type::eq(c, '"') ||
+                 traits_type::eq(c, '\'')) {
                 quote = c;
-                while (m_in >> c && c != quote) {
-                    if ( c == '\\') {
-                        if (!(m_in >> c))
-                            break;
-                    }
-                    lex.push_back(c);
-                }
-                if (c != quote) {
-                    std::clog << "parse: error at string '" << lex << ": missing quotation mark\n";
-                    return false;
-                }
-            } else { // simple string
-                lex.push_back(c); 
-                std::string tmp;
-                if (!(m_in >> tmp)) 
-                    return false;
-                lex.append(tmp);
-                m_in >> std::skipws;
-#ifdef LEXEME_DEBUG
-                std::cout << details::BLUE << ":: lex[" << lex << "]" << details::RESET << std::endl;
-#endif
-                return true;
-            }    
+                m_in.get();
+                c = m_in.peek();
+            }
+
+            while(c != traits_type::eof() && (
+                    (quote && (c != quote)) ||
+                        (!quote && ( std::isalnum(c) || traits_type::eq(c, '_') || traits_type::eq(c, '-'))) ||
+                            traits_type::eq(c, '\\')
+                            )) {
+
+                   c = m_in.get(); // get char
+                   if (c == '\\')
+                        c = m_in.get();
+
+                   str.push_back(c);
+                   c = m_in.peek();
+            }
+
+            if (quote && !traits_type::eq(c, quote)) { 
+                std::clog << "parse: error at string '" << lex << ": missing quotation mark?!\n";
+                return false;
+            }
+
+            lex = std::move(str);
             m_in >> std::skipws;
+
 #ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex[" << lex << "]" << details::RESET << std::endl;
+            std::cout << details::BLUE << ":: lex<string>[" << lex << "]" << details::RESET << std::endl;
 #endif
             return true;
         }
+
 
         // parser for boolean
         //
@@ -421,7 +428,7 @@ namespace more {
                 m_in >> std::boolalpha >> lex;
             }
 #ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex[" << lex << "]" << details::RESET << std::endl;
+            std::cout << details::BLUE << ":: lex<bool>[" << lex << "]" << details::RESET << std::endl;
 #endif
             return m_in;
         }
@@ -437,21 +444,25 @@ namespace more {
 #endif
             T first; V second;
 
-            bool ok =   _('(')                  &&
-                        parse_lexeme(first)     &&
-                        parse_lexeme(second)    &&
-                        _(')');  
-
-            if (!ok) {
-                ok = parse_lexeme(first)        &&
+            bool ok;
+            if (_('('))
+            {
+                ok =  parse_lexeme(first)     &&
+                      parse_lexeme(second)    &&
+                      _(')');  
+            }
+            else {
+                ok = _('[') &&
+                     parse_lexeme(first)        &&
                      _("->")                    &&
-                     parse_lexeme(second);
+                     parse_lexeme(second)       &&
+                     _(']');
             }
 
             if (ok)
                 lex = std::make_pair(first,second);
 #ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex[" << lex << "]" << details::RESET << std::endl;
+            std::cout << details::BLUE << ":: lex<pair>[" << lex << "]" << details::RESET << std::endl;
 #endif
             return ok;
         }
@@ -474,7 +485,7 @@ namespace more {
             if (ok)
                 lex = std::move(tup);          
 #ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex[" << lex << "]" << details::RESET << std::endl;
+            std::cout << details::BLUE << ":: lex<tuple>[" << lex << "]" << details::RESET << std::endl;
 #endif
             return ok;
         }
@@ -514,7 +525,7 @@ namespace more {
             }
             while(ok);
 #ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex[" << lex << "]" << details::RESET << std::endl;
+            std::cout << details::BLUE << ":: lex<C>[" << lex << "]" << details::RESET << std::endl;
 #endif
             return ok;
         }
