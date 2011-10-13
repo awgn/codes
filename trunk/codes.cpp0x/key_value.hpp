@@ -171,6 +171,11 @@ namespace more {
             typedef std::pair<typename std::remove_const<T>::type,
                               typename std::remove_const<V>::type> type;
         };
+        template <typename ... Ti>
+        struct mutable_type<std::tuple<Ti...>>
+        {
+            typedef std::tuple<typename std::remove_const<Ti>::type...> type;
+        };
 
         //////////////// insert helpers
 
