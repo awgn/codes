@@ -44,5 +44,8 @@ literal = 'string_literal'
 matrix = [[1 2] 
           [3 4]]
 
-# unknown = key  # ignored in non-strict mode 
+unknown = key  # ignored in non-strict mode 
 
+unknown_on_multiple_line = [ 1
+                             2
+                             3 ]
