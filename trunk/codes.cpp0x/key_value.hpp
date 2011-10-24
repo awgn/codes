@@ -128,7 +128,7 @@ namespace more {
 #endif
                 typename std::tuple_element<sizeof...(Ti)-N,
                                              typename std::tuple<Ti...>   
-                                                >::type elem;
+                                                >::type elem = decltype(elem)();
 
                 bool ok = lex.parse_lexeme(elem);
                 if (!ok)
@@ -149,7 +149,8 @@ namespace more {
 #endif
                 typename std::tuple_element<sizeof...(Ti)-1,
                                              typename std::tuple<Ti...>   
-                                                >::type elem;
+                                                >::type elem = decltype(elem)();
+
                 bool ok = lex.parse_lexeme(elem);
                 if (ok)
                     std::get<sizeof...(Ti) - 1>(tup) = std::move(elem);
@@ -308,7 +309,7 @@ namespace more {
 #if __GNUC__ == 4 &&  __GNUC_MINOR__ > 4
             static_assert(more::traits::has_extraction_operator<T>::value, "parse_lexeme: *** T must have a valid extraction operator>>() ***");
 #endif
-            typename std::remove_const<T>::type e;
+            typename std::remove_const<T>::type e = decltype(e)();
 
             if(m_in >> e)
                 lex = std::move(e);
@@ -407,7 +408,6 @@ namespace more {
                    c = m_in.peek();
             }
             
-
             if (quote) {
                 c = m_in.get();
                 if (!traits_type::eq(c, quote)) { 
@@ -454,7 +454,7 @@ namespace more {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            T first; V second;
+            T first = T(); V second = V();
 
             bool ok;
             if (_('('))
@@ -523,7 +523,7 @@ namespace more {
                     break;
         
                 typename details::mutable_type<
-                    typename C::value_type>::type value;
+                    typename C::value_type>::type value = decltype(value)();
 
                 ok = parse_lexeme(value);
                 if (ok) {
@@ -606,6 +606,44 @@ namespace more {
                     }
                 }
                 m_in >> std::ws;
+
+                // parse value for known keys (or skip it)...
+                // 
+                
+                if (!tmp.has_key(key) && !std::get<0>(m_option)) 
+                {
+                    int level = 0;
+
+                    do {
+                        c = m_in.peek();
+                        if (!m_in) {
+                            std::clog << std::get<3>(m_option) << ": parse error at foreing key '" 
+                                << key << "' missing brackets (line "<< details::line_number(m_in) << ")" << std::endl;
+                            
+                            return false;
+                        }
+                        if ( c == '[' ) {
+                            level++;
+                        }
+                        else if ( c == ']') {
+                            if (--level < 0) {
+                                std::cout << level << std::endl;
+                                std::clog << std::get<3>(m_option) << ": parse error at foreing key '" 
+                                    << key << "' unbalanced brackets (line "<< details::line_number(m_in) << ")" << std::endl;
+                                
+                                return false;
+                            }
+                        }
+                    }
+                    while (level > 0 && m_in.get());
+
+                    if (c == ']')
+                        m_in.get();
+                    else
+                        m_in >> details::ignore_line;
+
+                    continue;
+                }
 
                 // parse value...
                 // 
@@ -778,9 +816,29 @@ namespace more {
             return true;
         }
 
+        // predicate: has_key 
+        //
+        
+        bool has_key(const std::string &key) 
+        {
+            return has_key_(key, *this);
+        }
+
+        template <typename _T0, typename ..._Ti>
+        static bool has_key_(const std::string &key, key_value_pack<_T0, _Ti...> &that)
+        {
+            if (key == _T0::type::first_type::str()) {
+                return true;
+            }
+            return has_key_(key, that.m_parser);
+        }
+        static bool has_key_(const std::string &key, key_value_pack<> &) 
+        {
+            return false;
+        }
     public:
         bool 
-        open(const char *name, parser_options mode = std::make_tuple(false, '=', '#')) 
+        open(const char *name, parser_options mode = std::make_tuple(false, '=', '#', "")) 
         {
             std::ifstream sc(name);
             std::get<3>(mode) = std::string(name);
