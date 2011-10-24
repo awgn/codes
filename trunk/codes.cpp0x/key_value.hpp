@@ -832,7 +832,7 @@ namespace more {
             }
             return has_key_(key, that.m_parser);
         }
-        static bool has_key_(const std::string &key, key_value_pack<> &) 
+        static bool has_key_(const std::string &, key_value_pack<> &) 
         {
             return false;
         }
