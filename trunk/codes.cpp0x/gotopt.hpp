@@ -43,6 +43,10 @@ namespace more { namespace gotopt {
         : std::runtime_error(m) 
         {}
 
+        explicit gotopt_error(const std::exception &e)
+        : std::runtime_error(e.what())
+        {}
+
         virtual ~gotopt_error() throw()
         {}
     };
@@ -55,18 +59,18 @@ namespace more { namespace gotopt {
         char        opt;
         const char *name;
         int         args;
-        const char *description;
+        const char *descr;
 
         option()
-        : opt(), name(), args(), description()
+        : opt(), name(), args(), descr()
         {}
 
         option(char _opt, const char *_name, int _args, const char *_descr = nullptr)
-        : opt(_opt), name(_name), args(_args), description(_descr)
+        : opt(_opt), name(_name), args(_args), descr(_descr)
         {}
 
         option(const char *section)
-        : opt(), name(), args(), description(section)
+        : opt(), name(), args(), descr(section)
         {} 
     };
 
@@ -89,37 +93,43 @@ namespace more { namespace gotopt {
 
         for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]); i++)
         {
-            if (options[i].opt) {
+            if (options[i].opt == '\0' &&
+                options[i].descr == nullptr)
+            {
+                out << std::endl;
+                continue;
+            }
 
-                std::string opt;
+            if (options[i].opt == '\0')
+            {
+                out << options[i].descr << std::endl;
+                continue;
+            }
 
+            std::string opt;
+            opt.reserve(80);
+
+            if (options[i].opt > 0)
+                opt.append("   -").append(1,options[i].opt);
+            else
+                opt.append("       ");
+
+            if (options[i].name) {
                 if (options[i].opt > 0)
-                    opt.append("   -").append(1,options[i].opt);
-                else
-                    opt.append("       ");
-              
-                if (options[i].name) {
-                    if (options[i].opt > 0)
-                        opt.append(", ");
-                    opt.append("--").append(options[i].name);
-                }
-
-                if (options[i].args > 0)
-                    opt.append(" ARG");
-
-                out <<  std::setw(maxlen+16) << std::left << opt << options[i].description << std::endl; 
-                continue;
+                    opt.append(", ");
+                opt.append("--").append(options[i].name);
             }
 
-            if (options[i].description) {
-                out << options[i].description << std::endl;
-                continue;
-            }
+            if (options[i].args)
+                opt.append(" ARG");
 
-            out << std::endl;
+            out << std::setw(maxlen+16) << std::left << opt <<
+                (options[i].descr ? options[i].descr : "") << std::endl;
         }
+
         if (!epilog.empty())
-            out << epilog << std::endl;
+            out << epilog; 
+        out << std::endl;
     
         return out.str();
     }
