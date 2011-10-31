@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: token.hpp 544 2010-08-28 20:54:12Z nicola.bonelli $ */
 /*
  * ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
@@ -19,9 +19,16 @@ namespace more {
     template <typename Pred>
     struct basic_token
     {
-        operator const std::string &() const
+        const std::string &
+        str() const
         {
-            return _M_str;
+            return m_str;
+        }
+
+        std::string &
+        str() 
+        {
+            return m_str;
         }
 
         template <typename CharT, typename Traits>
@@ -34,7 +41,7 @@ namespace more {
             const int_type eof = Traits::eof();
             typename ios_base::iostate err = ios_base::goodbit; 
 
-            rhs._M_str.erase();
+            rhs.m_str.erase();
 
             Pred is_token;
 
@@ -51,11 +58,11 @@ namespace more {
                 return in;
             } 
 
-            rhs._M_str.append(1,Traits::to_char_type(c));
+            rhs.m_str.append(1,Traits::to_char_type(c));
             while ( !(c = in.rdbuf()->snextc(), Traits::eq_int_type(c,eof))  && 
                     is_token(c) )
             {
-                rhs._M_str.append(1,Traits::to_char_type(c));
+                rhs.m_str.append(1,Traits::to_char_type(c));
             }
 
             if ( Traits::eq_int_type(c,eof) ) {
@@ -67,7 +74,7 @@ namespace more {
         }
 
     private:
-        std::string _M_str;    
+        std::string m_str;    
     };
 
 } // namespace more
