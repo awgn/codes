@@ -40,7 +40,7 @@ namespace more { namespace gotopt {
     {
     public:
         explicit gotopt_error(const std::string &m)
-        :  std::runtime_error(m) 
+        : std::runtime_error(m) 
         {}
 
         virtual ~gotopt_error() throw()
@@ -123,6 +123,9 @@ namespace more { namespace gotopt {
     
         return out.str();
     }
+    
+    template <typename T, typename C>
+    inline void validate_expression(const T &tupl, const C &ctx);
 
     // parser class
     //
@@ -228,9 +231,8 @@ namespace more { namespace gotopt {
 
             if (_M_it == _M_args.end() || !is_option(*_M_it)) 
             {
-                // validate the logic:
+                // alidate the logic:
                 //
-
                 validate_expression(exp, _M_context);
                 return 0;
             }
@@ -372,17 +374,10 @@ namespace more { namespace gotopt {
     // recursive validation of tuple of expression templates
     //
 
-    template <typename T, int N>
-    struct recursive_evaluation
-    {
-        template <typename C>
-        static bool apply(const T &tupl, const C &ctx)
-        {
-            check_expression( std::get< std::tuple_size<T>::value - N >(tupl), ctx);
-            return recursive_evaluation<T, N-1>::apply(tupl,ctx);
-        }
-    };
+    template <typename T, typename C>
+    void check_expression(const T elem, const C &ctx);
 
+    template <typename T, int N> struct recursive_evaluation;
     template <typename T>
     struct recursive_evaluation<T,0>
     {
@@ -392,6 +387,17 @@ namespace more { namespace gotopt {
             return true;
         }
     };
+    template <typename T, int N> 
+    struct recursive_evaluation
+    {
+        template <typename C>
+        static bool apply(const T &tupl, const C &ctx)
+        {
+            check_expression(std::get< std::tuple_size<T>::value - N >(tupl), ctx);
+            return recursive_evaluation<T, N-1>::apply(tupl,ctx);
+        }
+    };
+
 
     template <typename T, typename C>
     void check_expression(const T elem, const C &ctx)
@@ -402,7 +408,6 @@ namespace more { namespace gotopt {
             throw gotopt_error(in.str());
         }
     }
-
     template <typename T1, typename T2, typename C>
     void check_expression(const std::pair<T1,T2> &elem, const C &ctx)
     {

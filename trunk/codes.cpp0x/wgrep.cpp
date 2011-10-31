@@ -49,8 +49,8 @@ void grep(const std::string &file_name, const std::unordered_set<std::string> &d
         std::istringstream ss(line);
         std::vector<std::string> match;
 
-        std::copy_if(std::istream_iterator<basic_token<cpp::identifier>>(ss), 
-                     std::istream_iterator<basic_token<cpp::identifier>>(), 
+        std::copy_if(std::istream_iterator<more::basic_token<cpp::identifier>>(ss), 
+                     std::istream_iterator<more::basic_token<cpp::identifier>>(), 
                      std::back_inserter(match),
                      std::bind(&std::unordered_set<std::string>::count, std::ref(dict),_1));
        

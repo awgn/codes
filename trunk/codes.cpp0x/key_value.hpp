@@ -862,7 +862,7 @@ namespace more {
     };
 
     template <>
-    class key_value_pack<> {};
+    struct key_value_pack<> {};
 
     template<typename T, typename ...Ti>
     inline 

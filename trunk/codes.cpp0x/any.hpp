@@ -13,7 +13,7 @@
 
 #include <string>
 #include <typeinfo>
-#include <alogrithm>
+#include <algorithm>
 #include <type_traits>   
 
 // Yet another boost tribute: the class any.

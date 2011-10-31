@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <iterator>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 #include <yats.hpp>
 
@@ -61,7 +63,7 @@ Context(more_timeval_test)
     Test(update)
     {
         b.update();
-        usleep(500000);
+        std::this_thread::sleep_for(std::chrono::microseconds(500000));
         c = Timeval::now();
     
         Assert( c == c, is_true() );

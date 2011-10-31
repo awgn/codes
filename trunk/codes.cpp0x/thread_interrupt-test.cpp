@@ -11,6 +11,8 @@
 #include <thread>
 #include <iostream>
 #include <functional>
+#include <chrono>
+#include <thread>
 
 #include <thread_interrupt.hpp>
 
@@ -65,10 +67,12 @@ main(int argc, char *argv[])
 
     std::thread two = make_interruptible_thread(thread_two(), 42);
 
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
     thread_interrupt::interrupt(one.get_id());
 
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    
     thread_interrupt::interrupt(two.get_id());
     
     one.join();

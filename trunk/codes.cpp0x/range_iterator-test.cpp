@@ -45,7 +45,15 @@ main(int argc, char *argv[])
     std::cout << "*c3++ = " << * c3++ << std::endl;
     std::cout << "*c3++ = " << * c3++ << std::endl;
 
+#ifdef __clang__    
+    std::vector<int> vec2;
+    vec2.push_back(1);
+    vec2.push_back(2);
+    vec2.push_back(3);
+#else
     std::vector<int> vec2 = {1,2,3};
+#endif
+
     auto il = more::range_iterator(vec2.begin(), vec2.end());
     
     std::copy(il, il.end(), std::ostream_iterator<int>(std::cout, " "));

@@ -78,7 +78,7 @@ namespace more
     template <typename T, typename Ty> 
     class singleton<T, Ty, singleton_type>  : public singleton_base
     {
-        friend class singleton_base::identity<T>::value_type;
+        friend T;
         struct tag {};
 
     public:
@@ -100,7 +100,7 @@ namespace more
     template <typename T, typename Ty>
     class singleton<T, Ty, indestructible_singleton_type> : public singleton_base
     {
-        friend class singleton_base::identity<T>::value_type;
+        friend T;
         struct tag {};
 
     public:

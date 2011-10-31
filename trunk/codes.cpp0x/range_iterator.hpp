@@ -112,7 +112,7 @@ namespace more {
     template<typename Iter>
     struct range_iterator_adapter : protected range_iterator_base<Iter>
     { 
-        friend class range_const_iterator_adapter<Iter>;
+        friend struct range_const_iterator_adapter<Iter>;
 
         typedef typename std::iterator_traits<Iter>::iterator_category iterator_category;
         typedef typename std::iterator_traits<Iter>::difference_type   difference_type;
@@ -151,14 +151,14 @@ namespace more {
         reference
         operator *() const
         {
-            m_range_check(iterator_category());
+            this->m_range_check(iterator_category());
             return * this->m_current;
         } 
  
         pointer 
         operator->() const
         {
-            m_range_check(iterator_category());
+            this->m_range_check(iterator_category());
             return this->m_current;
         }
 
@@ -166,7 +166,7 @@ namespace more {
         operator++()
         {   
             ++this->m_current;
-            m_track(iterator_category(),true);
+            this->m_track(iterator_category(),true);
             return *this;
         }
         range_iterator_adapter  
@@ -174,7 +174,7 @@ namespace more {
         {
             range_iterator_adapter tmp(*this);
             ++(*this);
-            m_track(iterator_category(),true);
+            this->m_track(iterator_category(),true);
             return tmp;
         }
 
@@ -208,7 +208,7 @@ namespace more {
         operator--()
         { 
             --this->m_current;
-            m_track(iterator_category(),false);
+            this->m_track(iterator_category(),false);
             return *this;
         }
         range_iterator_adapter  
@@ -216,7 +216,7 @@ namespace more {
         {
             range_iterator_adapter tmp(*this);
             --(*this);
-            m_track(iterator_category(),false);
+            this->m_track(iterator_category(),false);
             return tmp;
         }
 
@@ -347,14 +347,14 @@ namespace more {
         const reference
         operator *() const
         {
-            m_range_check(iterator_category());
+            this->m_range_check(iterator_category());
             return * this->m_current;
         } 
  
         const pointer 
         operator->() const
         {
-            m_range_check(iterator_category());
+            this->m_range_check(iterator_category());
             return this->m_current;
         }
 
@@ -362,7 +362,7 @@ namespace more {
         operator++()
         {   
             ++this->m_current;
-            m_track(iterator_category(),true);
+            this->m_track(iterator_category(),true);
             return *this;
         }
         range_const_iterator_adapter  
@@ -370,7 +370,7 @@ namespace more {
         {
             range_const_iterator_adapter tmp(*this);
             ++(*this);
-            m_track(iterator_category(),true);
+            this->m_track(iterator_category(),true);
             return tmp;
         }
 
@@ -404,7 +404,7 @@ namespace more {
         operator--()
         { 
             --this->m_current;
-            m_track(iterator_category(),false);
+            this->m_track(iterator_category(),false);
             return *this;
         }
         range_const_iterator_adapter  
@@ -412,7 +412,7 @@ namespace more {
         {
             range_const_iterator_adapter tmp(*this);
             --(*this);
-            m_track(iterator_category(),false);
+            this->m_track(iterator_category(),false);
             return tmp;
         }
 

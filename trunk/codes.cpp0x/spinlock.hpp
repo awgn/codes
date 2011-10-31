@@ -13,7 +13,7 @@
 #ifndef _SPINLOCK_HPP_
 #define _SPINLOCK_HPP_ 
 
-#if __GNUC_MINOR__ > 4
+#if __GNUC__ == 4 && __GNUC_MINOR__ > 4
 #include <atomic>
 #else
 #include <cstdatomic>
