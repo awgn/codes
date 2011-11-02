@@ -72,10 +72,27 @@ struct der4 : public base
     virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 };
 
+
+struct der5 : public base
+{
+    der5(std::string && m) : base() 
+    { std::cout << __PRETTY_FUNCTION__ << " -> " << m << std::endl; }
+
+    der5(const std::string & m) : base() 
+    { std::cout << __PRETTY_FUNCTION__ << " -> " << m << std::endl; }
+    
+    ~der5() 
+    { std::cout << __PRETTY_FUNCTION__ << std::endl; }
+
+    virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
+};
+
+
 ////////////////  global factories: simple and 1-parameter  //////////////// 
 
 more::factory<std::string, base> factory_0;                 // simple factory
 more::factory<std::string, base, std::string> factory_1;    // factory of objects whose constructors accept a std::string 
+more::factory<std::string, base, std::string &&> factory_2; // factory of objects whose constructors accept a r-value ref. to std::string 
 
 namespace 
 {
@@ -83,35 +100,36 @@ namespace
 
     more::factory_register<base, der1> _void_1_(factory_0,"der1");
     more::factory_register<base, der2> _void_2_(factory_0,"der2");
-    more::factory_register<base, der3> _void_3_(factory_1,"der3", more::fac_arg<std::string>());
-    more::factory_register<base, der4> _void_4_(factory_1,"der4", more::fac_arg<std::string>());
+    more::factory_register<base, der3> _void_3_(factory_1,"der3");
+    more::factory_register<base, der4> _void_4_(factory_1,"der4");
+    more::factory_register<base, der5> _void_5_(factory_2,"der5");
 }
+
 
 Context(factory_test)
 {
-
     Test(simple)
     {
 
     // basic hook: by invoking the regist() method on the factory object, providing the "id" and the factory_allocator
 
-    // factory_0.regist("der1", new more::factory_allocator<der1, base> ); <- this error detected at compile time 
-    // factory_0.regist("der2", new more::factory_allocator<base, der2> );
-    // factory_1.regist("der3", new more::factory_allocator<base, der3, std::string> );
-    // factory_1.regist("der4", new more::factory_allocator<base, der4, std::string> );
-
     std::cout << "--- start here ---" << std::endl;
 
     {
-        std::shared_ptr<base> p1 = factory_0("der1");
-        std::shared_ptr<base> p2 = factory_0("der2");
-        std::shared_ptr<base> p3 = factory_1("der3",std::string("hello"));
-        std::shared_ptr<base> p4 = factory_1("der4",std::string("world"));
+        auto p1 = factory_0("der1");
+        std::unique_ptr<base> p2 = factory_0("der2");
+        std::shared_ptr<base> p3 = factory_1.shared("der3",std::string("hello"));
+
+        std::string hello("hello");
+
+        auto p4 = factory_2("der5", std::move(hello));
+        auto p5 = factory_2("der5", std::string("hello"));
 
         p1->hello_world();
         p2->hello_world();
         p3->hello_world();
         p4->hello_world();
+        p5->hello_world();
     }
 
     std::cout << "--- out of scope ---" << std::endl;
