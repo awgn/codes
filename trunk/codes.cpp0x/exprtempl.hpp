@@ -26,34 +26,34 @@ namespace more { namespace expr {
         typedef typename Arg::expression_type expression_type;
 
         unary_expr(Arg arg, Op op = Op())
-        : _M_arg(arg),
-        _M_op(op)
+        : m_arg(arg),
+        m_op(op)
         {}
 
         expression_type 
         eval() const 
         {
-            return _M_op(_M_arg.eval());
+            return m_op(m_arg.eval());
         }
 
         template <typename C>
         expression_type 
         eval(const C &ctx) const 
         {
-            return _M_op(_M_arg.eval(ctx));
+            return m_op(m_arg.eval(ctx));
         }
 
         Arg 
         argument() const
-        { return _M_arg; }
+        { return m_arg; }
 
         Op
         operand() const
-        { return _M_op; } 
+        { return m_op; } 
 
     private:
-        Arg _M_arg;
-        Op _M_op;
+        Arg m_arg;
+        Op m_op;
     };
 
     // binary_expr expression template...
@@ -68,38 +68,38 @@ namespace more { namespace expr {
                 typename T1::expression_type, void >::type expression_type;
 
         binary_expr(T1 _l, T2 _r, Op _op = Op() )
-        : _M_lhs(_l), _M_rhs(_r), _M_op(_op)
+        : m_lhs(_l), m_rhs(_r), m_op(_op)
         {}
 
         expression_type
         eval() const
         {
-            return _M_op(_M_lhs.eval(), _M_rhs.eval());
+            return m_op(m_lhs.eval(), m_rhs.eval());
         }
 
         template <typename C>
         expression_type
         eval(const C &ctx) const
         {
-            return _M_op(_M_lhs.eval(ctx), _M_rhs.eval(ctx));
+            return m_op(m_lhs.eval(ctx), m_rhs.eval(ctx));
         }
 
         T1
         left() const
-        { return _M_lhs; }
+        { return m_lhs; }
 
         T2
         right() const
-        { return _M_rhs; }
+        { return m_rhs; }
 
         Op
         operand() const
-        { return _M_op; } 
+        { return m_op; } 
 
     private:
-        T1 _M_lhs;
-        T2 _M_rhs;
-        Op _M_op;
+        T1 m_lhs;
+        T2 m_rhs;
+        Op m_op;
     };
 
     // terminal expression-template that

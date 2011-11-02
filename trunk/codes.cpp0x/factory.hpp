@@ -90,27 +90,27 @@ namespace more {
         bool
         regist(const K & key, factory_base_allocator<B, Arg...> * value)
         { 
-            return _M_map.insert(make_pair(key, std::unique_ptr<factory_base_allocator<B,Arg...> >(value))).second; 
+            return m_map.insert(make_pair(key, std::unique_ptr<factory_base_allocator<B,Arg...> >(value))).second; 
         }
         
         bool
         unregist(const K &key)
         { 
-            return _M_map.erase(key) == 1; 
+            return m_map.erase(key) == 1; 
         }
 
         bool
         is_registered(const K &key) const
         {
-            return _M_map.count(key) != 0;
+            return m_map.count(key) != 0;
         }
 
         template <typename ...Ti>
         std::unique_ptr<B> 
         operator()(const K &key, Ti&& ... arg) const
         {
-            auto it = _M_map.find(key);
-            if (it == _M_map.end())
+            auto it = m_map.find(key);
+            if (it == m_map.end())
                 return std::unique_ptr<B>();
 
             return std::unique_ptr<B>(it->second->alloc(std::forward<Ti>(arg)...));
@@ -120,15 +120,15 @@ namespace more {
         std::shared_ptr<B> 
         shared(const K &key, Ti&& ... arg) const
         {
-            auto it = _M_map.find(key);
-            if (it == _M_map.end())
+            auto it = m_map.find(key);
+            if (it == m_map.end())
                 return std::shared_ptr<B>();
 
             return it->second->shared_alloc(std::forward<Ti>(arg)...);
         }
 
     private:
-        map_type _M_map;
+        map_type m_map;
     };
 
 } // namespace more

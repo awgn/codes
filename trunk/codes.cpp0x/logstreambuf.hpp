@@ -39,11 +39,11 @@ namespace more {
         }
 
         logstreambuf(std::streambuf *out)
-        : _M_priority(-1), _M_default_priority(EMERG), _M_loglevel(-1),  _M_out(out)
+        : m_priority(-1), m_default_priority(EMERG), m_loglevel(-1),  m_out(out)
         {}
 
         void loglevel(int n)
-        { _M_loglevel = n; }
+        { m_loglevel = n; }
 
         static int iword_index()
         { static int index = std::ios_base::xalloc();
@@ -54,8 +54,8 @@ namespace more {
         virtual std::streamsize
         xsputn (const char *s, std::streamsize n)
         {
-            if ( prio() <= _M_loglevel) {
-                return _M_out->sputn(s,n);
+            if ( prio() <= m_loglevel) {
+                return m_out->sputn(s,n);
             }
             return n; 
         }
@@ -65,38 +65,38 @@ namespace more {
         {
             int p = prio();
             if (c == '\n')
-                _M_priority = -1;
+                m_priority = -1;
 
-            if ( p <= _M_loglevel)  
-               return _M_out->sputc(c);
+            if ( p <= m_loglevel)  
+               return m_out->sputc(c);
              
             return c;
         }
 
         int sync()
         {
-            if (prio() <= _M_loglevel) 
-                return _M_out->pubsync();
+            if (prio() <= m_loglevel) 
+                return m_out->pubsync();
             return 0; 
         }
 
         void priority(int n)
-        { _M_priority = n; }
+        { m_priority = n; }
 
         void default_priority(int n)
-        { _M_default_priority = n; }
+        { m_default_priority = n; }
 
     private:        
         
         int prio() const 
-        { return _M_priority != -1 ? _M_priority : _M_default_priority; }
+        { return m_priority != -1 ? m_priority : m_default_priority; }
 
-        int _M_priority;
-        int _M_default_priority;
+        int m_priority;
+        int m_default_priority;
 
-        int _M_loglevel;
+        int m_loglevel;
 
-        std::streambuf *_M_out;
+        std::streambuf *m_out;
     };
 
     std::ostream &priority(std::ostream &out, int n);

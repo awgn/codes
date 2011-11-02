@@ -88,17 +88,17 @@ namespace more {
     public:
         template <typename C>
         slot(C *that, R(C::*c)(Ti...))
-        : _M_fun(bind_all<sizeof...(Ti)>::to(c, that))
+        : m_fun(bind_all<sizeof...(Ti)>::to(c, that))
         {}
 
         R
         operator()(Ti && ...args)
         {
-            return _M_fun(std::forward<Ti>(args)...);
+            return m_fun(std::forward<Ti>(args)...);
         }
 
     private:
-        std::function<R(Ti...)> _M_fun;
+        std::function<R(Ti...)> m_fun;
     };
 
 
@@ -112,19 +112,19 @@ namespace more {
 
         void connect(slot<R(Ti...)> &_slot)
         {
-            _M_slots.push_back(&_slot);
+            m_slots.push_back(&_slot);
         }
         
         void disconnect(slot<R(Ti...)> &_slot)
         {
-            _M_slots.erase(std::remove(_M_slots.begin(), _M_slots.end(), &_slot), _M_slots.end());
+            m_slots.erase(std::remove(m_slots.begin(), m_slots.end(), &_slot), m_slots.end());
         }
 
         std::vector<R>
         operator()(Ti && ...args)
         {
             std::vector<R> ret;
-            for(auto it = _M_slots.begin(), it_e = _M_slots.end(); it != it_e; ++it)
+            for(auto it = m_slots.begin(), it_e = m_slots.end(); it != it_e; ++it)
             {
                 ret.push_back((*it)->operator()(std::forward<Ti>(args)...));
             }
@@ -132,7 +132,7 @@ namespace more {
         }
 
     private:
-        std::vector<slot<R(Ti...)> *> _M_slots;
+        std::vector<slot<R(Ti...)> *> m_slots;
     };
 
 } // namespace more

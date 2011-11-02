@@ -94,7 +94,7 @@ namespace more {
     struct spinlock 
     {
         spinlock()
-        : _M_value(0)
+        : m_value(0)
         {}
 
         spinlock(const spinlock &) = delete;
@@ -104,7 +104,7 @@ namespace more {
         {   
             int t = Policy::threshold;
             unsigned int v = 0;
-            for(int n=0; _M_value.compare_exchange_strong(v, 1) == false; ++n)
+            for(int n=0; m_value.compare_exchange_strong(v, 1) == false; ++n)
             { 
                 v = 0;
                 Policy::wait(n,t,0);
@@ -113,11 +113,11 @@ namespace more {
 
         void unlock()
         {
-            _M_value.store(0);
+            m_value.store(0);
         }
 
     private:
-        std::atomic_uint _M_value;
+        std::atomic_uint m_value;
     };
  
     typedef spinlock<policy::lock_yield>        spinlock_yield;
@@ -131,7 +131,7 @@ namespace more {
     struct ticket_spinlock 
     {
         ticket_spinlock()
-        : _M_ticket(0), _M_value(0)
+        : m_ticket(0), m_value(0)
         {}
         
         ticket_spinlock(const ticket_spinlock &) = delete;
@@ -139,9 +139,9 @@ namespace more {
 
         void lock()
         {             
-            const unsigned int my_ticket = _M_ticket++;
+            const unsigned int my_ticket = m_ticket++;
             int t = Policy::threshold;
-            for(int n = 1, d = 0; (d=(my_ticket-_M_value)); n++) 
+            for(int n = 1, d = 0; (d=(my_ticket-m_value)); n++) 
             { 
                 Policy::wait(n,t,d);
             }
@@ -149,12 +149,12 @@ namespace more {
 
         void unlock()
         {
-           ++_M_value; 
+           ++m_value; 
         }
 
     private:
-        std::atomic_uint _M_ticket;        
-        std::atomic_uint _M_value;        
+        std::atomic_uint m_ticket;        
+        std::atomic_uint m_value;        
     };
 
     typedef ticket_spinlock<policy::lock_yield>        ticket_spinlock_yield;
@@ -170,8 +170,8 @@ namespace more {
     public:
         
         spinlock_open_recursive()
-        : _M_lock(),
-          _M_owner()
+        : m_lock(),
+          m_owner()
         {}
 
         ~spinlock_open_recursive()
@@ -179,22 +179,22 @@ namespace more {
 
         void lock()
         {
-            if (_M_owner != std::this_thread::get_id()) {
-                _M_lock.lock();
-                _M_owner = std::this_thread::get_id();
+            if (m_owner != std::this_thread::get_id()) {
+                m_lock.lock();
+                m_owner = std::this_thread::get_id();
             }
         }
 
         void unlock()
         {
-            assert(_M_owner == std::this_thread::get_id());
-            _M_owner = std::thread::id();
-            _M_lock.unlock();
+            assert(m_owner == std::this_thread::get_id());
+            m_owner = std::thread::id();
+            m_lock.unlock();
         }
 
     private:
-        spinlock<Policy> _M_lock; 
-        std::thread::id _M_owner;
+        spinlock<Policy> m_lock; 
+        std::thread::id m_owner;
     };
 }
 

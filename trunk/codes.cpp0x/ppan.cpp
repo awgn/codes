@@ -186,21 +186,21 @@ parse_source(const std::string &name)
 struct dump_query {
 
     dump_query(bool verbose, bool gcc)
-    : _M_verbose(verbose), _M_gcc(gcc)
+    : m_verbose(verbose), m_gcc(gcc)
     {}
 
     void operator()(const map_type::value_type &elem) const
     {    
         const dir_type &d = elem.first;
 
-        if (_M_gcc) 
+        if (m_gcc) 
         {
             std::cout << "-D" << std::get<2>(d) << std::endl;
             return;
         } 
         
         std::cout << std::left << std::setw(16) << static_dirname[get_class_type(d)] << ": " << std::get<2>(d);
-        if (!_M_verbose) {
+        if (!m_verbose) {
             std::cout << std::endl;
             return;
         }
@@ -215,40 +215,40 @@ struct dump_query {
         std::cout << ")\n";
     }
     
-    bool _M_verbose;
-    bool _M_gcc;
+    bool m_verbose;
+    bool m_gcc;
 };
 
 
 struct query_predicate
 {
     query_predicate(const std::vector<bool> &plus, const std::vector<bool> &minus)
-    : _M_plus(plus), _M_minus(minus)
+    : m_plus(plus), m_minus(minus)
     {}
 
     bool operator()(const map_type::value_type &elem) const
     {
         const dir_type &d = elem.first;
-        return _M_plus[get_class_type(d)] && !_M_minus[get_class_type(d)];
+        return m_plus[get_class_type(d)] && !m_minus[get_class_type(d)];
     }
 
-    const std::vector<bool> &_M_plus; 
-    const std::vector<bool> &_M_minus; 
+    const std::vector<bool> &m_plus; 
+    const std::vector<bool> &m_minus; 
 };
 
 
 struct map_pusher
 {
     map_pusher(map_type &m)
-    : _M_map(m)
+    : m_map(m)
     {}
 
     void operator()(const std::pair<dir_type, info_type> &p) const
     {
-        _M_map[p.first].push_back(p.second);
+        m_map[p.first].push_back(p.second);
     }
 
-    map_type &_M_map;
+    map_type &m_map;
 };
 
 void usage()

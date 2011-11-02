@@ -133,17 +133,17 @@ namespace more
     struct iovec_iterator : public std::iterator<std::forward_iterator_tag, T>
     {
     protected:
-        std::vector<iovec> * _M_iovec_p;
-        T * _M_iterator;
-        std::vector<iovec>::size_type _M_slot;
+        std::vector<iovec> * m_iovec_p;
+        T * m_iterator;
+        std::vector<iovec>::size_type m_slot;
 
     public:
         iovec_iterator()
-        : _M_iovec_p(0), _M_iterator(0), _M_slot(0)
+        : m_iovec_p(0), m_iterator(0), m_slot(0)
         {}
     
         iovec_iterator(std::vector<iovec> &iov)
-        : _M_iovec_p(&iov), _M_iterator(0),  _M_slot(0)
+        : m_iovec_p(&iov), m_iterator(0),  m_slot(0)
         {
             if(iov.empty())
                 return;
@@ -152,42 +152,42 @@ namespace more
                 if(it->iov_len % sizeof(T))
                     throw std::runtime_error("bad iovec_iterator<T>");
             }
-            _M_iterator = static_cast<T *>(iov[0].iov_base);
+            m_iterator = static_cast<T *>(iov[0].iov_base);
         }
 
         T & operator*()
         {
-            assert(_M_iterator);
-            return *_M_iterator;
+            assert(m_iterator);
+            return *m_iterator;
         }
 
         T * operator->()
         {
-            assert(_M_iterator);
-            return _M_iterator;
+            assert(m_iterator);
+            return m_iterator;
         }
 
         iovec_iterator &
         operator++()
         {
-            if (!_M_iterator || !_M_iovec_p)
+            if (!m_iterator || !m_iovec_p)
                 return *this;
 
-            ++_M_iterator;
+            ++m_iterator;
             
-            if (reinterpret_cast<char *>(_M_iterator) >= 
-                    (static_cast<char *>(_M_iovec_p->at(_M_slot).iov_base) + 
-                                         _M_iovec_p->at(_M_slot).iov_len))
+            if (reinterpret_cast<char *>(m_iterator) >= 
+                    (static_cast<char *>(m_iovec_p->at(m_slot).iov_base) + 
+                                         m_iovec_p->at(m_slot).iov_len))
             {
-                if(++_M_slot >= _M_iovec_p->size())
+                if(++m_slot >= m_iovec_p->size())
                 {
-                    _M_iovec_p  = 0;
-                    _M_iterator = 0;
-                    _M_slot     = 0;
+                    m_iovec_p  = 0;
+                    m_iterator = 0;
+                    m_slot     = 0;
                     return *this;
                 }
 
-                _M_iterator = static_cast<T *>(_M_iovec_p->at(_M_slot).iov_base);
+                m_iterator = static_cast<T *>(m_iovec_p->at(m_slot).iov_base);
             }
             return *this;
         }
@@ -202,12 +202,12 @@ namespace more
 
         bool operator==(const iovec_iterator &rhs)
         {
-            return _M_iterator == rhs._M_iterator;
+            return m_iterator == rhs.m_iterator;
         }    
 
         bool operator!=(const iovec_iterator &rhs)
         {
-            return _M_iterator != rhs._M_iterator;
+            return m_iterator != rhs.m_iterator;
         }
     };
 

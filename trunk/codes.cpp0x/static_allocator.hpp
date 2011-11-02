@@ -38,19 +38,19 @@ namespace more {
         { typedef static_allocator<Tp1> other; };
 
         static_allocator(void* _area, size_type _size) throw()
-        : _M_area(_area),
-          _M_size(_size)
+        : m_area(_area),
+          m_size(_size)
         {}
 
         static_allocator(const static_allocator& rhs) throw()
-        : _M_area(rhs._M_area),
-          _M_size(rhs._M_size)
+        : m_area(rhs.m_area),
+          m_size(rhs.m_size)
         {}
 
     template<typename Tp1>
         static_allocator(const static_allocator<Tp1>& rhs) throw() 
-        : _M_area(rhs._M_area),
-          _M_size(rhs._M_size)
+        : m_area(rhs.m_area),
+          m_size(rhs.m_size)
         {}
 
         ~static_allocator()
@@ -74,13 +74,13 @@ namespace more {
 #ifndef NDEBUG
             std::cout << "static_allocator<>: this[" << (void *)this << "]->allocate(" << __s << ") bytes..." << std::endl;
 #endif
-            if ( __s > _M_size )
+            if ( __s > m_size )
                 throw std::out_of_range("allocate");
             
-            _M_size -= __s;
-            pointer a = static_cast<Tp*>(_M_area);
+            m_size -= __s;
+            pointer a = static_cast<Tp*>(m_area);
             
-            _M_area = reinterpret_cast<void *>( static_cast<char*>(_M_area) + __s);
+            m_area = reinterpret_cast<void *>( static_cast<char*>(m_area) + __s);
             return a;
         }
 
@@ -100,8 +100,8 @@ namespace more {
         void
         destroy(pointer __p) {  __p->~Tp(); }
 
-        void *    _M_area;
-        size_type _M_size;
+        void *    m_area;
+        size_type m_size;
     };
 
 } // namespace more

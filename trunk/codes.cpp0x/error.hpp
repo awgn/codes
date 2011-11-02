@@ -80,20 +80,20 @@ namespace more {
 
     class syscall_error : public std::exception
     {
-        std::string _M_msg;
-        int _M_err;
+        std::string m_msg;
+        int m_err;
 
     public:
         explicit syscall_error(const std::string &m, int e = errno)
-        : _M_msg(m), 
-          _M_err(e)
+        : m_msg(m), 
+          m_err(e)
         {
-            _M_msg.append(": ").append(pretty_strerror(e));
+            m_msg.append(": ").append(pretty_strerror(e));
         }
 
         syscall_error(int e = errno)
-        : _M_msg( pretty_strerror(e) ),
-          _M_err(e)
+        : m_msg( pretty_strerror(e) ),
+          m_err(e)
         {}
 
         virtual ~syscall_error() throw()
@@ -102,12 +102,12 @@ namespace more {
         virtual const char*
         what() const throw()
         {
-            return _M_msg.c_str();
+            return m_msg.c_str();
         }
 
         int
         code() const
-        { return _M_err; }
+        { return m_err; }
 
     };
 

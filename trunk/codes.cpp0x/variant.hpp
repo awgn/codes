@@ -92,15 +92,15 @@ namespace more {
 
     public:
         variant()
-        : _M_type(0)
+        : m_type(0)
         {
-            ctor<Ti...>::apply(_M_storage, 0);
+            ctor<Ti...>::apply(m_storage, 0);
         }
 
         variant(const variant &rhs)
-        : _M_type(rhs._M_type)
+        : m_type(rhs.m_type)
         {
-            copyctor<Ti...>::apply(rhs._M_storage, _M_storage, _M_type); 
+            copyctor<Ti...>::apply(rhs.m_storage, m_storage, m_type); 
         }
         
         variant& operator=(variant rhs)
@@ -111,27 +111,27 @@ namespace more {
  
         ~variant()
         {
-            dtor<Ti...>::apply(_M_storage, _M_type);
+            dtor<Ti...>::apply(m_storage, m_type);
         }
         
         void swap(variant &rhs)
         {
-            std::swap_ranges(_M_storage, _M_storage+_S_storage_size, rhs._M_storage);
-            std::swap(_M_type, rhs._M_type);
+            std::swap_ranges(m_storage, m_storage+_S_storage_size, rhs.m_storage);
+            std::swap(m_type, rhs.m_type);
         }
 
         template <typename T>
         variant(const T &value)
-        : _M_type(0)
+        : m_type(0)
         {
-            ctor<Ti...>::apply(_M_storage, 0);
+            ctor<Ti...>::apply(m_storage, 0);
             try 
             {
                 this->store(value);
             }
             catch(...)
             {
-                dtor<Ti...>::apply(_M_storage, 0);
+                dtor<Ti...>::apply(m_storage, 0);
                 throw;
             }
         }
@@ -151,18 +151,18 @@ namespace more {
 
         int
         which() const
-        { return _M_type; }
+        { return m_type; }
 
         int
         storage_size() const
         {
-            return sizeof(_M_storage)/sizeof(_M_storage[0]);
+            return sizeof(m_storage)/sizeof(m_storage[0]);
         }
 
         const std::type_info &
         type() const
         {
-            return __type<Ti...>::get(_M_type);
+            return __type<Ti...>::get(m_type);
         }
 
         /////////////////////
@@ -170,19 +170,19 @@ namespace more {
         template <typename T>
         T & get()
         {
-            if ( detail::index_of<T,Ti...>::value != _M_type )
+            if ( detail::index_of<T,Ti...>::value != m_type )
                 throw std::bad_cast();
 
-            return *reinterpret_cast<T *>(_M_storage);
+            return *reinterpret_cast<T *>(m_storage);
         }
 
         template <typename T>
         const T & get() const
         {
-            if ( detail::index_of<T,Ti...>::value != _M_type )
+            if ( detail::index_of<T,Ti...>::value != m_type )
                 throw std::bad_cast();
 
-            return *reinterpret_cast<const T *>(_M_storage);
+            return *reinterpret_cast<const T *>(m_storage);
         }
 
         template <typename F>
@@ -201,14 +201,14 @@ namespace more {
             //
             new (tmp) V(value);
             
-            // destroy the object in the _M_storage (as _M_type) ...
+            // destroy the object in the m_storage (as m_type) ...
             //
-            dtor<Ti...>::apply(_M_storage, _M_type);  
+            dtor<Ti...>::apply(m_storage, m_type);  
  
-            // copy the temporary storage to _M_storage
+            // copy the temporary storage to m_storage
             //
-            std::copy(tmp, tmp + _S_storage_size, _M_storage);
-            _M_type = detail::index_of<V, Ti...>::value;
+            std::copy(tmp, tmp + _S_storage_size, m_storage);
+            m_type = detail::index_of<V, Ti...>::value;
         }
 
     private:
@@ -336,7 +336,7 @@ namespace more {
             template <typename CharT, typename Traits, typename V>
             static void apply(std::basic_ostream<CharT, Traits> &out, const V &var, int n = 0)
             {
-                if (n == var._M_type) 
+                if (n == var.m_type) 
                 {
                     out << var.get<T>();
                     return;
@@ -350,7 +350,7 @@ namespace more {
             template <typename CharT, typename Traits, typename V>
             static void apply(std::basic_ostream<CharT, Traits> &out, const V &var, int n = 0)
             {
-                if (n == var._M_type) 
+                if (n == var.m_type) 
                 {
                     out << var.get<T>();
                     return;
@@ -367,7 +367,7 @@ namespace more {
             template <typename F, typename V>
             static void apply(F cw, const V &var, int n = 0)
             {
-                if (n == var._M_type) 
+                if (n == var.m_type) 
                 {
                     cw(var.get<T>());
                     return;
@@ -381,7 +381,7 @@ namespace more {
             template <typename F, typename V>
             static void apply(F cw, const V &var, int n = 0)
             {
-                if (n == var._M_type) 
+                if (n == var.m_type) 
                 {
                     cw(var.get<T>());
                     return;
@@ -392,8 +392,8 @@ namespace more {
  
         static const int _S_storage_size = detail::max_sizeof<Ti...>::value;
         
-        int  _M_type;
-        char _M_storage[_S_storage_size];
+        int  m_type;
+        char m_storage[_S_storage_size];
     };
 
 } // namespace more

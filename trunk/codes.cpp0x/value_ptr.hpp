@@ -64,21 +64,21 @@ namespace more {
     class value_ptr
     {
     private:
-        Tp * _M_ptr;
+        Tp * m_ptr;
 
     public:
         value_ptr(Tp *ptr = 0)
-        : _M_ptr(ptr)
+        : m_ptr(ptr)
         {}
         
         ~value_ptr()
         {}
 
         value_ptr(const value_ptr &other)
-        : _M_ptr( value_ptr_traits<Tp,S>::copy(other._M_ptr) )
+        : m_ptr( value_ptr_traits<Tp,S>::copy(other.m_ptr) )
         {}
         value_ptr(value_ptr &other)
-        : _M_ptr( value_ptr_traits<Tp,S>::copy(other._M_ptr) )
+        : m_ptr( value_ptr_traits<Tp,S>::copy(other.m_ptr) )
         {}
 
         value_ptr& operator=(const value_ptr &other)
@@ -98,11 +98,11 @@ namespace more {
 
         template <typename U>
         value_ptr(const value_ptr<U> &other)
-        : _M_ptr( value_ptr_traits<U,S>::copy(other._M_ptr) )
+        : m_ptr( value_ptr_traits<U,S>::copy(other.m_ptr) )
         {}
         template <typename U>
         value_ptr(value_ptr<U> &other)
-        : _M_ptr( value_ptr_traits<U,S>::copy(other._M_ptr) )
+        : m_ptr( value_ptr_traits<U,S>::copy(other.m_ptr) )
         {}
 
         template <typename U>
@@ -123,25 +123,25 @@ namespace more {
         Tp&
         operator*() const
         {
-            return *_M_ptr;
+            return *m_ptr;
         }
 
         Tp*
         operator->() const
         {
-            return _M_ptr;
+            return m_ptr;
         }
 
         Tp *
         get() const 
         { 
-            return _M_ptr; 
+            return m_ptr; 
         }
 
         void
         swap(value_ptr &other)
         {
-            std::swap(_M_ptr,other._M_ptr);
+            std::swap(m_ptr,other.m_ptr);
         }
     };
 

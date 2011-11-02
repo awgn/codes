@@ -104,10 +104,10 @@ namespace more
             typedef struct _t { _t() : index(0), lock() {}; std::atomic<unsigned_type> index; tail_lock_type lock; } tail_cache_type;
 
         private:
-            std::array<value_type, N> _M_storage;
+            std::array<value_type, N> m_storage;
 
-            details::cacheline<head_cache_type> _M_head;
-            details::cacheline<tail_cache_type> _M_tail;
+            details::cacheline<head_cache_type> m_head;
+            details::cacheline<tail_cache_type> m_tail;
 
             static unsigned_type 
             _S_mod(unsigned_type n)
@@ -117,7 +117,7 @@ namespace more
         
         public:
             shared_queue() 
-            : _M_storage(), _M_head(), _M_tail() 
+            : m_storage(), m_head(), m_tail() 
             {
                 static_assert((N & (N-1)) == 0, "N not a power of two"); 
             }
@@ -128,65 +128,65 @@ namespace more
             bool 
             pop_front(T& ret) 
             {
-                std::lock_guard<tail_lock_type> _lock_(_M_tail.value.lock);
-                auto tail = _M_tail.value.index.load(std::memory_order_acquire);
-                if (tail == _M_head.value.index.load(std::memory_order_acquire)) 
+                std::lock_guard<tail_lock_type> _lock_(m_tail.value.lock);
+                auto tail = m_tail.value.index.load(std::memory_order_acquire);
+                if (tail == m_head.value.index.load(std::memory_order_acquire)) 
                     return false;
 
-                ret = std::move(_M_storage[tail]);
-                _M_tail.value.index.store(_S_mod(tail+1), std::memory_order_release);
+                ret = std::move(m_storage[tail]);
+                m_tail.value.index.store(_S_mod(tail+1), std::memory_order_release);
                 return true;
             }
 
             bool 
             push_back(const T& elem)  
             {
-                std::lock_guard<head_lock_type> _lock_(_M_head.value.lock);
-                auto head = _M_head.value.index.load(std::memory_order_acquire);
+                std::lock_guard<head_lock_type> _lock_(m_head.value.lock);
+                auto head = m_head.value.index.load(std::memory_order_acquire);
                 auto next = _S_mod(head+1);
 
-                if (next == _M_tail.value.index.load(std::memory_order_acquire)) 
+                if (next == m_tail.value.index.load(std::memory_order_acquire)) 
                    return false;
 
-                _M_storage[head] = elem;
-                _M_head.value.index.store(next, std::memory_order_release);
+                m_storage[head] = elem;
+                m_head.value.index.store(next, std::memory_order_release);
                 return true;
             }
 
             bool 
             push_back(T&& elem)  
             {
-                std::lock_guard<head_lock_type> _lock_(_M_head.value.lock);
-                auto head = _M_head.value.index.load(std::memory_order_acquire);
+                std::lock_guard<head_lock_type> _lock_(m_head.value.lock);
+                auto head = m_head.value.index.load(std::memory_order_acquire);
                 auto next = _S_mod(head+1);
 
-                if (next == _M_tail.value.index.load(std::memory_order_acquire)) 
+                if (next == m_tail.value.index.load(std::memory_order_acquire)) 
                    return false;
                 
-                _M_storage[head] = elem;
-                _M_head.value.index.store(next, std::memory_order_release);
+                m_storage[head] = elem;
+                m_head.value.index.store(next, std::memory_order_release);
                 return true;
             }
 
             void 
             clear() 
             { 
-                std::lock_guard<tail_lock_type> _lock_(_M_tail.value.lock);
-                for(auto n = _M_tail.value.index.load(std::memory_order_acquire); 
-                      n != _M_head.value.index.load(std::memory_order_acquire); ) {
-                    _M_storage[n] = T();
+                std::lock_guard<tail_lock_type> _lock_(m_tail.value.lock);
+                for(auto n = m_tail.value.index.load(std::memory_order_acquire); 
+                      n != m_head.value.index.load(std::memory_order_acquire); ) {
+                    m_storage[n] = T();
                     n = _S_mod(n+1);
                 }
 
-                _M_tail.value.index.store(_M_head.value.index.load(std::memory_order_acquire), 
+                m_tail.value.index.store(m_head.value.index.load(std::memory_order_acquire), 
                                           std::memory_order_release);
             }
             
             bool
             empty() const 
             { 
-                return _M_head.value.index.load(std::memory_order_acquire) == 
-                        _M_tail.value.index.load(std::memory_order_acquire); 
+                return m_head.value.index.load(std::memory_order_acquire) == 
+                        m_tail.value.index.load(std::memory_order_acquire); 
             }
 
             size_type 
@@ -198,8 +198,8 @@ namespace more
             size_type 
             size() const 
             {
-                int s =  _M_head.value.index.load(std::memory_order_acquire) - 
-                            _M_tail.value.index.load(std::memory_order_acquire);
+                int s =  m_head.value.index.load(std::memory_order_acquire) - 
+                            m_tail.value.index.load(std::memory_order_acquire);
                 return s < 0 ? s + N : s;
             }
         };

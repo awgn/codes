@@ -103,9 +103,9 @@ namespace more { namespace netdev
         
     public:
         ifr(const char * dev)
-        : _M_ifreq_io(), _M_dev(dev), _M_sock(new socket) 
+        : m_ifreq_io(), m_dev(dev), m_sock(new socket) 
         {
-            strncpy(_M_ifreq_io.ifr_name, dev, IFNAMSIZ);
+            strncpy(m_ifreq_io.ifr_name, dev, IFNAMSIZ);
         }        
         
         ~ifr()
@@ -116,7 +116,7 @@ namespace more { namespace netdev
         std::string
         name() const
         {
-            return _M_dev;
+            return m_dev;
         }
 
         static std::vector<ifr>
@@ -145,10 +145,10 @@ namespace more { namespace netdev
         std::string
         inet_addr() const
         {
-            if (ioctl(_M_sock->fd, SIOC, &_M_ifreq_io) != -1 ) {
-                struct sockaddr_in *p = (struct sockaddr_in *)&_M_ifreq_io.ifr_addr;
+            if (ioctl(m_sock->fd, SIOC, &m_ifreq_io) != -1 ) {
+                struct sockaddr_in *p = (struct sockaddr_in *)&m_ifreq_io.ifr_addr;
 
-                if(_M_ifreq_io.ifr_addr.sa_family == AF_INET) {
+                if(m_ifreq_io.ifr_addr.sa_family == AF_INET) {
                     char dst[16];
                     return inet_ntop(AF_INET, reinterpret_cast<const void *>(&p->sin_addr), dst, sizeof(dst));
                 }
@@ -171,47 +171,47 @@ namespace more { namespace netdev
         std::string
         hwaddr() const 
         {
-            if (ioctl(_M_sock->fd, SIOCGIFHWADDR, &_M_ifreq_io) == -1 ) {
+            if (ioctl(m_sock->fd, SIOCGIFHWADDR, &m_ifreq_io) == -1 ) {
                 throw std::runtime_error("ioctl: SIOCGIFHWADDR");
             }
-            struct ether_addr *eth_addr = (struct ether_addr *) & _M_ifreq_io.ifr_addr.sa_data;
+            struct ether_addr *eth_addr = (struct ether_addr *) & m_ifreq_io.ifr_addr.sa_data;
             return ether_ntoa(eth_addr);
         }
 
         int 
         mtu() const
         {
-            if (ioctl(_M_sock->fd, SIOCGIFMTU, &_M_ifreq_io) == -1 ) {
+            if (ioctl(m_sock->fd, SIOCGIFMTU, &m_ifreq_io) == -1 ) {
                 throw std::runtime_error("ioctl: SIOCGIFMTU");
             }
-            return _M_ifreq_io.ifr_mtu;
+            return m_ifreq_io.ifr_mtu;
         }
 
         int 
         metric() const
         {
-            if (ioctl(_M_sock->fd, SIOCGIFMETRIC, &_M_ifreq_io) == -1 ) {
+            if (ioctl(m_sock->fd, SIOCGIFMETRIC, &m_ifreq_io) == -1 ) {
                 throw std::runtime_error("ioctl: SIOCGIFMETRIC");
             }
-            return _M_ifreq_io.ifr_metric ? _M_ifreq_io.ifr_metric : 1;
+            return m_ifreq_io.ifr_metric ? m_ifreq_io.ifr_metric : 1;
         }
 
         int
         index() const
         {
-            if (ioctl(_M_sock->fd, SIOCGIFINDEX, &_M_ifreq_io) == -1 ) {
+            if (ioctl(m_sock->fd, SIOCGIFINDEX, &m_ifreq_io) == -1 ) {
                 throw std::runtime_error("ioctl: SIOCGIFINDEX");
             }
-            return _M_ifreq_io.ifr_ifindex;
+            return m_ifreq_io.ifr_ifindex;
         }
 
         int
         qlen() const
         {
-            if (ioctl(_M_sock->fd, SIOCGIFTXQLEN, &_M_ifreq_io) == -1 ) {
+            if (ioctl(m_sock->fd, SIOCGIFTXQLEN, &m_ifreq_io) == -1 ) {
                 throw std::runtime_error("ioctl: SIOCGIFTXQLEN");
             }
-            return _M_ifreq_io.ifr_qlen;
+            return m_ifreq_io.ifr_qlen;
         }
 
         /// ethtool...
@@ -222,10 +222,10 @@ namespace more { namespace netdev
             std::shared_ptr<ethtool_drvinfo> drvinfo = std::make_shared<ethtool_drvinfo>();
             uint32_t req = ETHTOOL_GDRVINFO;
 
-            _M_ifreq_io.ifr_data = reinterpret_cast<__caddr_t>(drvinfo.get());
-            strncpy(_M_ifreq_io.ifr_data, (char *) &req, sizeof(req));
+            m_ifreq_io.ifr_data = reinterpret_cast<__caddr_t>(drvinfo.get());
+            strncpy(m_ifreq_io.ifr_data, (char *) &req, sizeof(req));
 
-            if (ioctl(_M_sock->fd, SIOCETHTOOL, &_M_ifreq_io) == -1) {
+            if (ioctl(m_sock->fd, SIOCETHTOOL, &m_ifreq_io) == -1) {
                 throw std::runtime_error("SIOCETHTOOL");
             } 
            
@@ -238,9 +238,9 @@ namespace more { namespace netdev
             std::shared_ptr<ethtool_cmd> ecmd = std::make_shared<ethtool_cmd>();
 
             ecmd->cmd = ETHTOOL_GSET;
-            _M_ifreq_io.ifr_data = reinterpret_cast<__caddr_t>(ecmd.get());
+            m_ifreq_io.ifr_data = reinterpret_cast<__caddr_t>(ecmd.get());
 
-            if (ioctl(_M_sock->fd, SIOCETHTOOL, &_M_ifreq_io) == -1) {
+            if (ioctl(m_sock->fd, SIOCETHTOOL, &m_ifreq_io) == -1) {
                 throw std::runtime_error("SIOCETHTOOL");
             } 
             return ecmd;   
@@ -252,8 +252,8 @@ namespace more { namespace netdev
             struct ethtool_value edata;
             edata.cmd = ETHTOOL_GLINK;
 
-            _M_ifreq_io.ifr_data = reinterpret_cast<__caddr_t>(&edata);
-            if (ioctl(_M_sock->fd, SIOCETHTOOL, &_M_ifreq_io) == -1) {
+            m_ifreq_io.ifr_data = reinterpret_cast<__caddr_t>(&edata);
+            if (ioctl(m_sock->fd, SIOCETHTOOL, &m_ifreq_io) == -1) {
                 throw std::runtime_error("SIOCETHTOOL");
             }
             return edata.data;    
@@ -274,7 +274,7 @@ namespace more { namespace netdev
             stat receive, transmit;
             while(proc >> dev)
             {
-                if (dev.str() != _M_dev)
+                if (dev.str() != m_dev)
                 {
                     proc.ignore(std::numeric_limits<std::streamsize>::max(), proc.widen('\n'));
                     continue;
@@ -283,7 +283,7 @@ namespace more { namespace netdev
                 proc >> receive >> transmit;
                 return std::make_pair(receive, transmit);
             }
-            throw std::runtime_error(std::string(_M_dev).append(": unknown device"));
+            throw std::runtime_error(std::string(m_dev).append(": unknown device"));
         }
 
         stat
@@ -303,7 +303,7 @@ namespace more { namespace netdev
         struct flags_t
         {
             flags_t(short int v)
-            : _M_value(v)
+            : m_value(v)
             {}
 
             template <typename Tp>
@@ -313,7 +313,7 @@ namespace more { namespace netdev
             template <int N>
             bool is_set() const
             {
-                return _M_value & bit(N);
+                return m_value & bit(N);
             }
 
             std::string
@@ -325,26 +325,26 @@ namespace more { namespace netdev
 
                 std::stringstream ret;
                 for (int i=1;i<16;i++) 
-                    if (_M_value & bit(i)) 
+                    if (m_value & bit(i)) 
                         ret << if_flags[i-1] << ' ';
                 return ret.str(); 
             }
 
             short int value() const
             { 
-                return _M_value;
+                return m_value;
             }
 
         private:
-            short int _M_value;
+            short int m_value;
         };
 
         flags_t
         flags() const 
         {
-            if (ioctl(_M_sock->fd, SIOCGIFFLAGS, &_M_ifreq_io) < 0)
+            if (ioctl(m_sock->fd, SIOCGIFFLAGS, &m_ifreq_io) < 0)
                 throw std::runtime_error("SIOCGIFFLAGS");
-            return flags_t(_M_ifreq_io.ifr_flags);
+            return flags_t(m_ifreq_io.ifr_flags);
         }
 
         /// predicates...
@@ -395,9 +395,9 @@ namespace more { namespace netdev
         { return flags().is_set<15>(); }
         
     private:
-        mutable struct ifreq _M_ifreq_io;
-        std::string _M_dev;
-        std::shared_ptr<socket> _M_sock;
+        mutable struct ifreq m_ifreq_io;
+        std::string m_dev;
+        std::shared_ptr<socket> m_sock;
     };
 
 } // namespace netdev

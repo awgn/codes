@@ -15,15 +15,15 @@
 struct dump
 {
     dump(std::ostream &out)
-    : _M_out(out)
+    : m_out(out)
     {}
 
     void operator()(const more::netdev::ifr &i)
     {
-        _M_out << i.name() << ' ';
+        m_out << i.name() << ' ';
     }
 
-    std::ostream &_M_out;
+    std::ostream &m_out;
 };
 
   int

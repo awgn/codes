@@ -42,16 +42,16 @@ struct sub3 : public subject<int, std::string>
 struct obs1 : public observer<>
 {
     obs1(int n)
-    : _M_value(n)
+    : m_value(n)
     {}
 
     virtual void
     update()
     {
-        std::cout << __PRETTY_FUNCTION__  << " " << _M_value << std::endl;
+        std::cout << __PRETTY_FUNCTION__  << " " << m_value << std::endl;
     }
 
-    int _M_value;
+    int m_value;
 };
 
 struct obs2 : public observer<>

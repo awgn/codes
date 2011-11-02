@@ -56,40 +56,40 @@ namespace more {
             friend struct _const_col_iterator;
 
             _col_iterator(size_t c)
-            : _M_it(), _M_col(c)
+            : m_it(), m_col(c)
             {}
  
             _col_iterator(const _col_iterator &rhs)
-            : _M_it(rhs._M_it), _M_col(rhs._M_col)
+            : m_it(rhs.m_it), m_col(rhs.m_col)
             {}
 
             _col_iterator
             operator=(const _col_iterator &rhs)
             {
-                _M_it = rhs._M_it;
-                _M_col = rhs._M_col;
+                m_it = rhs.m_it;
+                m_col = rhs.m_col;
             }
  
             explicit _col_iterator(iterator it, size_t c)
-            : _M_it(it), _M_col(c)
+            : m_it(it), m_col(c)
             {}
 
             Tp &
             operator*()
             {
-                return *_M_it;
+                return *m_it;
             }
 
             Tp *
             operator->()
             {
-                return &(*_M_it);
+                return &(*m_it);
             }
 
             _col_iterator
             operator++()
             {
-                std::advance(_M_it, _M_col);
+                std::advance(m_it, m_col);
                 return *this;
             }
 
@@ -104,7 +104,7 @@ namespace more {
             _col_iterator
             operator--()
             {
-                std::advance(_M_it, -_M_col);
+                std::advance(m_it, -m_col);
                 return *this;
             }
 
@@ -119,60 +119,60 @@ namespace more {
             bool
             operator==(const _col_iterator &rhs)
             {
-                return _M_it == rhs._M_it;
+                return m_it == rhs.m_it;
             }
             bool
             operator!=(const _col_iterator &rhs)
             {
-                return _M_it != rhs._M_it;
+                return m_it != rhs.m_it;
             }
 
         private:
-            iterator _M_it;
-            size_t   _M_col;
+            iterator m_it;
+            size_t   m_col;
         };
  
         struct _const_col_iterator : public std::iterator<std::bidirectional_iterator_tag, Tp>
         {
             _const_col_iterator(size_t c)
-            : _M_it(), _M_col(c)
+            : m_it(), m_col(c)
             {}
  
             _const_col_iterator(const _const_col_iterator &rhs)
-            : _M_it(rhs._M_it), _M_col(rhs._M_col)
+            : m_it(rhs.m_it), m_col(rhs.m_col)
             {}
 
             _const_col_iterator(const _col_iterator &rhs)
-            : _M_it(rhs._M_it), _M_col(rhs._M_col)
+            : m_it(rhs.m_it), m_col(rhs.m_col)
             {}
  
             _const_col_iterator
             operator=(const _const_col_iterator &rhs)
             {
-                _M_it = rhs._M_it;
-                _M_col = rhs._M_col;
+                m_it = rhs.m_it;
+                m_col = rhs.m_col;
             }
  
             explicit _const_col_iterator(const_iterator it, size_t c)
-            : _M_it(it), _M_col(c)
+            : m_it(it), m_col(c)
             {}
 
             const Tp &
             operator*() const
             {
-                return *_M_it;
+                return *m_it;
             }
 
             const Tp *
             operator->() const
             {
-                return &(*_M_it);
+                return &(*m_it);
             }
 
             _const_col_iterator
             operator++()
             {
-                std::advance(_M_it, _M_col);
+                std::advance(m_it, m_col);
                 return *this;
             }
 
@@ -187,7 +187,7 @@ namespace more {
             _const_col_iterator
             operator--()
             {
-                std::advance(_M_it, -_M_col);
+                std::advance(m_it, -m_col);
                 return *this;
             }
 
@@ -202,17 +202,17 @@ namespace more {
             bool
             operator==(const _const_col_iterator &rhs)
             {
-                return _M_it == rhs._M_it;
+                return m_it == rhs.m_it;
             }
             bool
             operator!=(const _const_col_iterator &rhs)
             {
-                return _M_it != rhs._M_it;
+                return m_it != rhs.m_it;
             }
 
         private:
-            const_iterator _M_it;
-            size_t   _M_col;
+            const_iterator m_it;
+            size_t   m_col;
         };
  
     };
@@ -244,32 +244,32 @@ namespace more {
         static const int col_size = C;
 
         matrix()
-        : _M_assert(), _M_mat()
+        : m_assert(), m_mat()
         {}
 
         matrix(std::initializer_list<Tp> lst)
-        : _M_assert(), _M_mat()
+        : m_assert(), m_mat()
         {
             scoped_assert(lst.size() == R * C, "matrix::op= size mismatch!");    
-            std::copy(lst.begin(), lst.end(), _M_mat.begin());
+            std::copy(lst.begin(), lst.end(), m_mat.begin());
         }
         
         matrix(const matrix &rhs)
-        : _M_assert(), _M_mat(rhs._M_mat)
+        : m_assert(), m_mat(rhs.m_mat)
         {}
 
         explicit matrix(const matrix<Tp,0,0> &rhs)
-        : _M_assert(rhs.row() == R && rhs.col() == C, "matrix: size mismatch!"), _M_mat()
+        : m_assert(rhs.row() == R && rhs.col() == C, "matrix: size mismatch!"), m_mat()
         {  
             // std::array is an aggregate type: therefore it does not support 
             // std::initializer_list constructor. Booooooooh!
-            std::copy(rhs.begin(), rhs.end(), _M_mat.begin());
+            std::copy(rhs.begin(), rhs.end(), m_mat.begin());
         }
 
         matrix &
         operator=(const matrix &rhs)
         {
-            std::copy(rhs.begin(), rhs.end(), _M_mat.begin());
+            std::copy(rhs.begin(), rhs.end(), m_mat.begin());
             return *this;
         }
 
@@ -277,7 +277,7 @@ namespace more {
         operator=(const matrix<Tp,0,0> &rhs)
         {
             scoped_assert(rhs.row() == R && rhs.col() == C, "matrix::op= size mismatch!");    
-            std::copy(rhs.begin(), rhs.end(), _M_mat.begin());
+            std::copy(rhs.begin(), rhs.end(), m_mat.begin());
             return *this;
         }
 
@@ -285,7 +285,7 @@ namespace more {
         operator=(std::initializer_list<Tp> lst)
         {
             scoped_assert( lst.size() == R * C, "matrix::op= size mismatch!");    
-            std::copy(lst.begin(), lst.end(), _M_mat.begin());
+            std::copy(lst.begin(), lst.end(), m_mat.begin());
             return *this;
         }
 
@@ -293,14 +293,14 @@ namespace more {
         operator()(size_t r, size_t c)
         {
             scoped_assert( r < row() && c < col(), "matrix::op() bad index");
-            return _M_mat[r*C+c];
+            return m_mat[r*C+c];
         }     
 
         const Tp &
         operator()(size_t r, size_t c) const
         {
             scoped_assert( r < row() && c < col(), "matrix::op() bad index");
-            return _M_mat[r*C+c];
+            return m_mat[r*C+c];
         }
 
         // observers:
@@ -315,33 +315,33 @@ namespace more {
         iterator 
         begin() 
         {
-            return _M_mat.begin();
+            return m_mat.begin();
         }
         const_iterator 
         begin() const
         {
-            return _M_mat.begin();
+            return m_mat.begin();
         }
         const_iterator 
         cbegin() const
         {
-            return _M_mat.begin();
+            return m_mat.begin();
         }
 
         iterator 
         end() 
         {
-            return _M_mat.end();
+            return m_mat.end();
         }
         const_iterator 
         end() const
         {
-            return _M_mat.end();
+            return m_mat.end();
         }
         const_iterator 
         cend() const
         {
-            return _M_mat.end();
+            return m_mat.end();
         }
         
         //////// row_iterator:
@@ -350,28 +350,28 @@ namespace more {
         row_begin(size_t r) 
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return _M_mat.begin() + (r * col());
+            return m_mat.begin() + (r * col());
         }
         
         const_row_iterator
         row_begin(size_t r) const       
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return _M_mat.begin() + (r * col());
+            return m_mat.begin() + (r * col());
         }
 
         row_iterator 
         row_end(size_t r) 
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return _M_mat.begin() + ((r+1) * col());
+            return m_mat.begin() + ((r+1) * col());
         }
 
         const_row_iterator
         row_end(size_t r) const
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return _M_mat.begin() +((r+1) * col());
+            return m_mat.begin() +((r+1) * col());
         }
 
         //////// col_iterator:
@@ -380,28 +380,28 @@ namespace more {
         col_begin(size_t c) 
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return col_iterator(_M_mat.begin() + c, col());
+            return col_iterator(m_mat.begin() + c, col());
         }
         
         const_col_iterator
         col_begin(size_t c) const
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return const_col_iterator(_M_mat.begin() + c, col());
+            return const_col_iterator(m_mat.begin() + c, col());
         }
 
         col_iterator 
         col_end(size_t c) 
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return col_iterator(_M_mat.begin() + (c+R*C), col());
+            return col_iterator(m_mat.begin() + (c+R*C), col());
         }
 
         const_col_iterator
         col_end(size_t c) const
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return const_col_iterator(_M_mat.begin() + (c+R*C), col());
+            return const_col_iterator(m_mat.begin() + (c+R*C), col());
         }
  
         ////////////////////////////////////////////
@@ -409,14 +409,14 @@ namespace more {
         bool 
         operator==(const matrix &rhs) const
         {
-            return std::equal(_M_mat.begin(), _M_mat.end(), rhs.begin());   
+            return std::equal(m_mat.begin(), m_mat.end(), rhs.begin());   
         }
         bool 
         operator==(const matrix<Tp,0,0> &rhs) const
         {
             if (rhs.row() != R || rhs.col() != C)
                 return false;
-            return std::equal(_M_mat.begin(), _M_mat.end(), rhs.begin());   
+            return std::equal(m_mat.begin(), m_mat.end(), rhs.begin());   
         }
 
         bool 
@@ -435,7 +435,7 @@ namespace more {
         matrix &
         operator+=(const matrix &rhs)
         {
-            std::transform(_M_mat.begin(), _M_mat.end(), rhs.begin(), _M_mat.begin(), std::plus<Tp>());
+            std::transform(m_mat.begin(), m_mat.end(), rhs.begin(), m_mat.begin(), std::plus<Tp>());
             return *this;
         }
 
@@ -443,7 +443,7 @@ namespace more {
         operator+=(const matrix<Tp,0,0> &rhs)
         {
             scoped_assert(rhs.row() == R && rhs.col() == C, "matrix::+= size mismatch!");    
-            std::transform(_M_mat.begin(), _M_mat.end(), rhs.begin(), _M_mat.begin(), std::plus<Tp>());
+            std::transform(m_mat.begin(), m_mat.end(), rhs.begin(), m_mat.begin(), std::plus<Tp>());
             return *this;
         }
  
@@ -452,7 +452,7 @@ namespace more {
         matrix &
         operator-=(const matrix &rhs)
         {
-            std::transform(_M_mat.begin(), _M_mat.end(), rhs.begin(), _M_mat.begin(), std::minus<Tp>());
+            std::transform(m_mat.begin(), m_mat.end(), rhs.begin(), m_mat.begin(), std::minus<Tp>());
             return *this;
         }
 
@@ -460,7 +460,7 @@ namespace more {
         operator-=(const matrix<Tp,0,0> &rhs)
         {
             scoped_assert(rhs.row() == R && rhs.col() == C, "matrix::-= size mismatch!");    
-            std::transform(_M_mat.begin(), _M_mat.end(), rhs.begin(), _M_mat.begin(), std::minus<Tp>());
+            std::transform(m_mat.begin(), m_mat.end(), rhs.begin(), m_mat.begin(), std::minus<Tp>());
             return *this;
         }
 
@@ -468,7 +468,7 @@ namespace more {
         matrix &
         operator*=(T val)
         {
-            std::transform(_M_mat.begin(), _M_mat.end(), _M_mat.begin(), std::bind(std::multiplies<Tp>(),val,_1));
+            std::transform(m_mat.begin(), m_mat.end(), m_mat.begin(), std::bind(std::multiplies<Tp>(),val,_1));
             return *this;
         }
 
@@ -476,7 +476,7 @@ namespace more {
         matrix &
         operator/=(T val)
         {
-            std::transform(_M_mat.begin(), _M_mat.end(), _M_mat.begin(), std::bind(std::divides<Tp>(),_1, val));
+            std::transform(m_mat.begin(), m_mat.end(), m_mat.begin(), std::bind(std::divides<Tp>(),_1, val));
             return *this;
         }
 
@@ -487,8 +487,8 @@ namespace more {
         }        
  
     private:
-        scoped_assert _M_assert;
-        std::array<Tp, R*C> _M_mat; 
+        scoped_assert m_assert;
+        std::array<Tp, R*C> m_mat; 
     };    
     
     ///////////////////////////////////////////////////////////////////////////////
@@ -516,16 +516,16 @@ namespace more {
         static const int col_size = 0;
 
         matrix(size_t r, size_t c)
-        : _M_assert(), _M_r(r), _M_c(c), _M_mat(r*c)
+        : m_assert(), m_r(r), m_c(c), m_mat(r*c)
         {}
 
         matrix(const matrix &rhs)
-        : _M_assert(), _M_r(rhs.row()), _M_c(rhs.col()), _M_mat(rhs._M_mat)
+        : m_assert(), m_r(rhs.row()), m_c(rhs.col()), m_mat(rhs.m_mat)
         {}
 
         template <size_t R, size_t C>
         explicit matrix(const matrix<Tp,R,C> &rhs)
-        : _M_assert(), _M_r(R), _M_c(C), _M_mat(rhs.begin(), rhs.end())
+        : m_assert(), m_r(R), m_c(C), m_mat(rhs.begin(), rhs.end())
         {} 
 
         template <size_t R, size_t C>
@@ -533,7 +533,7 @@ namespace more {
         operator=(const matrix<Tp,R,C> &rhs)
         {
             scoped_assert(row() == R && col() == C, "matrix::op= size mismatch!");    
-            std::copy(rhs.begin(), rhs.end(), _M_mat.begin());
+            std::copy(rhs.begin(), rhs.end(), m_mat.begin());
             return *this;
         }
 
@@ -541,7 +541,7 @@ namespace more {
         operator=(const matrix &rhs)
         {
             scoped_assert(rhs.row() == row() && rhs.col() == col(), "matrix::op= size mismatch!");    
-            std::copy(rhs.begin(), rhs.end(), _M_mat.begin());
+            std::copy(rhs.begin(), rhs.end(), m_mat.begin());
             return *this;
         }
 
@@ -549,7 +549,7 @@ namespace more {
         operator=(std::initializer_list<Tp> lst)
         {
             scoped_assert( lst.size() == row() * col(), "matrix::op= size mismatch!");    
-            _M_mat.assign(lst.begin(), lst.end());
+            m_mat.assign(lst.begin(), lst.end());
             return *this;
         }
  
@@ -557,55 +557,55 @@ namespace more {
         operator()(size_t r, size_t c)
         {
             scoped_assert(r < row() && c < col(), "matrix::op() bad index");
-            return _M_mat[r*col()+c];
+            return m_mat[r*col()+c];
         }     
 
         const Tp &
         operator()(size_t r, size_t c) const
         {
             scoped_assert(r < row() && c < col(), "matrix::op() bad index");
-            return _M_mat[r*col()+c];
+            return m_mat[r*col()+c];
         }
 
         // observers:
         //
 
         size_t row() const
-        { return _M_r; }
+        { return m_r; }
 
         size_t col() const
-        { return _M_c; }
+        { return m_c; }
 
         iterator 
         begin() 
         {
-            return _M_mat.begin();
+            return m_mat.begin();
         }
         const_iterator 
         begin() const
         {
-            return _M_mat.begin();
+            return m_mat.begin();
         }
         const_iterator 
         cbegin() const
         {
-            return _M_mat.begin();
+            return m_mat.begin();
         }
 
         iterator 
         end() 
         {
-            return _M_mat.end();
+            return m_mat.end();
         }
         const_iterator 
         end() const
         {
-            return _M_mat.end();
+            return m_mat.end();
         }
         const_iterator 
         cend() const
         {
-            return _M_mat.end();
+            return m_mat.end();
         }
  
         //////// row_iterator:
@@ -614,28 +614,28 @@ namespace more {
         row_begin(size_t r) 
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return _M_mat.begin() + (r * col());
+            return m_mat.begin() + (r * col());
         }
         
         const_row_iterator
         row_begin(size_t r) const
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return _M_mat.begin() + (r * col());
+            return m_mat.begin() + (r * col());
         }
 
         row_iterator 
         row_end(size_t r) 
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return _M_mat.begin() + ((r+1) * col());
+            return m_mat.begin() + ((r+1) * col());
         }
 
         const_row_iterator
         row_end(size_t r) const
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return _M_mat.begin() +((r+1) * col());
+            return m_mat.begin() +((r+1) * col());
         }
 
         //////// col_iterator:
@@ -644,28 +644,28 @@ namespace more {
         col_begin(size_t c) 
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return col_iterator(_M_mat.begin() + c, col());
+            return col_iterator(m_mat.begin() + c, col());
         }
         
         const_col_iterator
         col_begin(size_t c) const
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return const_col_iterator(_M_mat.begin() + c, col());
+            return const_col_iterator(m_mat.begin() + c, col());
         }
 
         col_iterator 
         col_end(size_t c) 
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return col_iterator(_M_mat.begin() + (c+row()*col()), col());
+            return col_iterator(m_mat.begin() + (c+row()*col()), col());
         }
 
         const_col_iterator
         col_end(size_t c) const
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return const_col_iterator(_M_mat.begin() + (c+row()*col()), col());
+            return const_col_iterator(m_mat.begin() + (c+row()*col()), col());
         }
  
         ////////////////////////////////////
@@ -676,14 +676,14 @@ namespace more {
         { 
             if (row() != R || col() != C)
                 return false;
-            return std::equal(_M_mat.begin(), _M_mat.end(), rhs.begin());   
+            return std::equal(m_mat.begin(), m_mat.end(), rhs.begin());   
         }
         bool 
         operator==(const matrix &rhs) const
         {
             if (rhs.row() != row() || rhs.col() != col())
                 return false;
-            return std::equal(_M_mat.begin(), _M_mat.end(), rhs.begin());   
+            return std::equal(m_mat.begin(), m_mat.end(), rhs.begin());   
         }
 
         template <size_t R, size_t C>
@@ -705,7 +705,7 @@ namespace more {
         operator+=(const matrix<Tp,R,C> &rhs)
         {
             scoped_assert(row() == R && col() == C, "matrix::+= size mismatch!");    
-            std::transform(_M_mat.begin(), _M_mat.end(), rhs.begin(), _M_mat.begin(), std::plus<Tp>());
+            std::transform(m_mat.begin(), m_mat.end(), rhs.begin(), m_mat.begin(), std::plus<Tp>());
             return *this;
         }
 
@@ -713,7 +713,7 @@ namespace more {
         operator+=(const matrix &rhs)
         {
             scoped_assert(rhs.row() == row() && rhs.col() == col(), "matrix::+= size mismatch!");    
-            std::transform(_M_mat.begin(), _M_mat.end(), rhs.begin(), _M_mat.begin(), std::plus<Tp>());
+            std::transform(m_mat.begin(), m_mat.end(), rhs.begin(), m_mat.begin(), std::plus<Tp>());
             return *this;
         }
  
@@ -724,7 +724,7 @@ namespace more {
         operator-=(const matrix<Tp,R,C> &rhs)
         {
             scoped_assert(row() == R && col() == C, "matrix::-= size mismatch!");    
-            std::transform(_M_mat.begin(), _M_mat.end(), rhs.begin(), _M_mat.begin(), std::minus<Tp>());
+            std::transform(m_mat.begin(), m_mat.end(), rhs.begin(), m_mat.begin(), std::minus<Tp>());
             return *this;
         }
 
@@ -732,7 +732,7 @@ namespace more {
         operator-=(const matrix &rhs)
         {
             scoped_assert(rhs.row() == row() && rhs.col() == col(), "matrix::-= size mismatch!");    
-            std::transform(_M_mat.begin(), _M_mat.end(), rhs.begin(), _M_mat.begin(), std::minus<Tp>());
+            std::transform(m_mat.begin(), m_mat.end(), rhs.begin(), m_mat.begin(), std::minus<Tp>());
             return *this;
         }
 
@@ -740,7 +740,7 @@ namespace more {
         matrix &
         operator*=(T val)
         {
-            std::transform(_M_mat.begin(), _M_mat.end(), _M_mat.begin(), std::bind(std::multiplies<Tp>(),val,_1));
+            std::transform(m_mat.begin(), m_mat.end(), m_mat.begin(), std::bind(std::multiplies<Tp>(),val,_1));
             return *this;
         }
 
@@ -748,7 +748,7 @@ namespace more {
         matrix &
         operator/=(T val)
         {
-            std::transform(_M_mat.begin(), _M_mat.end(), _M_mat.begin(), std::bind(std::divides<Tp>(),_1, val));
+            std::transform(m_mat.begin(), m_mat.end(), m_mat.begin(), std::bind(std::divides<Tp>(),_1, val));
             return *this;
         }
 
@@ -759,11 +759,11 @@ namespace more {
         }        
 
     private:
-        scoped_assert _M_assert;
+        scoped_assert m_assert;
 
-        size_t _M_r;
-        size_t _M_c;
-        std::vector<Tp> _M_mat;        
+        size_t m_r;
+        size_t m_c;
+        std::vector<Tp> m_mat;        
     };
 
     ///////////////////////////////////////////////////////////////////////////////

@@ -346,20 +346,20 @@ namespace more {
                          typename std::basic_string<CharT,Traits,Alloc>::value_type>
     {
         capitalize_op()
-        : _M_state(0)
+        : m_state(0)
         {}
 
         typename std::basic_string<CharT,Traits,Alloc>::value_type
         operator()(typename std::basic_string<CharT,Traits,Alloc>::value_type c) const
         {
             if ( ::isspace(c) ) {
-                _M_state = 0;
+                m_state = 0;
                 return c;
             }
-            return _M_state++ ? ::tolower(c) : ::toupper(c);
+            return m_state++ ? ::tolower(c) : ::toupper(c);
         }
 
-        mutable int _M_state;
+        mutable int m_state;
     };
 
     template<typename CharT, typename Traits, typename Alloc>

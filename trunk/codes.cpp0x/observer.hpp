@@ -56,7 +56,7 @@ namespace more {
 
     public:
         subject()
-        : _M_observers()
+        : m_observers()
         {}
 
         ~subject()
@@ -64,8 +64,8 @@ namespace more {
 
         void notify(Ti&& ...args)
         {
-            std::lock_guard<std::mutex> lock(_M_mutex);
-            for( auto it = _M_observers.begin(), it_e = _M_observers.end(); it != it_e; ++it)
+            std::lock_guard<std::mutex> lock(m_mutex);
+            for( auto it = m_observers.begin(), it_e = m_observers.end(); it != it_e; ++it)
             {
                 (*it)->updatex(std::forward<Ti>(args)...);
             }
@@ -75,9 +75,9 @@ namespace more {
 
         void attach(const std::shared_ptr<observer<Ti...>> &sp)
         {
-            std::lock_guard<std::mutex> lock(_M_mutex);
-            if (std::find(_M_observers.begin(), _M_observers.end(), sp) == _M_observers.end())
-                _M_observers.push_back(sp);
+            std::lock_guard<std::mutex> lock(m_mutex);
+            if (std::find(m_observers.begin(), m_observers.end(), sp) == m_observers.end())
+                m_observers.push_back(sp);
         }
         void attach(observer<Ti...> *rp)
         {
@@ -86,10 +86,10 @@ namespace more {
 
         void detach(const std::shared_ptr<observer<Ti...>> &sp)
         {
-            std::lock_guard<std::mutex> lock(_M_mutex);
-            auto it = std::find(_M_observers.begin(), _M_observers.end(), sp);
-            if (it != _M_observers.end())
-                _M_observers.erase(it);
+            std::lock_guard<std::mutex> lock(m_mutex);
+            auto it = std::find(m_observers.begin(), m_observers.end(), sp);
+            if (it != m_observers.end())
+                m_observers.erase(it);
         }
         void detach(observer<Ti...> *rp)
         {
@@ -97,8 +97,8 @@ namespace more {
         }
 
     private:  
-        std::vector<std::shared_ptr<observer<Ti...>>>  _M_observers;
-        std::mutex _M_mutex;
+        std::vector<std::shared_ptr<observer<Ti...>>>  m_observers;
+        std::mutex m_mutex;
     };
 
 } // namespace more

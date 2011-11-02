@@ -26,10 +26,10 @@ struct s0: public more::singleton<s0, more::indestructible_singleton_type>
 
 struct s1: public more::singleton<s1, volatile more::singleton_type> 
 {
-    int _M_value;
+    int m_value;
 
     s1( base_type::tag, int value = 0)
-    :  _M_value(value)
+    :  m_value(value)
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
@@ -42,12 +42,12 @@ struct s1: public more::singleton<s1, volatile more::singleton_type>
 
 struct s2: public more::singleton<s2, const more::indestructible_singleton_type> {
 
-    std::string _M_par1;
-    std::string _M_par2;
+    std::string m_par1;
+    std::string m_par2;
 
     s2( base_type::tag, const std::string &p1 = std::string(), const std::string &p2 = std::string())
-    : _M_par1(p1),
-      _M_par2(p2)
+    : m_par1(p1),
+      m_par2(p2)
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
@@ -76,8 +76,8 @@ main(int argc, char *argv[])
 
     std::cout << "\nsingleton instances (access): " << std::endl;
 
-    std::cout << "q1: slot @" << std::hex << &q1 << " value:" << std::dec << q1._M_value << '\n';
-    std::cout << "q2: slot @" << std::hex << &q2 << " value:" << q2._M_par1 << ' ' << q2._M_par2 << '\n';
+    std::cout << "q1: slot @" << std::hex << &q1 << " value:" << std::dec << q1.m_value << '\n';
+    std::cout << "q2: slot @" << std::hex << &q2 << " value:" << q2.m_par1 << ' ' << q2.m_par2 << '\n';
 
     std::cout << "\ntemplate singleton<T> instance:" << std::endl;
 
