@@ -136,7 +136,7 @@ parse_source(const std::string &name)
             case _include:
             case _define:
             case _undef:
-                ret.push_back(std::make_pair(std::make_tuple(it->second, false, static_cast<std::string>(id)),
+                ret.push_back(std::make_pair(std::make_tuple(it->second, false,id.str()),
                                              std::make_tuple(name,c)));
                 break;
             case _if:
@@ -145,7 +145,7 @@ parse_source(const std::string &name)
                 break;
             case _ifdef:
             case _ifndef:
-                tmp.push(std::make_pair(std::make_tuple(it->second, false, static_cast<std::string>(id)),
+                tmp.push(std::make_pair(std::make_tuple(it->second, false, id.str()),
                                         std::make_tuple(name,c)));
                 break;
             case _else:

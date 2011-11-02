@@ -6,7 +6,7 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
- */
+*/
 
 #ifndef _NETDEV_HPP_
 #define _NETDEV_HPP_ 
@@ -132,7 +132,7 @@ namespace more { namespace netdev
             devname_t dev;
             while(proc >> dev)
             {
-                vec.push_back(ifr(static_cast<const std::string &>(dev).c_str()));
+                vec.push_back(ifr(dev.str().c_str()));
                 proc.ignore(std::numeric_limits<std::streamsize>::max(), proc.widen('\n'));
             }
 
@@ -274,7 +274,7 @@ namespace more { namespace netdev
             stat receive, transmit;
             while(proc >> dev)
             {
-                if (static_cast<const std::string &>(dev) != _M_dev)
+                if (dev.str() != _M_dev)
                 {
                     proc.ignore(std::numeric_limits<std::streamsize>::max(), proc.widen('\n'));
                     continue;
