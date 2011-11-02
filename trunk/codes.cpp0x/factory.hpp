@@ -127,15 +127,6 @@ namespace more {
             return it->second->shared_alloc(std::forward<Ti>(arg)...);
         }
 
-        // static instances... 
-        template <size_t N>
-        static factory &
-        instance()
-        {
-            static factory s;
-            return s;
-        }
-
     private:
         map_type _M_map;
     };
