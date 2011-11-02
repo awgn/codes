@@ -22,21 +22,21 @@ namespace more {
     thread_interrupt
     {
         typedef std::shared_ptr<volatile bool> request_type;
+
         typedef std::map<std::thread::id, request_type > map_type;
-        typedef std::pair<map_type, std::mutex> mt_map_type;
 
         struct hook
         {
             hook()
-            : _M_req(interrupt_request())
+            : m_req(interrupt_request())
             {   
-                interrupt_request_store(std::this_thread::get_id(), _M_req);
+                interrupt_request_store(std::this_thread::get_id(), m_req);
             }
             
             hook(request_type hook)
-            : _M_req(hook)
+            : m_req(hook)
             {   
-                interrupt_request_store(std::this_thread::get_id(), _M_req);
+                interrupt_request_store(std::this_thread::get_id(), m_req);
             }
  
             ~hook()
@@ -45,24 +45,24 @@ namespace more {
             bool
             operator()() const
             {
-                return *_M_req;
+                return *m_req;
             }
             
-            request_type _M_req;
+            request_type m_req;
         };
 
         static
         void interrupt(std::thread::id h)
         {
-            mt_map_type & _map = thread_interrupt::get_int_map();
-            std::lock_guard<std::mutex> lock(_map.second);               
+            auto & map_ = thread_interrupt::get_map();
+            std::lock_guard<std::mutex> lock(map_.second);               
 
-            auto it = _map.first.find(h);
-            if ( it == _map.first.end() )
+            auto it = map_.first.find(h);
+            if (it == map_.first.end())
                 throw std::runtime_error("interrupt_request not found");
             
             *(it->second) = true;
-            _map.first.erase(it);
+            map_.first.erase(it);
         }
  
    private:   
@@ -80,17 +80,17 @@ namespace more {
         static
         void interrupt_request_store(std::thread::id h, request_type p)
         {
-            mt_map_type & __map = thread_interrupt::get_int_map();
-            std::lock_guard<std::mutex> lock(__map.second);
-            __map.first.insert(std::make_pair(h,p));
+            auto & map_ = thread_interrupt::get_map();
+            std::lock_guard<std::mutex> lock(map_.second);
+            map_.first.insert(std::make_pair(h,p));
         }
  
         static
-        mt_map_type &
-        get_int_map()
+        std::pair<map_type, std::mutex> &
+        get_map()
         {
-            static mt_map_type _S_map;
-            return _S_map;
+            static std::pair<map_type, std::mutex> s_map;
+            return s_map;
         }
     };
 

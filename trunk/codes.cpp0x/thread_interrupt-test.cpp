@@ -30,7 +30,6 @@ struct thread_one : public std::unary_function<int, void>
 
         for(;;)
         {
-            // std::cout << __PRETTY_FUNCTION__ << std::endl;
             if ( interrupt_requested() ) {
                 std::cout << "interrupted! " << std::this_thread::get_id() << std::endl;
                 return;
@@ -50,7 +49,6 @@ struct thread_two : public std::binary_function<int, more::thread_interrupt::hoo
     {
         for(;;)
         {
-            // std::cout << __PRETTY_FUNCTION__ << std::endl;
             if ( interrupt_requested() ) {
                 std::cout << "interrupted! " << std::this_thread::get_id() << std::endl;
                 return;
