@@ -126,6 +126,14 @@ parse_source(const std::string &name)
             continue; 
 
         token.erase(0,1);   // erase '#' char
+        if (token.empty()) {
+            ss >> token;
+            if (token.empty()){
+                std::ostringstream error;
+                error << "parse error at " << name << ':' << c; 
+                throw std::runtime_error(error.str()); 
+            }
+        }
         auto it = static_dirmap.find(token);
         if (it != static_dirmap.end())
         {
