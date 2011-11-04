@@ -67,7 +67,8 @@ namespace more {
         template <typename F, typename K, typename ... Ti>
         void unpack_register(F &f, const K &key, fac_args<Ti...>)
         {
-            f.regist(key, new typename more::factory_allocator<B, E, Ti...>);    
+            f.regist(key, std::unique_ptr<factory_base_allocator<B, Ti...>>(new 
+                                            typename more::factory_allocator<B, E, Ti...>()));    
         }
     };
 
@@ -88,9 +89,9 @@ namespace more {
         ~factory() = default;
 
         bool
-        regist(const K & key, factory_base_allocator<B, Arg...> * value)
+        regist(const K & key, std::unique_ptr<factory_base_allocator<B, Arg...>> value)
         { 
-            return m_map.insert(make_pair(key, std::unique_ptr<factory_base_allocator<B,Arg...> >(value))).second; 
+            return m_map.insert(make_pair(key, std::move(value))).second; 
         }
         
         bool
