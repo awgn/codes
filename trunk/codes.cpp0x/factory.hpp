@@ -81,7 +81,13 @@ namespace more {
     {
     public:
         
+#if __GNUC__ == 4 && __GNUC_MINOR__ < 6
+        // Buggy compiler...    
+        //
+        typedef std::map<K, std::shared_ptr<factory_base_allocator<B,Arg...>>> map_type;
+#else
         typedef std::map<K, std::unique_ptr<factory_base_allocator<B,Arg...>>> map_type;
+#endif
 
         typedef fac_args<Arg...> args_pack;
 
@@ -91,7 +97,12 @@ namespace more {
         bool
         regist(const K & key, std::unique_ptr<factory_base_allocator<B, Arg...>> value)
         { 
+#if __GNUC__ == 4 && __GNUC_MINOR__ < 6
+            std::shared_ptr<factory_base_allocator<B, Arg...>> sp(std::move(value));
+            return m_map.insert(make_pair(key, std::move(sp))).second; 
+#else                                                    
             return m_map.insert(make_pair(key, std::move(value))).second; 
+#endif
         }
         
         bool
