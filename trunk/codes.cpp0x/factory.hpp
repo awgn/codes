@@ -82,7 +82,7 @@ namespace more {
     public:
         
 #if __GNUC__ == 4 && __GNUC_MINOR__ < 6
-        // Buggy compiler...    
+        // buggy std::map when used with std::unique_ptr...    
         //
         typedef std::map<K, std::shared_ptr<factory_base_allocator<B,Arg...>>> map_type;
 #else
