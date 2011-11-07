@@ -33,7 +33,12 @@ namespace more {
         std::lock_guard<std::mutex> _L_(_S_mutex);
 #endif
         int status;
-        std::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
+
+        auto deleter = [](void *a) { ::free(a); };
+
+        std::unique_ptr<char, decltype(deleter)> 
+            ret(abi::__cxa_demangle(name,0,0, &status), deleter);
+
         if (status < 0) {
 #ifdef __EXCEPTIONS
             throw std::runtime_error("__cxa_demangle");
@@ -41,7 +46,7 @@ namespace more {
             return std::string("?");
 #endif
         }
-        return std::string(ret.get());
+        return ret.get();
     }
 
 } // namespace more
