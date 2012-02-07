@@ -40,7 +40,7 @@ namespace more {
 
         void m_range_check(std::random_access_iterator_tag) const
         {
-            if (m_current <  m_begin || m_current >= m_end)
+            if (m_current <  m_begin || (m_current+1) > m_end)
                 throw std::runtime_error("random_access_iterator::m_range_check");
         }    
         void m_range_check(std::bidirectional_iterator_tag) const
