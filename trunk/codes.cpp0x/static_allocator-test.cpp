@@ -64,7 +64,15 @@ Context(more_static_allocator)
     Test(vector_with_initializer_list)
     {
         int buffer[4];
+#ifdef __clang__
+        std::vector<int, more::static_allocator<int> > abc(more::static_allocator<int>(buffer,16));
+        abc.push_back(1);
+        abc.push_back(2);
+        abc.push_back(3);
+        abc.push_back(4);
+#else
         std::vector<int, more::static_allocator<int> > abc({1,2,3,4}, more::static_allocator<int>(buffer,16) );
+#endif
         
         int out[] = { 1, 2, 3, 4 };
         Assert( (std::equal(abc.begin(), abc.end(), out)), is_true() );

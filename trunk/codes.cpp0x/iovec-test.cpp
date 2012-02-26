@@ -28,8 +28,15 @@ Context(more_iovec_test)
 {
     Test(get_iovec_on_deque)
     {
+#ifdef __clang__
+        std::deque<int> abc;
+        abc.push_back(0);
+        abc.push_back(1);
+        abc.push_back(2);
+        abc.push_back(3);
+#else
         std::deque<int> abc = { 0, 1, 2, 3 };
-
+#endif
         abc.push_front(-1);
         abc.push_front(-2);
         abc.push_front(-3);

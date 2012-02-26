@@ -128,8 +128,7 @@ namespace more {
 #endif
                 typename std::tuple_element<sizeof...(Ti)-N,
                                              typename std::tuple<Ti...>   
-                                                >::type elem = decltype(elem)();
-
+                                                >::type elem; 
                 bool ok = lex.parse_lexeme(elem);
                 if (!ok)
                     return false;
@@ -149,7 +148,7 @@ namespace more {
 #endif
                 typename std::tuple_element<sizeof...(Ti)-1,
                                              typename std::tuple<Ti...>   
-                                                >::type elem = decltype(elem)();
+                                                >::type elem;
 
                 bool ok = lex.parse_lexeme(elem);
                 if (ok)
@@ -309,11 +308,10 @@ namespace more {
 #if __GNUC__ == 4 &&  __GNUC_MINOR__ > 4
             static_assert(more::traits::has_extraction_operator<T>::value, "parse_lexeme: *** T must have a valid extraction operator>>() ***");
 #endif
-            typename std::remove_const<T>::type e = decltype(e)();
-
+            typename std::remove_const<T>::type e;
+            
             if(m_in >> e)
                 lex = std::move(e);
-
 #ifdef LEXEME_DEBUG
             std::cout << details::BLUE << ":: lex<T>[" << lex << "]" << details::RESET << std::endl;
 #endif
@@ -523,8 +521,7 @@ namespace more {
                     break;
         
                 typename details::mutable_type<
-                    typename C::value_type>::type value = decltype(value)();
-
+                    typename C::value_type>::type value;
                 ok = parse_lexeme(value);
                 if (ok) {
                     if (!details::insert(lex,std::move(value))) {

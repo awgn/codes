@@ -117,8 +117,15 @@ Context(functional_tests)
 
     Test(call_if)
     {
+#ifdef __clang__
+        std::vector<test *> vec;
+        vec.push_back(new test(1));
+        vec.push_back(0);
+        vec.push_back(0);
+        vec.push_back(new test(2));
+#else
         std::vector<test *> vec = { new test(1), 0, 0, new test(2) };
-
+#endif
         using namespace std::placeholders;
         std::for_each(vec.begin(), vec.end(), 
                   std::bind( more::call_if(std::mem_fn(&test::hello)), _1, _1));
