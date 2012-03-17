@@ -197,13 +197,15 @@ namespace more { namespace gotopt {
 
             for(; it != end; ++it)
             {
-                const char * p = *it;
-                if ( strlen(p) > 2 && p[0] == '-' && p[1] != '-') {
-                    m_args.push_back(std::string(p,p+2));
-                    m_args.push_back(std::string(p+2));
+                std::string s(*it);
+
+                if ( s.size() > 2 && s[0] == '-' && s[1] != '-') 
+                {
+                    m_args.push_back(std::string(s.c_str(), s.c_str()+2));
+                    m_args.push_back(std::string(s.c_str()+ 2));
                     continue;
                 }
-                m_args.push_back(*it);
+                m_args.push_back(std::move(s));
             }
 
             m_it = m_args.begin();
