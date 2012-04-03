@@ -14,6 +14,7 @@
 #include <sys/types.h>       
 #include <sys/socket.h>
 #include <sys/uio.h>
+#include <unistd.h>
 
 #include <sockaddress.hpp>           // more!
 #include <error.hpp>                 // more!

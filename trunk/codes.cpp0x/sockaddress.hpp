@@ -144,8 +144,8 @@ namespace more {
         host() const 
         {
             char buf[64];
-            if (inet_ntop(AF_INET, &m_addr.sin_addr, buf, sizeof(buf)) <= 0) {
-                throw more::syscall_error("inet_ntop"), std::string();
+            if (inet_ntop(AF_INET, &m_addr.sin_addr, buf, sizeof(buf)) == nullptr) {
+                throw more::syscall_error("inet_ntop");
             }
             return std::string(buf);
         }
@@ -263,8 +263,8 @@ namespace more {
         host() const 
         {
             char buf[64];
-            if (inet_ntop(AF_INET6, &m_addr.sin6_addr, buf, sizeof(buf)) <= 0) {
-                throw more::syscall_error("inet_ntop"), std::string();
+            if (inet_ntop(AF_INET6, &m_addr.sin6_addr, buf, sizeof(buf)) == nullptr) {
+                throw more::syscall_error("inet_ntop");
             }
             return std::string(buf);
         }

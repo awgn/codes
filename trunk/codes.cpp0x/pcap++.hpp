@@ -74,12 +74,12 @@ namespace more { namespace pcap {
             switch(this->family())
             {
             case AF_INET: {
-                if (inet_ntop(AF_INET, & reinterpret_cast<const struct sockaddr_in &>(m_storage).sin_addr, buf, sizeof(buf)) <= 0 )
-                    throw std::runtime_error("sockaddress::inet_ntop");
+                if (inet_ntop(AF_INET, & reinterpret_cast<const struct sockaddr_in &>(m_storage).sin_addr, buf, sizeof(buf)) == nullptr )
+                    throw std::runtime_error("sockaddress::inetntop");
             } break;
 
             case AF_INET6: {
-                if (inet_ntop(AF_INET6, & reinterpret_cast<const struct sockaddr_in6 &>(m_storage).sin6_addr, buf, sizeof(buf)) <= 0 )
+                if (inet_ntop(AF_INET6, & reinterpret_cast<const struct sockaddr_in6 &>(m_storage).sin6_addr, buf, sizeof(buf)) == nullptr )
                     throw std::runtime_error("sockaddress::inet_ntop");
             } break;
             }
@@ -550,7 +550,7 @@ namespace more { namespace pcap {
     ipv4_dotform(bpf_u_int32 value)
     {
         char buf[16];
-        if (inet_ntop(AF_INET, &value, buf, sizeof(buf)) <= 0 )
+        if (inet_ntop(AF_INET, &value, buf, sizeof(buf)) == nullptr )
             throw std::runtime_error("sockaddress::inet_ntop");
 
         return std::string(buf);
