@@ -107,7 +107,7 @@ namespace more { namespace expr {
     // 
 
     template <typename T, T value>
-    struct exp_integral
+    struct expr_integral
     {
         typedef T expression_type;
 
@@ -121,7 +121,7 @@ namespace more { namespace expr {
 
     template <typename CharT, typename Traits, typename T, T value>
     inline std::basic_ostream<CharT,Traits> &
-    operator<< (std::basic_ostream<CharT,Traits> &out, const exp_integral<T,value> &)
+    operator<< (std::basic_ostream<CharT,Traits> &out, const expr_integral<T,value> &)
     {
         return out << value; 
     }
@@ -130,8 +130,8 @@ namespace more { namespace expr {
 
     namespace 
     {
-        exp_integral<bool, false> _false;
-        exp_integral<bool, true>  _true;
+        expr_integral<bool, false> _false = expr_integral<bool, false>();
+        expr_integral<bool, true>  _true  = expr_integral<bool, true>();
     }
 
     // operand function objects...

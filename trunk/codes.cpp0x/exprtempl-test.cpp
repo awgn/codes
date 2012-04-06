@@ -22,15 +22,15 @@ using namespace more::expr;
 
 namespace 
 {
-    static exp_integral<int, 0> __0 __attribute__((unused));
-    static exp_integral<int, 1> __1 __attribute__((unused));
-    static exp_integral<int, 2> __2 __attribute__((unused));
-    static exp_integral<int, 3> __3 __attribute__((unused));
-    static exp_integral<int, 4> __4 __attribute__((unused));
-    static exp_integral<int, 5> __5 __attribute__((unused));
-    static exp_integral<int, 6> __6 __attribute__((unused));
-    static exp_integral<int, 7> __7 __attribute__((unused));
-    static exp_integral<int, 8> __8 __attribute__((unused));
+    expr_integral<int, 0> = expr_integra<int, 0>();
+    expr_integral<int, 1> = expr_integra<int, 1>();
+    expr_integral<int, 2> = expr_integra<int, 2>();
+    expr_integral<int, 3> = expr_integra<int, 3>();
+    expr_integral<int, 4> = expr_integra<int, 4>();
+    expr_integral<int, 5> = expr_integra<int, 5>();
+    expr_integral<int, 6> = expr_integra<int, 6>();
+    expr_integral<int, 7> = expr_integra<int, 7>();
+    expr_integral<int, 8> = expr_integra<int, 8>();
 }
 
 Context(expression_template_tests)
