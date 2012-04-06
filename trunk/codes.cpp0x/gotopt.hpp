@@ -61,11 +61,7 @@ namespace more { namespace gotopt {
         int         args;
         const char *descr;
 
-        option()
-        : opt(), name(), args(), descr()
-        {}
-
-        option(char _opt, const char *_name, int _args, const char *_descr = nullptr)
+        option(char _opt = char(), const char *_name = nullptr, int _args = 0, const char *_descr = nullptr)
         : opt(_opt), name(_name), args(_args), descr(_descr)
         {}
 
@@ -84,47 +80,46 @@ namespace more { namespace gotopt {
         std::stringstream out;
         out << prolog << std::endl;
 
-        long unsigned int maxlen = 0;
-        for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]); i++)
+        long unsigned int maxlen = 16;
+        for(auto & option : options)
         {
-            maxlen = std::max(maxlen, options[i].name ? strlen(options[i].name) : 0UL);    
+            maxlen = std::max(maxlen, option.name ? strlen(option.name) : 0UL);    
         }
-        maxlen = std::max(maxlen, 16UL); 
 
-        for(unsigned int i = 0; i < sizeof(options)/sizeof(options[0]); i++)
+        for(auto & option : options)
         {
-            if (options[i].opt == '\0' &&
-                options[i].descr == nullptr)
+            if (option.opt == '\0' &&
+                option.descr == nullptr)
             {
                 out << std::endl;
                 continue;
             }
 
-            if (options[i].opt == '\0')
+            if (option.opt == '\0')
             {
-                out << options[i].descr << std::endl;
+                out << option.descr << std::endl;
                 continue;
             }
 
             std::string opt;
             opt.reserve(80);
 
-            if (options[i].opt > 0)
-                opt.append("   -").append(1,options[i].opt);
+            if (option.opt > 0)
+                opt.append("   -").append(1,option.opt);
             else
                 opt.append("       ");
 
-            if (options[i].name) {
-                if (options[i].opt > 0)
+            if (option.name) {
+                if (option.opt > 0)
                     opt.append(", ");
-                opt.append("--").append(options[i].name);
+                opt.append("--").append(option.name);
             }
 
-            if (options[i].args)
+            if (option.args)
                 opt.append(" ARG");
 
             out << std::setw(maxlen+16) << std::left << opt <<
-                (options[i].descr ? options[i].descr : "") << std::endl;
+                (option.descr ? option.descr : "") << std::endl;
         }
 
         if (!epilog.empty())
@@ -160,9 +155,9 @@ namespace more { namespace gotopt {
         // iterators...
         //
         const_iterator
-        begin() const
+        cbegin() const
         {
-            return m_args.begin();
+            return m_args.cbegin();
         }
 
         const_iterator
@@ -172,29 +167,34 @@ namespace more { namespace gotopt {
         }
 
         const_iterator
-        end() const
+        cend() const
         {
-            return m_args.end();
+            return m_args.cend();
         }
         
         size_t size() const
         {
-           return std::distance(current(), end()); 
+           return std::distance(current(), cend()); 
         }
  
+        void reset()
+        {
+            m_it = m_args.cbegin();
+        }
+
         // constructors...
         //
 
         template <typename T, typename P>
         parser(T it, T end, const P & opt)
-        : m_args(), m_context(256,false), m_mopt(), m_it() 
+        : m_args()
+        , m_context(256,false)
+        , m_mopt()
+        , m_it() 
 #ifndef NDEBUG
         , m_argnum(0)
 #endif 
         {
-            // parse the arguments
-            //
-
             for(; it != end; ++it)
             {
                 std::string s(*it);
@@ -211,7 +211,6 @@ namespace more { namespace gotopt {
             m_it = m_args.begin();
 
             // load the map...
-            //
 
             for(unsigned int i = 0; i < sizeof(opt)/sizeof(opt[0]) ; i++)
             {
@@ -222,8 +221,7 @@ namespace more { namespace gotopt {
             }
         }
 
-        ~parser()
-        {}
+        ~parser() = default;
 
         // callable object implementation 
         //
@@ -255,7 +253,6 @@ namespace more { namespace gotopt {
             option_iterator cur = m_mopt.find(*m_it);
             if ( cur == m_mopt.end() )
                 throw std::runtime_error( std::string("invalid option: ").append(*m_it) );
-
 
             // ensure the expected arguments are available...
             //
@@ -304,6 +301,7 @@ namespace more { namespace gotopt {
         }
 
     private:
+        
         bool
         is_option(const std::string &s) const
         {
@@ -324,12 +322,6 @@ namespace more { namespace gotopt {
     struct opt
     {
         typedef bool expression_type;
-
-        opt()
-        {}
-
-        ~opt()
-        {}
 
         template <typename T>
         bool eval(const T &ctx) const
@@ -442,59 +434,58 @@ namespace more { namespace gotopt {
     {
         // options...
 
-        opt<'a'> _a;
-        opt<'b'> _b;
-        opt<'c'> _c;
-        opt<'d'> _d;
-        opt<'e'> _e;
-        opt<'f'> _f;
-        opt<'g'> _g;
-        opt<'h'> _h;
-        opt<'i'> _i;
-        opt<'j'> _j;
-        opt<'k'> _k;
-        opt<'l'> _l;
-        opt<'m'> _m;
-        opt<'n'> _n;
-        opt<'o'> _o;
-        opt<'p'> _p;
-        opt<'q'> _q;
-        opt<'r'> _r;
-        opt<'s'> _s;
-        opt<'t'> _t;
-        opt<'u'> _u;
-        opt<'v'> _v;
-        opt<'w'> _w;
-        opt<'x'> _x;
-        opt<'y'> _y;
-        opt<'z'> _z;
-
-        opt<'A'> _A;
-        opt<'B'> _B;
-        opt<'C'> _C;
-        opt<'D'> _D;
-        opt<'E'> _E;
-        opt<'F'> _F;
-        opt<'G'> _G;
-        opt<'H'> _H;
-        opt<'I'> _I;
-        opt<'J'> _J;
-        opt<'K'> _K;
-        opt<'L'> _L;
-        opt<'M'> _M;
-        opt<'N'> _N;
-        opt<'O'> _O;
-        opt<'P'> _P;
-        opt<'Q'> _Q;
-        opt<'R'> _R;
-        opt<'S'> _S;
-        opt<'T'> _T;
-        opt<'U'> _U;
-        opt<'V'> _V;
-        opt<'W'> _W;
-        opt<'X'> _X;
-        opt<'Y'> _Y;
-        opt<'Z'> _Z;
+        opt<'a'> _a = opt<'a'>(); 
+        opt<'b'> _b = opt<'b'>(); 
+        opt<'c'> _c = opt<'c'>(); 
+        opt<'d'> _d = opt<'d'>(); 
+        opt<'e'> _e = opt<'e'>(); 
+        opt<'f'> _f = opt<'f'>(); 
+        opt<'g'> _g = opt<'g'>(); 
+        opt<'h'> _h = opt<'h'>(); 
+        opt<'i'> _i = opt<'i'>(); 
+        opt<'j'> _j = opt<'j'>(); 
+        opt<'k'> _k = opt<'k'>(); 
+        opt<'l'> _l = opt<'l'>(); 
+        opt<'m'> _m = opt<'m'>(); 
+        opt<'n'> _n = opt<'n'>(); 
+        opt<'o'> _o = opt<'o'>(); 
+        opt<'p'> _p = opt<'p'>(); 
+        opt<'q'> _q = opt<'q'>(); 
+        opt<'r'> _r = opt<'r'>(); 
+        opt<'s'> _s = opt<'s'>(); 
+        opt<'t'> _t = opt<'t'>(); 
+        opt<'u'> _u = opt<'u'>(); 
+        opt<'v'> _v = opt<'v'>(); 
+        opt<'w'> _w = opt<'w'>(); 
+        opt<'x'> _x = opt<'x'>(); 
+        opt<'y'> _y = opt<'y'>(); 
+        opt<'z'> _z = opt<'z'>(); 
+        opt<'A'> _A = opt<'A'>(); 
+        opt<'B'> _B = opt<'B'>(); 
+        opt<'C'> _C = opt<'C'>(); 
+        opt<'D'> _D = opt<'D'>(); 
+        opt<'E'> _E = opt<'E'>(); 
+        opt<'F'> _F = opt<'F'>(); 
+        opt<'G'> _G = opt<'G'>(); 
+        opt<'H'> _H = opt<'H'>(); 
+        opt<'I'> _I = opt<'I'>(); 
+        opt<'J'> _J = opt<'J'>(); 
+        opt<'K'> _K = opt<'K'>(); 
+        opt<'L'> _L = opt<'L'>(); 
+        opt<'M'> _M = opt<'M'>(); 
+        opt<'N'> _N = opt<'N'>(); 
+        opt<'O'> _O = opt<'O'>(); 
+        opt<'P'> _P = opt<'P'>(); 
+        opt<'Q'> _Q = opt<'Q'>(); 
+        opt<'R'> _R = opt<'R'>(); 
+        opt<'S'> _S = opt<'S'>(); 
+        opt<'T'> _T = opt<'T'>(); 
+        opt<'U'> _U = opt<'U'>(); 
+        opt<'V'> _V = opt<'V'>(); 
+        opt<'W'> _W = opt<'W'>(); 
+        opt<'X'> _X = opt<'X'>(); 
+        opt<'Y'> _Y = opt<'Y'>(); 
+        opt<'Z'> _Z = opt<'Z'>(); 
     }
 
 } // namespace gotopt

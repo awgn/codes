@@ -65,8 +65,8 @@ main(int argc, char *argv[])
     
     std::cout << "optind = " << par.optind() << std::endl;
 
-    std::cout << "residual: ";
-    std::copy( par.current(), par.end(), std::ostream_iterator<std::string>(std::cout, " "));
+    std::cout << "left: ";
+    std::copy( par.current(), par.cend(), std::ostream_iterator<std::string>(std::cout, " "));
     std::cout << std::endl;
 
     return 0;
