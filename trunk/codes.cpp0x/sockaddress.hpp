@@ -17,12 +17,11 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#include <error.hpp>            // more!
-
 #include <iostream>
 #include <string>
 #include <cassert>
 #include <stdexcept>
+#include <system_error>
 
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX 108
@@ -79,7 +78,7 @@ namespace more {
 
             if (getaddrinfo(host.c_str(), nullptr, &hints, &res) < 0) 
             {
-                throw std::runtime_error(std::string("getaddrinfo: ").append(pretty_gai_strerror(errno)));
+                throw std::system_error(errno, std::generic_category());
             }
 
             m_addr.sin_addr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr)->sin_addr;
@@ -128,7 +127,7 @@ namespace more {
 
             if (getaddrinfo(h.c_str(), nullptr, &hints, &res) < 0) 
             {
-                throw std::runtime_error(std::string("getaddrinfo: ").append(pretty_gai_strerror(errno)));
+                throw std::system_error(errno, std::generic_category());
             }
 
             m_addr.sin_addr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr)->sin_addr;
@@ -145,7 +144,7 @@ namespace more {
         {
             char buf[64];
             if (inet_ntop(AF_INET, &m_addr.sin_addr, buf, sizeof(buf)) == nullptr) {
-                throw more::syscall_error("inet_ntop");
+                throw std::system_error(errno, std::generic_category());
             }
             return std::string(buf);
         }
@@ -214,7 +213,7 @@ namespace more {
                 return;
             }
             if (inet_pton(AF_INET6, host.c_str(), &m_addr.sin6_addr.s6_addr) <= 0) {
-                throw more::syscall_error("inet_pton");
+                throw std::system_error(errno, std::generic_category());
             }
         }
 
@@ -250,7 +249,7 @@ namespace more {
                 return;
             }
             if (inet_pton(AF_INET6, h.c_str(), &m_addr.sin6_addr.s6_addr) <= 0) {
-                throw more::syscall_error("inet_pton");
+                throw std::system_error(errno, std::generic_category());
             }
         }
 
@@ -264,7 +263,7 @@ namespace more {
         {
             char buf[64];
             if (inet_ntop(AF_INET6, &m_addr.sin6_addr, buf, sizeof(buf)) == nullptr) {
-                throw more::syscall_error("inet_ntop");
+                throw std::system_error(errno, std::generic_category());
             }
             return std::string(buf);
         }

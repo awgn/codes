@@ -17,7 +17,6 @@
 #include <unistd.h>
 
 #include <sockaddress.hpp>           // more!
-#include <error.hpp>                 // more!
 
 #include <string>
 #include <array>
@@ -79,7 +78,7 @@ namespace more {
             if (::connect(m_fd, reinterpret_cast<const struct sockaddr *>(&addr), addr.len()) < 0)
             {
                 if (errno != EINPROGRESS && errno != EALREADY)
-                    throw more::syscall_error("socket::connect", errno);
+                    throw std::system_error(errno, std::generic_category());
                 return -1;
             }
             return 0;
@@ -89,14 +88,14 @@ namespace more {
         bind(const sockaddress<FAMILY> &my_addr)
         { 
             if (::bind(m_fd,reinterpret_cast<const struct sockaddr *>(&my_addr), my_addr.len()) < 0)
-               throw more::syscall_error("socket::bind", errno); 
+               throw std::system_error(errno, std::generic_category());
         }
 
         void 
         listen(int backlog) 
         { 
             if(::listen(m_fd, backlog) <0)
-                throw more::syscall_error("socket::listen", errno);
+               throw std::system_error(errno, std::generic_category());
         }
 
         int 
@@ -105,7 +104,7 @@ namespace more {
             int s = ::accept(m_fd,reinterpret_cast<struct sockaddr *>(&addr), &addr.len());
             if (s < 0) {
                 if (errno != EAGAIN && errno != EWOULDBLOCK)
-                    throw more::syscall_error("socket::accept", errno);
+                    throw std::system_error(errno, std::generic_category());
                 return -1; 
             }
             remote.close_fd();
@@ -161,7 +160,7 @@ namespace more {
             close_fd();
             m_fd = ::socket(FAMILY, type, protocol);
             if (m_fd == -1) {
-                throw more::syscall_error(std::string("socket::init"),errno);
+                throw std::system_error(errno, std::generic_category());
             }
         }
 
@@ -169,7 +168,7 @@ namespace more {
         : m_fd(-1)
         {
             if ( rhs.m_fd == -1 )
-                throw std::runtime_error(std::string("socket(socket &): bad file descriptor"));
+                throw std::runtime_error("bad file descriptor");
             m_fd = rhs.release();
         }
 
@@ -179,7 +178,7 @@ namespace more {
             if (this != &rhs) 
             {
                 if ( rhs.m_fd == -1 )
-                    throw std::runtime_error(std::string("socket::operator=(socket &): bad file descriptor"));
+                    throw std::runtime_error("bad file descriptor");
                 this->close_fd();
                 m_fd = rhs.release();
             }
@@ -206,7 +205,7 @@ namespace more {
         : m_fd(::socket(FAMILY, type, protocol))
         {
             if ( m_fd == -1) 
-                throw more::syscall_error(std::string("socket()"), errno);
+                throw std::system_error(errno, std::generic_category());
         }
 
         void close_fd()
@@ -291,7 +290,7 @@ namespace more {
         void bind(const sockaddress<PF_UNIX> &my_addr)
         {
             if(::bind(this->m_fd,reinterpret_cast<const struct sockaddr *>(&my_addr), my_addr.len())<0)
-                throw more::syscall_error("socket::bind", errno);
+                throw std::system_error(errno, std::generic_category());
             m_pathname = my_addr;
         }
 
@@ -301,7 +300,7 @@ namespace more {
             if (::connect(this->m_fd, reinterpret_cast<const struct sockaddr *>(&addr), addr.len()) < 0)
             {
                 if ( errno != EINPROGRESS && errno != EALREADY)
-                    throw more::syscall_error("socket::connect", errno);
+                    throw std::system_error(errno, std::generic_category());
                 return -1;
             }
             m_pathname = addr;
