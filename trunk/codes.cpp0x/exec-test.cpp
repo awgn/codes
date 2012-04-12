@@ -22,7 +22,9 @@ main(int argc, char *argv[])
     //
 
     const char * args[] = { "/bin/ls" , "/" , "-la" };
-    more::exec abc(args, args+3); 
+    // more::exec abc(args, args+3); 
+
+    more::exec abc {"/bin/ls", "/", "-la" };
 
     std::cout << "running: [" << abc.cmdline() << "]" << std::endl;
 

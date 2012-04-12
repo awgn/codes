@@ -29,12 +29,11 @@ namespace more {
           m_args()
         {}
 
-        ~format()
-        {}
+        ~format() = default;
 
         template <typename T>
         format &
-        operator % (T rhs)
+        operator %(T rhs)
         {
             m_args.push_back(any_out(rhs));
             return *this;

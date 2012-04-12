@@ -32,7 +32,7 @@ namespace more {
         friend class enable_entangled_from_this<Tp>;
 
         entangled_ptr()
-        : m_ptr(0)
+        : m_ptr(nullptr)
         {}
 
         ~entangled_ptr()
@@ -44,7 +44,7 @@ namespace more {
         entangled_ptr(entangled_ptr &&rhs)
         : m_ptr(rhs.m_ptr)
         {
-            rhs.m_ptr = 0;
+            rhs.m_ptr = nullptr;
             if(m_ptr)
                 m_ptr->m_replace_entangled_for(&rhs,this);
         }
@@ -73,7 +73,7 @@ namespace more {
             if(m_ptr)
                 m_ptr->m_remove_entangled_for(this);
             m_ptr = rhs.m_ptr;
-            rhs.m_ptr = 0;
+            rhs.m_ptr = nullptr;
             if(m_ptr)
                 m_ptr->m_replace_entangled_for(&rhs,this);
             return *this;
@@ -127,7 +127,7 @@ namespace more {
 
         ~enable_entangled_from_this()
         {
-            m_set_entangled_to(0);
+            m_set_entangled_to(nullptr);
         }
 
         enable_entangled_from_this(enable_entangled_from_this &&rhs)
@@ -139,7 +139,7 @@ namespace more {
         enable_entangled_from_this&
         operator=(enable_entangled_from_this &&rhs)
         {
-            m_set_entangled_to(0);
+            m_set_entangled_to(nullptr);
             m_ref = std::move(rhs.m_ref);
             m_set_entangled_to(static_cast<Tp *>(this));
             return *this;

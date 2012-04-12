@@ -32,6 +32,8 @@
 #include <cerrno>
 #include <cstring>
 #include <cstdio>
+#include <system_error>
+#include <initializer_list>
 
 #include <string-utils.hpp>  // more!
 
@@ -51,13 +53,13 @@ namespace more {
 
     public:
         exec(const std::string &arg = std::string(), exec_type ex = ::execv /* ::execvp */)
-        : m_arg(),
-          m_redir(),
-          m_pipe(),
-          m_status(-1),
-          m_wait(false),
-          m_pid(getpid()),
-          m_exec(ex)
+        : m_arg()
+        , m_redir()
+        , m_pipe()
+        , m_status(-1)
+        , m_wait(false)
+        , m_pid(getpid())
+        , m_exec(ex)
         {             
             if (!arg.empty()) {
                 std::stringstream tmp(arg);
@@ -67,30 +69,37 @@ namespace more {
             }
         }
 
+        exec(std::initializer_list<std::string> args, exec_type ex = ::execv)
+        : m_arg()
+        , m_redir()
+        , m_pipe()
+        , m_status(-1)
+        , m_wait(false)
+        , m_pid(getpid())
+        , m_exec(ex)
+        {
+            for(auto &arg : args)
+            {
+                m_arg.push_back(more::trim_copy(arg));
+            }
+        }
+
         // build exec array by means of iterators
         //
 
-        struct simple_trim 
-        {
-            std::string operator()(const std::string &str) const
-            {
-                return more::trim_copy(str);
-            }
-        };
-
         template <typename Iter>
         exec(Iter beg, Iter end, exec_type ex = ::execv /* ::execvp */)
-        : m_arg(),
-          m_redir(),
-          m_pipe(),
-          m_status(-1),
-          m_wait(false),
-          m_pid(getpid()),
-          m_exec(ex)
+        : m_arg()
+        , m_redir()
+        , m_pipe()
+        , m_status(-1)
+        , m_wait(false)
+        , m_pid(getpid())
+        , m_exec(ex)
         {
             // apply simple_trim while copying the strings from the range
             //
-            std::transform(beg, end, std::back_inserter(m_arg), simple_trim());
+            std::transform(beg, end, std::back_inserter(m_arg), [](const std::string &in) { return more::trim_copy(in); });
         }
 
         ~exec()
@@ -126,9 +135,9 @@ namespace more {
         }
 
         exec &
-        arg(const std::string &arg)
+        arg(std::string arg)
         { 
-            m_arg.push_back(arg); 
+            m_arg.push_back(std::move(arg)); 
             return *this; 
         } 
 
@@ -144,8 +153,8 @@ namespace more {
             for(unsigned int i = 0; i < m_redir.size(); i++)
             {
                 int fd = m_redir[i].first;
-                if ( ::pipe( m_pipe.at(fd) ) < 0 )
-                    throw std::runtime_error(std::string("pipe: ").append(strerror(errno)));
+                if (::pipe( m_pipe.at(fd) ) < 0) 
+                    throw std::system_error(errno, std::generic_category());
             }
             
             // rationale: vfork() shares memory between parent and child.
@@ -157,6 +166,7 @@ namespace more {
             m_pid = ::vfork();
             if (m_pid == -1) 
             {
+                auto errno_ = errno;
                 // close open pipes...
                 // 
                 for(unsigned int i=0; i < m_redir.size(); i++)
@@ -168,7 +178,7 @@ namespace more {
                     m_pipe.at(fd)[1] = 0;
                 }
                 
-                throw std::runtime_error(std::string("fork: ").append(strerror(errno)));
+                throw std::system_error(errno_, std::generic_category());
             }
 
             if (m_pid == 0) { // child
@@ -232,7 +242,8 @@ namespace more {
             }
 
             if (::waitpid(m_pid,&m_status,0) < 0 ) {
-                std::clog << "exec::waitpid: " << strerror(errno) << std::endl;
+                char buff[64];
+                std::clog << "more::exec: waitpid " << strerror_r(errno, buff, 63) << std::endl;
                 return false;
             }   
             return true;
@@ -307,7 +318,8 @@ namespace more {
                 argv[i]=m_arg[i].c_str();
 
             if ( m_exec(argv[0], const_cast<char * const *>(argv)) == -1 ) {
-                std::clog << "exec::exec: " << strerror(errno) << std::endl;
+                char buff[64];
+                std::clog << "more::exec: " << strerror_r(errno, buff, 63) << std::endl;
                 return -1;
             }
 

@@ -35,17 +35,23 @@ namespace more {
     public:
 
         any()
-        : m_base(0)
+        : m_base(nullptr)
         {}
 
         template <typename T>
         any(const T &value)
-        : m_base( new storage<T>(value) )
+        : m_base(new storage<T>(value))
         {} 
 
         any(const any &rhs)
-        : m_base(rhs.m_base ? rhs.m_base->clone() : 0)
+        : m_base(rhs.m_base ? rhs.m_base->clone() : nullptr)
         {}
+
+        any(any &&rhs)
+        : m_base(rhs.m_base)
+        {
+            rhs.m_base = nullptr;
+        }
 
         ~any()
         { delete m_base; }
@@ -54,7 +60,7 @@ namespace more {
 
         bool empty() const
         { 
-            return m_base == 0; 
+            return m_base == nullptr; 
         }
 
         const std::type_info &
@@ -129,9 +135,9 @@ namespace more {
                     (dynamic_cast< any::storage<T> *>(rhs_p->m_base) ? 
                         & static_cast<any::storage<T> *>(rhs_p->m_base)->m_value 
                         : 
-                        0) 
+                        nullptr) 
                      : 
-                     0 
+                     nullptr 
                );
     }
     template <typename T>
@@ -166,7 +172,7 @@ namespace more {
     public:
 
         any_out()
-        : m_value(), m_streamer(0)
+        : m_value(), m_streamer(nullptr)
         {}
 
         template <typename T>
@@ -177,7 +183,7 @@ namespace more {
 
         any_out(const any_out &rhs)
         :  m_value( rhs.m_value ),
-           m_streamer( rhs.m_streamer ? rhs.m_streamer->clone() : 0 )
+           m_streamer( rhs.m_streamer ? rhs.m_streamer->clone() : nullptr)
         {}
 
         template <typename T>
