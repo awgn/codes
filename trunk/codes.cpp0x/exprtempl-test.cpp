@@ -22,16 +22,16 @@ using namespace more::expr;
 
 namespace 
 {
-    expr_integral<int, 0> = expr_integra<int, 0>();
-    expr_integral<int, 1> = expr_integra<int, 1>();
-    expr_integral<int, 2> = expr_integra<int, 2>();
-    expr_integral<int, 3> = expr_integra<int, 3>();
-    expr_integral<int, 4> = expr_integra<int, 4>();
-    expr_integral<int, 5> = expr_integra<int, 5>();
-    expr_integral<int, 6> = expr_integra<int, 6>();
-    expr_integral<int, 7> = expr_integra<int, 7>();
-    expr_integral<int, 8> = expr_integra<int, 8>();
-}
+    expr_integral<int, 0> __0 = expr_integral<int, 0>();
+    expr_integral<int, 1> __1 = expr_integral<int, 1>();
+    expr_integral<int, 2> __2 = expr_integral<int, 2>();
+    expr_integral<int, 3> __3 = expr_integral<int, 3>();
+    expr_integral<int, 4> __4 = expr_integral<int, 4>();
+    expr_integral<int, 5> __5 = expr_integral<int, 5>();
+    expr_integral<int, 6> __6 = expr_integral<int, 6>();
+    expr_integral<int, 7> __7 = expr_integral<int, 7>();
+    expr_integral<int, 8> __8 = expr_integral<int, 8>();
+}                           
 
 Context(expression_template_tests)
 {
