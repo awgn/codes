@@ -285,7 +285,7 @@ namespace more {
         template <typename Fn>
         ext_const_buffer(const void * b, size_t s, Fn cw)
         {            
-            if ( (static_cast<char *>(b) + s) < (static_cast<char *>(cw.data()) + cw.data_size()) )
+            if ( (static_cast<const char *>(b) + s) < (static_cast<char *>(cw.data()) + cw.data_size()) )
                 throw std::overflow_error("ext_const_buffer: buffer overflow");
 
             ssize_t c = cw();
@@ -293,7 +293,7 @@ namespace more {
                 throw std::runtime_error(std::string("ext_const_buffer"));
 
             _M_iovec.iov_base = const_cast<void *>(b);
-            _M_iovec.iov_len  = c + (static_cast<char *>(cw.data()) - static_cast<char *>(b));
+            _M_iovec.iov_len  = c + (static_cast<const char *>(cw.data()) - static_cast<const char *>(b));
         }
 
         template <typename Fn>

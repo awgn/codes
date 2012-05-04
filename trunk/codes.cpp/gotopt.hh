@@ -103,7 +103,11 @@ namespace more { namespace gotopt {
             out << epilog << std::endl;
     
         return out.str();
-    }
+    }    
+    
+    
+    template <typename T, typename C>
+    inline void validate_expression(const T &tupl, const C &ctx);
 
     // parser class
     //
@@ -330,17 +334,10 @@ namespace more { namespace gotopt {
     // recursive validation of tuple of expression templates
     //
 
-    template <typename T, int N>
-    struct recursive_evaluation
-    {
-        template <typename C>
-        static bool apply(const T &tupl, const C &ctx)
-        {
-            check_expression( std::get< std::tuple_size<T>::value - N >(tupl), ctx);
-            return recursive_evaluation<T, N-1>::apply(tupl,ctx);
-        }
-    };
+    template <typename T, typename C>
+    void check_expression(const T elem, const C &ctx);
 
+    template <typename T, int N> struct recursive_evaluation;
     template <typename T>
     struct recursive_evaluation<T,0>
     {
@@ -348,6 +345,16 @@ namespace more { namespace gotopt {
         static bool apply(const T &tupl, const C &)
         {
             return true;
+        }
+    };
+    template <typename T, int N> 
+    struct recursive_evaluation
+    {
+        template <typename C>
+        static bool apply(const T &tupl, const C &ctx)
+        {
+            check_expression(std::get< std::tuple_size<T>::value - N >(tupl), ctx);
+            return recursive_evaluation<T, N-1>::apply(tupl,ctx);
         }
     };
 

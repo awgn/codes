@@ -14,6 +14,7 @@
 #include <sys/file.h>
 #include <errno.h>
 #include <err.h>
+#include <unistd.h>
 
 #include <iostream>
 

@@ -18,6 +18,8 @@
 
 #include <sys/inotify.h>
 #include <sys/select.h>
+#include <unistd.h>
+
 #include <error.hh>         // more!
 
 #include <stdexcept>

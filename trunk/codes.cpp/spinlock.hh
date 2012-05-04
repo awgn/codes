@@ -13,6 +13,7 @@
 
 #include <sched.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include <noncopyable.hh>   // more!
 #include <atomic.hh>        // more!
@@ -117,7 +118,7 @@ namespace more {
         {             
             const unsigned int my_ticket = _M_ticket++;
             int t = Policy::threshold;
-            for(int n = 1, d = 0; d=(my_ticket-_M_value); n++) 
+            for(int n = 1, d = 0; (d=(my_ticket-_M_value)) != 0; n++) 
             { 
                 Policy::wait(n,t,d);
             }

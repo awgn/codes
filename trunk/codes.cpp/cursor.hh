@@ -13,6 +13,7 @@
 
 #include <tr1_type_traits.hh>   // more!
 #include <stdexcept>
+#include <cstddef>
 
 namespace more { 
 
@@ -157,7 +158,7 @@ namespace more {
         ////////////////////////////////////////////////
         // readers...
 
-        ssize_t
+        size_t
         size() const
         {
             return _M_end-_M_cur;

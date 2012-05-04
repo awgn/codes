@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <iomanip>
 
+#include <unistd.h>
+
 struct my_entry {
     int val;
 };
