@@ -23,11 +23,11 @@ namespace posix {
 
     class getopt {
 
-        const char *_M_optstring;
+        const char *m_optstring;
 
     public:
         explicit getopt(const char *o) 
-        : _M_optstring(o) 
+        : m_optstring(o) 
         { opterr=0; }
 
         virtual ~getopt() 
@@ -40,13 +40,13 @@ namespace posix {
 
         int 
         c_getopt(int argc, char ** argv) const
-        { return ::getopt(argc,argv,_M_optstring); }
+        { return ::getopt(argc,argv,m_optstring); }
 
         void 
         parse(int & argc, char ** &argv) 
         {
             int o;
-            while ( (o =::getopt(argc, argv, _M_optstring)) != EOF ) {
+            while ( (o =::getopt(argc, argv, m_optstring)) != EOF ) {
                 if ( o == '?' )
                     throw std::runtime_error(std::string("invalid option -- ") + char(optopt) );
                 if ( o == ':' )
@@ -63,16 +63,16 @@ namespace posix {
 
     class getopt_long {
 
-        const char *_M_optstring;
-        const struct option *_M_longopts;
-        int *_M_longindex;
+        const char *m_optstring;
+        const struct option *m_longopts;
+        int *m_longindex;
 
     public:
 
         getopt_long(const char *o, const struct ::option *lo, int *li) 
-        : _M_optstring(o), 
-        _M_longopts(lo), 
-        _M_longindex(li) 
+        : m_optstring(o), 
+        m_longopts(lo), 
+        m_longindex(li) 
         {}
 
         virtual ~getopt_long() 
@@ -85,13 +85,13 @@ namespace posix {
 
         int 
         c_getopt_long(int argc, char ** argv) const
-        { return ::getopt_long(argc,argv,_M_optstring,_M_longopts, _M_longindex); }
+        { return ::getopt_long(argc,argv,m_optstring,m_longopts, m_longindex); }
 
         void 
         parse(int & argc, char ** &argv) 
         {
             int o;
-            while ( (o =::getopt_long(argc, argv, _M_optstring, _M_longopts, _M_longindex)) != EOF ) {
+            while ( (o =::getopt_long(argc, argv, m_optstring, m_longopts, m_longindex)) != EOF ) {
                 if ( o == '?' )
                     throw std::runtime_error(std::string("invalid option -- ") + char(optopt) );
                 if ( o == ':' )

@@ -14,7 +14,8 @@
 #include <noncopyable.hh>       // more!
 #include <static_assert.hh>     // more!
 #include <spinlock.hh>          // more!
-#include <tr1_type_traits.hh>   // more!
+
+#include <tr1/type_traits>  
 
 #include <vector>
 
@@ -62,13 +63,13 @@ namespace more
             typedef unsigned int unsigned_type;
 
         private:
-            unsigned_type _M_head;
-            unsigned_type _M_tail;
+            unsigned_type m_head;
+            unsigned_type m_tail;
 
-            std::vector<value_type> _M_storage;
+            std::vector<value_type> m_storage;
 
-            head_lock_type _M_head_lock;
-            tail_lock_type _M_tail_lock;
+            head_lock_type m_head_lock;
+            tail_lock_type m_tail_lock;
 
             unsigned_type 
             mod_N(unsigned_type n)
@@ -78,7 +79,7 @@ namespace more
         
         public:
             shared_queue() 
-            : _M_head(0), _M_tail(0), _M_storage(N), _M_head_lock(), _M_tail_lock() 
+            : m_head(0), m_tail(0), m_storage(N), m_head_lock(), m_tail_lock() 
             {
                 static_assert((N & (N-1)) == 0, not_a_power_of_two); 
             }
@@ -89,40 +90,40 @@ namespace more
             bool 
             pop_front(T &ret) 
             {
-                more::scoped_lock< tail_lock_type > _lock_(_M_tail_lock);
-                if ( _M_tail == _M_head )
+                more::scoped_lock< tail_lock_type > _lock_(m_tail_lock);
+                if ( m_tail == m_head )
                    return false;
 
-                ret = _M_storage[_M_tail];
-                _M_tail = mod_N(_M_tail+1);
+                ret = m_storage[m_tail];
+                m_tail = mod_N(m_tail+1);
                 return true;
             }
 
             bool 
             push_back(const T & elem)  
             {
-                more::scoped_lock< head_lock_type > _lock_(_M_head_lock);
-                unsigned_type next = mod_N(_M_head+1);
+                more::scoped_lock< head_lock_type > _lock_(m_head_lock);
+                unsigned_type next = mod_N(m_head+1);
 
-                if ( next == _M_tail )
+                if ( next == m_tail )
                    return false;
                 
-                _M_storage[_M_head] = elem;
-                _M_head = next;
+                m_storage[m_head] = elem;
+                m_head = next;
                 return true;
             }
 
             void 
             clear() 
             { 
-                more::scoped_lock< tail_lock_type > _lock_(_M_tail_lock);
-                int _M_tail = _M_head;
+                more::scoped_lock< tail_lock_type > _lock_(m_tail_lock);
+                int m_tail = m_head;
             }
             
             bool
             empty() const 
             { 
-                return _M_head == _M_tail; 
+                return m_head == m_tail; 
             }
 
             size_type 
@@ -134,7 +135,7 @@ namespace more
             size_type 
             size() const 
             {
-                return _M_head >= _M_tail ? (_M_head - _M_tail) : (N +_M_head - _M_tail);
+                return m_head >= m_tail ? (m_head - m_tail) : (N +m_head - m_tail);
             }
         };
 

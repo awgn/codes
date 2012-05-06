@@ -15,9 +15,10 @@
 #include <stdint.h>
 
 #include <mtp.hh>               // more!
-#include <tr1_array.hh>         // more!
-#include <tr1_type_traits.hh>   // more!
-#include <tr1_functional.hh>    // more!
+
+#include <tr1/array>         
+#include <tr1/type_traits>   
+#include <tr1/functional>    
 
 #include <iostream>
 #include <iomanip>
@@ -30,8 +31,8 @@
 
 namespace more { 
 
-    using std::array;
-    using namespace std::placeholders;
+    using std::tr1::array;
+    using namespace std::tr1::placeholders;
 
     class md5 : public std::iterator<std::output_iterator_tag, void, void, void, void> 
     {
@@ -39,13 +40,13 @@ namespace more {
         typedef array<uint8_t,16>::const_iterator const_iterator; 
 
     private:
-        array<uint32_t,2>   _M_total;
-        array<uint32_t,4>   _M_state;
-        array<uint8_t,64>   _M_buffer;
+        array<uint32_t,2>   m_total;
+        array<uint32_t,4>   m_state;
+        array<uint8_t,64>   m_buffer;
 
-        array<uint8_t,16>   _M_digest;
+        array<uint8_t,16>   m_digest;
 
-        bool _M_initialized;
+        bool m_initialized;
 
         void process(const uint8_t data[64]);
         void update (const uint8_t *input, uint32_t length );
@@ -54,7 +55,7 @@ namespace more {
     public:
 
         md5()
-        : _M_total(), _M_state(), _M_buffer(), _M_digest(), _M_initialized(false)
+        : m_total(), m_state(), m_buffer(), m_digest(), m_initialized(false)
         { 
             this->init(); 
         }
@@ -92,10 +93,10 @@ namespace more {
         void operator()(I first, I last)
         {
             std::for_each(first, last, 
-                std::bind
+                std::tr1::bind
                     (
                     static_cast<void (md5::*)(const typename std::iterator_traits<I>::value_type &)> (&md5::operator()), 
-                    std::ref(*this), _1) 
+                    std::tr1::ref(*this), _1) 
                     );
         }
 
@@ -110,57 +111,57 @@ namespace more {
 
         void init()
         {
-            _M_total[0] = 0;
-            _M_total[1] = 0;
+            m_total[0] = 0;
+            m_total[1] = 0;
 
-            _M_state[0] = 0x67452301;
-            _M_state[1] = 0xEFCDAB89;
-            _M_state[2] = 0x98BADCFE;
-            _M_state[3] = 0x10325476;
+            m_state[0] = 0x67452301;
+            m_state[1] = 0xEFCDAB89;
+            m_state[2] = 0x98BADCFE;
+            m_state[3] = 0x10325476;
 
-            _M_initialized = true;
+            m_initialized = true;
         }
 
         void
         finish()
         { 
-            this->finish(_M_digest.begin());
+            this->finish(m_digest.begin());
         }
 
         const_iterator 
         digest_begin() const
         { 
-            return _M_digest.begin(); 
+            return m_digest.begin(); 
         } 
         
         const_iterator 
         digest_end() const
         { 
-            return _M_digest.end(); 
+            return m_digest.end(); 
         } 
 
         template <typename T, int W, char C = '0'>
         struct hex_ostream_iterator : public std::iterator<std::output_iterator_tag, void, void, void, void>
         {
-            std::ostream &_M_out;
-            const std::string _M_sep;
+            std::ostream &m_out;
+            const std::string m_sep;
 
             hex_ostream_iterator(std::ostream &out, const std::string &sep)
-            : _M_out(out),
-              _M_sep(sep)
+            : m_out(out),
+              m_sep(sep)
             {
-                _M_out << std::hex;
+                m_out << std::hex;
             }
             
             ~hex_ostream_iterator()
             {
-                _M_out << std::dec;
+                m_out << std::dec;
             }
             
             hex_ostream_iterator &
             operator=(T c)
             {
-                _M_out << std::setw(W) << std::setfill(C) << std::right << c << _M_sep;
+                m_out << std::setw(W) << std::setfill(C) << std::right << c << m_sep;
                 return *this;
             }
 
@@ -181,7 +182,7 @@ namespace more {
         digest_str(const std::string & sep = "" ) const
         {
             std::ostringstream digest;
-            std::copy(_M_digest.begin(), _M_digest.end(), hex_ostream_iterator<uint32_t,2,'0'>(digest,sep));
+            std::copy(m_digest.begin(), m_digest.end(), hex_ostream_iterator<uint32_t,2,'0'>(digest,sep));
             return digest.str();
         }
 
@@ -234,10 +235,10 @@ namespace more {
     template <typename T>
     inline
     typename mtp::disable_if<
-        std::is_base_of
+        std::tr1::is_base_of
             <
             std::streambuf, // to provide a better overloading for std::basic_stringbuf<char, std::char_traits<char>, std::allocator<char> > 
-            typename std::remove_pointer<T>::type
+            typename std::tr1::remove_pointer<T>::type
             >,
         md5 &
     >::type

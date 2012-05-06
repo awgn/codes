@@ -21,7 +21,7 @@
 
 #include <static_assert.hh>         // more!
 #include <mtp.hh>                   // more!
-#include <error.hh>                 // more!
+#include <system_error.hh>          // more!
 
 #include <stdexcept>
 
@@ -87,11 +87,11 @@ namespace more {
     template <int P, int F> 
     class mmap {
 
-        mutable void *  _M_addr;
-        mutable size_t  _M_length;
-        mutable bool    _M_mapped;
-        mutable off_t   _M_offset;
-        mutable int     _M_fd;
+        mutable void *  m_addr;
+        mutable size_t  m_length;
+        mutable bool    m_mapped;
+        mutable off_t   m_offset;
+        mutable int     m_fd;
 
         mmap(const mmap &);
         mmap &operator=(const mmap &);
@@ -99,11 +99,11 @@ namespace more {
     public:
 
         mmap(const char *pathname, int len = -1)
-        : _M_addr(0),
-          _M_length(len),
-          _M_mapped(false),
-          _M_offset(0),
-          _M_fd(-1)
+        : m_addr(0),
+          m_length(len),
+          m_mapped(false),
+          m_offset(0),
+          m_fd(-1)
         {
             static_assert( F & (MAP_PRIVATE|MAP_SHARED), 
                            flags_contains_neither_map_private_or_map_shared);
@@ -111,65 +111,65 @@ namespace more {
                            flags_contains_both_map_private_and_map_shared);
 
             if (pathname) {
-                _M_fd = ::open(pathname, mapping_traits<P>::file_mode);
-                if (_M_fd == -1)
-                    throw more::syscall_error("coundn't open file");
+                m_fd = ::open(pathname, mapping_traits<P>::file_mode);
+                if (m_fd == -1)
+                    throw more::system_error("coundn't open file");
             }
         }
 
         const mmap &
         set_offset(off_t o) const
-        { _M_offset = o; return *this; }
+        { m_offset = o; return *this; }
 
         const mmap &
         set_addr(off_t a) const
-        { _M_addr = a; return *this; }
+        { m_addr = a; return *this; }
 
         typename mtp::select<mapping_traits<P>::const_map, const void *, void *>::type 
         operator()()
         {
-            if (_M_mapped)
-                return _M_addr;
+            if (m_mapped)
+                return m_addr;
 
             struct stat sb;
 
-            if ( _M_fd != -1 && _M_length == size_t(-1) ) {
-                if ( fstat(_M_fd, &sb) == -1 )
-                    throw more::syscall_error("coundn't fstat file");
+            if ( m_fd != -1 && m_length == size_t(-1) ) {
+                if ( fstat(m_fd, &sb) == -1 )
+                    throw more::system_error("coundn't fstat file");
                 if (!S_ISREG(sb.st_mode)) 
-                    throw more::syscall_error("bad file to mmap");
-                _M_length = sb.st_size-_M_offset;
+                    throw more::system_error("bad file to mmap");
+                m_length = sb.st_size-m_offset;
             }
 
-            _M_addr = ::mmap(_M_addr, _M_length, P, F, _M_fd, _M_offset);
-            if ( _M_addr == MAP_FAILED )
-                throw more::syscall_error("mmap");
+            m_addr = ::mmap(m_addr, m_length, P, F, m_fd, m_offset);
+            if ( m_addr == MAP_FAILED )
+                throw more::system_error("mmap");
 
-            if (_M_fd != -1 && ::close(_M_fd) == -1 )
-                throw more::syscall_error("close");
+            if (m_fd != -1 && ::close(m_fd) == -1 )
+                throw more::system_error("close");
 
-            _M_mapped = true;
-            return _M_addr;
+            m_mapped = true;
+            return m_addr;
         }
 
         const void * 
         operator()() const
         {
             if ( !mapping_traits<P>::const_map )
-                throw more::syscall_error("PROT_WRITE on const object");
+                throw more::system_error("PROT_WRITE on const object");
 
             return const_cast<mmap *>(this)->operator()(); 
         }
         
         size_t
         length() const
-        { return _M_length; }
+        { return m_length; }
 
         ~mmap()
         {
-            if ( _M_addr && _M_addr != MAP_FAILED )
-                if ( ::munmap(_M_addr, _M_length) == -1 )
-                    throw more::syscall_error("munmap");
+            if ( m_addr && m_addr != MAP_FAILED )
+                if ( ::munmap(m_addr, m_length) == -1 )
+                    throw more::system_error("munmap");
         }
 
     };

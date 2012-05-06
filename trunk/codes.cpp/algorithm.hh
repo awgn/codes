@@ -11,7 +11,7 @@
 #ifndef _ALGORITHM_HH_
 #define _ALGORITHM_HH_ 
 
-#include <tr1_functional.hh>    // more!
+#include <tr1/functional>   
 
 #include <algorithm>
 #include <iterator>

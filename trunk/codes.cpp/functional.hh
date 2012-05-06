@@ -11,8 +11,7 @@
 #ifndef _FUNCTIONAL_HH_
 #define _FUNCTIONAL_HH_ 
 
-#include <tr1_functional.hh>    // more!
-
+#include <tr1/functional>   
 #include <algorithm>
 #include <iterator>
 #include <vector>
@@ -37,16 +36,16 @@ namespace more {
     struct chop : public std::unary_function<T,T>
     {
         chop(const T &_min, const T &_max)
-        : _M_min(_min), _M_max(_max)
+        : m_min(_min), m_max(_max)
         {}
 
         T operator()(const T &value) const
         {
-            return value < _M_min ? (_M_min) : ( value > _M_max ? _M_max : value );
+            return value < m_min ? (m_min) : ( value > m_max ? m_max : value );
         }
 
-        T _M_min;
-        T _M_max;
+        T m_min;
+        T m_max;
     };
 
     // flipflop predicate 
@@ -57,17 +56,17 @@ namespace more {
     {
         template <typename Pred>
         flipflop(const Pred &p)
-        : _M_state(false), _M_pred(p)
+        : m_state(false), m_pred(p)
         {}
 
         bool
         operator()(const Arg &value) const
         {
-            return _M_state = logical_xor( _M_state, _M_pred(value) );
+            return m_state = logical_xor( m_state, m_pred(value) );
         }
 
-        mutable bool _M_state;
-        std::function< bool(Arg) > _M_pred;
+        mutable bool m_state;
+        std::tr1::function< bool(Arg) > m_pred;
     };
 
     // flipflop2 predicate
@@ -78,20 +77,20 @@ namespace more {
     {
         template <typename Pred1, typename Pred2>
         flipflop2(const Pred1 &p1, const Pred2 &p2)
-        : _M_state(false), _M_pred1(p1), _M_pred2(p2)
+        : m_state(false), m_pred1(p1), m_pred2(p2)
         {}
 
         bool
         operator()(const Arg &value) const
         {
-            return _M_state = _M_state ? logical_xor(_M_state, _M_pred2(value)) :
-                                         logical_xor(_M_state, _M_pred1(value)) ; 
+            return m_state = m_state ? logical_xor(m_state, m_pred2(value)) :
+                                         logical_xor(m_state, m_pred1(value)) ; 
         }
 
-        mutable bool _M_state;
+        mutable bool m_state;
 
-        std::function< bool(Arg) > _M_pred1;
-        std::function< bool(Arg) > _M_pred2;
+        std::tr1::function< bool(Arg) > m_pred1;
+        std::tr1::function< bool(Arg) > m_pred2;
     };
 
     // norm (valid for signed and unsigned types)
@@ -158,19 +157,19 @@ namespace more {
                                         typename Callable::result_type>
     {
         unary_callable_if(Callable f)
-        : _M_fun(f)
+        : m_fun(f)
         {}
 
         typename Callable::result_type
         operator()(bool cond, typename Callable::argument_type x)
         {
             if (cond)
-                return _M_fun(x);
+                return m_fun(x);
             return typename Callable::result_type();
         }
 
     private:
-        Callable _M_fun;
+        Callable m_fun;
     };
 
     template <typename Callable>

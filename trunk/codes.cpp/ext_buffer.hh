@@ -41,7 +41,7 @@ namespace more {
 
     public: 
         ext_buffer_base(void * b = 0, size_t s = 0)
-        : _M_iovec(b,s)
+        : m_iovec(b,s)
         {}
 
         ~ext_buffer_base()
@@ -52,15 +52,15 @@ namespace more {
 
         const char &
         operator[](size_type n) const
-        { return *(reinterpret_cast<const char *>(_M_iovec.iov_base) + n); }
+        { return *(reinterpret_cast<const char *>(m_iovec.iov_base) + n); }
 
         const char &
         at(size_type n) const
         { 
-            if (_M_iovec.iov_len < n )
+            if (m_iovec.iov_len < n )
                 throw std::out_of_range("ext_buffer::at");
 
-            return *(reinterpret_cast<const char *>(_M_iovec.iov_base) + n); 
+            return *(reinterpret_cast<const char *>(m_iovec.iov_base) + n); 
         }
 
         // discard
@@ -68,11 +68,11 @@ namespace more {
 
         void discard(size_type n) const 
         {
-            if ( n > _M_iovec.iov_len )
+            if ( n > m_iovec.iov_len )
                 throw std::out_of_range("ext_buffer::discard");
 
-            _M_iovec.iov_base = reinterpret_cast<char *>(_M_iovec.iov_base) + n;  
-            _M_iovec.iov_len -= n;
+            m_iovec.iov_base = reinterpret_cast<char *>(m_iovec.iov_base) + n;  
+            m_iovec.iov_len -= n;
         }
 
         // iovec support...
@@ -80,32 +80,32 @@ namespace more {
 
         const struct ::iovec *
         operator &() const
-        { return static_cast<const struct ::iovec *>(& _M_iovec); }
+        { return static_cast<const struct ::iovec *>(& m_iovec); }
 
         operator const struct iovec() const
-        { return static_cast<const struct ::iovec &>(_M_iovec); }
+        { return static_cast<const struct ::iovec &>(m_iovec); }
 
         // member access and conversions
         //
 
         const void *
         data() const 
-        { return _M_iovec.iov_base; }
+        { return m_iovec.iov_base; }
 
         size_type
         size() const
-        { return _M_iovec.iov_len; }
+        { return m_iovec.iov_len; }
 
         // const iterators
         //
 
         const_iterator
         begin() const
-        { return reinterpret_cast<char *>(_M_iovec.iov_base); }
+        { return reinterpret_cast<char *>(m_iovec.iov_base); }
         
         const_iterator
         end() const
-        { return reinterpret_cast<char *>(_M_iovec.iov_base) + _M_iovec.iov_len; }
+        { return reinterpret_cast<char *>(m_iovec.iov_base) + m_iovec.iov_len; }
 
         const_reverse_iterator
         rbegin() const
@@ -116,7 +116,7 @@ namespace more {
         { return const_reverse_iterator(this->begin()); }
 
     protected: 
-        mutable struct __iovec _M_iovec;
+        mutable struct __iovec m_iovec;
 
     };
 
@@ -147,8 +147,8 @@ namespace more {
             if (b < 0)
                 throw std::runtime_error(std::string("ext_buffer"));
 
-            _M_iovec.iov_base = cw.data();
-            _M_iovec.iov_len  = b;
+            m_iovec.iov_base = cw.data();
+            m_iovec.iov_len  = b;
         }
 
         template <typename Fn>
@@ -161,20 +161,20 @@ namespace more {
             if (c < 0)
                 throw std::runtime_error(std::string("ext_buffer"));
 
-            _M_iovec.iov_base = b;
-            _M_iovec.iov_len  = c + (static_cast<char *>(cw.data()) - static_cast<char *>(b));
+            m_iovec.iov_base = b;
+            m_iovec.iov_len  = c + (static_cast<char *>(cw.data()) - static_cast<char *>(b));
         }
 
         template <typename Fn>
         ext_buffer(const ext_buffer &b, Fn cw)
         : ext_buffer_base(0,0)
         { 
-            ext_buffer ret(b._M_iovec.iov_base, b._M_iovec.iov_len, cw);
+            ext_buffer ret(b.m_iovec.iov_base, b.m_iovec.iov_len, cw);
             this->swap(ret);
         } 
 
         ext_buffer(const ext_buffer &b)
-        : ext_buffer_base(b._M_iovec.iov_base, b._M_iovec.iov_len)
+        : ext_buffer_base(b.m_iovec.iov_base, b.m_iovec.iov_len)
         {}
 
         ext_buffer &
@@ -191,24 +191,24 @@ namespace more {
 
         void *
         data() 
-        { return _M_iovec.iov_base; }
+        { return m_iovec.iov_base; }
 
         char &
         operator[](size_type n)
-        { return *(reinterpret_cast<char *>(_M_iovec.iov_base) + n); }
+        { return *(reinterpret_cast<char *>(m_iovec.iov_base) + n); }
 
         char &
         at(size_type n)
         { 
-            if (_M_iovec.iov_len < n )
+            if (m_iovec.iov_len < n )
                 throw std::out_of_range("ext_buffer::at");
 
-            return *(reinterpret_cast<char *>(_M_iovec.iov_base) + n); 
+            return *(reinterpret_cast<char *>(m_iovec.iov_base) + n); 
         }
 
         void commit(size_type n)
         {
-            _M_iovec.iov_len += n;
+            m_iovec.iov_len += n;
         }
 
         // non const iterators 
@@ -221,11 +221,11 @@ namespace more {
 
         iterator
         begin()
-        { return reinterpret_cast<char *>(_M_iovec.iov_base); }
+        { return reinterpret_cast<char *>(m_iovec.iov_base); }
         
         iterator
         end()
-        { return reinterpret_cast<char *>(_M_iovec.iov_base) + _M_iovec.iov_len; }
+        { return reinterpret_cast<char *>(m_iovec.iov_base) + m_iovec.iov_len; }
  
         reverse_iterator
         rbegin() 
@@ -241,8 +241,8 @@ namespace more {
         void
         swap(ext_buffer &x)
         {
-            std::swap(this->_M_iovec.iov_base, x._M_iovec.iov_base);
-            std::swap(this->_M_iovec.iov_len, x._M_iovec.iov_len);
+            std::swap(this->m_iovec.iov_base, x.m_iovec.iov_base);
+            std::swap(this->m_iovec.iov_len, x.m_iovec.iov_len);
         }
      
     };
@@ -264,11 +264,11 @@ namespace more {
         {}
 
         ext_const_buffer(const ext_const_buffer &b)
-        : ext_buffer_base(b._M_iovec.iov_base, b._M_iovec.iov_len)
+        : ext_buffer_base(b.m_iovec.iov_base, b.m_iovec.iov_len)
         {}
 
         ext_const_buffer(const ext_buffer &b)
-        : ext_buffer_base(b._M_iovec.iov_base, b._M_iovec.iov_len)
+        : ext_buffer_base(b.m_iovec.iov_base, b.m_iovec.iov_len)
         {}
 
         template <typename Fn>
@@ -278,8 +278,8 @@ namespace more {
             if (b < 0)
                 throw std::runtime_error(std::string("ext_const_buffer"));
 
-            _M_iovec.iov_base = cw.data();
-            _M_iovec.iov_len  = b;
+            m_iovec.iov_base = cw.data();
+            m_iovec.iov_len  = b;
         }
 
         template <typename Fn>
@@ -292,15 +292,15 @@ namespace more {
             if (c < 0)
                 throw std::runtime_error(std::string("ext_const_buffer"));
 
-            _M_iovec.iov_base = const_cast<void *>(b);
-            _M_iovec.iov_len  = c + (static_cast<const char *>(cw.data()) - static_cast<const char *>(b));
+            m_iovec.iov_base = const_cast<void *>(b);
+            m_iovec.iov_len  = c + (static_cast<const char *>(cw.data()) - static_cast<const char *>(b));
         }
 
         template <typename Fn>
         ext_const_buffer(const ext_const_buffer &b, Fn cw)
         : ext_buffer_base(0,0)
         {   
-            ext_const_buffer ret(b._M_iovec.iov_base, b._M_iovec.iov_len, cw);
+            ext_const_buffer ret(b.m_iovec.iov_base, b.m_iovec.iov_len, cw);
             this->swap(ret);
         } 
 
@@ -308,7 +308,7 @@ namespace more {
         ext_const_buffer(const ext_buffer &b, Fn cw)
         : ext_buffer_base(0,0)
         {   
-            ext_const_buffer ret(b._M_iovec.iov_base, b._M_iovec.iov_len, cw);
+            ext_const_buffer ret(b.m_iovec.iov_base, b.m_iovec.iov_len, cw);
             this->swap(ret);
         } 
 
@@ -334,8 +334,8 @@ namespace more {
         void
         swap(ext_const_buffer &x)
         {
-            std::swap(this->_M_iovec.iov_base, x._M_iovec.iov_base);
-            std::swap(this->_M_iovec.iov_len, x._M_iovec.iov_len);
+            std::swap(this->m_iovec.iov_base, x.m_iovec.iov_base);
+            std::swap(this->m_iovec.iov_len, x.m_iovec.iov_len);
         }
  
     };

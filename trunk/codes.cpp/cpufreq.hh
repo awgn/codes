@@ -15,8 +15,8 @@
 #define _CPUFREQ_HH_ 
 
 #include <cpufreq.h>        // libcpufreq
-#include <tr1_memory.hh>    // more!
 
+#include <tr1/memory>    
 #include <cstring>
 #include <cstdio>
 #include <string>
@@ -35,9 +35,9 @@ namespace more {
          **************************************/       
 
         cpufreq(int n)
-        : _M_cpu(n)
+        : m_cpu(n)
         {
-            if (cpufreq_cpu_exists(_M_cpu))
+            if (cpufreq_cpu_exists(m_cpu))
                 throw std::runtime_error("cpu don't exist!");
         }
 
@@ -55,13 +55,13 @@ namespace more {
         unsigned long
         freq_kernel() const
         {
-            return cpufreq_get_freq_kernel(_M_cpu);
+            return cpufreq_get_freq_kernel(m_cpu);
         }
 
         unsigned long
         freq_hardware() const
         {
-            return cpufreq_get_freq_hardware(_M_cpu);
+            return cpufreq_get_freq_hardware(m_cpu);
         }
 
         /* determine CPU transition latency
@@ -72,7 +72,7 @@ namespace more {
         // unsigned long
         // transition_latency() const
         // {
-        //     return cpufreq_get_transition_latency(_M_cpu);
+        //     return cpufreq_get_transition_latency(m_cpu);
         // }
 
         /* determine hardware CPU frequency limits
@@ -85,7 +85,7 @@ namespace more {
         freq_hardware_limits() const
         {
             unsigned long min, max;
-            cpufreq_get_hardware_limits(_M_cpu, &min, &max);
+            cpufreq_get_hardware_limits(m_cpu, &min, &max);
             return std::make_pair(min,max);
         }
 
@@ -96,7 +96,7 @@ namespace more {
         std::string
         get_driver() const
         {
-            std::shared_ptr<char> d( cpufreq_get_driver(_M_cpu), cpufreq_put_driver );
+            std::tr1::shared_ptr<char> d( cpufreq_get_driver(m_cpu), cpufreq_put_driver );
             return std::string(d.get()); 
         }
 
@@ -104,10 +104,10 @@ namespace more {
          *
          */
 
-        std::shared_ptr<const cpufreq_policy> 
+        std::tr1::shared_ptr<const cpufreq_policy> 
         policy() const
         {
-            return std::shared_ptr<const cpufreq_policy>(cpufreq_get_policy(_M_cpu), cpufreq_put_policy);
+            return std::tr1::shared_ptr<const cpufreq_policy>(cpufreq_get_policy(m_cpu), cpufreq_put_policy);
         } 
 
         /* determine CPUfreq governors currently available
@@ -119,8 +119,8 @@ namespace more {
         available_governors() const
         {
             std::list<std::string> ret;
-            std::shared_ptr<cpufreq_available_governors> 
-                gov( cpufreq_get_available_governors(_M_cpu), cpufreq_put_available_governors);
+            std::tr1::shared_ptr<cpufreq_available_governors> 
+                gov( cpufreq_get_available_governors(m_cpu), cpufreq_put_available_governors);
 
             for( cpufreq_available_governors * p = gov.get() ;p != NULL; p=p->next)
                 ret.push_back(p->governor);
@@ -138,8 +138,8 @@ namespace more {
         available_frequencies() const
         {
             std::list<unsigned long> ret;
-            std::shared_ptr<cpufreq_available_frequencies> 
-                q ( cpufreq_get_available_frequencies(_M_cpu), cpufreq_put_available_frequencies);
+            std::tr1::shared_ptr<cpufreq_available_frequencies> 
+                q ( cpufreq_get_available_frequencies(m_cpu), cpufreq_put_available_frequencies);
             for( cpufreq_available_frequencies * p = q.get() ;p != NULL; p=p->next)
             {
                 ret.push_back(p->frequency);
@@ -152,16 +152,16 @@ namespace more {
          * This is not available in all kernel versions or configurations.
          */
 
-        std::shared_ptr<const cpufreq_stats>
+        std::tr1::shared_ptr<const cpufreq_stats>
         get_stats(unsigned long long *total_time) const
         {
-            return std::shared_ptr<const cpufreq_stats>(cpufreq_get_stats(_M_cpu, total_time), cpufreq_put_stats);
+            return std::tr1::shared_ptr<const cpufreq_stats>(cpufreq_get_stats(m_cpu, total_time), cpufreq_put_stats);
         }
 
         unsigned long
         get_transition() const
         {
-            return cpufreq_get_transitions(_M_cpu);
+            return cpufreq_get_transitions(m_cpu);
         }
      
         /* modify a policy by only changing min/max freq or governor 
@@ -172,14 +172,14 @@ namespace more {
         void
         set_policy_min_freq(unsigned long value)
         {
-            if( cpufreq_modify_policy_min(_M_cpu, value) != 0)
+            if( cpufreq_modify_policy_min(m_cpu, value) != 0)
                 throw std::runtime_error("cpufreq_modify_policy_min");
 
         }
         void
         set_policy_mx_freq(unsigned long value)
         {
-            if( cpufreq_modify_policy_max(_M_cpu, value) != 0)
+            if( cpufreq_modify_policy_max(m_cpu, value) != 0)
                 throw std::runtime_error("cpufreq_modify_policy_max");
 
         }
@@ -187,7 +187,7 @@ namespace more {
         void
         set_policy_governor(const std::string &value)
         {
-            if( cpufreq_modify_policy_governor(_M_cpu, const_cast<char *>(value.c_str())) != 0)
+            if( cpufreq_modify_policy_governor(m_cpu, const_cast<char *>(value.c_str())) != 0)
                 throw std::runtime_error("cpufreq_modify_policy_governor");
         }
 
@@ -201,12 +201,12 @@ namespace more {
         void 
         set_frequency(unsigned long target_frequency)
         {
-            if(cpufreq_set_frequency(_M_cpu,target_frequency) != 0)
+            if(cpufreq_set_frequency(m_cpu,target_frequency) != 0)
                throw std::runtime_error("cpufreq_set_frequency"); 
         }
 
     private:
-        int _M_cpu;
+        int m_cpu;
     
     };
 

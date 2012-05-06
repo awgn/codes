@@ -17,9 +17,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <error.hh>     // more!
 #include <iostream>
 #include <cstring>
+#include <cerrno>
 
 namespace more 
 {
@@ -34,42 +34,42 @@ namespace more
     {
     public:
         explicit scoped_flock(const char *filelock) 
-        : _M_fd(),
-          _M_status(false)
+        : m_fd(),
+          m_status(false)
         {
-            _M_fd = open(filelock, O_RDONLY|O_CREAT);
-            if (_M_fd == -1) {
-                std::clog << "open: " << pretty_strerror(errno) << std::endl;
+            m_fd = open(filelock, O_RDONLY|O_CREAT);
+            if (m_fd == -1) {
+                std::clog << "open: " << std::strerror(errno) << std::endl;
                 return;
             }
-            if (flock(_M_fd, flock_operation<MODE>::value) < 0 ) {
-                std::clog << "flock: " << pretty_strerror(errno) << std::endl;
+            if (flock(m_fd, flock_operation<MODE>::value) < 0 ) {
+                std::clog << "flock: " << std::strerror(errno) << std::endl;
                 return;
             }
-            _M_status = true;
+            m_status = true;
         }
 
         ~scoped_flock()
         {
-            if (flock(_M_fd, LOCK_UN) < 0 ) {
-                std::clog << "flock(...,LOCK_UN: " << pretty_strerror(errno) << std::endl;
+            if (flock(m_fd, LOCK_UN) < 0 ) {
+                std::clog << "flock(...,LOCK_UN: " << std::strerror(errno) << std::endl;
                 return;
             }
-            close(_M_fd);
+            close(m_fd);
         }
 
         bool is_open() const
-        { return _M_fd >=0; }
+        { return m_fd >=0; }
 
         bool is_locked() const 
-        { return _M_status; }
+        { return m_status; }
 
     private:
         scoped_flock(const scoped_flock &);
         scoped_flock &operator=(const scoped_flock &);
 
-        int  _M_fd;
-        bool _M_status;
+        int  m_fd;
+        bool m_status;
     };
 
 } // namespace more

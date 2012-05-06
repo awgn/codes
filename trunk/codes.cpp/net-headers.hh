@@ -22,7 +22,8 @@
 
 #include <cursor.hh>            // more!
 #include <static_assert.hh>     // more!
-#include <tr1_type_traits.hh>   // more!
+
+#include <tr1/type_traits>  
 
 #include <iostream>
 #include <string>
@@ -39,7 +40,7 @@ namespace more {
         template <bool V, typename T>
         struct remove_const_if
         {
-            typedef typename std::remove_const<T>::type type;
+            typedef typename std::tr1::remove_const<T>::type type;
         };
 
         template <typename T>
@@ -51,7 +52,7 @@ namespace more {
         template <bool V, typename T>
         struct add_const_if
         {
-            typedef typename std::add_const<T>::type type;
+            typedef typename std::tr1::add_const<T>::type type;
         };
 
         template <typename T>
@@ -107,14 +108,14 @@ namespace more {
             if ( cur.size() < T::__min_size )
                 throw std::range_error(std::string(T::__name_str()).append("::size() [minimal size]"));
 
-            ssize_t n = _M_value.size(cur.size());
+            ssize_t n = m_value.size(cur.size());
             cur += n;
         }
 
         template <typename P>
         void ctor(more::cursor<P> &cur, ssize_t size, header_helper::int2type<0>)
         {
-            ssize_t n = _M_value.size(cur.size(), size);
+            ssize_t n = m_value.size(cur.size(), size);
             if (cur.size() < n)
                 throw std::range_error(std::string(T::__name_str()).append("::size() [dynamic size]"));
             cur += n;
@@ -123,9 +124,9 @@ namespace more {
     public:
         template <typename P>
         header(more::cursor<P> &cur)
-        : _M_value( const_cast< 
+        : m_value( const_cast< 
                         typename header_helper::remove_const_if< 
-                            std::is_const<T>::value, P
+                            std::tr1::is_const<T>::value, P
                             >::type * >(cur.cur()))
         {
             static_assert(sizeof(P) == 1, multi_bytes_cursor_not_allowed);
@@ -134,9 +135,9 @@ namespace more {
 
         template <typename P>
         header(more::cursor<P> & cur, ssize_t size /* set the header size */ )
-        : _M_value( const_cast< 
+        : m_value( const_cast< 
                         typename header_helper::remove_const_if< 
-                            std::is_const<T>::value, P
+                            std::tr1::is_const<T>::value, P
                             >::type * >(cur.cur()))
         {
             static_assert(sizeof(P) == 1, multi_bytes_cursor_not_allowed);
@@ -147,17 +148,17 @@ namespace more {
         T * 
         operator->()
         {
-            return &_M_value;
+            return &m_value;
         }
 
         T &
         operator *()
         {
-            return _M_value;
+            return m_value;
         }
 
     private:
-        T _M_value;
+        T m_value;
     };
 
 

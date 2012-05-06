@@ -17,30 +17,30 @@ namespace more {
 
     class lnistreambuf : public std::streambuf {
 
-        std::streambuf * _M_in;
-        int _M_line;
+        std::streambuf * m_in;
+        int m_line;
 
     public:
         lnistreambuf(std::streambuf *in)
-        : _M_in(in),
-          _M_line(1)
+        : m_in(in),
+          m_line(1)
         {}
 
         virtual int_type underflow()
         {
-            return  _M_in->sgetc();
+            return  m_in->sgetc();
         }
 
         virtual int_type uflow()
         {
-            int_type c = _M_in->sbumpc();
+            int_type c = m_in->sbumpc();
             if ( c == '\n' )
-                _M_line++;
+                m_line++;
             return c;
         }
 
         int line() const
-        { return _M_line; }
+        { return m_line; }
     };
 
 

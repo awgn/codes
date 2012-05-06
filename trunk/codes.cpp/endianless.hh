@@ -26,36 +26,36 @@ namespace more {
         };
 
         endianless() 
-        : _M_data (T())
+        : m_data (T())
         {}
 
         explicit endianless(const endianless &rhs)
-        : _M_data(rhs._M_data)
+        : m_data(rhs.m_data)
         {}
 
         explicit endianless(const T &rhs) 
-        : _M_data(hton(rhs, size2type<sizeof(T)>()))
+        : m_data(hton(rhs, size2type<sizeof(T)>()))
         {}
 
         endianless &
         operator=(const T &rhs)
         {
-            _M_data = hton(rhs, size2type<sizeof(T)>());
+            m_data = hton(rhs, size2type<sizeof(T)>());
             return *this;
         }
         endianless &
         operator=(const endianless &rhs)
         {
             if ( this != &rhs)
-                _M_data = rhs._M_data; 
+                m_data = rhs.m_data; 
             return *this;
         }
 
         operator T() const 
-        { return ntoh(_M_data, size2type<sizeof(T)>()); }
+        { return ntoh(m_data, size2type<sizeof(T)>()); }
 
         const T get() const
-        { return _M_data; }
+        { return m_data; }
 
     private:
         template <typename U>
@@ -87,7 +87,7 @@ namespace more {
                          unsigned long int, long int,
                          unsigned long long int, long long int) valid_tlist;
 
-        typename more::TL::has_type<valid_tlist, T>::type _M_data;
+        typename more::TL::has_type<valid_tlist, T>::type m_data;
 
     };
 

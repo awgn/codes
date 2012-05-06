@@ -13,7 +13,7 @@
 
 #include <sys/uio.h>
 
-#include <tr1_type_traits.hh>   // more!
+#include <tr1/type_traits>   
 
 #include <vector>
 #include <iterator>
@@ -69,7 +69,7 @@ namespace more {
         std::vector<iovec> ret;
 
         typedef typename 
-            more::mtp::if_< std::is_same< std::string, typename std::iterator_traits<Iterator>::value_type >::value, 
+            more::mtp::if_< std::tr1::is_same< std::string, typename std::iterator_traits<Iterator>::value_type >::value, 
                 char, 
                 typename std::iterator_traits<Iterator>::value_type>::type value_type;
 

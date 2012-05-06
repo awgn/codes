@@ -14,9 +14,9 @@
 #include <mtp.hh>           // more!
 #include <type_traits.hh>   // more!
 
-#include <tr1_type_traits.hh>
-#include <tr1_array.hh>
-#include <tr1_tuple.hh>
+#include <tr1/type_traits>
+#include <tr1/array>
+#include <tr1/tuple>
 
 #include <iostream>
 #include <algorithm>
@@ -56,7 +56,7 @@ namespace more {
             {
                 static void apply(std::basic_ostream<CharT,Traits> &out, const T &tupl)
                 {
-                    out << std::get< std::tuple_size<T>::value - N>(tupl) << ' ';
+                    out << std::tr1::get< std::tr1::tuple_size<T>::value - N>(tupl) << ' ';
                     printon<CharT, Traits, T,N-1>::apply(out,tupl);
                 }
 
@@ -79,7 +79,7 @@ namespace std {
 
     template <typename CharT, typename Traits, typename T>
     inline typename more::mtp::enable_if_c< more::traits::is_container<T>::value && 
-    !is_same<typename std::string,T>::value, 
+    !std::tr1::is_same<typename std::string,T>::value, 
     std::basic_ostream<CharT,Traits> >::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
     {
@@ -107,10 +107,10 @@ namespace std {
 
         template <typename CharT, typename Traits, typename T, std::size_t N>
         std::basic_ostream<CharT,Traits> &
-        operator<<(std::basic_ostream<CharT,Traits> &out, const std::array<T,N> & rhs)
+        operator<<(std::basic_ostream<CharT,Traits> &out, const std::tr1::array<T,N> & rhs)
         {
             out << "[ ";
-            more::streamer::tuplarr::printon<CharT, Traits, std::array<T,N>, N>::apply(out,rhs);
+            more::streamer::tuplarr::printon<CharT, Traits, std::tr1::array<T,N>, N>::apply(out,rhs);
             return out << "]";
         }
 
@@ -122,7 +122,7 @@ namespace std {
         operator<<(std::basic_ostream<CharT,Traits> &out, const T & rhs)
         {
             out << "< ";
-            more::streamer::tuplarr::printon<CharT, Traits, T, std::tuple_size<T>::value>::apply(out,rhs);
+            more::streamer::tuplarr::printon<CharT, Traits, T, std::tr1::tuple_size<T>::value>::apply(out,rhs);
             return out << ">";
         }
 

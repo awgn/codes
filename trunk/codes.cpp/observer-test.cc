@@ -41,16 +41,16 @@ struct sub3 : public subject<int, const std::string &>
 struct obs1 : public observer<>
 {
     obs1(int n)
-    : _M_value(n)
+    : m_value(n)
     {}
 
     virtual void
     update()
     {
-        std::cout << __PRETTY_FUNCTION__  << " " << _M_value << std::endl;
+        std::cout << __PRETTY_FUNCTION__  << " " << m_value << std::endl;
     }
 
-    int _M_value;
+    int m_value;
 };
 
 struct obs2 : public observer<>
@@ -110,8 +110,8 @@ main(int argc, char *argv[])
     {
         sub2 owner;
         {
-            std::shared_ptr<observer<> > obs_1(new obs2);
-            std::shared_ptr<observer<> > obs_2(new obs2);
+            std::tr1::shared_ptr<observer<> > obs_1(new obs2);
+            std::tr1::shared_ptr<observer<> > obs_2(new obs2);
 
             std::cout << "    attach(2)" << std::endl;
             owner.attach(obs_1);

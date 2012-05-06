@@ -18,7 +18,7 @@ main(int argc, char *argv[])
 {    
     int fd = open("test.txt", O_RDWR|O_CREAT);
     if ( fd == -1 )
-        throw more::syscall_error("open");
+        throw more::system_error("open");
 
     async_fd<IO_blocking, IO_nonblocking> out(fd);
 

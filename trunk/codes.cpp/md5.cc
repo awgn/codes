@@ -62,10 +62,10 @@ more::md5::process(const uint8_t data[64])
     a += F(b,c,d) + X[k] + t; a = S(a,s) + b;           \
 }
 
-    A = _M_state[0];
-    B = _M_state[1];
-    C = _M_state[2];
-    D = _M_state[3];
+    A = m_state[0];
+    B = m_state[1];
+    C = m_state[2];
+    D = m_state[3];
 
 #define F(x,y,z) (z ^ (x & (y ^ z)))
 
@@ -151,16 +151,16 @@ more::md5::process(const uint8_t data[64])
 
 #undef F
 
-    _M_state[0] += A;
-    _M_state[1] += B;
-    _M_state[2] += C;
-    _M_state[3] += D;
+    m_state[0] += A;
+    m_state[1] += B;
+    m_state[2] += C;
+    m_state[3] += D;
 }
 
 void 
 more::md5::update(const uint8_t *input, uint32_t length )
 {
-    if (!_M_initialized)
+    if (!m_initialized)
         throw std::logic_error("md5 cipher not initialized");
 
     uint32_t left, fill;
@@ -168,19 +168,19 @@ more::md5::update(const uint8_t *input, uint32_t length )
     if( !length ) 
         return;
 
-    left = _M_total[0] & 0x3F;
+    left = m_total[0] & 0x3F;
     fill = 64 - left;
 
-    _M_total[0] += length;
-    _M_total[0] &= 0xFFFFFFFF;
+    m_total[0] += length;
+    m_total[0] &= 0xFFFFFFFF;
 
-    if( _M_total[0] < length )
-        _M_total[1]++;
+    if( m_total[0] < length )
+        m_total[1]++;
 
     if( left && length >= fill ) {
-        memcpy( (void *) (_M_buffer.begin() + left),
+        memcpy( (void *) (m_buffer.begin() + left),
                 (void *) input, fill );
-        this->process(_M_buffer.data());
+        this->process(m_buffer.data());
         length -= fill;
         input  += fill;
         left = 0;
@@ -194,7 +194,7 @@ more::md5::update(const uint8_t *input, uint32_t length )
     }
 
     if( length ) {
-        memcpy( (void *) (_M_buffer.begin() + left), (void *) input, length );
+        memcpy( (void *) (m_buffer.begin() + left), (void *) input, length );
     }
 }
 
@@ -213,24 +213,24 @@ more::md5::finish(uint8_t digest[16])
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-    high = ( _M_total[0] >> 29 )
-         | ( _M_total[1] <<  3 );
-    low  = ( _M_total[0] <<  3 );
+    high = ( m_total[0] >> 29 )
+         | ( m_total[1] <<  3 );
+    low  = ( m_total[0] <<  3 );
 
     PUT_UINT32_LE( low,  msglen, 0 );
     PUT_UINT32_LE( high, msglen, 4 );
 
-    last = _M_total[0] & 0x3F;
+    last = m_total[0] & 0x3F;
     padn = ( last < 56 ) ? ( 56 - last ) : ( 120 - last );
 
     this->update( padding, padn );
     this->update( msglen, 8 );
 
-    PUT_UINT32_LE( _M_state[0], digest,  0 );
-    PUT_UINT32_LE( _M_state[1], digest,  4 );
-    PUT_UINT32_LE( _M_state[2], digest,  8 );
-    PUT_UINT32_LE( _M_state[3], digest, 12 );
+    PUT_UINT32_LE( m_state[0], digest,  0 );
+    PUT_UINT32_LE( m_state[1], digest,  4 );
+    PUT_UINT32_LE( m_state[2], digest,  8 );
+    PUT_UINT32_LE( m_state[3], digest, 12 );
 
-    _M_initialized = false;
+    m_initialized = false;
 }
 

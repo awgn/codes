@@ -12,8 +12,8 @@
 #define SINGLETON_HH
 
 #include <typelist.hh>          // more!
-#include <tr1_type_traits.hh>   // more!
 
+#include <tr1/type_traits>   
 #include <iostream>
 
 namespace more
@@ -23,7 +23,7 @@ namespace more
 
     template <typename T, typename CV = singleton_type, typename S = more::TL::null, 
               int N = more::TL::length<S>::value,                 /* for partial specialization */
-              typename B = typename std::remove_cv<CV>::type /* for partial specialization */ > class singleton;
+              typename B = typename std::tr1::remove_cv<CV>::type /* for partial specialization */ > class singleton;
     struct singleton_base
     {
         template <typename T>
@@ -36,17 +36,17 @@ namespace more
         template <typename U>
         struct __add_cv<U, true, false>
         {
-            typedef typename std::add_const<U>::type type;
+            typedef typename std::tr1::add_const<U>::type type;
         };
         template <typename U>
         struct __add_cv<U, false, true>
         {
-            typedef typename std::add_volatile<U>::type type;
+            typedef typename std::tr1::add_volatile<U>::type type;
         };
         template <typename U>
         struct __add_cv<U, true, true>
         {
-            typedef typename std::add_cv<U>::type type;
+            typedef typename std::tr1::add_cv<U>::type type;
         };
         template <typename U>
         struct __add_cv<U, false, false>
@@ -57,7 +57,7 @@ namespace more
         template <typename U, typename V>
         struct add_cv_qualifier
         {
-            typedef typename __add_cv<U, std::is_const<V>::value, std::is_volatile<V>::value>::type type;
+            typedef typename __add_cv<U, std::tr1::is_const<V>::value, std::tr1::is_volatile<V>::value>::type type;
         };
 
     private:

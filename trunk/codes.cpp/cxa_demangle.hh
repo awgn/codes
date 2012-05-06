@@ -13,7 +13,7 @@
 
 #include <cxxabi.h>
 
-#include <tr1_memory.hh>    // more!
+#include <tr1/memory>   
 
 #ifdef _REENTRANT
 #include <atomicity-policy.hh>
@@ -30,11 +30,11 @@ namespace more {
     cxa_demangle(const char *name)
     {
 #ifdef _REENTRANT
-        static atomicity::GNU_CXX::mutex _S_mutex;
-        atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+        static atomicity::GNU_CXX::mutex s_mutex;
+        atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
         int status;
-        std::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
+        std::tr1::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
         if (status < 0) {
 #ifdef __EXCEPTIONS
             throw std::runtime_error("__cxa_demangle");

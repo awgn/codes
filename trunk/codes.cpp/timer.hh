@@ -14,10 +14,11 @@
 #include <sys/time.h>
 
 #include <pthread++.hh>         // more!
-#include <error.hh>             // more!
 #include <static_assert.hh>     // more!
-#include <tr1_type_traits.hh>   // more!
-#include <tr1_array.hh>         // more!
+#include <system_error.hh>      // more!
+
+#include <tr1/type_traits>   
+#include <tr1/array>         
 
 #include <cstring>
 #include <string>
@@ -31,7 +32,7 @@ namespace more { namespace time {
             posix::cond  _cond;
         } tick_data_type;
 
-        std::array<tick_data_type, 64 /* under linux SIGRTMAX is a function and cannot appear in constant expressions */ +1 > thread_data; 
+        std::tr1::array<tick_data_type, 64 /* under linux SIGRTMAX is a function and cannot appear in constant expressions */ +1 > thread_data; 
     };
 
     ////////////////////////////////////////////
@@ -93,21 +94,21 @@ namespace more { namespace time {
     public:
 
         itimer()
-        : _M_itv(), _M_itv_p(NULL)
+        : m_itv(), m_itv_p(NULL)
         {}
 
         explicit itimer(const itimerval * value, itimerval *ovalue = NULL)
-        : _M_itv(*value), _M_itv_p(ovalue)
+        : m_itv(*value), m_itv_p(ovalue)
         {}
 
         explicit itimer(const timeval *value)
-        : _M_itv(), _M_itv_p(0)
+        : m_itv(), m_itv_p(0)
         {
             this->set(value);
         }
 
         itimer(time_t sec, suseconds_t usec)
-        : _M_itv(), _M_itv_p(0)
+        : m_itv(), m_itv_p(0)
         {
             this->set(sec,usec);
         }
@@ -122,29 +123,29 @@ namespace more { namespace time {
         int start()
         {
             // start the itimer
-            return ::setitimer(WHICH, &_M_itv, _M_itv_p);
+            return ::setitimer(WHICH, &m_itv, m_itv_p);
         }
 
         void set(const itimerval * value, itimerval *ovalue = NULL)
         { 
-            _M_itv = * value; 
-            _M_itv_p = ovalue;
+            m_itv = * value; 
+            m_itv_p = ovalue;
         }
 
         void set(const struct timeval *value)
         {
-            _M_itv.it_interval.tv_sec  = value->tv_sec;
-            _M_itv.it_interval.tv_usec = value->tv_usec;
-            _M_itv.it_value.tv_sec     = value->tv_sec;
-            _M_itv.it_value.tv_usec    = value->tv_usec;
+            m_itv.it_interval.tv_sec  = value->tv_sec;
+            m_itv.it_interval.tv_usec = value->tv_usec;
+            m_itv.it_value.tv_sec     = value->tv_sec;
+            m_itv.it_value.tv_usec    = value->tv_usec;
         }
 
         void set(time_t sec, suseconds_t usec)
         {
-            _M_itv.it_interval.tv_sec  = sec;
-            _M_itv.it_interval.tv_usec = usec;
-            _M_itv.it_value.tv_sec     = sec;
-            _M_itv.it_value.tv_usec    = usec;
+            m_itv.it_interval.tv_sec  = sec;
+            m_itv.it_interval.tv_usec = usec;
+            m_itv.it_value.tv_sec     = sec;
+            m_itv.it_value.tv_usec    = usec;
         }
 
         int get(struct itimerval *value) const
@@ -156,17 +157,17 @@ namespace more { namespace time {
         friend inline std::basic_ostream<CharT,Traits> &
         operator<<(std::basic_ostream<CharT, Traits> &out, const itimer &rhs)
         {
-            out << "itimerval:{ value:{" << rhs._M_its.it_value.tv_sec  << ',' << 
-                                rhs._M_its.it_value.tv_usec << 
-                         "} interval:{" << rhs._M_its.it_interval.tv_sec << ',' <<
-                                           rhs._M_its.it_interval.tv_usec <<  "} }"; 
+            out << "itimerval:{ value:{" << rhs.m_its.it_value.tv_sec  << ',' << 
+                                rhs.m_its.it_value.tv_usec << 
+                         "} interval:{" << rhs.m_its.it_interval.tv_sec << ',' <<
+                                           rhs.m_its.it_interval.tv_usec <<  "} }"; 
             return out;
         }
 
 
     private: 
-        itimerval   _M_itv;
-        itimerval  *_M_itv_p;
+        itimerval   m_itv;
+        itimerval  *m_itv_p;
     };
 
 
@@ -176,19 +177,19 @@ namespace more { namespace time {
 
     public:
         itimer_pulse_thread()
-        : _M_itimer()
+        : m_itimer()
         {}
 
         explicit itimer_pulse_thread(const struct itimerval *value, struct itimerval *oldvalue = NULL)
-        : _M_itimer(value, oldvalue)
+        : m_itimer(value, oldvalue)
         {}
 
         explicit itimer_pulse_thread(const struct timeval *value)
-        : _M_itimer(value)
+        : m_itimer(value)
         {}
 
         itimer_pulse_thread(time_t sec, suseconds_t usec)
-        : _M_itimer(sec, usec)
+        : m_itimer(sec, usec)
         {}
 
         ~itimer_pulse_thread()
@@ -199,8 +200,8 @@ namespace more { namespace time {
             int sig;
 
             // start the timer
-            if ( _M_itimer.start() < 0 )
-                throw more::syscall_error(std::string("setitimer",errno));
+            if ( m_itimer.start() < 0 )
+                throw more::system_error(std::string("setitimer",errno));
 
             sigset_t sigexp; 
             sigemptyset(&sigexp);
@@ -222,7 +223,7 @@ namespace more { namespace time {
 
     private:
 
-        itimer<WHICH>  _M_itimer;
+        itimer<WHICH>  m_itimer;
 
         // non-copyable idiom
         itimer_pulse_thread(const itimer_pulse_thread &);
@@ -247,26 +248,26 @@ namespace more { namespace time {
     public:
 
         rt_timer()
-        : _M_id(), _M_its(), _M_its_p(0)
+        : m_id(), m_its(), m_its_p(0)
         {
             this->init();
         }
 
         explicit rt_timer(const itimerspec *value, itimerspec *oldvalue = NULL)
-        : _M_id(), _M_its(*value), _M_its_p(oldvalue)
+        : m_id(), m_its(*value), m_its_p(oldvalue)
         {
             this->init();
         }
 
         explicit rt_timer(const timespec *value)
-        : _M_id(), _M_its(), _M_its_p(0)
+        : m_id(), m_its(), m_its_p(0)
         {
             this->set(value);
             this->init();
         }
 
         rt_timer(time_t sec, long nsec)
-        : _M_id(), _M_its(), _M_its_p(0)
+        : m_id(), m_its(), m_its_p(0)
         {
             this->set(sec,nsec);
             this->init();
@@ -275,52 +276,52 @@ namespace more { namespace time {
         ~rt_timer()
         {
             // delete the timer
-            ::timer_delete(_M_id); 
+            ::timer_delete(m_id); 
         }
 
         int start()
         {
             // start the timer
-            return ::timer_settime(_M_id, FLAGS, &_M_its, _M_its_p);
+            return ::timer_settime(m_id, FLAGS, &m_its, m_its_p);
         }
 
         timer_t
         get_id() const
-        { return _M_id; }
+        { return m_id; }
 
         void set(const itimerspec *value, itimerspec *oldvalue = NULL)
         {
-            _M_its   = *value;
-            _M_its_p = oldvalue; 
+            m_its   = *value;
+            m_its_p = oldvalue; 
         } 
 
         void set(const timespec *value)
         {            
-            _M_its.it_interval.tv_sec  = value->tv_sec;
-            _M_its.it_interval.tv_nsec = value->tv_nsec; 
-            _M_its.it_value.tv_sec     = value->tv_sec;
-            _M_its.it_value.tv_nsec    = value->tv_nsec;
+            m_its.it_interval.tv_sec  = value->tv_sec;
+            m_its.it_interval.tv_nsec = value->tv_nsec; 
+            m_its.it_value.tv_sec     = value->tv_sec;
+            m_its.it_value.tv_nsec    = value->tv_nsec;
  
-            _M_its_p = NULL; 
+            m_its_p = NULL; 
         } 
         void set(time_t sec, long nsec)
         {            
-            _M_its.it_interval.tv_sec  = sec;
-            _M_its.it_interval.tv_nsec = nsec; 
-            _M_its.it_value.tv_sec     = sec;
-            _M_its.it_value.tv_nsec    = nsec;
+            m_its.it_interval.tv_sec  = sec;
+            m_its.it_interval.tv_nsec = nsec; 
+            m_its.it_value.tv_sec     = sec;
+            m_its.it_value.tv_nsec    = nsec;
 
-            _M_its_p = NULL; 
+            m_its_p = NULL; 
         } 
 
         int get(itimerspec &value) const
         {
-            return ::timer_gettime(_M_id, &value);
+            return ::timer_gettime(m_id, &value);
         }
 
         int overrun() const
         {
-            return ::timer_getoverrun(_M_id);
+            return ::timer_getoverrun(m_id);
         }
 
     private:
@@ -349,29 +350,29 @@ namespace more { namespace time {
             struct sigevent ev;
             ev.sigev_notify = SIGEV;
             ev.sigev_signo  = SIGNO;
-            ev.sigev_value.sival_ptr = &_M_id;
+            ev.sigev_value.sival_ptr = &m_id;
 
-            if ( ::timer_create(CID, &ev, &_M_id) <  0 )
-                throw more::syscall_error(std::string("timer",errno));
+            if ( ::timer_create(CID, &ev, &m_id) <  0 )
+                throw more::system_error(std::string("timer",errno));
         }
 
         template <typename CharT, typename Traits>
         friend inline std::basic_ostream<CharT,Traits> &
         operator<<(std::basic_ostream<CharT,Traits> &out, const rt_timer &rhs)
         {
-            out << "itimerspec:{ value:{" << rhs._M_its.it_value.tv_sec  << ',' << 
-                                rhs._M_its.it_value.tv_nsec << 
-                         "} interval:{" << rhs._M_its.it_interval.tv_sec << ',' <<
-                                           rhs._M_its.it_interval.tv_nsec <<  "} }"; 
+            out << "itimerspec:{ value:{" << rhs.m_its.it_value.tv_sec  << ',' << 
+                                rhs.m_its.it_value.tv_nsec << 
+                         "} interval:{" << rhs.m_its.it_interval.tv_sec << ',' <<
+                                           rhs.m_its.it_interval.tv_nsec <<  "} }"; 
             return out;
         }
 
-        timer_t      _M_id;
+        timer_t      m_id;
 
     public:
 
-        itimerspec   _M_its;
-        itimerspec * _M_its_p;
+        itimerspec   m_its;
+        itimerspec * m_its_p;
 
         // non-copyable idiom
         rt_timer(const rt_timer &);
@@ -385,19 +386,19 @@ namespace more { namespace time {
     public:
 
         rt_timer_pulse_thread()
-        : _M_rt_timer(), _M_update(false)
+        : m_rt_timer(), m_update(false)
         {}
 
         explicit rt_timer_pulse_thread(const itimerspec *value, itimerspec *oldvalue = NULL)
-        : _M_rt_timer(value, oldvalue), _M_update(false)
+        : m_rt_timer(value, oldvalue), m_update(false)
         {}
 
         explicit rt_timer_pulse_thread(const timespec *value)
-        : _M_rt_timer(value), _M_update(false)
+        : m_rt_timer(value), m_update(false)
         {}
 
         rt_timer_pulse_thread(time_t sec, long nsec)
-        : _M_rt_timer(sec,nsec), _M_update(false)
+        : m_rt_timer(sec,nsec), m_update(false)
         {}
 
         ~rt_timer_pulse_thread()
@@ -408,8 +409,8 @@ namespace more { namespace time {
             int sig;
 
             // start the timer
-            if ( _M_rt_timer.start() < 0)
-                throw more::syscall_error(std::string("timer_settime"));
+            if ( m_rt_timer.start() < 0)
+                throw more::system_error(std::string("timer_settime"));
 
             sigset_t sigexp;
             sigemptyset(&sigexp);
@@ -419,13 +420,13 @@ namespace more { namespace time {
             {
                 sigwait(&sigexp, &sig);
 
-                if (_M_update) {
-                    posix::scoped_lock<posix::mutex> _L_(_M_mutex_update);
+                if (m_update) {
+                    posix::scoped_lock<posix::mutex> _L_(m_mutex_update);
                         
-                    if (_M_rt_timer.start() < 0)
-                        throw more::syscall_error(std::string("timer_settime"));
+                    if (m_rt_timer.start() < 0)
+                        throw more::system_error(std::string("timer_settime"));
 
-                    _M_update = false;
+                    m_update = false;
                 }
 
                 assert( sig == SIGNO );
@@ -441,30 +442,30 @@ namespace more { namespace time {
 
         void update(const itimerspec *value)
         {
-            posix::scoped_lock<posix::mutex> _L_(_M_mutex_update);
-            _M_rt_timer.set(value, NULL);
-            _M_update = true; 
+            posix::scoped_lock<posix::mutex> _L_(m_mutex_update);
+            m_rt_timer.set(value, NULL);
+            m_update = true; 
         } 
 
         void update(const timespec *value)
         {    
-            posix::scoped_lock<posix::mutex> _L_(_M_mutex_update);
-            _M_rt_timer.set(value);            
-            _M_update = true; 
+            posix::scoped_lock<posix::mutex> _L_(m_mutex_update);
+            m_rt_timer.set(value);            
+            m_update = true; 
         } 
 
         void update(time_t sec, long nsec)
         {  
-            posix::scoped_lock<posix::mutex> _L_(_M_mutex_update);
-            _M_rt_timer.set(sec,nsec);         
-            _M_update = true; 
+            posix::scoped_lock<posix::mutex> _L_(m_mutex_update);
+            m_rt_timer.set(sec,nsec);         
+            m_update = true; 
         } 
 
     private:
-        rt_timer<CID, SIGEV_SIGNAL, SIGNO>  _M_rt_timer;        
+        rt_timer<CID, SIGEV_SIGNAL, SIGNO>  m_rt_timer;        
 
-        posix::mutex _M_mutex_update;
-        bool _M_update;
+        posix::mutex m_mutex_update;
+        bool m_update;
 
         // non-copyable idiom
         rt_timer_pulse_thread(const rt_timer_pulse_thread &);

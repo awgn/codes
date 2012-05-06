@@ -36,7 +36,7 @@ namespace more {
             typedef std::pair<K,V>  value_type;
 
         private:
-            _Cont<value_type>  _M_cont;
+            _Cont<value_type>  m_cont;
 
             // compare predicate...
             //
@@ -50,7 +50,7 @@ namespace more {
 
         public:
             base_heap()
-            : _M_cont()
+            : m_cont()
             {
                 // std::make_heap()
             }
@@ -61,39 +61,39 @@ namespace more {
             void 
             push(const key_type &key, const mapped_type &value)
             {
-                _M_cont.push_back(std::make_pair(key,value));
-                std::push_heap(_M_cont.begin(), _M_cont.end(), comp());
+                m_cont.push_back(std::make_pair(key,value));
+                std::push_heap(m_cont.begin(), m_cont.end(), comp());
             }
 
             value_type
             pop()
             {
-                const value_type ret = _M_cont.front(); 
-                std::pop_heap(_M_cont.begin(), _M_cont.end(), comp());
-                _M_cont.pop_back();   
+                const value_type ret = m_cont.front(); 
+                std::pop_heap(m_cont.begin(), m_cont.end(), comp());
+                m_cont.pop_back();   
                 return ret; 
             }
 
             mapped_type 
             pop_value()
             {
-                V ret = _M_cont.front().second; 
-                std::pop_heap(_M_cont.begin(), _M_cont.end(), comp());
-                _M_cont.pop_back();   
+                V ret = m_cont.front().second; 
+                std::pop_heap(m_cont.begin(), m_cont.end(), comp());
+                m_cont.pop_back();   
                 return ret; 
             }
 
             value_type &
             top() 
-            { return _M_cont.front(); }
+            { return m_cont.front(); }
 
             const value_type &
             top() const
-            { return _M_cont.front(); }
+            { return m_cont.front(); }
 
             bool
             empty() const
-            { return _M_cont.empty(); } 
+            { return m_cont.empty(); } 
 
         };
 
@@ -129,11 +129,11 @@ namespace more {
                 }
             };
 
-            std::priority_queue<value_type, std::vector<value_type>, comp>  _M_pq;
+            std::priority_queue<value_type, std::vector<value_type>, comp>  m_pq;
 
         public:
             priority_queue_heap()
-            : _M_pq()
+            : m_pq()
             {
                 // std::make_heap()
             }
@@ -144,36 +144,36 @@ namespace more {
             void 
             push(const key_type &key, const mapped_type &value)
             {
-                _M_pq.push(std::make_pair(key,value));
+                m_pq.push(std::make_pair(key,value));
             }
 
             value_type
             pop()
             {
-                const value_type ret = _M_pq.top(); 
-                _M_pq.pop();   
+                const value_type ret = m_pq.top(); 
+                m_pq.pop();   
                 return ret; 
             }
 
             mapped_type 
             pop_value()
             {
-                V ret = _M_pq.top().second; 
-                _M_pq.pop();   
+                V ret = m_pq.top().second; 
+                m_pq.pop();   
                 return ret; 
             }
 
             value_type &
             top() 
-            { return _M_pq.top(); }
+            { return m_pq.top(); }
 
             const value_type &
             top() const
-            { return _M_pq.top(); }
+            { return m_pq.top(); }
 
             bool
             empty() const
-            { return _M_pq.empty(); } 
+            { return m_pq.empty(); } 
 
         };
     }
@@ -193,11 +193,11 @@ namespace more {
             typedef std::pair<K,V>  value_type;
 
         private:
-            std::map<key_type, mapped_type, std::less<K> >  _M_cont;
+            std::map<key_type, mapped_type, std::less<K> >  m_cont;
 
         public:
             heap()
-            : _M_cont()
+            : m_cont()
             {}
 
             ~heap()
@@ -206,35 +206,35 @@ namespace more {
             void 
             push(const key_type &key, const mapped_type &value)
             {
-                _M_cont.insert( std::make_pair(key,value) );
+                m_cont.insert( std::make_pair(key,value) );
             }
 
             value_type    
             pop()
             {
-                const value_type ret = * _M_cont.begin(); 
-                _M_cont.erase(_M_cont.begin());
+                const value_type ret = * m_cont.begin(); 
+                m_cont.erase(m_cont.begin());
                 return ret; 
             }
 
             V pop_value()
             {
-                V ret = _M_cont.begin()->second; 
-                _M_cont.erease(_M_cont.begin());
+                V ret = m_cont.begin()->second; 
+                m_cont.erease(m_cont.begin());
                 return ret; 
             }
 
             value_type &
             top() 
-            { return * _M_cont.begin(); }
+            { return * m_cont.begin(); }
 
             const value_type &
             top() const
-            { return * _M_cont.begin(); }
+            { return * m_cont.begin(); }
 
             bool
             empty() const
-            { return _M_cont.empty(); } 
+            { return m_cont.empty(); } 
  
         };
     }

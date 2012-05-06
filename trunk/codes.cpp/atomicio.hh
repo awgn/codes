@@ -16,8 +16,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <tr1_type_traits.hh>   // more!
-
+#include <tr1/type_traits>   
 #include <stdexcept>
 
 namespace more
@@ -41,7 +40,7 @@ namespace more
         template < typename C, typename T > 
         static inline int call(C callback, int fd, T *buff, size_t n)
         {
-            typedef typename __select< std::is_const<T>::value , const char *,char *>::type ptr_type; 
+            typedef typename __select< std::tr1::is_const<T>::value , const char *,char *>::type ptr_type; 
             ptr_type p = reinterpret_cast<ptr_type>(buff);
 
             size_t res, pos = 0;
@@ -68,7 +67,7 @@ namespace more
         template < typename C, typename T, typename P1 > 
         static inline int call(C callback, int fd, T *buff, size_t n, P1 p1)
         {
-            typedef typename __select< std::is_const<T>::value , const char *,char *>::type ptr_type; 
+            typedef typename __select< std::tr1::is_const<T>::value , const char *,char *>::type ptr_type; 
             ptr_type p = reinterpret_cast<ptr_type>(buff);
 
             size_t res, pos = 0;
@@ -92,7 +91,7 @@ namespace more
         template < typename C, typename T, typename P1, typename P2 > 
         static inline int call(C callback, int fd, T *buff, size_t n, P1 p1, P2 p2)
         {
-            typedef typename __select< std::is_const<T>::value , const char *,char *>::type ptr_type;
+            typedef typename __select< std::tr1::is_const<T>::value , const char *,char *>::type ptr_type;
             ptr_type p = reinterpret_cast<ptr_type>(buff);
             size_t res, pos = 0;
 
@@ -118,7 +117,7 @@ namespace more
         template < typename C, typename T, typename P1, typename P2, typename P3 > 
         static inline int call(C callback, int fd, T *buff, size_t n, P1 p1, P2 p2, P3 p3)
         {
-            typedef typename __select< std::is_const<T>::value , const char *,char *>::type ptr_type;
+            typedef typename __select< std::tr1::is_const<T>::value , const char *,char *>::type ptr_type;
             ptr_type p = reinterpret_cast<ptr_type>(buff);
             size_t res, pos = 0;
 
@@ -178,81 +177,81 @@ namespace more
         struct io_base
         {
         protected:
-            P * _M_buf;
-            size_t _M_count;
+            P * m_buf;
+            size_t m_count;
 
         public:
             io_base(P *buf, size_t count)
-            : _M_buf(buf), _M_count(count)
+            : m_buf(buf), m_count(count)
             {}
 
             P *
             data() 
-            { return _M_buf; }
+            { return m_buf; }
 
             size_t
             data_size() const
-            { return _M_count; }
+            { return m_count; }
         };
 
         template <typename IO = interruptible_io >
         struct read : public io_base<void>
         {
-            int _M_fd;
+            int m_fd;
 
             read(int fd, void *buf, size_t count)
-            : io_base<void>(buf,count), _M_fd(fd)
+            : io_base<void>(buf,count), m_fd(fd)
             {}
 
             ssize_t operator()() const
             {
-                return IO::call(::read,_M_fd,_M_buf,_M_count);
+                return IO::call(::read,m_fd,m_buf,m_count);
             }
         };
 
         template <typename IO = interruptible_io >
         struct write : public io_base<const void>
         {
-            int _M_fd;
+            int m_fd;
 
             write(int fd, const void *buf, size_t count)
-            : io_base<const void>(buf,count), _M_fd(fd)
+            : io_base<const void>(buf,count), m_fd(fd)
             {}
 
             ssize_t operator()() const
             {
-                return IO::call(::write,_M_fd,_M_buf,_M_count);
+                return IO::call(::write,m_fd,m_buf,m_count);
             }
         };
 
         template <typename IO = interruptible_io >
         struct pread : public io_base<void>
         {
-            int _M_fd;
-            off_t   _M_offset;
+            int m_fd;
+            off_t   m_offset;
 
             pread(int fd, void *buf, size_t count, off_t offset)
-            : io_base<void>(buf,count), _M_fd(fd), _M_offset(offset)
+            : io_base<void>(buf,count), m_fd(fd), m_offset(offset)
             {}
 
             ssize_t operator()() const
             {
-                return IO::call(::pread,_M_fd,_M_buf,_M_count, _M_offset);
+                return IO::call(::pread,m_fd,m_buf,m_count, m_offset);
             }
         };
         template <typename IO = interruptible_io >
         struct pwrite : public io_base<const void>
         {
-            int _M_fd;
-            off_t _M_offset;
+            int m_fd;
+            off_t m_offset;
 
             pwrite(int fd, const void *buf, size_t count, off_t offset)
-            : io_base<const void>(buf,count), _M_fd(fd), _M_offset(offset)
+            : io_base<const void>(buf,count), m_fd(fd), m_offset(offset)
             {}
 
             ssize_t operator()() const
             {
-                return IO::call(::pwrite,_M_fd,_M_buf,_M_count, _M_offset);
+                return IO::call(::pwrite,m_fd,m_buf,m_count, m_offset);
             }
         };
 
@@ -263,69 +262,69 @@ namespace more
         template <typename IO = interruptible_io >
         struct recv : public io_base<void>
         {
-            int _M_fd;
-            int _M_flags;
+            int m_fd;
+            int m_flags;
 
             recv(int fd, void *buf, size_t count, int flags)
-            : io_base<void>(buf,count), _M_fd(fd), _M_flags(flags)
+            : io_base<void>(buf,count), m_fd(fd), m_flags(flags)
             {}
 
             ssize_t operator()() const
             {
-                return IO::call(::recv,_M_fd,_M_buf,_M_count, _M_flags);
+                return IO::call(::recv,m_fd,m_buf,m_count, m_flags);
             }
         };
 
         template <typename IO = interruptible_io >
         struct recvfrom : public io_base<void>
         {
-            int _M_fd;
-            int _M_flags;
-            struct sockaddr * _M_from;
-            socklen_t * _M_fromlen;
+            int m_fd;
+            int m_flags;
+            struct sockaddr * m_from;
+            socklen_t * m_fromlen;
 
             recvfrom(int fd, void *buf, size_t count, int flags,
                              struct sockaddr *from, socklen_t *fromlen)
-            : io_base<void>(buf,count), _M_fd(fd), _M_flags(flags), _M_from(from), _M_fromlen(fromlen)
+            : io_base<void>(buf,count), m_fd(fd), m_flags(flags), m_from(from), m_fromlen(fromlen)
             {}
 
             ssize_t operator()() const
             {
-                return IO::call(::recvfrom,_M_fd,_M_buf,_M_count, _M_flags, _M_from, _M_fromlen);
+                return IO::call(::recvfrom,m_fd,m_buf,m_count, m_flags, m_from, m_fromlen);
             }
         };
 
         template <typename IO = interruptible_io >
         struct send : public io_base<const void>
         {
-            int _M_fd;
-            int _M_flags;
+            int m_fd;
+            int m_flags;
 
             send(int fd, const void *buf, size_t count, int flags)
-            : io_base<const void>(buf,count), _M_fd(fd), _M_flags(flags)
+            : io_base<const void>(buf,count), m_fd(fd), m_flags(flags)
             {}
 
             ssize_t operator()() const
             {
-                return IO::call(::send,_M_fd,_M_buf,_M_count, _M_flags);
+                return IO::call(::send,m_fd,m_buf,m_count, m_flags);
             }
         };
         template <typename IO = interruptible_io >
         struct sendto : public io_base<const void>
         {
-            int _M_fd;
-            int _M_flags;
-            struct sockaddr * _M_from;
-            socklen_t _M_tolen;
+            int m_fd;
+            int m_flags;
+            struct sockaddr * m_from;
+            socklen_t m_tolen;
 
             sendto(int fd, void *buf, size_t count, int flags,
                            struct sockaddr *from, socklen_t tolen)
-            : io_base<const void>(buf,count), _M_fd(fd), _M_flags(flags), _M_from(from), _M_tolen(tolen)
+            : io_base<const void>(buf,count), m_fd(fd), m_flags(flags), m_from(from), m_tolen(tolen)
             {}
 
             ssize_t operator()() const
             {
-                return IO::call(::sendto,_M_fd,_M_buf,_M_count, _M_flags, _M_from, _M_tolen);
+                return IO::call(::sendto,m_fd,m_buf,m_count, m_flags, m_from, m_tolen);
             }
         };
 

@@ -15,8 +15,8 @@
 // 
 
 #include <iomanip.hh>           // more!
-#include <tr1_type_traits.hh>   // more!
 
+#include <tr1/type_traits>   
 #include <iostream>
 #include <fstream>
 #include <iterator>
@@ -77,7 +77,7 @@ namespace more { namespace yacpp {
     struct cpp_decanter : std::unary_function<std::string &, bool>
     {
     private:        
-        int _M_status;
+        int m_status;
 
     public:
         enum { status_code,
@@ -85,7 +85,7 @@ namespace more { namespace yacpp {
             status_literal };
 
         cpp_decanter()
-        : _M_status(status_code)
+        : m_status(status_code)
         {}
 
         ~cpp_decanter()
@@ -101,7 +101,7 @@ namespace more { namespace yacpp {
 
             for(;;) { 
 
-                switch(_M_status) 
+                switch(m_status) 
                 {
                 case status_code:
                     {
@@ -111,7 +111,7 @@ namespace more { namespace yacpp {
                 
                         // detect a C++ comment...
                         if ( beg0 != std::string::npos ) {
-                            _M_move(line, beg0, line.size(), __comment);
+                            m_move(line, beg0, line.size(), __comment);
                             continue;
                         }
 
@@ -121,12 +121,12 @@ namespace more { namespace yacpp {
 
                         // detect a C comment (end)
                         if ( end == std::string::npos ) {
-                            _M_move(line, beg, line.size(), __comment);
-                            _M_status = status_comment;
+                            m_move(line, beg, line.size(), __comment);
+                            m_status = status_comment;
                             return; 
                         }
 
-                        _M_move(line, beg, end+2, __comment);
+                        m_move(line, beg, end+2, __comment);
                         continue;
                     } break;
 
@@ -140,8 +140,8 @@ namespace more { namespace yacpp {
                             return; 
                         }
 
-                        _M_move(line, 0, end+2, __comment);
-                        _M_status = status_code;
+                        m_move(line, 0, end+2, __comment);
+                        m_status = status_code;
 
                     } break;
                 }
@@ -150,7 +150,7 @@ namespace more { namespace yacpp {
 
     private:        
         void
-        _M_move(std::string &from, std::string::size_type beg, std::string::size_type end, 
+        m_move(std::string &from, std::string::size_type beg, std::string::size_type end, 
                 std::string &to)
         {
             std::copy(from.begin()+beg, from.begin()+end, std::back_inserter(to));
@@ -169,42 +169,42 @@ namespace more { namespace yacpp {
     public:
         // end of input
         basic_iterator()
-        : _M_stream(0), _M_decanter(), _M_line(), _M_ok(false)
+        : m_stream(0), m_decanter(), m_line(), m_ok(false)
         {}
 
         basic_iterator(std::istream &s)
-        : _M_stream(&s), _M_decanter(), _M_line(), _M_ok(false)
-        { _M_read(); } 
+        : m_stream(&s), m_decanter(), m_line(), m_ok(false)
+        { m_read(); } 
 
         basic_iterator(const basic_iterator &rhs)
-        : _M_stream(rhs._M_stream), _M_decanter(rhs._M_decanter),
-          _M_line(rhs._M_line), _M_ok(rhs._M_ok)
+        : m_stream(rhs.m_stream), m_decanter(rhs.m_decanter),
+          m_line(rhs.m_line), m_ok(rhs.m_ok)
         {}
 
     private:
-        std::istream       *_M_stream;
-        cpp_decanter        _M_decanter;
-        more::string_line   _M_line;
-        bool                _M_ok;
+        std::istream       *m_stream;
+        cpp_decanter        m_decanter;
+        more::string_line   m_line;
+        bool                m_ok;
 
-        void _M_read()
+        void m_read()
         {
             std::string comment;
-            _M_ok = (_M_stream && *_M_stream) ? true : false;
-            if (_M_ok) {
+            m_ok = (m_stream && *m_stream) ? true : false;
+            if (m_ok) {
                 do { 
-                    if (!(*_M_stream >> _M_line)) {
-                        _M_ok = false;
+                    if (!(*m_stream >> m_line)) {
+                        m_ok = false;
                         break;
                     }
                     // split codeline from comments...
-                    _M_decanter( static_cast<std::string &>(_M_line), comment);
+                    m_decanter( static_cast<std::string &>(m_line), comment);
                     more::trim(comment);
-                    if ( std::is_same<Target, comment_type>::value )
-                        std::swap(comment, static_cast<std::string &>(_M_line)); 
+                    if ( std::tr1::is_same<Target, comment_type>::value )
+                        std::swap(comment, static_cast<std::string &>(m_line)); 
                 }
-                while( !more::trim(static_cast<std::string &>(_M_line)).size() || 
-                       ( std::is_same<Target, cpp_type>::value && _M_line.str()[0] != '#' )
+                while( !more::trim(static_cast<std::string &>(m_line)).size() || 
+                       ( std::tr1::is_same<Target, cpp_type>::value && m_line.str()[0] != '#' )
                      );
             }
         }
@@ -212,7 +212,7 @@ namespace more { namespace yacpp {
     public:
         const std::string &
         operator *() const
-        { return _M_line; }
+        { return m_line; }
 
         const std::string *
         operator->() const { return &(operator*()); }
@@ -220,7 +220,7 @@ namespace more { namespace yacpp {
         basic_iterator &
         operator++()
         {
-            _M_read();
+            m_read();
             return *this; 
         }
 
@@ -228,13 +228,13 @@ namespace more { namespace yacpp {
         operator++(int)
         {  
             basic_iterator __tmp = *this; 
-            _M_read();         
+            m_read();         
             return __tmp;
         }
 
-        bool _M_equal(const basic_iterator &rhs) const
+        bool m_equal(const basic_iterator &rhs) const
         {
-            return (_M_ok == rhs._M_ok) && (!_M_ok || _M_stream == rhs._M_stream);
+            return (m_ok == rhs.m_ok) && (!m_ok || m_stream == rhs.m_stream);
         }
     };
 
@@ -246,14 +246,14 @@ namespace more { namespace yacpp {
     inline bool
     operator==(const basic_iterator<Tp> &lhs, const basic_iterator<Tp> &rhs)
     {
-        return lhs._M_equal(rhs);
+        return lhs.m_equal(rhs);
     }
 
     template <typename Tp> 
     inline bool
     operator!=(const basic_iterator<Tp> &lhs, const basic_iterator<Tp> &rhs)
     {
-        return !lhs._M_equal(rhs);
+        return !lhs.m_equal(rhs);
     }
 
 }}

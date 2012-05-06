@@ -11,8 +11,7 @@
 #ifndef COLLECTOR_HH
 #define COLLECTOR_HH
 
-#include <tr1_memory.hh>    // more!
-
+#include <tr1/memory>    
 #include <stdexcept>
 #include <map>
 #include <set>
@@ -35,7 +34,7 @@ namespace more
             template <typename Y>
             void operator()(Y *p)  
             {
-                _M_rmap.erase(p);
+                m_rmap.erase(p);
                 p->~Y();
                 operator delete(p);
             }
@@ -43,13 +42,13 @@ namespace more
 
         explicit collector(const T &i)
         {
-            if (_M_rmap.find(reinterpret_cast<void *>(this)) != _M_rmap.end()) { 
-                _M_rmap[reinterpret_cast<void *>(this)] = i;
-                _M_map[i] =  std::shared_ptr<U>(reinterpret_cast<U *>(this), basic_deleter()); 
+            if (m_rmap.find(reinterpret_cast<void *>(this)) != m_rmap.end()) { 
+                m_rmap[reinterpret_cast<void *>(this)] = i;
+                m_map[i] =  std::tr1::shared_ptr<U>(reinterpret_cast<U *>(this), basic_deleter()); 
             }
             else { 
-                _M_rmap[reinterpret_cast<void *>(this)] = i;
-                _M_map[i] =  std::shared_ptr<U>(reinterpret_cast<U *>(this), null_deleter());
+                m_rmap[reinterpret_cast<void *>(this)] = i;
+                m_map[i] =  std::tr1::shared_ptr<U>(reinterpret_cast<U *>(this), null_deleter());
             }
         }
 
@@ -61,17 +60,17 @@ namespace more
         // a pod pointer when the use_count is equal to 1.
         // 
 
-        static std::set< std::shared_ptr<U> > *
+        static std::set< std::tr1::shared_ptr<U> > *
         garbage()
         {
-            static std::set< std::shared_ptr<U> > * ret = new std::set< std::shared_ptr<U> >;
+            static std::set< std::tr1::shared_ptr<U> > * ret = new std::set< std::tr1::shared_ptr<U> >;
             return ret;
         }
 
         static U *get(const T &key)
         {
-            typename std::map<T, std::shared_ptr<U> >::iterator it = _M_map.find(key);
-            if ( it == _M_map.end())
+            typename std::map<T, std::tr1::shared_ptr<U> >::iterator it = m_map.find(key);
+            if ( it == m_map.end())
                 throw std::runtime_error("key not found");
             return it->second.get();
         }
@@ -79,16 +78,16 @@ namespace more
         static void *operator new(size_t n)
         {
             void *ret = ::operator new(n);
-            _M_rmap[ret] = T(); 
+            m_rmap[ret] = T(); 
             return ret;
         }
 
         static void operator delete(void *p)
         {
-            typename std::map<void *, T>::iterator it = _M_rmap.find(p);
-            if (it != _M_rmap.end()) {
-                std::shared_ptr<U> t;
-                t.swap(_M_map.find(it->second)->second);
+            typename std::map<void *, T>::iterator it = m_rmap.find(p);
+            if (it != m_rmap.end()) {
+                std::tr1::shared_ptr<U> t;
+                t.swap(m_map.find(it->second)->second);
                 garbage()->insert(t);
             }
             // std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -96,15 +95,15 @@ namespace more
         }
 
     private:
-        static std::map<T, std::shared_ptr<U> > _M_map;
-        static std::map<void *, T> _M_rmap;
+        static std::map<T, std::tr1::shared_ptr<U> > m_map;
+        static std::map<void *, T> m_rmap;
     };
 
     template <typename T, typename U>
-    std::map<T, std::shared_ptr<U> > collector<T,U>::_M_map __attribute__((init_priority(101)));
+    std::map<T, std::tr1::shared_ptr<U> > collector<T,U>::m_map __attribute__((init_priority(101)));
 
     template <typename T, typename U>
-    std::map<void *, T> collector<T,U>::_M_rmap __attribute((init_priority(101)));
+    std::map<void *, T> collector<T,U>::m_rmap __attribute((init_priority(101)));
 
 } // namespace more
 

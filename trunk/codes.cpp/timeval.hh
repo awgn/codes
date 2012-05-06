@@ -24,13 +24,13 @@ namespace more {
         typedef void(Timeval::*bool_type)();
 
         Timeval()
-        : _M_tv()
+        : m_tv()
         {}
 
         Timeval(time_t sec, suseconds_t usec)
         {
-            _M_tv.tv_sec = sec;
-            _M_tv.tv_usec = usec;    
+            m_tv.tv_sec = sec;
+            m_tv.tv_usec = usec;    
         }
 
         ~Timeval()
@@ -38,58 +38,58 @@ namespace more {
 
         Timeval(const Timeval& rhs)
         {
-            _M_tv.tv_sec = rhs.tv_sec();
-            _M_tv.tv_usec = rhs.tv_usec();
+            m_tv.tv_sec = rhs.tv_sec();
+            m_tv.tv_usec = rhs.tv_usec();
         }
 
         explicit Timeval(const struct timeval& rhs)
         {
-            _M_tv.tv_sec = rhs.tv_sec;
-            _M_tv.tv_usec = rhs.tv_usec;
+            m_tv.tv_sec = rhs.tv_sec;
+            m_tv.tv_usec = rhs.tv_usec;
         }
 
         explicit Timeval(const struct timespec& rhs)
         {
-            _M_tv.tv_sec = rhs.tv_sec;
-            _M_tv.tv_usec = rhs.tv_nsec/1000;
+            m_tv.tv_sec = rhs.tv_sec;
+            m_tv.tv_usec = rhs.tv_nsec/1000;
         }
         
         void 
         swap(Timeval &rhs) 
         {   
-            std::swap(_M_tv.tv_sec, rhs._M_tv.tv_sec);
-            std::swap(_M_tv.tv_usec, rhs._M_tv.tv_usec);
+            std::swap(m_tv.tv_sec, rhs.m_tv.tv_sec);
+            std::swap(m_tv.tv_usec, rhs.m_tv.tv_usec);
         }
 
         Timeval & operator=(const Timeval &rhs)
         { 
-            _M_tv.tv_sec = rhs.tv_sec();
-            _M_tv.tv_usec = rhs.tv_usec();
+            m_tv.tv_sec = rhs.tv_sec();
+            m_tv.tv_usec = rhs.tv_usec();
             return *this;
         }
 
         Timeval & operator=(const timeval &rhs)
         { 
-            _M_tv.tv_sec = rhs.tv_sec;
-            _M_tv.tv_usec = rhs.tv_usec;
+            m_tv.tv_sec = rhs.tv_sec;
+            m_tv.tv_usec = rhs.tv_usec;
             return *this;
         }
 
         Timeval & operator=(const timespec &rhs)
         { 
-            _M_tv.tv_sec = rhs.tv_sec;
-            _M_tv.tv_usec = rhs.tv_nsec/1000;
+            m_tv.tv_sec = rhs.tv_sec;
+            m_tv.tv_usec = rhs.tv_nsec/1000;
             return *this;
         }
 
         Timeval & operator+=(const Timeval &rhs)
         {   
-            _M_tv.tv_sec +=  rhs.tv_sec();
-            _M_tv.tv_usec += rhs.tv_usec();
+            m_tv.tv_sec +=  rhs.tv_sec();
+            m_tv.tv_usec += rhs.tv_usec();
 
-            if (_M_tv.tv_usec >= 1000000) {
-                ++_M_tv.tv_sec;
-                _M_tv.tv_usec -= 1000000;
+            if (m_tv.tv_usec >= 1000000) {
+                ++m_tv.tv_sec;
+                m_tv.tv_usec -= 1000000;
             }
             return *this;
         }
@@ -99,12 +99,12 @@ namespace more {
 
         Timeval & operator-=(const Timeval &rhs)
         {   
-            _M_tv.tv_sec -=  rhs.tv_sec();
-            _M_tv.tv_usec -= rhs.tv_usec();
+            m_tv.tv_sec -=  rhs.tv_sec();
+            m_tv.tv_usec -= rhs.tv_usec();
 
-            if (_M_tv.tv_usec < 0) {
-                --_M_tv.tv_sec;
-                _M_tv.tv_usec += 1000000;
+            if (m_tv.tv_usec < 0) {
+                --m_tv.tv_sec;
+                m_tv.tv_usec += 1000000;
             }
             return *this;
         }
@@ -115,56 +115,56 @@ namespace more {
         time_t
         tv_sec() const
         {
-            return _M_tv.tv_sec;
+            return m_tv.tv_sec;
         }
     
         suseconds_t
         tv_usec() const
         {
-            return _M_tv.tv_usec;
+            return m_tv.tv_usec;
         }
 
         long long int 
         to_sec() const 
         { 
-            return static_cast<long long int>(_M_tv.tv_sec); 
+            return static_cast<long long int>(m_tv.tv_sec); 
         }
     
         long long int 
         to_msec() const 
         { 
-            return static_cast<long long int>(_M_tv.tv_sec)*1000 + static_cast<long long int>(_M_tv.tv_usec)/1000; 
+            return static_cast<long long int>(m_tv.tv_sec)*1000 + static_cast<long long int>(m_tv.tv_usec)/1000; 
         } 
     
         long long int 
         to_usec() const 
         { 
-            return static_cast<long long int>(_M_tv.tv_sec)*1000000 + static_cast<long long int>(_M_tv.tv_usec); 
+            return static_cast<long long int>(m_tv.tv_sec)*1000000 + static_cast<long long int>(m_tv.tv_usec); 
         }
         
         void 
         update()
         {
-            ::gettimeofday(&_M_tv,0);
+            ::gettimeofday(&m_tv,0);
         }
 
         /////////// conversion
 
         operator bool_type() const
         {
-            return (_M_tv.tv_sec || _M_tv.tv_usec) ? &Timeval::update : 0;
+            return (m_tv.tv_sec || m_tv.tv_usec) ? &Timeval::update : 0;
         }
 
         operator const timeval () const
         {
-            return _M_tv;
+            return m_tv;
         }
 
         operator const timespec () const
         {
             timespec ret;
-            ret.tv_sec  = _M_tv.tv_sec;
-            ret.tv_nsec = _M_tv.tv_usec * 1000; 
+            ret.tv_sec  = m_tv.tv_sec;
+            ret.tv_nsec = m_tv.tv_usec * 1000; 
             return ret;
         }
 
@@ -177,7 +177,7 @@ namespace more {
         }
 
     private:
-        struct timeval _M_tv;
+        struct timeval m_tv;
     };
 
     static inline 

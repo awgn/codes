@@ -13,7 +13,8 @@
 
 #include <lexical_cast.hh>      // more!
 #include <exprtempl.hh>         // more!
-#include <tr1_tuple.hh>         // more!
+
+#include <tr1/tuple>         
 
 #include <stdexcept>
 #include <iomanip>
@@ -30,7 +31,7 @@
 //////////////////////////////////////
 
 
-using std::make_tuple;
+using std::tr1::make_tuple;
 using std::make_pair;
 
 namespace more { namespace gotopt { 
@@ -119,12 +120,12 @@ namespace more { namespace gotopt {
         typedef std::map<std::string, option>::const_iterator   option_iterator;
 
     private:
-        std::vector<std::string>        _M_args;
-        std::vector<bool>               _M_context;
-        std::map<std::string, option>   _M_mopt;
-        const_iterator                  _M_it;
+        std::vector<std::string>        m_args;
+        std::vector<bool>               m_context;
+        std::map<std::string, option>   m_mopt;
+        const_iterator                  m_it;
 #ifndef NDEBUG
-        int                             _M_argnum;
+        int                             m_argnum;
 #endif
 
     public:        
@@ -133,19 +134,19 @@ namespace more { namespace gotopt {
         const_iterator
         begin() const
         {
-            return _M_args.begin();
+            return m_args.begin();
         }
 
         const_iterator
         current() const
         {
-            return _M_it;
+            return m_it;
         }
 
         const_iterator
         end() const
         {
-            return _M_args.end();
+            return m_args.end();
         }
 
         // constructors...
@@ -153,9 +154,9 @@ namespace more { namespace gotopt {
 
         template <typename T, typename P>
         parser(T beg, T end, const P & opt)
-        : _M_args(beg, end), _M_context(256,false), _M_mopt(), _M_it(_M_args.begin()) 
+        : m_args(beg, end), m_context(256,false), m_mopt(), m_it(m_args.begin()) 
 #ifndef NDEBUG
-        , _M_argnum(0)
+        , m_argnum(0)
 #endif 
         {
             // load the map...
@@ -163,9 +164,9 @@ namespace more { namespace gotopt {
             for(unsigned int i = 0; i < sizeof(opt)/sizeof(opt[0]) ; i++)
             {
                 if (opt[i].opt > 0) 
-                    _M_mopt[ std::string("-").append(1, opt[i].opt) ] = opt[i];
+                    m_mopt[ std::string("-").append(1, opt[i].opt) ] = opt[i];
                 if (opt[i].name)
-                    _M_mopt[ std::string("--").append(opt[i].name) ]  = opt[i];
+                    m_mopt[ std::string("--").append(opt[i].name) ]  = opt[i];
             }
         }
 
@@ -177,57 +178,57 @@ namespace more { namespace gotopt {
 
         char operator()()
         {
-            return operator()(std::make_tuple(_true));
+            return operator()(std::tr1::make_tuple(_true));
         }
 
         template <typename T>
         char operator()(const T & exp)
         {
-            assert( _M_argnum == 0 || !"INTERNAL ERROR: some argument not parsed!");
+            assert( m_argnum == 0 || !"INTERNAL ERROR: some argument not parsed!");
 
             // stop paring at the end of the range, or at the first non-option encountered
             //
 
-            if (_M_it == _M_args.end() || !is_option(*_M_it)) 
+            if (m_it == m_args.end() || !is_option(*m_it)) 
             {
                 // validate the logic:
                 //
 
-                validate_expression(exp, _M_context);
+                validate_expression(exp, m_context);
                 return 0;
             }
 
-            // try to find the option pointed by _M_it...
+            // try to find the option pointed by m_it...
             //
 
-            option_iterator cur = _M_mopt.find(*_M_it);
-            if ( cur == _M_mopt.end() )
-                throw std::runtime_error( std::string("invalid option: ").append(*_M_it) );
+            option_iterator cur = m_mopt.find(*m_it);
+            if ( cur == m_mopt.end() )
+                throw std::runtime_error( std::string("invalid option: ").append(*m_it) );
 
 
             // ensure all the arguments are available...
             //
 
             int i = 0;
-            for(const_iterator arg = _M_it+1 ; i < cur->second.args && arg != _M_args.end(); ++arg, ++i)
+            for(const_iterator arg = m_it+1 ; i < cur->second.args && arg != m_args.end(); ++arg, ++i)
             {
-                if ( _M_mopt.find(*arg) != _M_mopt.end())
+                if ( m_mopt.find(*arg) != m_mopt.end())
                     break;
             }
 
             if ( i != cur->second.args )
-                throw std::runtime_error(std::string(*_M_it)
+                throw std::runtime_error(std::string(*m_it)
                                          .append(" requires ")
                                          .append(more::lexical_cast<std::string>(cur->second.args))
                                          .append(cur->second.args > 1 ? " arguments" : " argument"));
 #ifndef NDEBUG
-            _M_argnum = cur->second.args;
+            m_argnum = cur->second.args;
 #endif
             // update the context with the current opt
             //
 
-            unsigned char r = std::abs(_M_mopt[*_M_it++].opt);
-            _M_context[r] = true;
+            unsigned char r = std::abs(m_mopt[*m_it++].opt);
+            m_context[r] = true;
             return r;
         }
 
@@ -237,18 +238,18 @@ namespace more { namespace gotopt {
         template <typename T>
         T optarg()
         {
-            if (_M_it == _M_args.end())
+            if (m_it == m_args.end())
                 throw std::runtime_error("no more arguments available");
 #ifndef NDEBUG
-            _M_argnum--;
+            m_argnum--;
 #endif
-            return more::lexical_cast<T>(*_M_it++);
+            return more::lexical_cast<T>(*m_it++);
         }
 
         unsigned int 
         optind() const
         {
-            return std::distance(_M_args.begin(), _M_it);
+            return std::distance(m_args.begin(), m_it);
         }
 
     private:
@@ -353,7 +354,7 @@ namespace more { namespace gotopt {
         template <typename C>
         static bool apply(const T &tupl, const C &ctx)
         {
-            check_expression(std::get< std::tuple_size<T>::value - N >(tupl), ctx);
+            check_expression(std::tr1::get< std::tr1::tuple_size<T>::value - N >(tupl), ctx);
             return recursive_evaluation<T, N-1>::apply(tupl,ctx);
         }
     };
@@ -380,7 +381,7 @@ namespace more { namespace gotopt {
     template <typename T, typename C>
     inline void validate_expression(const T &tupl, const C &ctx)
     {
-        recursive_evaluation<T, std::tuple_size<T>::value >::apply(tupl, ctx);        
+        recursive_evaluation<T, std::tr1::tuple_size<T>::value >::apply(tupl, ctx);        
     }
 
     ///////////////////////////////

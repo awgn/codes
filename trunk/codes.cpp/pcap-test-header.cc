@@ -89,7 +89,7 @@ main(int argc, char *argv[])
     std::cout << std::endl;
 
     bpf_u_int32 net, mask;
-    std::tie(net,mask) = more::pcap::lookupnet("lo");
+    std::tr1::tie(net,mask) = more::pcap::lookupnet("lo");
 
     std::cout << "lookupnet: " << more::pcap::ipv4_dotform(net) << " " << more::pcap::ipv4_dotform(mask) << std::endl;
     std::cout << "dispatch: " << std::endl;

@@ -69,17 +69,17 @@ namespace hash {
     class fnv<32>
     {
         static const uint32_t FNV_32_PRIME = 0x01000193UL;
-        uint32_t _M_offset;
+        uint32_t m_offset;
 
     public:
         static const uint32_t INIT  = 0x811c9dc5UL;
 
         fnv(const uint32_t init = INIT)
-        : _M_offset(init) 
+        : m_offset(init) 
         {}
 
         void offset(uint32_t init)
-        { _M_offset = init; }
+        { m_offset = init; }
 
         uint32_t operator()(const std::string &_buf)
         {
@@ -91,7 +91,7 @@ namespace hash {
             const unsigned char *bp = reinterpret_cast<const unsigned char *>(_buf); /* start of buffer */
             const unsigned char *be = bp + _len;                                     /* beyond end of buffer */
 
-            uint32_t hval = _M_offset;
+            uint32_t hval = m_offset;
 
             /*
              * FNV-1a hash each octet in the buffer
@@ -111,7 +111,7 @@ namespace hash {
             }
 
             /* return our new hash value */
-            return _M_offset = hval;
+            return m_offset = hval;
         }
 
         // iovec implementation...
@@ -123,7 +123,7 @@ namespace hash {
             unsigned char *bp;  /* start of block */
             unsigned char *be;  /* beyond end of buffer */
 
-            uint32_t hval = _M_offset;
+            uint32_t hval = m_offset;
 
             for (unsigned int lcount = 0; lcount < _count; lcount++) {
                 bp = (unsigned char *)_vector[lcount].iov_base;
@@ -147,7 +147,7 @@ namespace hash {
             }
 
             /* return our new hash value */
-            return _M_offset = hval;
+            return m_offset = hval;
         }
 
     };
@@ -156,17 +156,17 @@ namespace hash {
     class fnv<64>
     {
         static const uint64_t FNV_64_PRIME = 0x100000001b3ULL;
-        uint64_t _M_offset;
+        uint64_t m_offset;
 
     public:
         static const uint64_t INIT  = 0xcbf29ce484222325ULL;
 
         fnv(const uint64_t init = INIT)
-        : _M_offset(init) 
+        : m_offset(init) 
         {}
 
         void offset(uint64_t init)
-        { _M_offset = init; }
+        { m_offset = init; }
 
         uint64_t operator()(const std::string &_buf)
         {
@@ -178,7 +178,7 @@ namespace hash {
             const unsigned char *bp = reinterpret_cast<const unsigned char *>(_buf); /* start of buffer */
             const unsigned char *be = bp + _len;                                     /* beyond end of buffer */
 
-            uint64_t hval = _M_offset;
+            uint64_t hval = m_offset;
 
             /*
              * FNV-1a hash each octet of the buffer
@@ -198,7 +198,7 @@ namespace hash {
 #endif
             }
 
-            return _M_offset = hval;
+            return m_offset = hval;
         }
 
         uint64_t 
@@ -207,7 +207,7 @@ namespace hash {
             unsigned char *bp;  /* start of buffer */
             unsigned char *be;  /* beyond end of buffer */
 
-            uint64_t hval = _M_offset;
+            uint64_t hval = m_offset;
 
             for (unsigned int lcount = 0; lcount < _count; lcount++) {
 
@@ -233,7 +233,7 @@ namespace hash {
             }
 
             /* return our new hash value */
-            return _M_offset = hval;
+            return m_offset = hval;
         }
 
     };

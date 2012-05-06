@@ -26,8 +26,8 @@ namespace more {
     { 
     public:
         format(const std::string &f)
-        : _M_format(f),
-          _M_args()
+        : m_format(f),
+          m_args()
         {}
 
         ~format()
@@ -37,7 +37,7 @@ namespace more {
         format &
         operator % (T rhs)
         {
-            _M_args.push_back(any_out(rhs));
+            m_args.push_back(any_out(rhs));
             return *this;
         }   
 
@@ -52,38 +52,38 @@ namespace more {
         friend inline std::basic_ostream<CharT,Traits> &
         operator<< (std::basic_ostream<CharT,Traits> &out, const format &obj)
         {
-            for(unsigned int i=0; i < obj._M_format.size();) {
+            for(unsigned int i=0; i < obj.m_format.size();) {
 
-                if ( obj._M_format[i] != '%' ) {
-                    out << obj._M_format[i++]; 
+                if ( obj.m_format[i] != '%' ) {
+                    out << obj.m_format[i++]; 
                     continue;
                 }
 
-                if (obj._M_format[++i] == '%') {
-                    out << obj._M_format[i++];
+                if (obj.m_format[++i] == '%') {
+                    out << obj.m_format[i++];
                     continue;
                 }
 
-                assert( isdigit(obj._M_format[i]) );
+                assert( isdigit(obj.m_format[i]) );
 
                 unsigned int n = 0; 
-                for (; isdigit(obj._M_format[i]); i++)
+                for (; isdigit(obj.m_format[i]); i++)
                 {
                     n *= 10;
-                    n += (obj._M_format[i]-'0');
+                    n += (obj.m_format[i]-'0');
                 }
 
-                assert ( n <= obj._M_args.size() );
+                assert ( n <= obj.m_args.size() );
 
-                out << obj._M_args.at(n-1);
+                out << obj.m_args.at(n-1);
             }
 
             return out;
         }
 
     private:
-        std::string _M_format;
-        std::vector<any_out> _M_args;
+        std::string m_format;
+        std::vector<any_out> m_args;
     };
 
 } // namespace more

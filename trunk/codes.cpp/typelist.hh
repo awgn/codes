@@ -11,7 +11,7 @@
 #ifndef TYPELIST_HH
 #define TYPELIST_HH
 
-#include <tr1_type_traits.hh>   // more!
+#include <tr1/type_traits>   
 
 /* the so-called __VA_NARG__ (PP_NARG) macro from the thread at 
    http://groups.google.com/group/comp.std.c/browse_frm/thread/77ee8c8f92e4a3fb 
@@ -206,7 +206,7 @@ namespace more { namespace TL {
     template <typename H1, typename T1, typename H2, typename T2>
     struct is_same < typelist<H1,T1>, typelist<H2,T2> >
     {
-        enum { value = std::is_same<H1, H2>::value && is_same<T1, T2>::value };
+        enum { value = std::tr1::is_same<H1, H2>::value && is_same<T1, T2>::value };
     };        
 
     // TL::apply1<TLIST, UNARY_FUNCTION>::type

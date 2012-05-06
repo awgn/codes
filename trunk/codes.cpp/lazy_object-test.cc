@@ -14,7 +14,8 @@
 #include <vector>
 #include <algorithm>
 
-#include <tr1_functional.hh>
+#include <tr1/functional>
+
 #include <lazy_object.hh>
 
 //////////////////// base <- derived ... 
@@ -37,7 +38,7 @@ struct derived : public base
 {
 
     derived(const std::string &h)
-    : _M_msg(h)
+    : m_msg(h)
     {
         std::cout << "`->" <<  __PRETTY_FUNCTION__ << std::endl;
     }
@@ -49,10 +50,10 @@ struct derived : public base
 
     virtual void say() const
     {
-        std::cout << _M_msg << "!" << std::endl;
+        std::cout << m_msg << "!" << std::endl;
     }
 
-    std::string _M_msg;
+    std::string m_msg;
 };
 
 
@@ -61,7 +62,7 @@ typedef more::lazy_object<derived> lazy_derived;
 
 void test_upcast(const more::lazy_object<base> & lo)
 {
-    std::shared_ptr<base> p = lo.shared_from_this();
+    std::tr1::shared_ptr<base> p = lo.shared_from_this();
     p->say();
 }
 
@@ -91,7 +92,7 @@ main(int argc, char *argv[])
     // x.ctor<std::string>(); <- invoke derived(const std::string &) constructor
     //
 
-    std::for_each(vec.begin(), vec.end(), std::mem_fn(&more::lazy_object<derived>::ctor<std::string> /* ctor signature */ ) );
+    std::for_each(vec.begin(), vec.end(), std::tr1::mem_fn(&more::lazy_object<derived>::ctor<std::string> /* ctor signature */ ) );
 
     sleep(2);
 
@@ -105,8 +106,8 @@ main(int argc, char *argv[])
 
     std::cout << "[*] invoking methods on real object..." << std::endl;
 
-    std::shared_ptr<base> p = vec[0].shared_from_this();
-    std::shared_ptr<base> q = vec[1].shared_from_this();
+    std::tr1::shared_ptr<base> p = vec[0].shared_from_this();
+    std::tr1::shared_ptr<base> q = vec[1].shared_from_this();
         
     p->say();
     q->say();

@@ -15,7 +15,7 @@
 // mechanism [ 9.7.4 C++ Template Metaprogramming: Abrahams/Gurtovoy ]
 //
 
-#include <tr1_memory.hh>    // more!
+#include <tr1/memory>    
 
 namespace more {
 
@@ -32,28 +32,28 @@ namespace more {
         struct wrapper : base_functor 
         {
             explicit wrapper(F f) 
-            : _M_fun(f) 
+            : m_fun(f) 
             {}
 
             R 
             operator()(const P& x) const
-            { return this->_M_fun(x); }
+            { return this->m_fun(x); }
 
         private:
-            F _M_fun;
+            F m_fun;
         };
 
-        std::shared_ptr<base_functor> _M_ptr;
+        std::tr1::shared_ptr<base_functor> m_ptr;
 
     public:
         template <class F>
         explicit functor(const F &f) 
-        : _M_ptr( new wrapper<F>(f) ) 
+        : m_ptr( new wrapper<F>(f) ) 
         {}
 
         R 
         operator()(const P &p) const
-        { return (*_M_ptr)(p); }
+        { return (*m_ptr)(p); }
 
     };
 

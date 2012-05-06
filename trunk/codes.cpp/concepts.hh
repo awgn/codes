@@ -12,7 +12,8 @@
 #define _CONCEPTS_HH_ 
 
 #include <static_assert.hh>     // more!
-#include <tr1_type_traits.hh>   // more!
+
+#include <tr1/type_traits>   
 
 // Yet another boost::concepts implementation...
 //
@@ -147,7 +148,7 @@ namespace more { namespace basic_concepts {
     {   \
         void constraints() \
         {   \
-            static_assert( std::trait<Ty>::value, tr1_type_traits_concept );  \
+            static_assert( std::tr1::trait<Ty>::value, tr1_type_traits_concept );  \
         }\
     };
 #define TR1_TYPE_TRAITS_BINARY_CONCEPT(type, trait) \
@@ -156,7 +157,7 @@ namespace more { namespace basic_concepts {
     {   \
         void constraints() \
         {   \
-            static_assert( (std::trait<T1,T2>::value), tr1_type_traits_binary_concept );  \
+            static_assert( (std::tr1::trait<T1,T2>::value), tr1_type_traits_binary_concept );  \
         }\
     };
 

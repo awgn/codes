@@ -85,13 +85,13 @@ namespace more {
     struct spinlock 
     {
         spinlock()
-        : _M_value(0)
+        : m_value(0)
         {}
 
         void lock()
         {   
             int t = Policy::threshold;
-            for(int n=0; _M_value.lock_test_and_set(1) != 0; ++n)
+            for(int n=0; m_value.lock_test_and_set(1) != 0; ++n)
             { 
                 Policy::wait(n,t,0);
             }
@@ -99,11 +99,11 @@ namespace more {
 
         void unlock()
         {
-           _M_value.lock_release(); 
+           m_value.lock_release(); 
         }
 
     private:
-        volatile more::atomic<unsigned int> _M_value;        
+        volatile more::atomic<unsigned int> m_value;        
     };
 
 
@@ -111,14 +111,14 @@ namespace more {
     struct ticket_spinlock 
     {
         ticket_spinlock()
-        : _M_ticket(0), _M_value(0)
+        : m_ticket(0), m_value(0)
         {}
 
         void lock()
         {             
-            const unsigned int my_ticket = _M_ticket++;
+            const unsigned int my_ticket = m_ticket++;
             int t = Policy::threshold;
-            for(int n = 1, d = 0; (d=(my_ticket-_M_value)) != 0; n++) 
+            for(int n = 1, d = 0; (d=(my_ticket-m_value)) != 0; n++) 
             { 
                 Policy::wait(n,t,d);
             }
@@ -126,12 +126,12 @@ namespace more {
 
         void unlock()
         {
-           ++_M_value; 
+           ++m_value; 
         }
 
     private:
-        volatile more::atomic<unsigned int> _M_ticket;        
-        volatile more::atomic<unsigned int> _M_value;        
+        volatile more::atomic<unsigned int> m_ticket;        
+        volatile more::atomic<unsigned int> m_value;        
     };
 
     class spinlock_open_recursive
@@ -139,8 +139,8 @@ namespace more {
     public:
         
         spinlock_open_recursive()
-        : _M_lock(),
-          _M_owner()
+        : m_lock(),
+          m_owner()
         {}
 
         ~spinlock_open_recursive()
@@ -148,22 +148,22 @@ namespace more {
 
         void lock()
         {
-            if (_M_owner != pthread_self()) {
-                _M_lock.lock();
-                _M_owner = pthread_self();
+            if (m_owner != pthread_self()) {
+                m_lock.lock();
+                m_owner = pthread_self();
             }
         }
 
         void unlock()
         {
-            assert(_M_owner == pthread_self());
-            _M_owner = 0;
-            _M_lock.unlock();
+            assert(m_owner == pthread_self());
+            m_owner = 0;
+            m_lock.unlock();
         }
 
     private:
-        spinlock< lock_smart<10> > _M_lock; 
-        pthread_t _M_owner;
+        spinlock< lock_smart<10> > m_lock; 
+        pthread_t m_owner;
     };
 
     // generic scoped_lock...
@@ -175,18 +175,18 @@ namespace more {
         // scoped lock... (RAII) 
 
         scoped_lock(Tp &lock)
-        : _M_lock(lock)
+        : m_lock(lock)
         {
-            _M_lock.lock();
+            m_lock.lock();
         }
 
         ~scoped_lock()
         {
-            _M_lock.unlock();
+            m_lock.unlock();
         }
 
     private:
-        Tp &_M_lock;
+        Tp &m_lock;
     };
 
     // scoped_spinlock...

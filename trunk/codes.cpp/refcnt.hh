@@ -16,7 +16,7 @@
 // provided by g++ 3.4 or higher.
 //
 
-#include <tr1_memory.hh>    // more!
+#include <tr1/memory>    
 
 namespace more 
 {

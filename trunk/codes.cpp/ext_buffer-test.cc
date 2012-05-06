@@ -9,8 +9,8 @@
  */
 
 #include <ext_buffer.hh>
-#include <tr1_array.hh>     // more!
 
+#include <tr1/array>    
 #include <iostream>
 #include <algorithm>
 #include <iterator>
@@ -37,7 +37,7 @@ main(int argc, char *argv[])
     std::cout.flush();
     writev(fileno(stdout), abc, 2);
 
-    std::array<iovec,1> array_iovec_hello __attribute__((unused)) = {{ more::ext_buffer(hello,5) }};
+    std::tr1::array<iovec,1> array_iovec_hello __attribute__((unused)) = {{ more::ext_buffer(hello,5) }};
 
     std::cout << std::endl;
 

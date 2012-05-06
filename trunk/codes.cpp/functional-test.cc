@@ -54,7 +54,7 @@ main(int argc, char *argv[])
     std::cout << "flipflop: " << ff1(1) << std::endl; 
 
     // flipflop2
-    more::flipflop2<int> ff2( std::bind(std::equal_to<int>(),_1, 0), std::bind(std::equal_to<int>(), _1, 3) );    
+    more::flipflop2<int> ff2( std::tr1::bind(std::equal_to<int>(),_1, 0), std::tr1::bind(std::equal_to<int>(), _1, 3) );    
 
     std::cout << "flipflop2: " << -2 << " " << ff2(-2) << std::endl;
     std::cout << "flipflop2: " << -1 << " " << ff2(-1) << std::endl;

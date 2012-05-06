@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <tr1_functional.hh>
+#include <tr1/functional>
 #include <colorful.hh>
 
 #include <iostream>
@@ -23,29 +23,29 @@ typedef colorful< TYPELIST(ecma::bold) > bold;
 struct arg 
 {
     arg(int n = 0)
-    : _M_value(n)
+    : m_value(n)
     { std::cout << "    " << __PRETTY_FUNCTION__ << std::endl; }
 
     ~arg()
     { std::cout << "    " << __PRETTY_FUNCTION__ << std::endl; }
     
     arg(const arg &rhs)
-    : _M_value(rhs._M_value)
+    : m_value(rhs.m_value)
     { 
         std::cout << "    " << __PRETTY_FUNCTION__ << std::endl; 
     }
 
     arg &operator=(const arg &rhs)
     { 
-        _M_value = rhs._M_value;
+        m_value = rhs.m_value;
         std::cout << "    " << __PRETTY_FUNCTION__ << std::endl; 
         return *this;
     }
     
     int get() const
-    { return _M_value; }
+    { return m_value; }
 
-    int _M_value;
+    int m_value;
 };
 
 
@@ -136,7 +136,7 @@ main(int argc, char *argv[])
         arg a3;
 
         std::cout << "--- prolog:" << std::endl;
-        candidate_forwarder_2(fun, arg(), arg(), std::ref(a3) );  // rvalue are not allowed
+        candidate_forwarder_2(fun, arg(), arg(), std::tr1::ref(a3) );  // rvalue are not allowed
         std::cout << "--- epilog:" << std::endl;
 
         std::cout << "    arg & a3 = " << a3.get() << " <== should be 1! [" << bold() << "OK" << rst() << "]" << std::endl;
@@ -149,7 +149,7 @@ main(int argc, char *argv[])
         arg a3;
 
         std::cout << "--- prolog:" << std::endl;
-        candidate_forwarder_2(fun, a1, a2, std::ref(a3) );  // rvalue are not allowed
+        candidate_forwarder_2(fun, a1, a2, std::tr1::ref(a3) );  // rvalue are not allowed
         std::cout << "--- epilog:" << std::endl;
 
         std::cout << "    arg & a3 = " << a3.get() << " <== should be 1! [" << bold() << "OK" << rst() << "]" << std::endl;

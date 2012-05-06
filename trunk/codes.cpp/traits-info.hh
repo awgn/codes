@@ -18,8 +18,8 @@
 #include <typelist.hh>
 #endif
 
-#include <tr1_type_traits.hh>   // more!
-#include <tr1_memory.hh>        // more!
+#include <tr1/type_traits>  
+#include <tr1/memory>       
 
 #include <memory>
 #include <iostream>
@@ -66,41 +66,41 @@ namespace more {
         operator<<(std::basic_ostream<CharT,Traits> &out, const traits_info<T> &)
         {
             out << std::boolalpha <<
-            __dump_trait_type(is_void,T) << std::endl <<
-            __dump_trait_type(is_integral,T) << std::endl << 
-            __dump_trait_type(is_floating_point,T) << std::endl << 
-            __dump_trait_type(is_array,T) << std::endl << 
-            __dump_trait_type(is_pointer,T) << std::endl << 
-            __dump_trait_type(is_reference,T) << std::endl << 
-            __dump_trait_type(is_member_object_pointer,T) << std::endl << 
-            __dump_trait_type(is_member_function_pointer,T) << std::endl << 
-            __dump_trait_type(is_enum,T) << std::endl << 
-            __dump_trait_type(is_union,T) << std::endl << 
-            __dump_trait_type(is_class,T) << std::endl << 
-            __dump_trait_type(is_function,T) << std::endl << 
-            __dump_trait_type(is_arithmetic,T) << std::endl << 
-            __dump_trait_type(is_fundamental,T) << std::endl << 
-            __dump_trait_type(is_object,T) << std::endl <<
-            __dump_trait_type(is_scalar,T) << std::endl <<
-            __dump_trait_type(is_compound,T) << std::endl <<
-            __dump_trait_type(is_member_pointer,T) << std::endl <<
-            __dump_trait_type(is_const,T) << std::endl <<
-            __dump_trait_type(is_volatile,T) << std::endl <<
-            __dump_trait_type(is_pod,T) << std::endl <<
-            __dump_trait_type(is_empty,T) << std::endl <<
-            __dump_trait_type(is_polymorphic,T) << std::endl <<
-            __dump_trait_type(is_abstract,T) << std::endl <<
+            __dump_trait_type(tr1::is_void,T) << std::endl <<
+            __dump_trait_type(tr1::is_integral,T) << std::endl << 
+            __dump_trait_type(tr1::is_floating_point,T) << std::endl << 
+            __dump_trait_type(tr1::is_array,T) << std::endl << 
+            __dump_trait_type(tr1::is_pointer,T) << std::endl << 
+            __dump_trait_type(tr1::is_reference,T) << std::endl << 
+            __dump_trait_type(tr1::is_member_object_pointer,T) << std::endl << 
+            __dump_trait_type(tr1::is_member_function_pointer,T) << std::endl << 
+            __dump_trait_type(tr1::is_enum,T) << std::endl << 
+            __dump_trait_type(tr1::is_union,T) << std::endl << 
+            __dump_trait_type(tr1::is_class,T) << std::endl << 
+            __dump_trait_type(tr1::is_function,T) << std::endl << 
+            __dump_trait_type(tr1::is_arithmetic,T) << std::endl << 
+            __dump_trait_type(tr1::is_fundamental,T) << std::endl << 
+            __dump_trait_type(tr1::is_object,T) << std::endl <<
+            __dump_trait_type(tr1::is_scalar,T) << std::endl <<
+            __dump_trait_type(tr1::is_compound,T) << std::endl <<
+            __dump_trait_type(tr1::is_member_pointer,T) << std::endl <<
+            __dump_trait_type(tr1::is_const,T) << std::endl <<
+            __dump_trait_type(tr1::is_volatile,T) << std::endl <<
+            __dump_trait_type(tr1::is_pod,T) << std::endl <<
+            __dump_trait_type(tr1::is_empty,T) << std::endl <<
+            __dump_trait_type(tr1::is_polymorphic,T) << std::endl <<
+            __dump_trait_type(tr1::is_abstract,T) << std::endl <<
             __dump_trait_type(tr1::has_trivial_constructor,T) << std::endl <<
             __dump_trait_type(tr1::has_trivial_copy,T) << std::endl <<
-            __dump_trait_type(has_trivial_assign,T) << std::endl <<
-            __dump_trait_type(has_trivial_destructor,T) << std::endl <<
+            __dump_trait_type(tr1::has_trivial_assign,T) << std::endl <<
+            __dump_trait_type(tr1::has_trivial_destructor,T) << std::endl <<
             __dump_trait_type(tr1::has_nothrow_constructor,T) << std::endl <<
             __dump_trait_type(tr1::has_nothrow_copy,T) << std::endl <<
-            __dump_trait_type(has_nothrow_assign,T) << std::endl <<
-            __dump_trait_type(has_virtual_destructor,T) << std::endl <<
-            __dump_trait_type(is_signed,T) << std::endl <<
-            __dump_trait_type(is_unsigned,T) << std::endl <<
-            __dump_trait_value(rank,T); 
+            __dump_trait_type(tr1::has_nothrow_assign,T) << std::endl <<
+            __dump_trait_type(tr1::has_virtual_destructor,T) << std::endl <<
+            __dump_trait_type(tr1::is_signed,T) << std::endl <<
+            __dump_trait_type(tr1::is_unsigned,T) << std::endl <<
+            __dump_trait_value(tr1::rank,T); 
 
             return out;
         }

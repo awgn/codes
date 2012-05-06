@@ -11,7 +11,7 @@
 #ifndef _MOVABLE_HH_
 #define _MOVABLE_HH_ 
 
-#include <tr1_functional.hh>    // more!
+#include <tr1/functional>    
 
 namespace more { 
 
@@ -20,7 +20,7 @@ namespace more {
     {
     public:
         explicit movable(T &from)
-        : _M_from(from)
+        : m_from(from)
         {}
        
         ~movable()
@@ -29,11 +29,11 @@ namespace more {
         T &
         get()
         {
-            return _M_from;
+            return m_from;
         }
 
     private:
-        T & _M_from;
+        T & m_from;
 
         movable & operator=(const movable &x);
     };

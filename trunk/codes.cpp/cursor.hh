@@ -11,7 +11,7 @@
 #ifndef _CURSOR_HH_
 #define _CURSOR_HH_ 
 
-#include <tr1_type_traits.hh>   // more!
+#include <tr1/type_traits>   
 #include <stdexcept>
 #include <cstddef>
 
@@ -21,16 +21,16 @@ namespace more {
     class cursor
     {
         template <typename P>
-        void _M_boundary_alignment_check(P *start, P *end)
+        void m_boundary_alignment_check(P *start, P *end)
         {
              if ( (end-start) % sizeof(T) )
-                throw std::runtime_error("cursor::_M_boundary_alignment_check");
+                throw std::runtime_error("cursor::m_boundary_alignment_check");
         }
 
-        void _M_range_check()
+        void m_range_check()
         {
-            if (_M_cur <  _M_beg || _M_cur >= _M_end)
-                throw std::runtime_error("cursor::_M_range_check");
+            if (m_cur <  m_beg || m_cur >= m_end)
+                throw std::runtime_error("cursor::m_range_check");
         }
 
     public:
@@ -43,65 +43,65 @@ namespace more {
         typedef T *                              iterator;
         typedef const T *                        const_iterator;
 
-        friend class cursor< typename std::add_const<T>::type >;
+        friend class cursor< typename std::tr1::add_const<T>::type >;
 
         template <typename P>
         cursor(P *beg, P *end)
-        : _M_beg(reinterpret_cast<T *>(beg)),
-          _M_end(reinterpret_cast<T *>(end)),
-          _M_cur(_M_beg) 
+        : m_beg(reinterpret_cast<T *>(beg)),
+          m_end(reinterpret_cast<T *>(end)),
+          m_cur(m_beg) 
         {
-            _M_boundary_alignment_check(beg,end);
+            m_boundary_alignment_check(beg,end);
         }
 
         ~cursor()
         {}
 
         cursor(T *beg, T *cur, T *end)
-        : _M_beg(beg),
-          _M_cur(cur),
-          _M_end(end)
+        : m_beg(beg),
+          m_cur(cur),
+          m_end(end)
         {
-            _M_range_check();
+            m_range_check();
         }
 
         cursor(cursor &rhs)
-        : _M_beg(rhs._M_beg),
-          _M_end(rhs._M_end),
-          _M_cur(rhs._M_cur)
+        : m_beg(rhs.m_beg),
+          m_end(rhs.m_end),
+          m_cur(rhs.m_cur)
         {
-            _M_range_check();
+            m_range_check();
         }
 
         cursor & 
         operator=(const cursor &rhs)  
         {  
-            _M_beg = rhs._M_beg;
-            _M_end = rhs._M_end;
-            _M_cur = rhs._M_cur;
-            _M_range_check();
+            m_beg = rhs.m_beg;
+            m_end = rhs.m_end;
+            m_cur = rhs.m_cur;
+            m_range_check();
             return *this;
         }
 
         template <typename P>
         cursor(const cursor<P> &rhs)
-        : _M_beg(reinterpret_cast<T *>(rhs._M_beg)),
-          _M_end(reinterpret_cast<T *>(rhs._M_end)),
-          _M_cur(reinterpret_cast<T *>(rhs._M_cur))
+        : m_beg(reinterpret_cast<T *>(rhs.m_beg)),
+          m_end(reinterpret_cast<T *>(rhs.m_end)),
+          m_cur(reinterpret_cast<T *>(rhs.m_cur))
         {
-            _M_boundary_alignment_check(rhs._M_beg,rhs._M_end);
-            _M_range_check();
+            m_boundary_alignment_check(rhs.m_beg,rhs.m_end);
+            m_range_check();
         }
 
         template <typename P>
         cursor & operator=(const cursor<P> &rhs)  
         {  
-            boundary_alignment_check(rhs._M_beg,rhs._M_end);
+            boundary_alignment_check(rhs.m_beg,rhs.m_end);
 
-            _M_beg = reinterpret_cast<T *>(rhs._M_beg);
-            _M_end = reinterpret_cast<T *>(rhs._M_end);
-            _M_cur = reinterpret_cast<T *>(rhs._M_cur);
-            _M_range_check();
+            m_beg = reinterpret_cast<T *>(rhs.m_beg);
+            m_end = reinterpret_cast<T *>(rhs.m_end);
+            m_cur = reinterpret_cast<T *>(rhs.m_cur);
+            m_range_check();
             return *this;
         }
     
@@ -111,7 +111,7 @@ namespace more {
         cursor & 
         operator+=(int n)
         { 
-            _M_cur += n;
+            m_cur += n;
             return *this;
         }
         friend const cursor operator+(cursor lhs, int n)
@@ -120,7 +120,7 @@ namespace more {
         cursor & 
         operator-=(int n)
         { 
-            _M_cur -= n;
+            m_cur -= n;
             return *this;
         }
         friend const cursor operator-(cursor lhs, int n)
@@ -130,7 +130,7 @@ namespace more {
         cursor & 
         operator++()
         { 
-            ++_M_cur;
+            ++m_cur;
             return *this;
         }
         cursor  
@@ -144,7 +144,7 @@ namespace more {
         cursor & 
         operator--()
         { 
-            --_M_cur;
+            --m_cur;
             return *this;
         }
         cursor  
@@ -161,43 +161,43 @@ namespace more {
         size_t
         size() const
         {
-            return _M_end-_M_cur;
+            return m_end-m_cur;
         }
 
         iterator 
         begin() 
         {
-            return _M_beg;
+            return m_beg;
         }
         
         const_iterator
         begin() const
         { 
-            return _M_beg;
+            return m_beg;
         }
 
         iterator
         end() 
         {
-            return _M_end;
+            return m_end;
         }
 
         const_iterator
         end() const 
         {
-            return _M_end;
+            return m_end;
         }
 
         iterator 
         cur() 
         { 
-            return _M_cur;
+            return m_cur;
         }
 
         const_iterator 
         cur() const
         { 
-            return _M_cur;
+            return m_cur;
         }
 
         ////////////////////////////////////////////////
@@ -205,27 +205,27 @@ namespace more {
 
         operator T *()
         {
-            return _M_cur;
+            return m_cur;
         }
 
         T &
         operator *()
         {
-            _M_range_check();
-            return * _M_cur;
+            m_range_check();
+            return * m_cur;
         } 
 
         T *
         operator->()
         {
-            _M_range_check();
-            return _M_cur;
+            m_range_check();
+            return m_cur;
         }
 
     private:
-        T * _M_beg;
-        T * _M_end;
-        T * _M_cur;
+        T * m_beg;
+        T * m_end;
+        T * m_cur;
 
     };
 } // namespace more

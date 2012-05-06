@@ -11,7 +11,7 @@
 #ifndef PROXY_HH
 #define PROXY_HH
 
-#include <tr1_functional.hh>    // more!
+#include <tr1/functional>    
 
 #include <stdexcept>
 #include <typeinfo>
@@ -30,48 +30,48 @@ namespace more
     template <typename T,int N = 0>
     class proxy {
 
-        T _M_val;
+        T m_val;
     public:
 
 #ifdef USE_EXPLICIT
         explicit 
 #endif        
         proxy(T v = T())
-        : _M_val(v)
+        : m_val(v)
         {}
 
         proxy(const proxy &rhs)
-        { _M_val = rhs._M_val; }
+        { m_val = rhs.m_val; }
 
         proxy & operator=(const proxy &rhs)
-        { _M_val = rhs._M_val; }
+        { m_val = rhs.m_val; }
 
         proxy & operator=(const T &val)
-        { _M_val = val; }
+        { m_val = val; }
 
         // exposing internals requires 
         // both const and non const methods
 
         T & get()
-        { return _M_val; }
+        { return m_val; }
 
         const T & get() const
-        { return _M_val; }
+        { return m_val; }
 
 #ifndef USE_EXPLICIT
         operator const T &() const
-        { return _M_val; }
+        { return m_val; }
 
         operator T &() 
-        { return _M_val; }
+        { return m_val; }
 #endif
         T *
         operator &()
-        { return &_M_val; }
+        { return &m_val; }
 
         const T *
         operator &() const
-        { return &_M_val; }
+        { return &m_val; }
     };
 
     //////////////////////////////////////
@@ -81,27 +81,27 @@ namespace more
     template <typename T, int N = 0>
     class write_enable
     {
-        T _M_val;
+        T m_val;
     public:
 
         explicit 
         write_enable(T v = T())
-        : _M_val(v)
+        : m_val(v)
         {}
 
         write_enable &
         operator=(const write_enable &rhs)
         { 
-            _M_val = rhs._M_val; 
+            m_val = rhs.m_val; 
             return *this;
         }
 
         const T *
         operator &() const
-        { return &_M_val; }
+        { return &m_val; }
 
         operator const T &() const
-        { return _M_val; }
+        { return m_val; }
 
     };
 
@@ -115,25 +115,25 @@ namespace more
 
         explicit
         lockable(bool enable = false)
-        : _M_value(),
-          _M_locked(enable)
+        : m_value(),
+          m_locked(enable)
         {}
 
         explicit 
         lockable(const T & value, bool enable = false)
-        : _M_value(value),
-          _M_locked(enable)
+        : m_value(value),
+          m_locked(enable)
         {}
 
         lockable(const lockable & rhs)
-        : _M_value(rhs._M_value),
-          _M_locked(rhs._M_locked)
+        : m_value(rhs.m_value),
+          m_locked(rhs.m_locked)
         {}
 
         lockable & 
         operator=(lockable rhs)
         {
-            _M_checklock();
+            m_checklock();
             rhs.swap(*this);
             return *this;
         }
@@ -141,16 +141,16 @@ namespace more
         lockable & 
         operator=(const T & value)
         {            
-            _M_checklock();
-            _M_value = value;
+            m_checklock();
+            m_value = value;
             return *this;
         }
 
         lockable &
         swap(lockable &rhs)
         {
-            std::swap(_M_value, rhs._M_value);
-            std::swap(_M_locked,rhs._M_locked);
+            std::swap(m_value, rhs.m_value);
+            std::swap(m_locked,rhs.m_locked);
         }
 
         /////////////////////////////////////
@@ -158,41 +158,41 @@ namespace more
 
         operator const T &() const
         { 
-            return _M_value;
+            return m_value;
         }
 
         const T *
         operator &() const
         { 
-            return & _M_value;
+            return & m_value;
         }
 
         void lock()
         {
-            _M_locked = true;
+            m_locked = true;
         }
 
         void unlock()
         {
-            _M_locked = false;
+            m_locked = false;
         }
 
         bool
         is_locked() const
         {
-            return _M_locked;
+            return m_locked;
         }
 
     private:
         void
-        _M_checklock()
+        m_checklock()
         {
-            if (_M_locked)
+            if (m_locked)
                 throw std::logic_error( std::string(typeid(T).name()).append(" object locked") );
         }
 
-        T _M_value;
-        bool _M_locked;
+        T m_value;
+        bool m_locked;
     };
 
     // reference_proxy...
@@ -201,36 +201,36 @@ namespace more
     template <typename T, int N = 0>
     class ref_proxy {
 
-        T   _M_storage;
-        T & _M_value;
+        T   m_storage;
+        T & m_value;
 
     public:
         explicit ref_proxy (const T &v)
-        : _M_storage(v),
-        _M_value(_M_storage)
+        : m_storage(v),
+        m_value(m_storage)
         {}
 
-        explicit ref_proxy (std::reference_wrapper<T> pv)
-        : _M_storage(),
-        _M_value(pv.get())
+        explicit ref_proxy (std::tr1::reference_wrapper<T> pv)
+        : m_storage(),
+        m_value(pv.get())
         {}
 
         ref_proxy(const ref_proxy &rhs)
-        : _M_storage(rhs._M_value),
-        _M_value(_M_storage)
+        : m_storage(rhs.m_value),
+        m_value(m_storage)
         {}
 
         ref_proxy & operator=(const ref_proxy &rhs)
-        { _M_value = rhs._M_value; }
+        { m_value = rhs.m_value; }
 
         ref_proxy & operator=(T val)
-        { _M_value = val; }
+        { m_value = val; }
 
         T & get()
-        { return _M_value; }
+        { return m_value; }
 
         const T & get() const
-        { return _M_value; }
+        { return m_value; }
 
     };
 }

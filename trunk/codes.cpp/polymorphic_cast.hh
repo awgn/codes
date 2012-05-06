@@ -1,7 +1,7 @@
 #ifndef _POLYMORPHIC_CAST_HH_
 #define _POLYMORPHIC_CAST_HH_ 
 
-#include <tr1_memory.hh>    // more!
+#include <tr1/memory>   
 
 #include <cassert>
 #include <stdexcept>
@@ -30,21 +30,21 @@ namespace more {
     }
 
     /////////////////////////////////////////////////
-    // polymorphic_cast for std::shared_ptr
+    // polymorphic_cast for std::tr1::shared_ptr
 
     template <typename R, typename T>
-    inline std::shared_ptr<R> polymorphic_pointer_cast(const std::shared_ptr<T> & p)
+    inline std::tr1::shared_ptr<R> polymorphic_pointer_cast(const std::tr1::shared_ptr<T> & p)
     {
-        std::shared_ptr<R> ret = std::dynamic_pointer_cast<R>(p);
+        std::tr1::shared_ptr<R> ret = std::dynamic_pointer_cast<R>(p);
         if (!ret) throw std::bad_cast();
         return ret;
     }
 
     /////////////////////////////////////////////////
-    // polymorphic_downcast for std::shared_ptr
+    // polymorphic_downcast for std::tr1::shared_ptr
 
     template <typename R, typename T>
-    inline std::shared_ptr<R> polymorphic_pointer_downcast(const std::shared_ptr<T> & p)
+    inline std::tr1::shared_ptr<R> polymorphic_pointer_downcast(const std::tr1::shared_ptr<T> & p)
     {
         assert( std::dynamic_pointer_cast<R>(p).get() );
         return std::static_pointer_cast<R>(p);

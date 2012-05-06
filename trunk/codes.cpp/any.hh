@@ -11,7 +11,7 @@
 #ifndef _ANY_HH_
 #define _ANY_HH_ 
 
-#include <tr1_type_traits.hh>   // more!
+#include <tr1/type_traits>   
 
 #include <string>
 #include <typeinfo>
@@ -36,37 +36,37 @@ namespace more {
     public:
 
         any()
-        : _M_base(0)
+        : m_base(0)
         {}
 
         template <typename T>
         any(const T &value)
-        : _M_base( new storage<T>(value) )
+        : m_base( new storage<T>(value) )
         {} 
 
         any(const any &rhs)
-        : _M_base( rhs._M_base ? rhs._M_base->clone() : 0 )
+        : m_base( rhs.m_base ? rhs.m_base->clone() : 0 )
         {}
 
         ~any()
-        { delete _M_base; }
+        { delete m_base; }
 
     public:
 
         bool empty() const
         { 
-            return _M_base == 0; 
+            return m_base == 0; 
         }
 
         const std::type_info &
         type() const
         {
-            return _M_base ? _M_base->type() : typeid(void);
+            return m_base ? m_base->type() : typeid(void);
         }
 
         any & swap(any & rhs)
         {
-            std::swap(_M_base, rhs._M_base);
+            std::swap(m_base, rhs.m_base);
             return *this;
         }
 
@@ -102,13 +102,13 @@ namespace more {
         struct storage : public base
         {
             storage(const T &value)
-            : _M_value(value)
+            : m_value(value)
             {}
 
             storage *
             clone() const
             {
-               return new storage(_M_value); 
+               return new storage(m_value); 
             }
 
             const std::type_info &
@@ -117,10 +117,10 @@ namespace more {
                 return typeid(T);
             }
 
-            T _M_value;
+            T m_value;
         };
 
-        base * _M_base;
+        base * m_base;
 
     };
 
@@ -128,8 +128,8 @@ namespace more {
     inline T * any_cast(any *rhs_p)
     {
         return ( rhs_p ?  
-                    (dynamic_cast< any::storage<T> *>(rhs_p->_M_base) ? 
-                        & static_cast<any::storage<T> *>(rhs_p->_M_base)->_M_value 
+                    (dynamic_cast< any::storage<T> *>(rhs_p->m_base) ? 
+                        & static_cast<any::storage<T> *>(rhs_p->m_base)->m_value 
                         : 
                         0) 
                      : 
@@ -145,7 +145,7 @@ namespace more {
     template <typename T>
     inline T any_cast(any &rhs)
     {
-        typedef typename std::remove_const< typename std::remove_reference<T>::type >::type Type;
+        typedef typename std::tr1::remove_const< typename std::tr1::remove_reference<T>::type >::type Type;
 
         Type * p = any_cast<Type>(&rhs);
         if (!p)
@@ -156,7 +156,7 @@ namespace more {
     template <typename T>
     inline T any_cast(const any &rhs)
     {
-        typedef typename std::remove_reference<T>::type Type;
+        typedef typename std::tr1::remove_reference<T>::type Type;
         return any_cast<const Type &>(const_cast<any &>(rhs));
     }
 
@@ -168,18 +168,18 @@ namespace more {
     public:
 
         any_out()
-        : _M_value(), _M_streamer(0)
+        : m_value(), m_streamer(0)
         {}
 
         template <typename T>
         any_out(const T &value)
-        : _M_value(value),
-          _M_streamer( new streamer_impl<T> )
+        : m_value(value),
+          m_streamer( new streamer_impl<T> )
         {}
 
         any_out(const any_out &rhs)
-        :  _M_value( rhs._M_value ),
-           _M_streamer( rhs._M_streamer ? rhs._M_streamer->clone() : 0 )
+        :  m_value( rhs.m_value ),
+           m_streamer( rhs.m_streamer ? rhs.m_streamer->clone() : 0 )
         {}
 
         template <typename T>
@@ -197,31 +197,31 @@ namespace more {
 
         ~any_out()
         {
-            delete _M_streamer;
+            delete m_streamer;
         }
 
         any_out & swap(any_out &rhs)
         {
-            std::swap(_M_value, rhs._M_value);
-            std::swap(_M_streamer, rhs._M_streamer);
+            std::swap(m_value, rhs.m_value);
+            std::swap(m_streamer, rhs.m_streamer);
             return *this;
         }
 
         friend std::ostream & operator<<(std::ostream &out, const any_out &value)
         {
-            if (value._M_streamer) {
-                value._M_streamer->printon(out,value._M_value);
+            if (value.m_streamer) {
+                value.m_streamer->printon(out,value.m_value);
             }
             return out;
         }
 
         any &
         get() 
-        { return _M_value; }
+        { return m_value; }
 
         const any &
         get() const
-        { return _M_value; }
+        { return m_value; }
 
         private:
 
@@ -246,8 +246,8 @@ namespace more {
 
     private:
 
-        any _M_value;
-        streamer * _M_streamer;
+        any m_value;
+        streamer * m_streamer;
     };
 
 } // namespace more

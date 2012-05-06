@@ -12,9 +12,9 @@
 #define ATOMIC_HH
 
 #include <atomicity-policy.hh>  // more!
-#include <tr1_type_traits.hh>   // more!
-#include <tr1_memory.hh>        // more!
 
+#include <tr1/type_traits>   
+#include <tr1/memory>        
 #include <iostream>
 
 namespace more {
@@ -28,31 +28,31 @@ namespace more {
     public:
 
         scoped_counter(T &ref)
-        : _M_ref(ref)
+        : m_ref(ref)
         {
-            _M_previous = ref++;
+            m_previous = ref++;
         }
 
         ~scoped_counter()
         {
-            _M_ref--;
+            m_ref--;
         }
 
         T previous() const
         {
-            return _M_previous;
+            return m_previous;
         }
 
         T
         get() const
         {
-            return _M_ref;
+            return m_ref;
         }
 
     private:
 
-        T _M_previous;
-        T  & _M_ref;
+        T m_previous;
+        T  & m_ref;
 
         // non-copyable idiom
         scoped_counter(const scoped_counter &);
@@ -68,29 +68,29 @@ namespace more {
     {};
 
     template <typename T>
-    class atomic : atomic_enabled_for< std::is_integral<T>::value || std::is_pointer<T>::value >
+    class atomic : atomic_enabled_for< std::tr1::is_integral<T>::value || std::tr1::is_pointer<T>::value >
     {
     public:
 
         explicit atomic(T v=T()) 
-        : _M_value(v)
+        : m_value(v)
         {}
 
         atomic(const atomic &value)
-        : _M_value(value._M_value)
+        : m_value(value.m_value)
         {}
 
         atomic &
         operator=(const atomic &rhs)
         {
-            _M_value = rhs._M_value;
+            m_value = rhs.m_value;
             return *this;            
         }
 
         atomic &
         operator=(const T &value)
         {
-            _M_value = value;
+            m_value = value;
             return *this;            
         }
 
@@ -102,38 +102,38 @@ namespace more {
 
         T
         swap(T val) 
-        { return __sync_lock_test_and_set(&_M_value, val); }
+        { return __sync_lock_test_and_set(&m_value, val); }
 
 
         operator T() const volatile 
-        { return _M_value; }
+        { return m_value; }
 
-#define __SYNC(builtin) T builtin(T val) volatile { return __sync_ ## builtin(&_M_value, val); }
+#define __SYNC(builtin) T builtin(T val) volatile { return __sync_ ## builtin(&m_value, val); }
 
         T 
         operator+=(T value) volatile 
-        { return  __sync_add_and_fetch(&_M_value, value); }        
+        { return  __sync_add_and_fetch(&m_value, value); }        
 
         T 
         operator-=(T value) volatile
-        { return  __sync_sub_and_fetch(&_M_value, value); }
+        { return  __sync_sub_and_fetch(&m_value, value); }
 
 
         T 
         operator++(int) volatile 
-        { return __sync_fetch_and_add(&_M_value, 1); }        
+        { return __sync_fetch_and_add(&m_value, 1); }        
 
         T 
         operator--(int) volatile
-        { return __sync_fetch_and_sub(&_M_value, 1); }
+        { return __sync_fetch_and_sub(&m_value, 1); }
 
         T 
         operator++() volatile 
-        { return  __sync_add_and_fetch(&_M_value, 1); }        
+        { return  __sync_add_and_fetch(&m_value, 1); }        
 
         T 
         operator--() volatile
-        { return  __sync_sub_and_fetch(&_M_value, 1); }
+        { return  __sync_sub_and_fetch(&m_value, 1); }
 
         __SYNC(fetch_and_or);
         __SYNC(fetch_and_and);
@@ -150,30 +150,30 @@ namespace more {
         void
         lock_release() volatile
         {
-            __sync_lock_release(&_M_value);
+            __sync_lock_release(&m_value);
         }
 
         T
         operator &=(T v) volatile
-        { return  __sync_and_and_fetch(&_M_value,v); }
+        { return  __sync_and_and_fetch(&m_value,v); }
 
         T 
         operator |=(T v) volatile
-        { return __sync_or_and_fetch(&_M_value,v); }
+        { return __sync_or_and_fetch(&m_value,v); }
 
         T 
         operator ^=(T v) volatile
-        { return  __sync_xor_and_fetch(&_M_value,v); }        
+        { return  __sync_xor_and_fetch(&m_value,v); }        
 
         __SYNC(nand_nad_fetch);
 
         T 
         val_compare_and_swap(T oldval, T newval) volatile 
-        { return  __sync_val_compare_and_swap(&_M_value, oldval, newval); }
+        { return  __sync_val_compare_and_swap(&m_value, oldval, newval); }
  
         bool 
         bool_compare_and_swap(T oldval, T newval) volatile
-        { return __sync_bool_compare_and_swap(&_M_value, oldval, newval); }
+        { return __sync_bool_compare_and_swap(&m_value, oldval, newval); }
 
         static void 
         memory_barrier() 
@@ -182,7 +182,7 @@ namespace more {
         }
 
     private: 
-        T _M_value;
+        T m_value;
     };
 
     // the following atomic_ptr is based on an idea of Alexandrescu, 
@@ -191,10 +191,10 @@ namespace more {
     template <typename Atomicity = atomicity::DEFAULT>
     struct atomic_class 
     {
-        typename Atomicity::mutex _M_mutex;
+        typename Atomicity::mutex m_mutex;
 
         atomic_class()
-        : _M_mutex()
+        : m_mutex()
         {}
 
         virtual ~atomic_class()
@@ -206,13 +206,13 @@ namespace more {
 
     public:
         explicit atomic_ptr(volatile T& obj)
-        : _M_ptr (const_cast<T*>(&obj)), 
-          _M_lock(const_cast<T*>(&obj)->_M_mutex) 
+        : m_ptr (const_cast<T*>(&obj)), 
+          m_lock(const_cast<T*>(&obj)->m_mutex) 
         {}
 
         atomic_ptr(volatile T& obj, typename Atomicity::mutex& _m)
-        : _M_ptr(const_cast<T*>(&obj)), 
-          _M_lock(_m) 
+        : m_ptr(const_cast<T*>(&obj)), 
+          m_lock(_m) 
         { }
  
         ~atomic_ptr() 
@@ -220,19 +220,19 @@ namespace more {
 
         T& 
         operator*()
-        { return *_M_ptr; }
+        { return *m_ptr; }
 
         T* 
         operator->()
-        { return _M_ptr; }
+        { return m_ptr; }
 
     private:
 
         atomic_ptr(const atomic_ptr&);              // uncopyable
         atomic_ptr& operator=(const atomic_ptr&);   // uncopyable
 
-        T* _M_ptr;
-        typename Atomicity::scoped_lock _M_lock;
+        T* m_ptr;
+        typename Atomicity::scoped_lock m_lock;
     };
 
 } // namespace more

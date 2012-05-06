@@ -13,8 +13,8 @@
 
 #include <typelist.hh>          // more!
 #include <mtp.hh>               // more!
-#include <tr1_type_traits.hh>   // more!
 
+#include <tr1/type_traits>   
 #include <typeinfo>
 #include <iostream>
 #include <stdexcept>
@@ -61,32 +61,32 @@ namespace more {
             static void set(T *that, const T0 &elem)
             {
                 that->store(elem);
-                that->_M_type = 0;
+                that->m_type = 0;
             }            
             static void set(T *that, const T1 &elem)
             {
                 that->store(elem);
-                that->_M_type = 1; 
+                that->m_type = 1; 
             }
             static void set(T *that, const T2 &elem)
             {
                 that->store(elem);
-                that->_M_type = 2;
+                that->m_type = 2;
             }
             static void set(T *that, const T3 &elem)
             {
                 that->store(elem);
-                that->_M_type = 3;
+                that->m_type = 3;
             }
             static void set(T *that, const T4 &elem)
             {
                 that->store(elem);
-                that->_M_type = 4;
+                that->m_type = 4;
             }
             static void set(T *that, const T5 &elem)
             {
                 that->store(elem);
-                that->_M_type = 5;
+                that->m_type = 5;
             }
  
         };
@@ -97,7 +97,7 @@ namespace more {
             static void set(T *that, const T0 &elem)
             {
                 that->store(elem);
-                that->_M_type = 0;
+                that->m_type = 0;
             }
         };
 
@@ -107,12 +107,12 @@ namespace more {
             static void set(T *that, const T0 &elem)
             {
                 that->store(elem);
-                that->_M_type = 0;
+                that->m_type = 0;
             }            
             static void set(T *that, const T1 &elem)
             {
                 that->store(elem);
-                that->_M_type = 1;
+                that->m_type = 1;
             }
         };
 
@@ -122,17 +122,17 @@ namespace more {
             static void set(T *that, const T0 &elem)
             {
                 that->store(elem);
-                that->_M_type = 0;
+                that->m_type = 0;
             }            
             static void set(T *that, const T1 &elem)
             {
                 that->store(elem);
-                that->_M_type = 1;
+                that->m_type = 1;
             }
             static void set(T *that, const T2 &elem)
             {
                 that->store(elem);
-                that->_M_type = 2;
+                that->m_type = 2;
             }
         };
 
@@ -142,22 +142,22 @@ namespace more {
             static void set(T *that, const T0 &elem)
             {
                 that->store(elem);
-                that->_M_type = 0;
+                that->m_type = 0;
             }            
             static void set(T *that, const T1 &elem)
             {
                 that->store(elem);
-                that->_M_type = 1;
+                that->m_type = 1;
             }
             static void set(T *that, const T2 &elem)
             {
                 that->store(elem);
-                that->_M_type = 2;
+                that->m_type = 2;
             }            
             static void set(T *that, const T3 &elem)
             {
                 that->store(elem);
-                that->_M_type = 3;
+                that->m_type = 3;
             }
         };
 
@@ -167,27 +167,27 @@ namespace more {
             static void set(T *that, const T0 &elem)
             {
                 that->store(elem);
-                that->_M_type = 0;
+                that->m_type = 0;
             }            
             static void set(T *that, const T1 &elem)
             {
                 that->store(elem);
-                that->_M_type = 1;
+                that->m_type = 1;
             }
             static void set(T *that, const T2 &elem)
             {
                 that->store(elem);
-                that->_M_type = 2;
+                that->m_type = 2;
             }            
             static void set(T *that, const T3 &elem)
             {
                 that->store(elem);
-                that->_M_type = 3;
+                that->m_type = 3;
             }            
             static void set(T *that, const T4 &elem)
             {
                 that->store(elem);
-                that->_M_type = 4;
+                that->m_type = 4;
             }
 
         };
@@ -214,58 +214,58 @@ namespace more {
         }
 
         variant()
-        : _M_type(0)
+        : m_type(0)
         {
-            this->default_ctor<T0>(_M_storage);
+            this->default_ctor<T0>(m_storage);
         }
 
         template <typename T>
         variant(const T &value)
-        : _M_type(0)
+        : m_type(0)
         {
-            this->default_ctor<T0>(_M_storage);
+            this->default_ctor<T0>(m_storage);
             try {
                 variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this,value);
             }
             catch(...)
             {
-                this->dtor(_M_storage, 0);
+                this->dtor(m_storage, 0);
                 throw;
             }
         }
 
         ~variant()
         {
-            this->dtor(_M_storage, _M_type);
+            this->dtor(m_storage, m_type);
         }
 
         variant(const variant & rhs)
-        : _M_type(0)
+        : m_type(0)
         {
-            this->default_ctor<T0>(_M_storage);
+            this->default_ctor<T0>(m_storage);
             try {
-                switch(rhs._M_type) 
+                switch(rhs.m_type) 
                 {
                 case 0: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, rhs.get<T0>()); break;
                 case 1: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::is_same<T1, variat_helper::none>::value, T0, T1>::type>()); break;
+                                       rhs.get<typename  mtp::if_< std::tr1::is_same<T1, variat_helper::none>::value, T0, T1>::type>()); break;
                 case 2: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::is_same<T2, variat_helper::none>::value, T0, T2>::type>()); break;
+                                       rhs.get<typename  mtp::if_< std::tr1::is_same<T2, variat_helper::none>::value, T0, T2>::type>()); break;
                 case 3: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::is_same<T3, variat_helper::none>::value, T0, T3>::type>()); break;
+                                       rhs.get<typename  mtp::if_< std::tr1::is_same<T3, variat_helper::none>::value, T0, T3>::type>()); break;
                 case 4: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::is_same<T4, variat_helper::none>::value, T0, T4>::type>()); break;
+                                       rhs.get<typename  mtp::if_< std::tr1::is_same<T4, variat_helper::none>::value, T0, T4>::type>()); break;
                 case 5: variat_helper::strategy_store<variant,T0,T1,T2,T3,T4,T5>::set(this, 
-                                       rhs.get<typename  mtp::if_< std::is_same<T5, variat_helper::none>::value, T0, T5>::type>()); break;
+                                       rhs.get<typename  mtp::if_< std::tr1::is_same<T5, variat_helper::none>::value, T0, T5>::type>()); break;
                 }
             }
             catch(...)
             {
-                this->dtor(_M_storage, 0);
+                this->dtor(m_storage, 0);
                 throw;
             }
 
-            this->_M_type = rhs._M_type;
+            this->m_type = rhs.m_type;
         }
 
         template <typename T>
@@ -277,7 +277,7 @@ namespace more {
 
         variant &operator=(const variant<T0,T1,T2> &rhs)
         {
-            switch(rhs._M_type) 
+            switch(rhs.m_type) 
             {
                 case 0: this->store( rhs.get<T0>() ); break;
                 case 1: this->store( rhs.get<T1>() ); break;
@@ -287,7 +287,7 @@ namespace more {
                 case 5: this->store( rhs.get<T5>() ); break;
             }
 
-            _M_type = rhs._M_type;
+            m_type = rhs.m_type;
             return *this;
         }
 
@@ -299,18 +299,18 @@ namespace more {
 
         int
         which() const
-        { return _M_type; }
+        { return m_type; }
 
         int
         storage_size() const
         {
-            return sizeof(_M_storage)/sizeof(_M_storage[0]);
+            return sizeof(m_storage)/sizeof(m_storage[0]);
         }
 
         const std::type_info &
         type() const
         {
-            switch(_M_type)
+            switch(m_type)
             {
                 case 0: return typeid(T0);
                 case 1: return typeid(T1);
@@ -326,32 +326,32 @@ namespace more {
         template <typename T>
         T & get()
         {
-            if ( variat_helper::type_index<T,T0,T1,T2,T3,T4,T5>::value != _M_type )
+            if ( variat_helper::type_index<T,T0,T1,T2,T3,T4,T5>::value != m_type )
                 throw std::bad_cast();
 
-            return *reinterpret_cast<T *>(_M_storage);
+            return *reinterpret_cast<T *>(m_storage);
         }
 
         template <typename T>
         const T & get() const
         {
-            if ( variat_helper::type_index<T,T0,T1,T2,T3,T4,T5>::value != _M_type )
+            if ( variat_helper::type_index<T,T0,T1,T2,T3,T4,T5>::value != m_type )
                 throw std::bad_cast();
 
-            return *reinterpret_cast<const T *>(_M_storage);
+            return *reinterpret_cast<const T *>(m_storage);
         }
 
         template <typename F>
         void apply_visitor(F cw)
         {            
-            switch(_M_type)
+            switch(m_type)
             {
                 case 0: cw(this->get<T0>()); break;
-                case 1: cw(this->get< typename  mtp::if_< std::is_same<T1, variat_helper::none>::value, T0, T1>::type >()); break;
-                case 2: cw(this->get< typename  mtp::if_< std::is_same<T2, variat_helper::none>::value, T0, T2>::type >()); break;
-                case 3: cw(this->get< typename  mtp::if_< std::is_same<T3, variat_helper::none>::value, T0, T3>::type >()); break;
-                case 4: cw(this->get< typename  mtp::if_< std::is_same<T4, variat_helper::none>::value, T0, T4>::type >()); break;
-                case 5: cw(this->get< typename  mtp::if_< std::is_same<T5, variat_helper::none>::value, T0, T5>::type >()); break;
+                case 1: cw(this->get< typename  mtp::if_< std::tr1::is_same<T1, variat_helper::none>::value, T0, T1>::type >()); break;
+                case 2: cw(this->get< typename  mtp::if_< std::tr1::is_same<T2, variat_helper::none>::value, T0, T2>::type >()); break;
+                case 3: cw(this->get< typename  mtp::if_< std::tr1::is_same<T3, variat_helper::none>::value, T0, T3>::type >()); break;
+                case 4: cw(this->get< typename  mtp::if_< std::tr1::is_same<T4, variat_helper::none>::value, T0, T4>::type >()); break;
+                case 5: cw(this->get< typename  mtp::if_< std::tr1::is_same<T5, variat_helper::none>::value, T0, T5>::type >()); break;
             }    
         }
 
@@ -360,28 +360,28 @@ namespace more {
         template <typename V>
         void store(const V &value)
         {    
-            char storage_tmp[_S_storage_size];
+            char storage_tmp[s_storage_size];
 
-            // copy construct the _M_storage content in storage_tmp:
-            this->copy(_M_storage, storage_tmp, _M_type);
+            // copy construct the m_storage content in storage_tmp:
+            this->copy(m_storage, storage_tmp, m_type);
 
-            // destroy the object in the _M_storage (as _M_type) ...
-            this->dtor(_M_storage, _M_type);
+            // destroy the object in the m_storage (as m_type) ...
+            this->dtor(m_storage, m_type);
 
             try 
             {
-                // try to construct the new value in _M_storage
-                new (_M_storage) V(value);
+                // try to construct the new value in m_storage
+                new (m_storage) V(value);
             }
             catch(...)
             {
-                // try to copy construct the storage_tmp back in the _M_storage:
+                // try to copy construct the storage_tmp back in the m_storage:
                 // since an excpetion could be thrown it is not possibile to provide strong guarantee
                 // of exception safety. 
 
                 try 
                 {
-                    this->copy(storage_tmp, _M_storage, _M_type);
+                    this->copy(storage_tmp, m_storage, m_type);
                 }
                 catch(...) 
                 {
@@ -389,13 +389,13 @@ namespace more {
                 }
 
                 // destroy storage_tmp...
-                this->dtor(storage_tmp, _M_type);
+                this->dtor(storage_tmp, m_type);
 
                 throw;  // rethrow the exception 
             }
 
             // destroy storage_tmp...
-            this->dtor(storage_tmp, _M_type); 
+            this->dtor(storage_tmp, m_type); 
         }
 
         template <typename T> 
@@ -445,18 +445,18 @@ namespace more {
 
         void printon(std::ostream &out) const
         {
-             switch(_M_type)
+             switch(m_type)
             {
                 case 0:  out << this->get<T0>(); break;
-                case 1:  out << this->get< typename  mtp::if_< std::is_same<T1, variat_helper::none>::value, T0, T1>::type >(); break;
-                case 2:  out << this->get< typename  mtp::if_< std::is_same<T2, variat_helper::none>::value, T0, T2>::type >(); break;
-                case 3:  out << this->get< typename  mtp::if_< std::is_same<T3, variat_helper::none>::value, T0, T3>::type >(); break;
-                case 4:  out << this->get< typename  mtp::if_< std::is_same<T4, variat_helper::none>::value, T0, T4>::type >(); break;
-                case 5:  out << this->get< typename  mtp::if_< std::is_same<T5, variat_helper::none>::value, T0, T5>::type >(); break;
+                case 1:  out << this->get< typename  mtp::if_< std::tr1::is_same<T1, variat_helper::none>::value, T0, T1>::type >(); break;
+                case 2:  out << this->get< typename  mtp::if_< std::tr1::is_same<T2, variat_helper::none>::value, T0, T2>::type >(); break;
+                case 3:  out << this->get< typename  mtp::if_< std::tr1::is_same<T3, variat_helper::none>::value, T0, T3>::type >(); break;
+                case 4:  out << this->get< typename  mtp::if_< std::tr1::is_same<T4, variat_helper::none>::value, T0, T4>::type >(); break;
+                case 5:  out << this->get< typename  mtp::if_< std::tr1::is_same<T5, variat_helper::none>::value, T0, T5>::type >(); break;
             }    
         }
 
-        static const int _S_storage_size = 
+        static const int s_storage_size = 
             sizeof( typename variat_helper::size_max< 
                         T0, 
                         typename variat_helper::size_max<
@@ -475,8 +475,8 @@ namespace more {
                      >::value_type
                   );
 
-        int  _M_type;
-        char _M_storage[_S_storage_size];
+        int  m_type;
+        char m_storage[s_storage_size];
     };
 
 } // namespace more

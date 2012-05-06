@@ -17,11 +17,11 @@ int main()
     {
         more::scoped_flock<LOCK_EX|LOCK_NB> l("/tmp/test-flock");
         if (!l.is_open()) {
-            std::cout << "open;" << more::pretty_strerror(errno) << std::endl;
+            std::cout << "open;" << std::strerror(errno) << std::endl;
             exit(1);
         }
         if (!l.is_locked()) {
-            std::cout << "scoped_flock: " << more::pretty_strerror(errno) << std::endl;
+            std::cout << "scoped_flock: " << std::strerror(errno) << std::endl;
             exit(1);
         }
 

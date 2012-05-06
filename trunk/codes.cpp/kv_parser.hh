@@ -14,7 +14,8 @@
 #include <typemap.hh>           // more!
 #include <iomanip.hh>           // more!
 #include <lnistreambuf.hh>      // more!
-#include <tr1_type_traits.hh>   // more!
+
+#include <tr1/type_traits> 
 
 #include <iostream>
 #include <fstream>
@@ -171,14 +172,14 @@ namespace more { namespace kv {
 
          typedef parser<typename T::next, Strict, Separator, Comment> map_type;
 
-         map_type     _M_map;
-         key_type     _M_key;
-         value_type   _M_value;
+         map_type     m_map;
+         key_type     m_key;
+         value_type   m_value;
 
          parser()
-         : _M_map(),
-         _M_key(),
-         _M_value(get_default<key_type, value_type, key_type::has_default>::value()) 
+         : m_map(),
+         m_key(),
+         m_value(get_default<key_type, value_type, key_type::has_default>::value()) 
          {}
 
          virtual ~parser()
@@ -195,12 +196,12 @@ namespace more { namespace kv {
          template <typename K, int n>
          typename std::tr1::add_reference<typename more::TM::get<K, T>::type>::type
          __get(int2type<n>) 
-         { return _M_map.__get<K>(int2type<n-1>()); }
+         { return m_map.__get<K>(int2type<n-1>()); }
 
          template <typename K>
          typename std::tr1::add_reference<value_type>::type
          __get(int2type<0>) 
-         { return _M_value; } 
+         { return m_value; } 
 
      protected:
          //////////////////////////////////////////////////////////////////////////
@@ -213,7 +214,7 @@ namespace more { namespace kv {
          static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<U,_Strict,Separator,Comment> &that)
          {
              if (key == U::key::value()) {
-                 if (!lex_parse(in,that._M_value) || in.fail() ) {
+                 if (!lex_parse(in,that.m_value) || in.fail() ) {
                      std::clog << fname << ": parse error: key[" << 
                      U::key::value() << "] unexpected argument (line " << 
                      more::line_number(in) << ")" << std::endl;
@@ -221,7 +222,7 @@ namespace more { namespace kv {
                  }
                  return true;
              }
-             return __parse(in, fname, key, that._M_map);
+             return __parse(in, fname, key, that.m_map);
          }
          template <bool _Strict>
          static bool __parse(std::istream &in, const std::string &fname, const std::string &key, parser<more::TM::null,_Strict,Separator,Comment> &)

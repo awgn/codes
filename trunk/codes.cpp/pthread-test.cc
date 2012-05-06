@@ -19,17 +19,17 @@ rw_mutex global_mutex_rw;
 
 class NonConstRef : public posix::thread 
 {
-    int & _M_ref;
+    int & m_ref;
 
 public:
 
     NonConstRef(int & ref)
-    : _M_ref(ref)
+    : m_ref(ref)
     {}
 
     void *operator()()
     {
-        _M_ref = 1;
+        m_ref = 1;
         return NULL;
     }
 };
@@ -57,7 +57,7 @@ public:
     : posix::thread()
     {}
 
-    Hello(std::shared_ptr<thread_attr> a)
+    Hello(std::tr1::shared_ptr<thread_attr> a)
     : posix::thread(a)
     {}
 
@@ -157,27 +157,27 @@ struct Detached : public posix::thread
 struct Restartable : public posix::thread
 {
     Restartable(int n)
-    : _M_init(n), _M_value(n)
+    : m_init(n), m_value(n)
     {
         std::cout << "    " << __PRETTY_FUNCTION__ << std::endl;
     }
 
     void restart_impl()
     {
-        new (this) concrete_thread<Restartable>(_M_init);
+        new (this) concrete_thread<Restartable>(m_init);
     }
 
     void *operator()()
     {
         for(int i=0; i<5; i++) {
-            std::cout << "    [" << std::hex << this_thread::get_id() << "] " << _M_value++ << std::endl; 
+            std::cout << "    [" << std::hex << this_thread::get_id() << "] " << m_value++ << std::endl; 
             sleep(1);
         }
         return NULL;
     }
 
-    int _M_init;
-    int _M_value;
+    int m_init;
+    int m_value;
 };
 
 
@@ -186,19 +186,19 @@ posix::barrier bar(1);
 struct BarrierThread : public posix::thread
 {
     BarrierThread(int n)
-    : _M_sleep(n)
+    : m_sleep(n)
     {}
 
     void *operator()()
     {
-        std::cout << "    [" << std::hex << this_thread::get_id() << "]  sleeping " << _M_sleep << " seconds..." << std::endl;
-        sleep(_M_sleep);
+        std::cout << "    [" << std::hex << this_thread::get_id() << "]  sleeping " << m_sleep << " seconds..." << std::endl;
+        sleep(m_sleep);
         bar.wait();
         std::cout << "    [" << std::hex << this_thread::get_id() << "]  sync done!" << std::endl;
         return 0;
     }
 
-    int _M_sleep;
+    int m_sleep;
 };
 
 
@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
     std::cout << "\n[*]" RED " non-const reference in thread constructor..." RESET "\n";
     {
         int n = 0;
-        concrete_thread<NonConstRef> test(std::ref(n));
+        concrete_thread<NonConstRef> test(std::tr1::ref(n));
         test.start();
         test.join();
         assert(n == 1);
@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
 
     std::cout << "\n[*]" RED " scoped thread (custom attr)..." RESET "\n";
     {
-        std::shared_ptr<posix::thread_attr> a(new posix::thread_attr);
+        std::tr1::shared_ptr<posix::thread_attr> a(new posix::thread_attr);
         a->setstacksize(1000000);
 
         concrete_thread<Hello> test(a);

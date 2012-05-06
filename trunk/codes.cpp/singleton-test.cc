@@ -26,11 +26,11 @@ struct s0: public more::singleton<s0, more::indestructible_singleton_type>
 
 struct s1: public more::singleton<s1, volatile more::singleton_type, TYPELIST(int)> 
 {
-    int _M_value;
+    int m_value;
 
     // s1( more::singleton<s1, volatile more::singleton_type, TYPELIST(int)>::tag, int value)
     s1( base_type::tag, int value)
-    :  _M_value(value)
+    :  m_value(value)
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
@@ -43,12 +43,12 @@ struct s1: public more::singleton<s1, volatile more::singleton_type, TYPELIST(in
 
 struct s2: public more::singleton<s2, const more::indestructible_singleton_type, TYPELIST(std::string, std::string) > {
 
-    std::string _M_par1;
-    std::string _M_par2;
+    std::string m_par1;
+    std::string m_par2;
 
     s2( base_type::tag, const std::string &p1, const std::string &p2)
-    : _M_par1(p1),
-      _M_par2(p2)
+    : m_par1(p1),
+      m_par2(p2)
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
@@ -63,11 +63,11 @@ struct s2: public more::singleton<s2, const more::indestructible_singleton_type,
 template <typename T>
 struct s3: public more::singleton< s3<T>, more::singleton_type, TYPELIST(T) > 
 {
-    T _M_value;
+    T m_value;
 
     // s3( typename base_type::tag, T value )
     s3( typename more::singleton< s3<T>, more::singleton_type, TYPELIST(T) >::tag, T value )
-    :  _M_value(value)
+    :  m_value(value)
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
@@ -203,19 +203,19 @@ main(int argc, char *argv[])
 
     std::cout << RED << "\nsingleton instances (access): " << RESET << std::endl;
 
-    std::cout << "q1: slot @" << std::hex << &q1 << " value:" << std::dec << q1._M_value << '\n';
-    std::cout << "q2: slot @" << std::hex << &q2 << " value:" << q2._M_par1 << ' ' << q2._M_par2 << '\n';
+    std::cout << "q1: slot @" << std::hex << &q1 << " value:" << std::dec << q1.m_value << '\n';
+    std::cout << "q2: slot @" << std::hex << &q2 << " value:" << q2.m_par1 << ' ' << q2.m_par2 << '\n';
 
     std::cout << RED << "\ntemplate singleton<T> instance:" << RESET << std::endl;
 
     s3<double> & t3 = s3<double>::instance(11.2);
     s3<float>  & t4 = s3<float>::instance(10.2);
 
-    std::cout << "t3: slot @" << std::hex << &t3 << " value:" << std::dec << t3._M_value << '\n';
-    std::cout << "t4: slot @" << std::hex << &t4 << " value:" << std::dec << t4._M_value << '\n';
+    std::cout << "t3: slot @" << std::hex << &t3 << " value:" << std::dec << t3.m_value << '\n';
+    std::cout << "t4: slot @" << std::hex << &t4 << " value:" << std::dec << t4.m_value << '\n';
 
-    std::cout << "t3: slot @" << std::hex << & s3<double>::instance() << " value:" << std::dec << s3<double>::instance()._M_value << '\n';
-    std::cout << "t4: slot @" << std::hex << & s3<float>::instance() << " value:" << std::dec << s3<float>::instance()._M_value << '\n';
+    std::cout << "t3: slot @" << std::hex << & s3<double>::instance() << " value:" << std::dec << s3<double>::instance().m_value << '\n';
+    std::cout << "t4: slot @" << std::hex << & s3<float>::instance() << " value:" << std::dec << s3<float>::instance().m_value << '\n';
 
     test_1 & ref_1 __attribute__((unused)) = test_1::instance();
     test_2 & ref_2 __attribute__((unused)) = test_2::instance();

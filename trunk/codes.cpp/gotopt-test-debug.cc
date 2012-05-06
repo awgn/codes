@@ -56,9 +56,9 @@ main(int argc, char *argv[])
     std::cout << "imply: " << ( _a >> _b ) << " -> " <<  eval( _a >> _b, context ) << std::endl;
     std::cout << "mutex: " << ( _a  % _b ) << " -> " <<  eval( _a  % _b, context ) << std::endl;
 
-    more::gotopt::validate_expression( std::make_tuple(_true), context );  // default check...
+    more::gotopt::validate_expression( std::tr1::make_tuple(_true), context );  // default check...
     
-    more::gotopt::validate_expression( std::make_tuple( 
+    more::gotopt::validate_expression( std::tr1::make_tuple( 
                                        std::make_pair( _a >> (_b|_c), "-a -> -b or -c" ), 
                                        std::make_pair( _b % _a , "-b and -a are mutually exclusive")
                                     ), context );

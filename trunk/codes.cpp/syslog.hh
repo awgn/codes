@@ -60,13 +60,13 @@ namespace more
         // priority:    facility|level
 
         explicit syslog(int opt, int fac = LOG_USER, int lev = LOG_NOTICE )  
-        : _M_buffer(),
-          _M_priority(0),
-          _M_cursor(0),
-          _M_option(opt)
+        : m_buffer(),
+          m_priority(0),
+          m_cursor(0),
+          m_option(opt)
         {
-            _M_facility() = fac;
-            _M_level()    = lev;
+            m_facility() = fac;
+            m_level()    = lev;
         } 
 
         ~syslog()  
@@ -77,23 +77,23 @@ namespace more
         {
             // std::cout << __PRETTY_FUNCTION__ << std::endl;
             if (ident)
-                ::openlog(ident,_M_option,_M_facility());
+                ::openlog(ident,m_option,m_facility());
             return *this;
         }
 
         syslog &
         setfacility(int fac)  
         {
-            _M_facility() = fac;
-            _M_priority   = 0;
+            m_facility() = fac;
+            m_priority   = 0;
             return *this;
         }
 
         syslog &
         setlevel(int lev)  
         {
-            _M_level()  = lev;
-            _M_priority = 0;
+            m_level()  = lev;
+            m_priority = 0;
             return *this;
         }
 
@@ -106,16 +106,16 @@ namespace more
 
         const int 
         facility() const  
-        { return const_cast<syslog *>(this)->_M_facility(); }
+        { return const_cast<syslog *>(this)->m_facility(); }
 
         const int 
         level() const  
-        { return const_cast<syslog *>(this)->_M_level(); }
+        { return const_cast<syslog *>(this)->m_level(); }
 
         const int 
         priority() const  
-        { return _M_priority ? : const_cast<syslog *>(this)->_M_facility() | 
-            const_cast<syslog *>(this)->_M_level(); 
+        { return m_priority ? : const_cast<syslog *>(this)->m_facility() | 
+            const_cast<syslog *>(this)->m_level(); 
         }
 
         static inline
@@ -129,11 +129,11 @@ namespace more
 
     private:
         static const int SIZE = 1024;
-        char _M_buffer[SIZE];
+        char m_buffer[SIZE];
 
-        int  _M_priority;
-        int  _M_cursor;
-        int  _M_option;
+        int  m_priority;
+        int  m_cursor;
+        int  m_option;
 
         // central output functions...
         //
@@ -142,13 +142,13 @@ namespace more
         xsputn (const char *s, std::streamsize n)
         {
             int b(n);
-            if ( _M_cursor+b > SIZE-1 ) {
+            if ( m_cursor+b > SIZE-1 ) {
                 fprintf(stderr, "syslog: message overflows in streambuf!\n");
-                b = SIZE - 1 - _M_cursor;
+                b = SIZE - 1 - m_cursor;
             }
             if (b > 0) {
-                std::copy(s, s + b, _M_buffer + _M_cursor);
-                _M_cursor += b;
+                std::copy(s, s + b, m_buffer + m_cursor);
+                m_cursor += b;
             }
             return n; 
         }
@@ -156,24 +156,24 @@ namespace more
         virtual int_type
         overflow (int_type c)
         {
-            if (_M_cursor < SIZE) {
-                _M_buffer[_M_cursor] = '\0';
-                _M_cursor = 0;
-                ::syslog(priority(), "%s", _M_buffer);
+            if (m_cursor < SIZE) {
+                m_buffer[m_cursor] = '\0';
+                m_cursor = 0;
+                ::syslog(priority(), "%s", m_buffer);
             }
             else {
-                 _M_cursor = 0;
+                 m_cursor = 0;
             }
 
             return c;
         }
 
-        int &_M_facility() {
+        int &m_facility() {
             static int fac;
             return fac; 
         }
 
-        int &_M_level() {
+        int &m_level() {
             static int lev;
             return lev; 
         }

@@ -20,7 +20,7 @@
 #include <sys/select.h>
 #include <unistd.h>
 
-#include <error.hh>         // more!
+#include <system_error.hh>  // more!
 
 #include <stdexcept>
 #include <iostream>
@@ -30,6 +30,8 @@
 
 #define EVENT_SIZE  (sizeof (struct inotify_event))     /* size of the event structure, not counting name */
 #define BUF_LEN     (1024 * (EVENT_SIZE + 16))          /* reasonable guess as to size of 1024 events */
+
+namespace more {
 
 namespace Linux {
 
@@ -68,38 +70,38 @@ namespace Linux {
     template<int L=BUF_LEN>
         class Inotify {
 
-            char _M_buf[L];
-            int _M_fd;
+            char m_buf[L];
+            int m_fd;
 
             public:
 
             Inotify()
-            :   _M_buf(),
-                _M_fd(inotify_init())
+            :   m_buf(),
+                m_fd(inotify_init())
             {
-                if ( _M_fd < 0 )
-                    throw more::syscall_error("inotify_init"); 
+                if ( m_fd < 0 )
+                    throw more::system_error("inotify_init"); 
             }
 
-            ~Inotify() { ::close(_M_fd); }
+            ~Inotify() { ::close(m_fd); }
 
             int add_watch(const char *pathname, uint32_t mask) {
-                return inotify_add_watch(_M_fd, pathname, mask); 
+                return inotify_add_watch(m_fd, pathname, mask); 
             }
 
             int rm_watch(uint32_t wd) {
-                return inotify_rm_watch(_M_fd, wd);
+                return inotify_rm_watch(m_fd, wd);
             }
 
             Inotify_list wait_events() 
             {
                 int len, i = 0;
                 for (;;) {
-                    len = read (_M_fd, _M_buf, L);
+                    len = read (m_fd, m_buf, L);
                     if (len < 0 && errno == EINTR )
                         continue;
                     if (len < 0)
-                        throw more::syscall_error("wait_event");
+                        throw more::system_error("wait_event");
 
                     break;
                 }
@@ -109,7 +111,7 @@ namespace Linux {
 
                 for (; i < len ; i += EVENT_SIZE + event->len) {
 
-                    event = reinterpret_cast<struct inotify_event *> (&_M_buf[i]);
+                    event = reinterpret_cast<struct inotify_event *> (&m_buf[i]);
 
                     Inotify_event tmp (event->wd, event->mask, event->cookie, event->len, event->name);
                     ret.push_back(tmp);                 
@@ -120,7 +122,8 @@ namespace Linux {
 
         };
 
-}
+} // Linux
+} // more
 
 #undef ERR
 #undef EVENT_SIZE 

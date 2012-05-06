@@ -12,7 +12,7 @@
 #ifndef ATOMICITY_HH
 #define ATOMICITY_HH
 
-#include <tr1_memory.hh>
+#include <tr1/memory>
 
 #ifdef BOOST_HAS_THREADS
 #include <boost/thread.hpp>
@@ -33,17 +33,17 @@ namespace more { namespace atomicity {
         typedef M __mutex_type;
 
     private:
-        __mutex_type& _M_device;
+        __mutex_type& m_device;
 
         __scoped_lock(const __scoped_lock&);
         __scoped_lock& operator=(const __scoped_lock&);
 
     public:
-        explicit __scoped_lock(__mutex_type& __name) : _M_device(__name)
-        { _M_device.lock(); }
+        explicit __scoped_lock(__mutex_type& __name) : m_device(__name)
+        { m_device.lock(); }
 
         ~__scoped_lock() 
-        { _M_device.unlock(); }
+        { m_device.unlock(); }
     };
 
 
@@ -140,7 +140,7 @@ namespace more { namespace atomicity {
 #if defined(__INTEL_COMPILER)
 
 #   ifndef NDEBUG
-#   warning "atomicity::DEFAULT set to BOOST"
+#pragma message "atomicity::DEFAULT set to BOOST"
 #   endif
 
     typedef BOOST DEFAULT;
@@ -148,7 +148,7 @@ namespace more { namespace atomicity {
 #else
 
 #   ifndef NDEBUG
-#   warning "atomicity::DEFAULT set to GNU_CXX"
+#pragma message "atomicity::DEFAULT set to GNU_CXX"
 #   endif
 
     typedef GNU_CXX DEFAULT;
@@ -157,7 +157,7 @@ namespace more { namespace atomicity {
 
 #else
 #  ifndef NDEBUG
-#  warning "atomicity::DEFAULT set to NONE"
+#pragma message "atomicity::DEFAULT set to NONE"
 #  endif
     typedef NONE DEFAULT;
     typedef NONE DEFAULT_RECURSIVE;
@@ -170,7 +170,7 @@ namespace more { namespace atomicity {
     struct emptybase_mutex 
     {
         typename POLICY::mutex & mutex()
-        { return _M_mutex; }
+        { return m_mutex; }
 
         static 
         typename POLICY::mutex & static_mutex()
@@ -180,7 +180,7 @@ namespace more { namespace atomicity {
         }
 
     private:
-        typename POLICY::mutex _M_mutex;
+        typename POLICY::mutex m_mutex;
     };
 
     template <>

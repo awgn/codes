@@ -41,34 +41,34 @@ namespace more
         typedef typename L::head          elem_type;
         typedef tuple<typename L::tail>   list_type;
 
-        elem_type _M_elem;
-        list_type _M_list;
+        elem_type m_elem;
+        list_type m_list;
 
     public:
     
         tuple() 
-        : _M_elem(),
-          _M_list()
+        : m_elem(),
+          m_list()
         {}
 
         template <typename T1>
         tuple(const T1 &t1)
-        : _M_elem(t1),
-          _M_list()
+        : m_elem(t1),
+          m_list()
         {}
 
         template <typename T1, typename T2>
         tuple(const T1 &t1, const T2 &t2)
         :  
-          _M_elem(t1),
-          _M_list(t2)
+          m_elem(t1),
+          m_list(t2)
         {}
 
         template <typename T1, typename T2, typename T3>
         tuple(const T1 &t1, const T2 &t2, const T3 &t3)
         :  
-          _M_elem(t1),
-          _M_list(t2,t3)
+          m_elem(t1),
+          m_list(t2,t3)
         {}
 
         template <typename T1, typename T2, typename T3,
@@ -76,8 +76,8 @@ namespace more
         tuple(const T1 &t1, const T2 &t2, const T3 &t3,
               const T4 &t4)
         :  
-          _M_elem(t1),
-          _M_list(t2,t3,t4)
+          m_elem(t1),
+          m_list(t2,t3,t4)
         {}
 
         template <typename T1, typename T2, typename T3,
@@ -85,8 +85,8 @@ namespace more
         tuple(const T1 &t1, const T2 &t2, const T3 &t3,
               const T4 &t4, const T5 &t5)
         :  
-          _M_elem(t1),
-          _M_list(t2,t3,t4,t5)
+          m_elem(t1),
+          m_list(t2,t3,t4,t5)
         {}
 
         template <typename T1, typename T2, typename T3,
@@ -94,8 +94,8 @@ namespace more
         tuple(const T1 &t1, const T2 &t2, const T3 &t3,
               const T4 &t4, const T5 &t5, const T6 &t6)
         :  
-          _M_elem(t1),
-          _M_list(t2,t3,t4,t5,t6)
+          m_elem(t1),
+          m_list(t2,t3,t4,t5,t6)
         {}
 
         template <typename T1, typename T2, typename T3,
@@ -105,8 +105,8 @@ namespace more
               const T4 &t4, const T5 &t5, const T6 &t6,
               const T7 &t7)
         :  
-          _M_elem(t1),
-          _M_list(t2,t3,t4,t5,t6,t7)
+          m_elem(t1),
+          m_list(t2,t3,t4,t5,t6,t7)
         {}
 
         template <typename T1, typename T2, typename T3,
@@ -116,8 +116,8 @@ namespace more
               const T4 &t4, const T5 &t5, const T6 &t6,
               const T7 &t7, const T8 &t8)
         :  
-          _M_elem(t1),
-          _M_list(t2,t3,t4,t5,t6,t7,t8)
+          m_elem(t1),
+          m_list(t2,t3,t4,t5,t6,t7,t8)
         {}
 
         template <typename T1, typename T2, typename T3,
@@ -127,8 +127,8 @@ namespace more
               const T4 &t4, const T5 &t5, const T6 &t6,
               const T7 &t7, const T8 &t8, const T9 &t9)
         :  
-          _M_elem(t1),
-          _M_list(t2,t3,t4,t5,t6,t7,t8,t9)
+          m_elem(t1),
+          m_list(t2,t3,t4,t5,t6,t7,t8,t9)
         {}
 
         template <int n>
@@ -140,11 +140,11 @@ namespace more
         template <int n>
         typename add_reference<typename TL::at<L,n>::type >::type
         __get(int2Type<n>)
-        { return _M_list.__get(int2Type<n-1>()); }
+        { return m_list.__get(int2Type<n-1>()); }
 
         typename add_reference<elem_type>::type
         __get(int2Type<0>)
-        { return _M_elem; }
+        { return m_elem; }
 
         size_t size() const 
         { return TL::length<L>::value; }

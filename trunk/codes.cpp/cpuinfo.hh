@@ -26,11 +26,11 @@ namespace more { namespace proc {
     { 
     private:
         typedef std::map<std::string, std::string> map_type;
-        std::vector<map_type> _M_maps;
+        std::vector<map_type> m_maps;
 
     public:
         cpuinfo(const char *p = "/proc/cpuinfo")
-        : _M_maps()
+        : m_maps()
         {
             std::ifstream pin(p);
             if (!p)
@@ -49,29 +49,29 @@ namespace more { namespace proc {
 
                 if ( !static_cast<std::string &>(key).compare("processor")) {
                     if (m.size())
-                        _M_maps.push_back(m);
+                        m_maps.push_back(m);
                     m.clear();
                 }
                 m.insert(std::make_pair(key,value));
             }
 
-            _M_maps.push_back(m);
+            m_maps.push_back(m);
         }
 
         std::string
         operator()(std::vector<map_type>::size_type p, const std::string &k) const
         {
-            if ( p >= _M_maps.size() )
+            if ( p >= m_maps.size() )
                 throw std::out_of_range("bad index");
-            map_type::const_iterator it = _M_maps[p].find(k);
-            if ( it == _M_maps[p].end() )
+            map_type::const_iterator it = m_maps[p].find(k);
+            if ( it == m_maps[p].end() )
                 throw std::runtime_error("bad key");
             return (*it).second;
         }
 
         int
         size() const
-        { return _M_maps.size(); }
+        { return m_maps.size(); }
 
     };
 

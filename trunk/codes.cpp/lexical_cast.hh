@@ -41,7 +41,7 @@ namespace more {
     struct lexical_cast_policy
     {
         static std::stringstream &
-        _S_ss()
+        s_ss()
         {
             static __thread std::stringstream * ret;
             if (!ret) 
@@ -53,11 +53,11 @@ namespace more {
         Target apply(const Source &arg)
         {
             Target ret;
-            _S_ss().clear();
+            s_ss().clear();
 
-            if(!( _S_ss() << arg &&  _S_ss() >> ret && (_S_ss() >> std::ws).eof() )) 
+            if(!( s_ss() << arg &&  s_ss() >> ret && (s_ss() >> std::ws).eof() )) 
             {
-                _S_ss().str(std::string());
+                s_ss().str(std::string());
                 throw bad_lexical_cast();
             }
             return ret;
@@ -65,7 +65,7 @@ namespace more {
     };
 
     // template <typename Target, typename Source>
-    // std::stringstream lexical_cast_policy<Target,Source>::_S_ss;
+    // std::stringstream lexical_cast_policy<Target,Source>::s_ss;
 
     // null cast optimization...
     //

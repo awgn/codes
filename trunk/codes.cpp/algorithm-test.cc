@@ -11,13 +11,13 @@
 
 #include <algorithm.hh>
 
+#include <tr1/functional>
 #include <iostream>
 #include <iterator>
 #include <functional>
 
-#include <tr1_functional.hh>
 
-using namespace std::placeholders;
+using namespace std::tr1::placeholders;
 
 int
 main(int argc, char *argv[])
@@ -32,7 +32,7 @@ main(int argc, char *argv[])
     std::cout << std::endl;
 
     more::copy_if(vec.begin(), vec.end(), std::ostream_iterator<int>(std::cout, " "), 
-                 std::bind(std::greater<int>(), 5, _1) );
+                 std::tr1::bind(std::greater<int>(), 5, _1) );
     std::cout << std::endl;
 
     // levenshtein distance

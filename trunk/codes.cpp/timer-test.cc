@@ -91,7 +91,7 @@ template <tick_type & Tc>
 struct Thread_4 : public more::posix::thread, private enable_tick<Tc, SIGRT_MIN > 
 {    
     Thread_4(more::time::rt_timer_pulse_thread<SIGRT_MIN,   global_tick > *ptr)
-    : _M_pulse(ptr)
+    : m_pulse(ptr)
     {}
 
     ~Thread_4()
@@ -103,7 +103,7 @@ struct Thread_4 : public more::posix::thread, private enable_tick<Tc, SIGRT_MIN 
         for(int i=1; i <= 10; ++i) {
             this->wait_for_tick(ts);  // timer
 
-            _M_pulse->update(0,100000000*i);
+            m_pulse->update(0,100000000*i);
 
             std::cout << std::hex << 
             "SIGRT_MIN+1: [" << this->get_id() << "] " << std::dec << i << " << tick = {" << std::dec << Tc.current << "}\n";
@@ -112,7 +112,7 @@ struct Thread_4 : public more::posix::thread, private enable_tick<Tc, SIGRT_MIN 
         return NULL;
     }
 
-    more::time::rt_timer_pulse_thread<SIGRT_MIN, global_tick > * _M_pulse;
+    more::time::rt_timer_pulse_thread<SIGRT_MIN, global_tick > * m_pulse;
 };
 
 

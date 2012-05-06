@@ -24,15 +24,15 @@ namespace more
 {
     class singleton_proc 
     {
-        int _M_fd;
+        int m_fd;
     public:
         singleton_proc(const char *filelock) 
-        : _M_fd(open(filelock, O_RDONLY|O_CREAT))
+        : m_fd(open(filelock, O_RDONLY|O_CREAT))
         {
-            if (_M_fd == -1)
+            if (m_fd == -1)
                 errx(1, "couldn't open lockfile");
 
-            if (flock(_M_fd, LOCK_EX|LOCK_NB) < 0 ) {
+            if (flock(m_fd, LOCK_EX|LOCK_NB) < 0 ) {
                 if (errno == EWOULDBLOCK)
                     errx(1, "a session of '%s' is already running", __progname);
                 else
@@ -42,11 +42,11 @@ namespace more
 
         ~singleton_proc() 
         {
-            if (flock(_M_fd, LOCK_UN) < 0 ) {
+            if (flock(m_fd, LOCK_UN) < 0 ) {
                 warn("flock(...,LOCK_UN)");
                 return;
             }
-            close(_M_fd);
+            close(m_fd);
         }
     
     };

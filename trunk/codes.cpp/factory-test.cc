@@ -93,10 +93,10 @@ main(int argc, char *argv[])
     std::cout << "--- start here ---" << std::endl;
 
     {
-        std::shared_ptr<base> p1 = factory_0("der1");
-        std::shared_ptr<base> p2 = factory_0("der2");
-        std::shared_ptr<base> p3 = factory_1("der3",std::string("hello"));
-        std::shared_ptr<base> p4 = factory_1("der4",std::string("world"));
+        std::tr1::shared_ptr<base> p1 = factory_0("der1");
+        std::tr1::shared_ptr<base> p2 = factory_0("der2");
+        std::tr1::shared_ptr<base> p3 = factory_1("der3",std::string("hello"));
+        std::tr1::shared_ptr<base> p4 = factory_1("der4",std::string("world"));
 
         p1->hello_world();
         p2->hello_world();

@@ -14,8 +14,8 @@
 #include <mtp.hh>             // more!
 #include <cxa_demangle.hh>    // more!
 #include <static_assert.hh>   // more!
-#include <tr1_type_traits.hh> // more!
 
+#include <tr1/type_traits> 
 #include <iostream>
 #include <stdexcept>
 #include <typeinfo>
@@ -74,7 +74,7 @@ namespace more {
     template <>
     class enable_exception_if<false> 
     {
-        mutable bool _M_value;
+        mutable bool m_value;
 
     protected:
         ~enable_exception_if()
@@ -82,20 +82,20 @@ namespace more {
 
     public:
         enable_exception_if()
-        : _M_value(true)
+        : m_value(true)
         {}
 
         operator bool() const
-        { return _M_value; }
+        { return m_value; }
 
         template <typename T>
-        typename mtp::disable_if<std::is_base_of<std::exception, typename std::remove_reference<T>::type > ,void>::type  
+        typename mtp::disable_if<std::tr1::is_base_of<std::exception, typename std::tr1::remove_reference<T>::type > ,void>::type  
         throw_exception(const T &e) const
         {
 #ifndef NDEBUG
             std::clog << "enable_exception_if<false>: exception type '" << cxa_demangle(typeid(T).name()) << "'" << std::endl;
 #endif
-            _M_value = false;        
+            m_value = false;        
         }
 
         void 
@@ -104,7 +104,7 @@ namespace more {
 #ifndef NDEBUG
             std::clog << "enable_exception_if<false>: exception type '" << cxa_demangle(typeid(e).name()) << "' what: " << e.what() << "!" << std::endl;
 #endif
-            _M_value = false;        
+            m_value = false;        
         }
 
     };

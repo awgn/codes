@@ -17,13 +17,13 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include <error.hh>         // more!
+#include <system_error.hh>  // more!
 #include <noncopyable.hh>   // more!
 #include <static_assert.hh> // more!
 
-#include <tr1_type_traits.hh> // more!
-#include <tr1_functional.hh>  // more!
-#include <tr1_memory.hh>      // more!
+#include <tr1/type_traits> 
+#include <tr1/functional>  
+#include <tr1/memory>      
 
 #include <memory>
 #include <functional>
@@ -36,10 +36,10 @@
 
 namespace more { namespace posix 
 {    
-    using namespace std::placeholders;
-    using std::shared_ptr;
-    using std::mem_fn;
-    using std::bind;
+    using namespace std::tr1::placeholders;
+    using std::tr1::shared_ptr;
+    using std::tr1::mem_fn;
+    using std::tr1::bind;
 
     namespace  
     {
@@ -58,72 +58,72 @@ namespace more { namespace posix
     {
     public:
         thread_attr()
-        : _M_value()
-        { ::pthread_attr_init(&_M_value); }
+        : m_value()
+        { ::pthread_attr_init(&m_value); }
 
         ~thread_attr()
-        { /* ::pthread_attr_destroy(&_M_value); */ }
+        { /* ::pthread_attr_destroy(&m_value); */ }
 
         int setdetachstate(int detachstate)
-        { return ::pthread_attr_setdetachstate(&_M_value, detachstate); }
+        { return ::pthread_attr_setdetachstate(&m_value, detachstate); }
 
         int getdetachstate(int *detachstate) const
-        { return ::pthread_attr_getdetachstate(&_M_value, detachstate); }
+        { return ::pthread_attr_getdetachstate(&m_value, detachstate); }
 
         int setschedpolicy(int policy)
-        { return ::pthread_attr_setschedpolicy(&_M_value, policy); }
+        { return ::pthread_attr_setschedpolicy(&m_value, policy); }
 
         int getschedpolicy(int *policy) const
-        { return ::pthread_attr_getschedpolicy(&_M_value, policy); }
+        { return ::pthread_attr_getschedpolicy(&m_value, policy); }
 
         int setschedparam(const struct sched_param *param)
-        { return ::pthread_attr_setschedparam(&_M_value, param); }
+        { return ::pthread_attr_setschedparam(&m_value, param); }
         
         int getschedparam(struct sched_param *param) const
-        { return ::pthread_attr_getschedparam(&_M_value, param); }
+        { return ::pthread_attr_getschedparam(&m_value, param); }
 
         int setinheritsched(int inherit)
-        { return ::pthread_attr_setinheritsched(&_M_value, inherit); }
+        { return ::pthread_attr_setinheritsched(&m_value, inherit); }
 
         int getinheritsched(int *inherit) const
-        { return ::pthread_attr_getinheritsched(&_M_value, inherit); }
+        { return ::pthread_attr_getinheritsched(&m_value, inherit); }
 
         int setscope(int scope)
-        { return ::pthread_attr_setscope(&_M_value, scope); }
+        { return ::pthread_attr_setscope(&m_value, scope); }
 
         int getscope(int *scope) const
-        { return ::pthread_attr_getscope(&_M_value, scope); }
+        { return ::pthread_attr_getscope(&m_value, scope); }
 
         int setguardsize(size_t guardsize)
-        { return ::pthread_attr_setguardsize(&_M_value, guardsize); }
+        { return ::pthread_attr_setguardsize(&m_value, guardsize); }
 
         int getguardsize(size_t *guardsize) const
-        { return ::pthread_attr_getguardsize(&_M_value, guardsize); }
+        { return ::pthread_attr_getguardsize(&m_value, guardsize); }
 
         /* stack */
 
         int setstack(void *stackaddr, size_t stacksize)
-        { return ::pthread_attr_setstack(&_M_value, stackaddr, stacksize); }
+        { return ::pthread_attr_setstack(&m_value, stackaddr, stacksize); }
 
         int getstack(void **stackaddr, size_t *stacksize) const
-        { return ::pthread_attr_getstack(&_M_value, stackaddr, stacksize); }
+        { return ::pthread_attr_getstack(&m_value, stackaddr, stacksize); }
 
         int setstacksize(size_t stacksize)
-        { return ::pthread_attr_setstacksize(&_M_value, stacksize); }
+        { return ::pthread_attr_setstacksize(&m_value, stacksize); }
 
         int getstacksize(size_t *stacksize) const
-        { return ::pthread_attr_getstacksize(&_M_value, stacksize); }
+        { return ::pthread_attr_getstacksize(&m_value, stacksize); }
 
         pthread_attr_t *
         operator &()
-        { return &_M_value; }
+        { return &m_value; }
 
         const pthread_attr_t *
         operator &() const
-        { return &_M_value; }
+        { return &m_value; }
 
     private:
-        pthread_attr_t  _M_value;
+        pthread_attr_t  m_value;
     };
 
     ////////////////////////////// base_mutex  //////////////////////////////
@@ -133,36 +133,36 @@ namespace more { namespace posix
     {    
     public:
         __base_mutex()
-        : _M_cancelstate_old()
+        : m_cancelstate_old()
         {}
 
         ~__base_mutex() 
         {}
 
     private:
-        int _M_cancelstate_old;
-        static __thread int _S_lock_cnt;
+        int m_cancelstate_old;
+        static __thread int s_lock_cnt;
 
     protected:
 
         void use_incr()
         {
-            if ( !_S_lock_cnt++ ) {
-                ::pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&_M_cancelstate_old);
+            if ( !s_lock_cnt++ ) {
+                ::pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&m_cancelstate_old);
             }
         }
 
         void use_decr()
         {
-            if (!--_S_lock_cnt) {
-                ::pthread_setcancelstate(_M_cancelstate_old,NULL);
+            if (!--s_lock_cnt) {
+                ::pthread_setcancelstate(m_cancelstate_old,NULL);
             }
         }
 
         static int
         use_count()
         { 
-            return _S_lock_cnt;
+            return s_lock_cnt;
         }
     };
 
@@ -170,7 +170,7 @@ namespace more { namespace posix
 #ifndef __INTEL_COMPILER 
     __thread 
 #endif
-    int __base_mutex<N>::_S_lock_cnt = 0;
+    int __base_mutex<N>::s_lock_cnt = 0;
 
     typedef __base_mutex<0> base_mutex;
 
@@ -182,15 +182,15 @@ namespace more { namespace posix
 
     public:
         explicit mutex(pthread_mutexattr_t *attr = NULL) 
-        : _M_pm()
+        : m_pm()
         {
-            if (int err =::pthread_mutex_init(&_M_pm,attr)) {
-                throw more::syscall_error("pthread_mutex_init",err);
+            if (int err =::pthread_mutex_init(&m_pm,attr)) {
+                throw more::system_error("pthread_mutex_init",err);
             }
         }
 
         explicit mutex(int type) 
-        : _M_pm()
+        : m_pm()
         {        
             /* type can be either: PTHREAD_MUTEX_DEFAULT, PTHREAD_MUTEX_NORMAL, 
                                PTHREAD_MUTEX_ERRORCHECK or PTHREAD_MUTEX_RECURSIVE */
@@ -203,34 +203,34 @@ namespace more { namespace posix
             pthread_mutexattr_t attr; 
 
             if (int err = ::pthread_mutexattr_init(&attr)) {
-                throw more::syscall_error("pthread_mutexattr_init",err);
+                throw more::system_error("pthread_mutexattr_init",err);
             }
             if (int err = ::pthread_mutexattr_settype (&attr, type)) {
-                throw more::syscall_error("pthread_mutexattr_settype", err);
+                throw more::system_error("pthread_mutexattr_settype", err);
             }
-            if (int err = ::pthread_mutex_init(&_M_pm,&attr)) {
-                throw more::syscall_error("pthread_mutex_init", err);
+            if (int err = ::pthread_mutex_init(&m_pm,&attr)) {
+                throw more::system_error("pthread_mutex_init", err);
             }
             if (int err = ::pthread_mutexattr_destroy (&attr)) {
-                throw more::syscall_error("pthread_mutexattr_destroy", err);
+                throw more::system_error("pthread_mutexattr_destroy", err);
             }
         }
 
         ~mutex()
         {
-            if (int err = ::pthread_mutex_destroy(&_M_pm)) { 
+            if (int err = ::pthread_mutex_destroy(&m_pm)) { 
                 if (err != EBUSY)
                     std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_destroy: " << 
-                    pretty_strerror(err) << std::endl;  
+                    more::strerror(err) << std::endl;  
             }
         }
 
         bool lock()
         {
             this->use_incr(); 
-            if (int err = ::pthread_mutex_lock(&_M_pm)) { 
+            if (int err = ::pthread_mutex_lock(&m_pm)) { 
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_lock: " << 
-                    pretty_strerror(err) << std::endl;
+                    more::strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -239,9 +239,9 @@ namespace more { namespace posix
 
         bool unlock()
         { 
-            if ( int err = ::pthread_mutex_unlock(&_M_pm)) {
+            if ( int err = ::pthread_mutex_unlock(&m_pm)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_mutex_unlock: " << 
-                    pretty_strerror(err) << std::endl;
+                    more::strerror(err) << std::endl;
                 return false;
             }
             this->use_decr();
@@ -249,7 +249,7 @@ namespace more { namespace posix
         }
 
     private:
-        pthread_mutex_t _M_pm;
+        pthread_mutex_t m_pm;
     };
 
     ////////////////////////////// reader/writer mutex  //////////////////////////////
@@ -258,27 +258,27 @@ namespace more { namespace posix
     {
     public:
         explicit rw_mutex(pthread_rwlockattr_t *attr = NULL) 
-        : _M_pm()
+        : m_pm()
         { 
-            if (int err = ::pthread_rwlock_init(&_M_pm, attr)) { 
-                throw more::syscall_error("pthread_rwlock_init",err);
+            if (int err = ::pthread_rwlock_init(&m_pm, attr)) { 
+                throw more::system_error("pthread_rwlock_init",err);
             }
         }
 
         ~rw_mutex() 
         { 
-            if (int err = ::pthread_rwlock_destroy(&_M_pm)) {
+            if (int err = ::pthread_rwlock_destroy(&m_pm)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_rw_mutex_destroy: " << 
-                        pretty_strerror(err) << std::endl; 
+                        more::strerror(err) << std::endl; 
             }
         }
 
         bool rdlock()
         {
             this->use_incr(); 
-            if (int err = ::pthread_rwlock_rdlock(&_M_pm)) {
+            if (int err = ::pthread_rwlock_rdlock(&m_pm)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_rdlock: " << 
-                        pretty_strerror(err) << std::endl;
+                        more::strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -288,9 +288,9 @@ namespace more { namespace posix
         bool wrlock()
         { 
             this->use_incr(); 
-            if (int err = ::pthread_rwlock_wrlock(&_M_pm)) {
+            if (int err = ::pthread_rwlock_wrlock(&m_pm)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_wrlock: " << 
-                            pretty_strerror(err) << std::endl;
+                            more::strerror(err) << std::endl;
                 this->use_decr();
                 return false;
             }
@@ -299,9 +299,9 @@ namespace more { namespace posix
 
         bool unlock() 
         { 
-            if (int err = ::pthread_rwlock_unlock(&_M_pm)) {
+            if (int err = ::pthread_rwlock_unlock(&m_pm)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_wr_ulock: " << 
-                            pretty_strerror(err) << std::endl;
+                            more::strerror(err) << std::endl;
                 return false;
             }
             this->use_decr();
@@ -309,7 +309,7 @@ namespace more { namespace posix
         }
 
     private:
-        pthread_rwlock_t _M_pm;
+        pthread_rwlock_t m_pm;
     };
 
     struct read_mutex  : public rw_mutex {};
@@ -328,9 +328,9 @@ namespace more { namespace posix
 
         template <typename T>
         scoped_lock(T &m) 
-        : _M_mutex( static_cast<mutex_type &>(m) )
+        : m_mutex( static_cast<mutex_type &>(m) )
         {   
-            static_assert( (std::is_same<T, M>::value) || (std::is_base_of<T, M>::value), lock_type_unknown );
+            static_assert( (std::tr1::is_same<T, M>::value) || (std::tr1::is_base_of<T, M>::value), lock_type_unknown );
 
             if (!this->lock()) { 
                 throw std::runtime_error("scoped_lock<>");
@@ -352,29 +352,29 @@ namespace more { namespace posix
 
         bool unlock()
         { 
-            return _M_mutex.unlock(); 
+            return m_mutex.unlock(); 
         }
 
         bool lock( type2type<mutex> )
         { 
-            return _M_mutex.lock(); 
+            return m_mutex.lock(); 
         }
 
         bool lock( type2type<read_mutex> )
         { 
-            return _M_mutex.rdlock(); 
+            return m_mutex.rdlock(); 
         }
 
         bool lock( type2type<write_mutex> )
         { 
-            return _M_mutex.wrlock(); 
+            return m_mutex.wrlock(); 
         }
 
         mutex_type &
         get_mutex()
-        { return _M_mutex; }
+        { return m_mutex; }
 
-        mutex_type & _M_mutex;
+        mutex_type & m_mutex;
     };
 
     ////////////////////////////// condition  //////////////////////////////
@@ -383,28 +383,28 @@ namespace more { namespace posix
     { 
     public:
         cond(pthread_condattr_t *attr = NULL)
-        : _M_cond()
+        : m_cond()
         {
-            if (int err = ::pthread_cond_init(&_M_cond, attr)) {
-                throw more::syscall_error("pthread_cond_init",err);
+            if (int err = ::pthread_cond_init(&m_cond, attr)) {
+                throw more::system_error("pthread_cond_init",err);
             }
         }
 
         void signal()
-        { ::pthread_cond_signal(&_M_cond); }
+        { ::pthread_cond_signal(&m_cond); }
 
         void broadcast()
         {
-            ::pthread_cond_broadcast(&_M_cond); 
+            ::pthread_cond_broadcast(&m_cond); 
         }
 
         template <typename M>
         int wait(scoped_lock<M> &sl) 
         {
             sl.get_mutex().use_decr();
-            if (int err = ::pthread_cond_wait(&_M_cond, & sl.get_mutex()._M_pm)) {
+            if (int err = ::pthread_cond_wait(&m_cond, & sl.get_mutex().m_pm)) {
                  std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_wait: " << 
-                    pretty_strerror(err) << std::endl;
+                    more::strerror(err) << std::endl;
             }
             sl.get_mutex().use_incr();
             return 0; 
@@ -414,9 +414,9 @@ namespace more { namespace posix
         int timedwait(scoped_lock<M> &sl, const struct timespec *abstime) 
         {
             sl.get_mutex().use_decr();
-            if (int err = ::pthread_cond_timedwait(&_M_cond, &sl.get_mutex()._M_pm, abstime)){
+            if (int err = ::pthread_cond_timedwait(&m_cond, &sl.get_mutex().m_pm, abstime)){
                  std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_timedwait: " << 
-                    pretty_strerror(err) << std::endl;
+                    more::strerror(err) << std::endl;
             }
             sl.get_mutex().use_incr();
             return 0;
@@ -424,15 +424,15 @@ namespace more { namespace posix
 
         ~cond()
         { 
-            if (int err = ::pthread_cond_destroy(&_M_cond)) {
+            if (int err = ::pthread_cond_destroy(&m_cond)) {
                 if (err != EBUSY)
                     std::clog << __PRETTY_FUNCTION__ << ": pthread_cond_destroy: " << 
-                        pretty_strerror(err) << std::endl;
+                        more::strerror(err) << std::endl;
             }
         }
 
     private:
-        pthread_cond_t  _M_cond;
+        pthread_cond_t  m_cond;
 
     };
 
@@ -443,32 +443,32 @@ namespace more { namespace posix
 
     public:
         barrier(int count, const pthread_barrierattr_t * attr = NULL)
-        : _M_barrier()
+        : m_barrier()
         {
             this->init(count,attr);
         }
 
         ~barrier()
         {
-            if (int err=pthread_barrier_destroy(&_M_barrier)) {
+            if (int err=pthread_barrier_destroy(&m_barrier)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_barrier_destroy: " << 
-                    pretty_strerror(err) << std::endl;
+                    more::strerror(err) << std::endl;
             }
         }
 
         void init(int count, const pthread_barrierattr_t * attr = NULL)
         {
-            if (int err = pthread_barrier_init(&_M_barrier, attr, count)) 
-                throw more::syscall_error("pthread_barrier_init",err);
+            if (int err = pthread_barrier_init(&m_barrier, attr, count)) 
+                throw more::system_error("pthread_barrier_init",err);
         }
 
         void wait() 
         {
-            pthread_barrier_wait(&_M_barrier);        
+            pthread_barrier_wait(&m_barrier);        
         }
         
     private:
-        pthread_barrier_t _M_barrier;
+        pthread_barrier_t m_barrier;
     };
 
     ////////////////////////////// thread  //////////////////////////////
@@ -549,8 +549,8 @@ namespace more { namespace posix
             {}
         };
 
-        pthread_t               _M_thread;
-        shared_ptr<thread_attr> _M_attr;
+        pthread_t               m_thread;
+        shared_ptr<thread_attr> m_attr;
 
         enum { 
                thread_not_started,
@@ -559,21 +559,21 @@ namespace more { namespace posix
                thread_terminated,
                thread_cancelled
 
-        } volatile _M_run_state;
+        } volatile m_run_state;
 
-        volatile bool   _M_joinable;
+        volatile bool   m_joinable;
 
     public: 
         explicit thread(shared_ptr<thread_attr> a = shared_ptr<thread_attr>(new thread_attr))
-        : _M_thread(),
-          _M_attr(a),
-          _M_run_state(thread_not_started),
-          _M_joinable(false)
+        : m_thread(),
+          m_attr(a),
+          m_run_state(thread_not_started),
+          m_joinable(false)
         {}
 
         virtual ~thread() 
         {
-            assert(!_M_thread || _M_run_state != thread_running || 
+            assert(!m_thread || m_run_state != thread_running || 
                   !"posix::thread deleted while the thread_ruotine is running!" );
         }        
       
@@ -605,9 +605,9 @@ namespace more { namespace posix
 
                 term_notify(that);
 
-                that->_M_run_state  = thread_cancelled;
-                that->_M_joinable   = false;
-                that->_M_thread     = static_cast<pthread_t>(0);
+                that->m_run_state  = thread_cancelled;
+                that->m_joinable   = false;
+                that->m_thread     = static_cast<pthread_t>(0);
 
                 if (delete_that)
                     delete that; 
@@ -617,9 +617,9 @@ namespace more { namespace posix
 
             term_notify(that);
 
-            that->_M_run_state  = thread_terminated;
-            that->_M_joinable = false;
-            that->_M_thread   = static_cast<pthread_t>(0);
+            that->m_run_state  = thread_terminated;
+            that->m_joinable = false;
+            that->m_thread   = static_cast<pthread_t>(0);
 
             if (delete_that)
                 delete that;
@@ -630,16 +630,16 @@ namespace more { namespace posix
       
         bool start() 
         {
-            if (_M_run_state == thread_running)
+            if (m_run_state == thread_running)
                 return false;   // already started
 
-            if (int err = ::pthread_create(&_M_thread,&(*_M_attr),thread_routine<false>, this)) {
+            if (int err = ::pthread_create(&m_thread,&(*m_attr),thread_routine<false>, this)) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << 
-                    pretty_strerror(err) << std::endl;
+                    more::strerror(err) << std::endl;
                 return false;
             }
-            _M_run_state = thread_running;
-            _M_joinable = true;
+            m_run_state = thread_running;
+            m_joinable = true;
             return true;
         }
 
@@ -699,9 +699,9 @@ namespace more { namespace posix
         {
             pthread_t pt = this->get_id();
 
-            if ( !pt || _M_run_state != thread_running  || ::pthread_cancel(pt) == ESRCH ) {
-                _M_run_state = thread_cancelled;
-                _M_joinable = false;
+            if ( !pt || m_run_state != thread_running  || ::pthread_cancel(pt) == ESRCH ) {
+                m_run_state = thread_cancelled;
+                m_joinable = false;
                 return false;
             }
 
@@ -712,12 +712,12 @@ namespace more { namespace posix
                 //
 
                 if ( ::pthread_join(pt, &status)  == ESRCH ) {
-                    _M_run_state = thread_cancelled;
-                    _M_joinable = false;
+                    m_run_state = thread_cancelled;
+                    m_joinable = false;
                     return true;
                 }
 
-                if (status == PTHREAD_CANCELED || _M_run_state != thread_running)
+                if (status == PTHREAD_CANCELED || m_run_state != thread_running)
                     break;
 
                 std::clog << __PRETTY_FUNCTION__ << "(" << std::hex << pt << 
@@ -725,13 +725,13 @@ namespace more { namespace posix
                 usleep(200000);
             }
 
-            _M_run_state = thread_cancelled;
-            _M_joinable = false;
+            m_run_state = thread_cancelled;
+            m_joinable = false;
             return true;
         }
 
 #define THREAD_METHOD_PRECONDITION(p)\
-            if (!p || _M_run_state != thread_running) {  \
+            if (!p || m_run_state != thread_running) {  \
                 return ESRCH;  \
             }
 
@@ -785,14 +785,14 @@ namespace more { namespace posix
 
         pthread_t 
         get_id() const 
-        { return _M_thread; }
+        { return m_thread; }
 
         bool 
         is_running() const
-        { return _M_run_state == thread_running; }
+        { return m_run_state == thread_running; }
 
         bool joinable() const
-        { return _M_joinable; }
+        { return m_joinable; }
 
     private:
 
@@ -810,15 +810,15 @@ namespace more { namespace posix
 
         static bool create_detached_in_heap(thread *that)
         {
-            that->_M_attr->setdetachstate(PTHREAD_CREATE_DETACHED);
+            that->m_attr->setdetachstate(PTHREAD_CREATE_DETACHED);
 
-            if (int err = ::pthread_create(&that->_M_thread, &(*that->_M_attr), thread_routine<true>, that )) {
+            if (int err = ::pthread_create(&that->m_thread, &(*that->m_attr), thread_routine<true>, that )) {
                 std::clog << __PRETTY_FUNCTION__  << ": pthread_create: " << 
-                    pretty_strerror(err) << std::endl;
+                    more::strerror(err) << std::endl;
                 return false;
             }
-            that->_M_run_state = thread_running;
-            that->_M_joinable = false;
+            that->m_run_state = thread_running;
+            that->m_joinable = false;
             return true;
         }
 
@@ -845,7 +845,7 @@ namespace more { namespace posix
                 __global::instance().term_cond.broadcast();
 
                 // set the thread in terminating state..
-                that->_M_run_state = thread::thread_terminating;            
+                that->m_run_state = thread::thread_terminating;            
             }
             
             // wait on barrier...
@@ -873,7 +873,7 @@ namespace more { namespace posix
             typedef std::set<thread *>::const_reverse_iterator  const_reverse_iterator;
             
             thread_group()
-            : _M_group()
+            : m_group()
             {}
 
             ~thread_group()
@@ -881,64 +881,64 @@ namespace more { namespace posix
 
             iterator
             begin()
-            { return _M_group.begin(); }
+            { return m_group.begin(); }
 
             const_iterator
             begin() const
-            { return _M_group.begin(); }
+            { return m_group.begin(); }
 
             iterator
             end()
-            { return _M_group.end(); }
+            { return m_group.end(); }
 
             const_iterator
             end() const
-            { return _M_group.end(); }
+            { return m_group.end(); }
 
             reverse_iterator
             rbegin()
-            { return _M_group.rbegin(); }
+            { return m_group.rbegin(); }
 
             const_reverse_iterator
             rbegin() const
-            { return _M_group.rbegin(); }
+            { return m_group.rbegin(); }
 
             reverse_iterator
             rend()
-            { return _M_group.rend(); }
+            { return m_group.rend(); }
 
             const_reverse_iterator
             rend() const
-            { return _M_group.rend(); }
+            { return m_group.rend(); }
 
             int running() const
             {
-                return count_if(_M_group.begin(), _M_group.end(), mem_fn(&thread::is_running));
+                return count_if(m_group.begin(), m_group.end(), mem_fn(&thread::is_running));
             }
 
             bool add(thread *value)
             {
-                return _M_group.insert(value).second;    
+                return m_group.insert(value).second;    
             }
 
             void remove(thread *value)
             {
-                _M_group.erase(value);
+                m_group.erase(value);
             }
 
             void start_all()
             {
-                for_each(_M_group.begin(), _M_group.end(), mem_fn(&thread::start));
+                for_each(m_group.begin(), m_group.end(), mem_fn(&thread::start));
             }
 
             void detach_all()
             {
-                for_each(_M_group.begin(), _M_group.end(), mem_fn(&thread::detach));
+                for_each(m_group.begin(), m_group.end(), mem_fn(&thread::detach));
             }
 
             void join_all()
             {
-                for_each(_M_group.begin(), _M_group.end(), 
+                for_each(m_group.begin(), m_group.end(), 
                          bind( mem_fn(&thread::join),_1, static_cast<void **>(NULL) ));
             }
 
@@ -946,24 +946,24 @@ namespace more { namespace posix
             struct scoped_wait 
             {
                 scoped_wait(T &elem)
-                : _M_elem(elem),
-                  _M_enabled(true)
+                : m_elem(elem),
+                  m_enabled(true)
                 {}
 
                 ~scoped_wait()
                 {
-                    if (_M_enabled)
-                        _M_elem.wait();
+                    if (m_enabled)
+                        m_elem.wait();
                 }
 
                 void set(bool value)
                 {
-                    _M_enabled = value;
+                    m_enabled = value;
                 }
 
             private:
-                T & _M_elem;
-                bool _M_enabled;
+                T & m_elem;
+                bool m_enabled;
             };
 
             template <typename T>
@@ -985,9 +985,9 @@ namespace more { namespace posix
                         // wait on condition...
                         thread::__global::instance().term_cond.wait(_L_);
 
-                        if ( _M_group.find(
+                        if ( m_group.find(
                                 const_cast<thread *>(thread::__global::instance().thread_p)
-                                          ) != _M_group.end()) 
+                                          ) != m_group.end()) 
                         {
                             // invoke the functor
                             if (!cw(thread::__global::instance().thread_p) )
@@ -1002,7 +1002,7 @@ namespace more { namespace posix
             }
 
         private:
-            std::set<thread *> _M_group;
+            std::set<thread *> m_group;
     };
 
     namespace this_thread 

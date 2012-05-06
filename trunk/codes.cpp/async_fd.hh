@@ -19,17 +19,20 @@
 #include <fcntl.h>
 #include <poll.h>
 
-#include <error.hh>             // more!
+#include <system_error.hh>      // more!
 #include <noncopyable.hh>       // more!
 #include <atomicity-policy.hh>  // more!
 #include <functional.hh>        // more!
-#include <tr1_type_traits.hh>   // more!
+
+#include <tr1/type_traits>  
 
 #include <iostream>
+#include <stdexcept>
 #include <algorithm>
 #include <iterator>
 #include <cassert>
 #include <vector>
+#include <cerrno>
 #include <set>
 
 namespace more { 
@@ -105,33 +108,33 @@ namespace more {
     {
     public:
         int fd() const
-        { return _M_fd; }
+        { return m_fd; }
 
     protected:
         explicit async_root(int fd)
-        : _M_fd(fd)
+        : m_fd(fd)
         {                
             typename ATOM::scoped_lock S( this->static_mutex() );
 
-            if ( _S_set.find(fd) != _S_set.end())
+            if ( s_set.find(fd) != s_set.end())
                 throw std::logic_error("async_fd<>: fd already in use");
 
-            _S_set.insert(fd); 
+            s_set.insert(fd); 
         } 
 
         ~async_root()
         {  
-            _S_set.erase(_M_fd);
+            s_set.erase(m_fd);
         }
 
-        int _M_fd;
+        int m_fd;
 
     private:
-        static std::set<int> _S_set;   
+        static std::set<int> s_set;   
     };
 
     template <typename ATOM> 
-    std::set<int> async_root<ATOM>::_S_set; 
+    std::set<int> async_root<ATOM>::s_set; 
 
     //////////////////////////////// async_base class...
 
@@ -142,28 +145,28 @@ namespace more {
         async_base()
         : async_root<atomicity::DEFAULT>(-1)
         { 
-            if ( std::is_same<R,IO_nonblocking>::value ||
-                 std::is_same<W,IO_nonblocking>::value )
+            if ( std::tr1::is_same<R,IO_nonblocking>::value ||
+                 std::tr1::is_same<W,IO_nonblocking>::value )
             {
-                this->set_nonblock(_M_flags);    
+                this->set_nonblock(m_flags);    
             } 
             else 
             {
-                this->set_block(_M_flags);    
+                this->set_block(m_flags);    
             }               
         }
 
         explicit async_base(int fd)
         : async_root<atomicity::DEFAULT>(fd)
         {
-            if ( std::is_same<R,IO_nonblocking>::value || 
-                 std::is_same<W,IO_nonblocking>::value )
+            if ( std::tr1::is_same<R,IO_nonblocking>::value || 
+                 std::tr1::is_same<W,IO_nonblocking>::value )
             {
-                this->set_nonblock(_M_flags);    
+                this->set_nonblock(m_flags);    
             } 
             else 
             {
-                this->set_block(_M_flags);    
+                this->set_block(m_flags);    
             }                
         }
 
@@ -171,7 +174,7 @@ namespace more {
         {
             try 
             {
-                this->set_flags(_M_flags);
+                this->set_flags(m_flags);
             }
             catch(std::exception &e)
             {
@@ -184,13 +187,13 @@ namespace more {
         ssize_t
         buffered_write(writev_type, const struct iovec *iov, unsigned int iovcnt, const struct msghdr *, int)
         {
-            return ::writev(this->_M_fd, iov, iovcnt);
+            return ::writev(this->m_fd, iov, iovcnt);
         }
 
         ssize_t
         buffered_write(sendmsg_type, const struct iovec *, unsigned int, const struct msghdr *msg, int flags)
         {
-            return ::sendmsg(this->_M_fd, msg, flags);
+            return ::sendmsg(this->m_fd, msg, flags);
         }
 
         template <typename F>
@@ -199,21 +202,21 @@ namespace more {
         {
             assert( logical_xor(iov,hdr) ); // iov or hdr are mutually exclusive, yet iov or hdr must be non-null 
            
-            int bufsize = _M_buffer.size();
+            int bufsize = m_buffer.size();
 
             unsigned int _iovlen = (iov ? iovcnt : hdr->msg_iovlen) + 1;
             iovec        _iov[_iovlen];
 
             msghdr _hdr;
 
-            // add _M_buffer to the local iovec _iov...
+            // add m_buffer to the local iovec _iov...
             //
 
-            _iov[0].iov_base = _M_buffer.data();
+            _iov[0].iov_base = m_buffer.data();
             _iov[0].iov_len  = bufsize;
 
             int count = 0;    // total number of bytes of this message
-                              // (_M_buffer lenght is not included). 
+                              // (m_buffer lenght is not included). 
 
             if (iov) { /////////////// iovec is provided
 
@@ -240,20 +243,20 @@ namespace more {
             }
 
 #ifdef ASYNC_DEBUG 
-            int bytes = writev_interactive(this->_M_fd, _iov, _iovlen);
+            int bytes = writev_interactive(this->m_fd, _iov, _iovlen);
 #else
             int bytes = this->buffered_write(F(), _iov, _iovlen, &_hdr, flags);
 #endif
             if ( (bytes == -1 && (errno != EAGAIN)) || 
                  bytes == 0 /* connection closed by peer */ )   
-                throw more::syscall_error(__FUNCTION__);    // an error occurred...
+                throw more::system_error(__FUNCTION__);    // an error occurred...
 
             if ( bytes == (bufsize + count) )   // the whole buffer has been flushed...
             {
                 if (bufsize) {
-                    _M_buffer.clear();
+                    m_buffer.clear();
 #ifndef NDEBUG
-                    std::cout << "async_fd<" << this->_M_fd << "> #buffer:0" << std::endl;
+                    std::cout << "async_fd<" << this->m_fd << "> #buffer:0" << std::endl;
 #endif
                 }
                 return count;
@@ -275,10 +278,10 @@ namespace more {
                 }
             }
 
-            swap(_M_buffer,new_buffer);
+            swap(m_buffer,new_buffer);
 
 #ifndef NDEBUG
-            std::cout << "async_fd<" << this->_M_fd << "> #buffer:" << this->buffer_size() << std::endl;
+            std::cout << "async_fd<" << this->m_fd << "> #buffer:" << this->buffer_size() << std::endl;
 #endif
             return count; 
         }  
@@ -288,13 +291,13 @@ namespace more {
 
         int
         buffer_size() const
-        { return _M_buffer.size(); }
+        { return m_buffer.size(); }
 
         void 
         dump_buffer(std::ostream &out)
         {
             out << "[";
-            std::copy(_M_buffer.begin(), _M_buffer.end(), std::ostream_iterator<char>(std::cout, ""));
+            std::copy(m_buffer.begin(), m_buffer.end(), std::ostream_iterator<char>(std::cout, ""));
             out << "]";
         }
 
@@ -304,14 +307,14 @@ namespace more {
         short  
         poll(int timeo_msec = 0)
         {
-            pollfd pfd = { this->_M_fd, EVENTS, 0 };
+            pollfd pfd = { this->m_fd, EVENTS, 0 };
 
             if ( int r = ::poll(&pfd, 1, timeo_msec) >=  0 )
             {
                 return r == 0 ? 0 : pfd.revents;    
             }   
 
-            throw more::syscall_error("poll");
+            throw more::system_error("poll");
             return 0; /* unreachable */ 
         }
 
@@ -326,31 +329,31 @@ namespace more {
 
         void set_nonblock(int & old_flags)
         {
-            if ((old_flags = fcntl(this->_M_fd, F_GETFL, 0)) == -1)
+            if ((old_flags = fcntl(this->m_fd, F_GETFL, 0)) == -1)
                 old_flags = 0;
-            if ( fcntl(this->_M_fd, F_SETFL, old_flags | O_NONBLOCK) < 0 )
-                throw more::syscall_error(__FUNCTION__);
+            if ( fcntl(this->m_fd, F_SETFL, old_flags | O_NONBLOCK) < 0 )
+                throw more::system_error(__FUNCTION__);
         }
 
         void set_block(int &old_flags)
         {
-            if ((old_flags = fcntl(this->_M_fd, F_GETFL, 0)) == -1)
+            if ((old_flags = fcntl(this->m_fd, F_GETFL, 0)) == -1)
                 old_flags = 0;
-            if ( fcntl(this->_M_fd, F_SETFL, old_flags & ~O_NONBLOCK) < 0 )
-                throw more::syscall_error(__FUNCTION__);
+            if ( fcntl(this->m_fd, F_SETFL, old_flags & ~O_NONBLOCK) < 0 )
+                throw more::system_error(__FUNCTION__);
         }
 
         void set_flags(int flags)
         {
-            if ( fcntl(this->_M_fd, F_SETFL, flags) < 0 )
-                throw more::syscall_error(__FUNCTION__);
+            if ( fcntl(this->m_fd, F_SETFL, flags) < 0 )
+                throw more::system_error(__FUNCTION__);
         }
 
         int get_flags() const
         {
             int flags;
-            if ((flags=fcntl(this->_M_fd, F_GETFL, 0)) == -1)
-                throw more::syscall_error(__FUNCTION__);
+            if ((flags=fcntl(this->m_fd, F_GETFL, 0)) == -1)
+                throw more::system_error(__FUNCTION__);
             return flags;
         }
 
@@ -359,9 +362,9 @@ namespace more {
         void flush();
 
     protected:
-        int _M_flags;
+        int m_flags;
 
-        std::vector<char> _M_buffer;
+        std::vector<char> m_buffer;
     };
 
 
@@ -420,26 +423,26 @@ namespace more {
     {
         async_io_policy<R,W>::block_out(*this);
 
-        size_t n = _M_buffer.size();
-        const char * p = _M_buffer.data();
+        size_t n = m_buffer.size();
+        const char * p = m_buffer.data();
 
         size_t res, pos = 0;
 
         while (n > pos) {
-            res = ::write(this->_M_fd, p + pos, n - pos);
+            res = ::write(this->m_fd, p + pos, n - pos);
             switch(res) {
             case -1:
                 if ( errno == EINTR || errno == EAGAIN )
                     continue;
-                throw more::syscall_error(__FUNCTION__);    // an error occurred...
+                throw more::system_error(__FUNCTION__);    // an error occurred...
             case 0:
-                throw more::syscall_error(__FUNCTION__);    // an error occurred...
+                throw more::system_error(__FUNCTION__);    // an error occurred...
             default:
                 pos += res;
             }
         }
 
-        _M_buffer.clear();
+        m_buffer.clear();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -453,35 +456,35 @@ namespace more {
         read(void *buf, size_t count) // IO_blocking
         {
             async_io_policy<R,W>::block_in(*this);
-            return ::read(async_base<R,W>::_M_fd,buf,count);
+            return ::read(async_base<R,W>::m_fd,buf,count);
         }
 
         ssize_t 
         readv(const struct iovec *iov, int iovcnt)
         {
             async_io_policy<R,W>::block_in(*this);
-            return ::readv(async_base<R,W>::_M_fd, iov, iovcnt);        
+            return ::readv(async_base<R,W>::m_fd, iov, iovcnt);        
         }
 
         ssize_t 
         recv(void *buf, size_t len, int flags)
         {
             async_io_policy<R,W>::block_in(*this);
-            return ::recv(async_base<R,W>::_M_fd, buf, len, flags);
+            return ::recv(async_base<R,W>::m_fd, buf, len, flags);
         }
 
         ssize_t 
         recvfrom(void *buf, size_t len, int flags, struct sockaddr *from, socklen_t *fromlen)
         {
             async_io_policy<R,W>::block_in(*this);
-            return ::recvfrom(async_base<R,W>::_M_fd, buf, len, flags, from, fromlen);
+            return ::recvfrom(async_base<R,W>::m_fd, buf, len, flags, from, fromlen);
         }
 
         ssize_t 
         recvmsg(struct msghdr *msg, int flags)
         {
             async_io_policy<R,W>::block_in(*this);
-            return ::recvmsg(async_base<R,W>::_M_fd, msg, flags);
+            return ::recvmsg(async_base<R,W>::m_fd, msg, flags);
         }
 
     };
@@ -493,31 +496,31 @@ namespace more {
         ssize_t
         read(void *buf, size_t count) // IO_nonblocking
         {
-            return ::read(async_base<IO_nonblocking,W>::_M_fd,buf,count);
+            return ::read(async_base<IO_nonblocking,W>::m_fd,buf,count);
         }
 
         ssize_t 
         readv(const struct iovec *iov, int iovcnt)
         {
-            return ::readv(async_base<IO_nonblocking,W>::_M_fd, iov, iovcnt);        
+            return ::readv(async_base<IO_nonblocking,W>::m_fd, iov, iovcnt);        
         }
 
         ssize_t 
         recv(void *buf, size_t len, int flags)
         {
-            return ::recv(async_base<IO_nonblocking,W>::_M_fd, buf, len, flags);
+            return ::recv(async_base<IO_nonblocking,W>::m_fd, buf, len, flags);
         }
 
         ssize_t 
         recvfrom(void *buf, size_t len, int flags, struct sockaddr *from, socklen_t *fromlen)
         {
-            return ::recvfrom(async_base<IO_nonblocking,W>::_M_fd, buf, len, flags, from, fromlen);
+            return ::recvfrom(async_base<IO_nonblocking,W>::m_fd, buf, len, flags, from, fromlen);
         }
 
         ssize_t 
         recvmsg(struct msghdr *msg, int flags)
         {
-            return ::recvmsg(async_base<IO_nonblocking,W>::_M_fd, msg, flags);
+            return ::recvmsg(async_base<IO_nonblocking,W>::m_fd, msg, flags);
         }
 
     };
@@ -533,31 +536,31 @@ namespace more {
         ssize_t
         write(const void *data, size_t count)
         {
-            return ::write(async_base<R,W>::_M_fd, data, count);
+            return ::write(async_base<R,W>::m_fd, data, count);
         }
 
         ssize_t 
         writev(const struct iovec *iov, int iovcnt)
         {
-            return ::writev(async_base<R,W>::_M_fd, iov, iovcnt);        
+            return ::writev(async_base<R,W>::m_fd, iov, iovcnt);        
         }        
         
         ssize_t 
         send(const void *buf, size_t len, int flags)
         {
-            return ::send(async_base<R,W>::_M_fd, buf, len, flags);
+            return ::send(async_base<R,W>::m_fd, buf, len, flags);
         }
 
         ssize_t 
         sendto(const void *buf, size_t len, int flags, const struct sockaddr *to, socklen_t tolen)
         {
-            return ::sendto(async_base<R,W>::_M_fd, buf, len, flags, to, tolen);
+            return ::sendto(async_base<R,W>::m_fd, buf, len, flags, to, tolen);
         }
 
         ssize_t 
         sendmsg(const struct msghdr *msg, int flags)
         {
-            return ::sendmsg(async_base<R,W>::_M_fd, msg, flags);
+            return ::sendmsg(async_base<R,W>::m_fd, msg, flags);
         }
     };
 

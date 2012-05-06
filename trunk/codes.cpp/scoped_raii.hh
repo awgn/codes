@@ -23,27 +23,27 @@ namespace more {
         typedef scoped_raii<D, T, R, acquire, release> base_type;
 
         explicit scoped_raii(device_type &dev)
-        : _M_device(dev),
-          _M_value()
+        : m_device(dev),
+          m_value()
         {
-            _M_value = (_M_device.*acquire)();
+            m_value = (m_device.*acquire)();
         }
 
         virtual ~scoped_raii()
         {
             if (static_cast<D &>(*this).release_cond())
-                (_M_device.*release)();
+                (m_device.*release)();
         }
 
         operator R()
         {
-            return _M_value;
+            return m_value;
         }
 
     protected: 
 
-        device_type & _M_device;
-        R _M_value; 
+        device_type & m_device;
+        R m_value; 
     };
 
     template <typename D, typename T, void (T::*acquire)(), void (T::*release)()>
@@ -54,18 +54,18 @@ namespace more {
         typedef scoped_raii<D, T, void, acquire, release> base_type;
 
         explicit scoped_raii(device_type &dev)
-        : _M_device(dev)
+        : m_device(dev)
         {
-            (_M_device.*acquire)();
+            (m_device.*acquire)();
         }
 
         ~scoped_raii()
         {
-            (_M_device.*release)();
+            (m_device.*release)();
         }
 
     private:
-        device_type & _M_device;
+        device_type & m_device;
          
     };
 

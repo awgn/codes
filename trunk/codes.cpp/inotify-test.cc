@@ -17,16 +17,16 @@
 
 int main()
 {
-    Linux::Inotify<> test;
+    more::Linux::Inotify<> test;
 
     int file __attribute__((unused)) = test.add_watch("./test", IN_MODIFY | IN_CREATE | IN_DELETE);
     int dir  __attribute__((unused)) = test.add_watch(".", IN_MODIFY | IN_CREATE | IN_DELETE);
 
     for(;;) {
 
-        Linux::Inotify_list tmp = test.wait_events();
+        more::Linux::Inotify_list tmp = test.wait_events();
 
-        for ( Linux::Inotify_list::iterator it = tmp.begin(); it != tmp.end() ; ++it) {
+        for ( more::Linux::Inotify_list::iterator it = tmp.begin(); it != tmp.end() ; ++it) {
             if (it->len && !strcmp( it->name.c_str(),"test") )
                 std::cout << *it ; 
         }

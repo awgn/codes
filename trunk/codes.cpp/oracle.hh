@@ -18,7 +18,7 @@
 #include <atomicity-policy.hh>
 #include <atomic.hh>
 #endif
-#include <tr1_memory.hh>        // more!
+#include <tr1/memory>       
 
 #include <iostream>
 #include <sstream>
@@ -65,11 +65,11 @@ namespace more {
         demangle(const char *name)
         {
 #ifdef _REENTRANT
-            static atomicity::GNU_CXX::mutex _S_mutex;
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            static atomicity::GNU_CXX::mutex s_mutex;
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
             int status;
-            std::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);                    
+            std::tr1::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);                    
             if (status < 0)
                 throw std::runtime_error("__cxa_demangle");
             
@@ -112,22 +112,22 @@ namespace more {
             struct tp 
             {
                 tp()    
-                : _M_set()
+                : m_set()
                 {
                     // load the throw points...
                     if ( char * p = ::getenv("oracle_tp")) {
                         std::stringstream in(p);
                         for(int n; in >> n ;) {
-                            _M_set.insert(n);
+                            m_set.insert(n);
                         }
                     }
                     
-                    if (_M_set.empty())
+                    if (m_set.empty())
                         return;
 
                     std::cout << more::colorful< TYPELIST(more::ecma::bold)>() << "oracle throw points: " <<
                                  more::colorful< TYPELIST(more::ecma::reset) >();
-                    std::copy(_M_set.begin(), _M_set.end(), std::ostream_iterator<int>(std::cout, " "));
+                    std::copy(m_set.begin(), m_set.end(), std::ostream_iterator<int>(std::cout, " "));
                     std::cout << std::endl;
                 } 
 
@@ -138,11 +138,11 @@ namespace more {
                 std::set<int> &
                 get() const
                 {
-                    return _M_set;
+                    return m_set;
                 }
 
             private:
-                std::set<int> _M_set;
+                std::set<int> m_set;
             };
 
         };
@@ -161,19 +161,19 @@ namespace more {
         static void * operator new(std::size_t size) throw (std::bad_alloc)
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header_static('N', ++_S_new, fg_blue) << std::endl;
+            std::cerr << __oracle_header_static('N', ++s_new, fg_blue) << std::endl;
             return ::operator new(size);
         }
 
         static void operator delete(void *mem) throw()
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
-            std::cerr << __oracle_header_static('D', ++_S_del, fg_red) << std::endl;
+            std::cerr << __oracle_header_static('D', ++s_del, fg_red) << std::endl;
             ::operator delete(mem);
         }
 
@@ -183,19 +183,19 @@ namespace more {
          static void * operator new[](std::size_t size) throw (std::bad_alloc)
          {
  #ifdef _REENTRANT
-             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+             atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
  #endif
              __oracle_tp_check();
-             std::cerr << __oracle_header_static('N', ++_S_new, fg_blue) << std::endl;
+             std::cerr << __oracle_header_static('N', ++s_new, fg_blue) << std::endl;
              return ::operator new(size);
          }
  
          static void operator delete[](void *mem) throw()
          {
  #ifdef _REENTRANT
-             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+             atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
  #endif
-             std::cerr << __oracle_header_static('D', ++_S_del, fg_red) << std::endl;
+             std::cerr << __oracle_header_static('D', ++s_del, fg_red) << std::endl;
              ::operator delete(mem);
          }
 
@@ -205,19 +205,19 @@ namespace more {
          void * operator new(std::size_t size, char *ptr) throw()
          {
  #ifdef _REENTRANT
-             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+             atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
  #endif
              __oracle_tp_check();
-             std::cerr << __oracle_header_static('N', ++_S_new, fg_blue) << std::endl;
+             std::cerr << __oracle_header_static('N', ++s_new, fg_blue) << std::endl;
              return ::operator new(size,ptr);
          }
  
         void operator delete(void *mem, char *ptr) throw()
          {
  #ifdef _REENTRANT
-             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+             atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
  #endif
-             std::cerr << __oracle_header_static('D', ++_S_del, fg_red) << std::endl;
+             std::cerr << __oracle_header_static('D', ++s_del, fg_red) << std::endl;
              ::operator delete(mem,ptr);
          }
 
@@ -227,19 +227,19 @@ namespace more {
          void * operator new[](std::size_t size, char *ptr) throw()
          {
  #ifdef _REENTRANT
-             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+             atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
  #endif
              __oracle_tp_check();
-             std::cerr << __oracle_header_static('N', ++_S_new, fg_blue) << std::endl;
+             std::cerr << __oracle_header_static('N', ++s_new, fg_blue) << std::endl;
              return ::operator new(size,ptr);
          }
  
         void operator delete[](void *mem, char *ptr) throw()
          {
  #ifdef _REENTRANT
-             atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+             atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
  #endif
-             std::cerr << __oracle_header_static('D', ++_S_del, fg_red) << std::endl;
+             std::cerr << __oracle_header_static('D', ++s_del, fg_red) << std::endl;
              ::operator delete(mem,ptr);
          }
 
@@ -247,115 +247,115 @@ namespace more {
         //
 
         oracle()
-        : _M_value(oracle_helper::throw_point::counter())
+        : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
-            _S_set.insert(this);
+            std::cerr << __oracle_header('+', ++s_ctor, fg_blue) << std::endl;
+            s_set.insert(this);
         }
 
         oracle(const oracle &rhs)
-        : _M_value(rhs._M_value)
+        : m_value(rhs.m_value)
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, fg_cyan) << std::endl;
-            _S_set.insert(this);
+            std::cerr << __oracle_header('+', ++s_ctor, fg_cyan) << std::endl;
+            s_set.insert(this);
         } 
 
         template <typename T1>
         oracle(const T1 &t1)
-        : _M_value(oracle_helper::throw_point::counter())
+        : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
-            _S_set.insert(this);
+            std::cerr << __oracle_header('+', ++s_ctor, fg_blue) << std::endl;
+            s_set.insert(this);
         } 
 
         template <typename T1, typename T2>
         oracle(const T1 &t1, const T2 &t2)
-        : _M_value(oracle_helper::throw_point::counter())
+        : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
-            _S_set.insert(this);
+            std::cerr << __oracle_header('+', ++s_ctor, fg_blue) << std::endl;
+            s_set.insert(this);
         }
 
         template <typename T1, typename T2, typename T3>
         oracle(const T1 &t1, const T2 &t2, const T3 &t3)
-        : _M_value(oracle_helper::throw_point::counter())
+        : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
-            _S_set.insert(this);
+            std::cerr << __oracle_header('+', ++s_ctor, fg_blue) << std::endl;
+            s_set.insert(this);
         }
 
         template <typename T1, typename T2, typename T3, typename T4>
         oracle(const T1 &t1, const T2 &t2, const T3 &t3, const T4 &t4)
-        : _M_value(oracle_helper::throw_point::counter())
+        : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
-            _S_set.insert(this);
+            std::cerr << __oracle_header('+', ++s_ctor, fg_blue) << std::endl;
+            s_set.insert(this);
         }
 
         template <typename T1, typename T2, typename T3, typename T4, typename T5>
         oracle(const T1 &t1, const T2 &t2, const T3 &t3, const T4 &t4, const T5 &t5)
-        : _M_value(oracle_helper::throw_point::counter())
+        : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('+', ++_S_ctor, fg_blue) << std::endl;
-            _S_set.insert(this);
+            std::cerr << __oracle_header('+', ++s_ctor, fg_blue) << std::endl;
+            s_set.insert(this);
         }        
 
         oracle &
         operator=(const oracle &rhs)
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
             __oracle_tp_check();
-            std::cerr << __oracle_header('=', ++_S_opeq, fg_green) << std::endl;
-            _M_value = rhs._M_value;
+            std::cerr << __oracle_header('=', ++s_opeq, fg_green) << std::endl;
+            m_value = rhs.m_value;
             return *this;
         }
 
         ~oracle()
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
-            std::cerr << __oracle_header('-', ++_S_dtor, fg_red) << std::endl;
-            _S_set.erase(this);
+            std::cerr << __oracle_header('-', ++s_dtor, fg_red) << std::endl;
+            s_set.erase(this);
         }
 
         void swap(oracle &rhs)
         {
 #ifdef _REENTRANT
-            atomicity::GNU_CXX::scoped_lock _L_(_S_mutex);
+            atomicity::GNU_CXX::scoped_lock _L_(s_mutex);
 #endif
-            std::cerr << __oracle_header( 'x', ++_S_swap, fg_magenta) << std::endl;
-            std::swap(_M_value, rhs._M_value);
+            std::cerr << __oracle_header( 'x', ++s_swap, fg_magenta) << std::endl;
+            std::swap(m_value, rhs.m_value);
         }
 
         // for STL algorithms...
@@ -364,7 +364,7 @@ namespace more {
         bool 
         operator<(const oracle &rhs) const
         {
-            return _M_value < rhs._M_value;
+            return m_value < rhs.m_value;
         }
 
         // other static methods
@@ -373,32 +373,32 @@ namespace more {
         static int
         ctors()
         {
-            return _S_ctor;
+            return s_ctor;
         }
         static int
         dtors()
         {
-            return _S_dtor;
+            return s_dtor;
         }
         static int
         opeqs()
         {
-            return _S_opeq;
+            return s_opeq;
         }
         static int
         swaps()
         {
-            return _S_swap;
+            return s_swap;
         }
         static int
         op_new()
         {
-            return _S_new;
+            return s_new;
         }
         static int
         op_del()
         {
-            return _S_del;
+            return s_del;
         }
 
         static
@@ -412,24 +412,24 @@ namespace more {
         friend inline std::basic_ostream<CharT,Traits> &
         operator<< (std::basic_ostream<CharT, Traits> &out, const oracle &s)
         {
-            out << '(' << std::setw(3) << s._M_value << ' ' << std::setw(10) << &s << ')' << std::dec;
+            out << '(' << std::setw(3) << s.m_value << ' ' << std::setw(10) << &s << ')' << std::dec;
             return out;
         }
 
-        static std::set<oracle *> _S_set;
+        static std::set<oracle *> s_set;
 
     private:
-        unsigned int    _M_value;
+        unsigned int    m_value;
 
 #ifdef _REENTRANT
-        static atomicity::GNU_CXX::mutex _S_mutex;
+        static atomicity::GNU_CXX::mutex s_mutex;
 #endif
-        static int _S_ctor;
-        static int _S_dtor;
-        static int _S_opeq;
-        static int _S_swap;
-        static int _S_new;
-        static int _S_del;
+        static int s_ctor;
+        static int s_dtor;
+        static int s_opeq;
+        static int s_swap;
+        static int s_new;
+        static int s_del;
     };
 
     template<typename E>
@@ -440,29 +440,29 @@ namespace more {
 
 #ifdef _REENTRANT
     template <typename E>
-    atomicity::GNU_CXX::mutex oracle<E>::_S_mutex;
+    atomicity::GNU_CXX::mutex oracle<E>::s_mutex;
 #endif
 
     template <typename E>
-    int oracle<E>::_S_ctor(0);
+    int oracle<E>::s_ctor(0);
 
     template <typename E>
-    int oracle<E>::_S_dtor(0);
+    int oracle<E>::s_dtor(0);
 
     template <typename E>
-    int oracle<E>::_S_opeq(0);
+    int oracle<E>::s_opeq(0);
 
     template <typename E>
-    int oracle<E>::_S_swap(0);
+    int oracle<E>::s_swap(0);
 
     template <typename E>
-    int oracle<E>::_S_new(0);
+    int oracle<E>::s_new(0);
 
     template <typename E>
-    int oracle<E>::_S_del(0);
+    int oracle<E>::s_del(0);
 
     template <typename E>
-    std::set<oracle<E> *> oracle<E>::_S_set;
+    std::set<oracle<E> *> oracle<E>::s_set;
 
     struct oracle_set_dump
     {
@@ -496,7 +496,7 @@ namespace more {
                    " del:" << oracle<E>::op_del() <<
                    " } "; 
 
-            std::for_each( oracle<E>::_S_set.begin(), oracle<E>::_S_set.end(), oracle_set_dump(std::cout) ); 
+            std::for_each( oracle<E>::s_set.begin(), oracle<E>::s_set.end(), oracle_set_dump(std::cout) ); 
         }
 
         static oracle_trace & 

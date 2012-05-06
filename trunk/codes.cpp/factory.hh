@@ -12,15 +12,15 @@
 #define _FACTORY_HH_ 
 
 #include <static_assert.hh>     // more!
-#include <tr1_type_traits.hh>   // more!
-#include <tr1_memory.hh>        // more!
 
+#include <tr1/type_traits>   
+#include <tr1/memory>        
 #include <string>
 #include <map>
 
 namespace more { 
 
-    using std::shared_ptr;
+    using std::tr1::shared_ptr;
     
     namespace factory_util {
 
@@ -35,7 +35,7 @@ namespace more {
         {
             void constraints()
             {  
-                static_assert( (std::is_base_of<B,D>::value) , base_of_concept ); 
+                static_assert( (std::tr1::is_base_of<B,D>::value) , base_of_concept ); 
             }
         };
 
@@ -217,7 +217,7 @@ namespace more {
         typedef std::map<K, shared_ptr< factory_base_allocator<T,P0,P1,P2,P3,P4> > > factoryMap;
 
         factory()
-        : _M_map()
+        : m_map()
         {}
 
         ~factory()
@@ -225,17 +225,17 @@ namespace more {
 
         bool
         regist(const K & key, factory_base_allocator<T,P0,P1,P2,P3,P4> * value)
-        { return _M_map.insert( make_pair(key, shared_ptr<factory_base_allocator<T,P0,P1,P2,P3,P4> >(value) ) ).second; }
+        { return m_map.insert( make_pair(key, shared_ptr<factory_base_allocator<T,P0,P1,P2,P3,P4> >(value) ) ).second; }
         
         bool
         unregist(const K &key)
-        { return _M_map.erase(key) == 1; }
+        { return m_map.erase(key) == 1; }
 
         bool
         is_registered(const K &key) const
         {
-            typename factoryMap::const_iterator it = _M_map.find(key);
-            if (it == _M_map.end())
+            typename factoryMap::const_iterator it = m_map.find(key);
+            if (it == m_map.end())
                 return false;
             return true;
         }
@@ -243,8 +243,8 @@ namespace more {
         shared_ptr<T> 
         operator()(const K &key) const
         {
-            typename factoryMap::const_iterator it = _M_map.find(key);
-            if (it == _M_map.end())
+            typename factoryMap::const_iterator it = m_map.find(key);
+            if (it == m_map.end())
                 return shared_ptr<T>();
             return shared_ptr<T>(it->second->alloc());
         }
@@ -253,8 +253,8 @@ namespace more {
         shared_ptr<T> 
         operator()(const K &key, T0 t0) const
         {
-            typename factoryMap::const_iterator it = _M_map.find(key);
-            if (it == _M_map.end())
+            typename factoryMap::const_iterator it = m_map.find(key);
+            if (it == m_map.end())
                 return shared_ptr<T>();
             return shared_ptr<T>(it->second->alloc(t0));
         }
@@ -263,8 +263,8 @@ namespace more {
         shared_ptr<T> 
         operator()(const K &key, T0 t0, T1 t1) const
         {
-            typename factoryMap::const_iterator it = _M_map.find(key);
-            if (it == _M_map.end())
+            typename factoryMap::const_iterator it = m_map.find(key);
+            if (it == m_map.end())
                 return shared_ptr<T>();
             return shared_ptr<T>(it->second->alloc(t0,t1));
         }
@@ -273,8 +273,8 @@ namespace more {
         shared_ptr<T> 
         operator()(const K &key, T0 t0, T1 t1, T2 t2) const
         {
-            typename factoryMap::const_iterator it = _M_map.find(key);
-            if (it == _M_map.end())
+            typename factoryMap::const_iterator it = m_map.find(key);
+            if (it == m_map.end())
                 return shared_ptr<T>();
             return shared_ptr<T>(it->second->alloc(t0,t1,t2));
         }
@@ -283,8 +283,8 @@ namespace more {
         shared_ptr<T> 
         operator()(const K &key, T0 t0, T1 t1, T2 t2, T3 t3) const
         {
-            typename factoryMap::const_iterator it = _M_map.find(key);
-            if (it == _M_map.end())
+            typename factoryMap::const_iterator it = m_map.find(key);
+            if (it == m_map.end())
                 return shared_ptr<T>();
             return shared_ptr<T>(it->second->alloc(t0,t1,t2,t3));
         }
@@ -293,14 +293,14 @@ namespace more {
         shared_ptr<T> 
         operator()(const K &key, T0 t0, T1 t1, T2 t2, T3 t3, T4 t4) const
         {
-            typename factoryMap::const_iterator it = _M_map.find(key);
-            if (it == _M_map.end())
+            typename factoryMap::const_iterator it = m_map.find(key);
+            if (it == m_map.end())
                 return shared_ptr<T>();
             return shared_ptr<T>(it->second->alloc(t0,t1,t2,t3,t4));
         }
 
     private:
-        factoryMap _M_map;
+        factoryMap m_map;
     };
 
 } // namespace more
