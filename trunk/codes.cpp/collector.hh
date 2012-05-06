@@ -34,7 +34,7 @@ namespace more
             template <typename Y>
             void operator()(Y *p)  
             {
-                m_rmap.erase(p);
+                s_rmap().erase(p);
                 p->~Y();
                 operator delete(p);
             }
@@ -42,13 +42,13 @@ namespace more
 
         explicit collector(const T &i)
         {
-            if (m_rmap.find(reinterpret_cast<void *>(this)) != m_rmap.end()) { 
-                m_rmap[reinterpret_cast<void *>(this)] = i;
-                m_map[i] =  std::tr1::shared_ptr<U>(reinterpret_cast<U *>(this), basic_deleter()); 
+            if (s_rmap().find(reinterpret_cast<void *>(this)) != s_rmap().end()) { 
+                s_rmap()[reinterpret_cast<void *>(this)] = i;
+                s_map()[i] =  std::tr1::shared_ptr<U>(reinterpret_cast<U *>(this), basic_deleter()); 
             }
             else { 
-                m_rmap[reinterpret_cast<void *>(this)] = i;
-                m_map[i] =  std::tr1::shared_ptr<U>(reinterpret_cast<U *>(this), null_deleter());
+                s_rmap()[reinterpret_cast<void *>(this)] = i;
+                s_map()[i] =  std::tr1::shared_ptr<U>(reinterpret_cast<U *>(this), null_deleter());
             }
         }
 
@@ -69,8 +69,8 @@ namespace more
 
         static U *get(const T &key)
         {
-            typename std::map<T, std::tr1::shared_ptr<U> >::iterator it = m_map.find(key);
-            if ( it == m_map.end())
+            typename std::map<T, std::tr1::shared_ptr<U> >::iterator it = s_map().find(key);
+            if ( it == s_map().end())
                 throw std::runtime_error("key not found");
             return it->second.get();
         }
@@ -78,16 +78,16 @@ namespace more
         static void *operator new(size_t n)
         {
             void *ret = ::operator new(n);
-            m_rmap[ret] = T(); 
+            s_rmap()[ret] = T(); 
             return ret;
         }
 
         static void operator delete(void *p)
         {
-            typename std::map<void *, T>::iterator it = m_rmap.find(p);
-            if (it != m_rmap.end()) {
+            typename std::map<void *, T>::iterator it = s_rmap().find(p);
+            if (it != s_rmap().end()) {
                 std::tr1::shared_ptr<U> t;
-                t.swap(m_map.find(it->second)->second);
+                t.swap(s_map().find(it->second)->second);
                 garbage()->insert(t);
             }
             // std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -95,15 +95,21 @@ namespace more
         }
 
     private:
-        static std::map<T, std::tr1::shared_ptr<U> > m_map;
-        static std::map<void *, T> m_rmap;
+
+        static std::map<T, std::tr1::shared_ptr<U> > &
+        s_map()
+        {
+            static std::map<T, std::tr1::shared_ptr<U> > ret;
+            return ret;
+        }
+
+        static std::map<void *, T> &
+        s_rmap()
+        {
+            static std::map<void *, T> ret;
+            return ret;
+        }
     };
-
-    template <typename T, typename U>
-    std::map<T, std::tr1::shared_ptr<U> > collector<T,U>::m_map __attribute__((init_priority(101)));
-
-    template <typename T, typename U>
-    std::map<void *, T> collector<T,U>::m_rmap __attribute((init_priority(101)));
 
 } // namespace more
 
