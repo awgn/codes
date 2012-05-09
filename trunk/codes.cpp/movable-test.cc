@@ -11,22 +11,22 @@
 #include <iostream>
 #include <movable.hh>
 
-struct uncopyable 
+struct noncopyable 
 {
-    uncopyable(const uncopyable &);
-    uncopyable & operator=(const uncopyable &);
+    noncopyable(const noncopyable &);
+    noncopyable & operator=(const noncopyable &);
 
-    uncopyable()
+    noncopyable()
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
 
-    uncopyable(const more::movable<uncopyable>)
+    noncopyable(const more::movable<noncopyable>)
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
 
-    ~uncopyable()
+    ~noncopyable()
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
@@ -34,19 +34,19 @@ struct uncopyable
 };
 
 
-uncopyable
+noncopyable
 factory()
 {
-    uncopyable x;
+    noncopyable x;
     return more::move(x); 
 }
 
-void function(more::movable<uncopyable> a)
+void function(more::movable<noncopyable> a)
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 
-void function(uncopyable a)
+void function(noncopyable a)
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
@@ -54,11 +54,11 @@ void function(uncopyable a)
 int
 main(int argc, char *argv[])
 {
-    uncopyable abc (factory());
+    noncopyable abc (factory());
 
     std::cout << "----------" << std::endl;
     
-    function( more::movable<uncopyable>(abc) );
+    function( more::movable<noncopyable>(abc) );
 
     std::cout << "----------" << std::endl;
     
