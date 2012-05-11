@@ -58,18 +58,18 @@ namespace more {
 
     
     template <size_t N>
-    struct explode_args 
+    struct tuple_args 
     {
         template <typename Fun, typename ...Ts, typename ...Ti>
         static 
         auto call(Fun fun, std::tuple<Ts...> &tup, Ti && ... args)
         -> decltype(fun(std::declval<Ts>()...))
         {
-            return explode_args<N-1>::call(fun, tup, std::get<N-1>(tup), std::forward<Ti>(args)...);
+            return tuple_args<N-1>::call(fun, tup, std::get<N-1>(tup), std::forward<Ti>(args)...);
         }
     };
     template <>
-    struct explode_args<1> 
+    struct tuple_args<1> 
     {
         template <typename Fun, typename ...Ts, typename ...Ti>
         static 
@@ -81,10 +81,10 @@ namespace more {
     };
 
     template <typename Fun, typename ...Ts>
-    auto explode_call(Fun fun, std::tuple<Ts...> & tup)
+    auto tuple_call(Fun fun, std::tuple<Ts...> & tup)
     -> decltype(fun(std::declval<Ts>()...))
     {
-        return explode_args<sizeof...(Ts)>::call(fun, tup); 
+        return tuple_args<sizeof...(Ts)>::call(fun, tup); 
     }
 
 } // namespace more
