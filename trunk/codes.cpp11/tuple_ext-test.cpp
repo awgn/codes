@@ -40,11 +40,14 @@ Context(tuple_extended)
 
     Test(call_forward)
     {
-        auto somma = [](int a, int b) { return a+b; };
+        auto somma = [](int &a, int b) { 
+                a = 10;
+            return a+b; };
 
-        int a = 40, b = 2;
+        int a = 40;
 
-        Assert(more::tuple_call(somma, std::forward_as_tuple(a,b)), is_equal_to(42));
+        Assert(more::tuple_call(somma, std::forward_as_tuple(a,2)), is_equal_to(12));
+        Assert(a, is_equal_to(10));
     }
 
 
