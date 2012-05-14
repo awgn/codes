@@ -1,3 +1,13 @@
+/* $Id$ */
+/*
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
+ * ----------------------------------------------------------------------------
+ */
+
 #ifndef _TUPLE_EXT_HPP_
 #define _TUPLE_EXT_HPP_ 
 
@@ -6,86 +16,78 @@
 
 namespace more { 
 
+    /// tuple_for_each
+    
     // can't use simple recursion with variadic template functions
-    // because there's no way to get the tail of a tuple!! Nicola 
+    // because there's no simple way to get the tail of a tuple 
     //
     
     template <size_t N>
     struct tuple_
     {
-        template <typename F, typename ...Ts>
+        template <typename Fun, typename TupleT>
         static inline 
-        void for_each(std::tuple<Ts...> &t, F f) 
+        void for_each(TupleT &&tup, Fun fun) 
         {
-            f(std::get<sizeof...(Ts) - N>(t));
-            tuple_<N-1>::for_each(t, f);
-        }
-        template <typename F, typename ...Ts>
-        static inline 
-        void for_each(std::tuple<Ts...> const &t, F f) 
-        {
-            f(std::get<sizeof...(Ts) - N>(t));
-            tuple_<N-1>::for_each(t, f);
+            fun(std::get<std::tuple_size<typename std::remove_reference<TupleT>::type>::value - N>(std::forward<TupleT>(tup)));
+            tuple_<N-1>::for_each(std::forward<TupleT>(tup), fun);
         }
     };
     template <>
     struct tuple_<1>
     {
-        template <typename F, typename ...Ts>
+        template <typename Fun, typename TupleT>
         static inline 
-        void for_each(std::tuple<Ts...> &t, F f)
+        void for_each(TupleT &&tup, Fun fun)
         { 
-            f(std::get<sizeof...(Ts) - 1>(t));
-        }
-        template <typename F, typename ...Ts>
-        static inline 
-        void for_each(std::tuple<Ts...> const &t, F f)
-        { 
-            f(std::get<sizeof...(Ts) - 1>(t));
+            fun(std::get<std::tuple_size<
+                            typename std::remove_reference<TupleT>::type>::value - 1>(std::forward<TupleT>(tup)));
         }
     };
 
-    template <typename F, typename ...Ts>
-    void tuple_for_each(std::tuple<Ts...> &t, F f)
+    template <typename Fun, typename TupleT>
+    void tuple_for_each(TupleT &&tup, Fun fun)
     {
-        tuple_<sizeof...(Ts)>::for_each(t, f);
-    }   
-    template <typename F, typename ...Ts>
-    void tuple_for_each(std::tuple<Ts...> const &t, F f)
-    {
-        tuple_<sizeof...(Ts)>::for_each(t, f);
+        tuple_<std::tuple_size<
+                typename std::remove_reference<TupleT>::type>::value>::for_each(std::forward<TupleT>(tup), fun);
     }   
 
+    /// tuple_call
+    
+    template <typename Fun, typename ...Ts>
+    auto tuple_call_ret(Fun fun, std::tuple<Ts...>) -> decltype(fun(std::declval<Ts>()...));
     
     template <size_t N>
     struct tuple_args 
     {
-        template <typename Fun, typename ...Ts, typename ...Ti>
-        static 
-        auto call(Fun fun, std::tuple<Ts...> &tup, Ti && ... args)
-        -> decltype(fun(std::declval<Ts>()...))
+        template <typename Fun, typename TupleT, typename ...Ti>
+        static inline 
+        auto call(Fun fun, TupleT &&tup, Ti && ... args)
+        -> decltype(tuple_call_ret(fun,std::forward<TupleT>(tup)))
         {
-            return tuple_args<N-1>::call(fun, tup, std::get<N-1>(tup), std::forward<Ti>(args)...);
+            return tuple_args<N-1>::call(fun, std::forward<TupleT>(tup), std::get<N-1>(std::forward<TupleT>(tup)), std::forward<Ti>(args)...);
         }
     };
     template <>
     struct tuple_args<1> 
     {
-        template <typename Fun, typename ...Ts, typename ...Ti>
-        static 
-        auto call(Fun fun, std::tuple<Ts...> &tup, Ti && ... args) 
-        -> decltype(fun(std::declval<Ts>()...))
+        template <typename Fun, typename TupleT, typename ...Ti>
+        static inline
+        auto call(Fun fun, TupleT &&tup, Ti && ... args) 
+        -> decltype(tuple_call_ret(fun,std::forward<TupleT>(tup)))
         {
-            return fun(std::get<0>(tup), std::forward<Ti>(args)...);
+            return fun(std::get<0>(std::forward<TupleT>(tup)), std::forward<Ti>(args)...);
         }
     };
 
-    template <typename Fun, typename ...Ts>
-    auto tuple_call(Fun fun, std::tuple<Ts...> & tup)
-    -> decltype(fun(std::declval<Ts>()...))
+    template <typename Fun, typename TupleT>
+    auto tuple_call(Fun fun, TupleT &&tup)
+    -> decltype(tuple_call_ret(fun, std::forward<TupleT>(tup)))
     {
-        return tuple_args<sizeof...(Ts)>::call(fun, tup); 
+        return tuple_args<std::tuple_size<
+                typename std::remove_reference<TupleT>::type>::value>::call(fun, std::forward<TupleT>(tup)); 
     }
+
 
 } // namespace more
 
