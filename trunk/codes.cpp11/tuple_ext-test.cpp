@@ -21,32 +21,32 @@ Context(tuple_extended)
 
     Test(call)
     {
-        auto somma = [](int a, int b) { return a+b; };
+        auto add = [](int a, int b) { return a+b; };
 
         std::tuple<int, int> tup{40,2};
 
-        Assert(more::tuple_call(somma, tup), is_equal_to(42));
+        Assert(more::tuple_call(add, tup), is_equal_to(42));
     }
 
     Test(call_const)
     {
-        auto somma = [](int a, int b) { return a+b; };
+        auto add = [](int a, int b) { return a+b; };
 
         std::tuple<int, int> const tup{40,2};
 
-        Assert(more::tuple_call(somma, tup), is_equal_to(42));
+        Assert(more::tuple_call(add, tup), is_equal_to(42));
 
     }
 
     Test(call_forward)
     {
-        auto somma = [](int &a, int b) { 
+        auto mistery = [](int &a, int b) { 
                 a = 10;
             return a+b; };
 
         int a = 40;
 
-        Assert(more::tuple_call(somma, std::forward_as_tuple(a,2)), is_equal_to(12));
+        Assert(more::tuple_call(mistery, std::forward_as_tuple(a,2)), is_equal_to(12));
         Assert(a, is_equal_to(10));
     }
 
