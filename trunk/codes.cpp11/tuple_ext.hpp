@@ -13,6 +13,7 @@
 
 #include <cstddef>
 #include <tuple>
+#include <algorithm>
 
 namespace more { 
 
@@ -32,6 +33,15 @@ namespace more {
             fun(std::get<std::tuple_size<typename std::remove_reference<TupleT>::type>::value - N>(std::forward<TupleT>(tup)));
             tuple_<N-1>::for_each(std::forward<TupleT>(tup), fun);
         }
+        
+        template <typename Fun, typename Tuple1, typename Tuple2>
+        static inline 
+        void for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun) 
+        {
+            fun(std::get<std::tuple_size<typename std::remove_reference<Tuple1>::type>::value - N>(std::forward<Tuple1>(t1)),
+                std::get<std::tuple_size<typename std::remove_reference<Tuple2>::type>::value - N>(std::forward<Tuple2>(t2)));
+            tuple_<N-1>::for_each2(std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), fun);
+        }
     };
     template <>
     struct tuple_<1>
@@ -43,6 +53,14 @@ namespace more {
             fun(std::get<std::tuple_size<
                             typename std::remove_reference<TupleT>::type>::value - 1>(std::forward<TupleT>(tup)));
         }
+        
+        template <typename Fun, typename Tuple1, typename Tuple2>
+        static inline 
+        void for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun)
+        { 
+            fun(std::get<std::tuple_size<typename std::remove_reference<Tuple1>::type>::value - 1>(std::forward<Tuple1>(t1)),
+                std::get<std::tuple_size<typename std::remove_reference<Tuple2>::type>::value - 1>(std::forward<Tuple2>(t2)));
+        }
     };
 
     template <typename Fun, typename TupleT>
@@ -50,6 +68,22 @@ namespace more {
     {
         tuple_<std::tuple_size<
                 typename std::remove_reference<TupleT>::type>::value>::for_each(std::forward<TupleT>(tup), fun);
+    }   
+
+    /// tuple_for_each2
+    
+    template <typename Tp>
+    constexpr Tp && min(Tp &&a, Tp &&b)
+    {
+        return a < b ? a : b;
+    }
+
+    template <typename Fun, typename Tuple1, typename Tuple2>
+    void tuple_for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun)
+    {
+        tuple_<min(std::tuple_size<typename std::remove_reference<Tuple1>::type>::value,
+                   std::tuple_size<typename std::remove_reference<Tuple2>::type>::value)
+              >::for_each2(std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), fun);
     }   
 
     /// tuple_call
