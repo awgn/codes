@@ -42,6 +42,15 @@ namespace more {
                 std::get<std::tuple_size<typename std::remove_reference<Tuple2>::type>::value - N>(std::forward<Tuple2>(t2)));
             tuple_<N-1>::for_each2(std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), fun);
         }
+
+        template <typename Tuple1, typename Tuple2, typename TupleT>
+        static inline
+        void zip(Tuple1 const &t1, Tuple2 const &t2, TupleT &t)
+        {
+            std::get<N-1>(t) = std::make_pair(std::get<N-1>(t1), std::get<N-1>(t2));
+            tuple_<N-1>::zip(t1,t2,t);
+        }
+
     };
     template <>
     struct tuple_<1>
@@ -60,6 +69,13 @@ namespace more {
         { 
             fun(std::get<std::tuple_size<typename std::remove_reference<Tuple1>::type>::value - 1>(std::forward<Tuple1>(t1)),
                 std::get<std::tuple_size<typename std::remove_reference<Tuple2>::type>::value - 1>(std::forward<Tuple2>(t2)));
+        }
+        
+        template <typename Tuple1, typename Tuple2, typename TupleT>
+        static inline
+        void zip(Tuple1 const &t1, Tuple2 const &t2, TupleT &t)
+        {
+            std::get<0>(t) = std::make_pair(std::get<0>(t1), std::get<0>(t2));
         }
     };
 
@@ -122,6 +138,16 @@ namespace more {
                 typename std::remove_reference<TupleT>::type>::value>::call(fun, std::forward<TupleT>(tup)); 
     }
 
+    /// tuple zip!
+    
+    template <typename ...T1, typename ...T2>
+    auto tuple_zip(std::tuple<T1...> const & t1, std::tuple<T2...> const &t2)
+    -> std::tuple<std::pair<T1,T2>...>
+    {
+        std::tuple<std::pair<T1,T2>...> ret;
+        tuple_<sizeof...(T1)>::zip(t1,t2,ret);
+        return ret;
+    }
 
 } // namespace more
 
