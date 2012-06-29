@@ -11,10 +11,9 @@
 #ifndef _MORE_NULLPTR_HPP_
 #define _MORE_NULLPTR_HPP_ 
 
-#if defined(__GNUC__) && !defined(__GXX_EXPERIMENTAL_CXX0X__) || \
-    defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 6)  
+#if defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 6)  
 
-// c++0x nullptr which can only be assigned to pointers (not yet part of the standard).
+// c++11 nullptr which can only be assigned to pointers (for compilers not supporting it yet).
 // Nicola
 
 namespace
@@ -32,7 +31,6 @@ namespace
         {
             return 0;
         }
-
     } 
     const nullptr = {};
 
@@ -59,7 +57,6 @@ namespace
     {
         return !(p == nullptr);
     }
- 
 }
 
 #endif
