@@ -74,13 +74,13 @@ namespace more { namespace pcap {
             switch(this->family())
             {
             case AF_INET: {
-                if (inet_ntop(AF_INET, & reinterpret_cast<const struct sockaddr_in &>(m_storage).sin_addr, buf, sizeof(buf)) == nullptr )
-                    throw std::runtime_error("sockaddress::inetntop");
+                if (inet_ntop(AF_INET, & reinterpret_cast<const struct sockaddr_in &>(m_storage).sin_addr, buf, sizeof(buf)) == nullptr)
+                    throw std::runtime_error("pcap::sockaddr::addr");
             } break;
 
             case AF_INET6: {
-                if (inet_ntop(AF_INET6, & reinterpret_cast<const struct sockaddr_in6 &>(m_storage).sin6_addr, buf, sizeof(buf)) == nullptr )
-                    throw std::runtime_error("sockaddress::inet_ntop");
+                if (inet_ntop(AF_INET6, & reinterpret_cast<const struct sockaddr_in6 &>(m_storage).sin6_addr, buf, sizeof(buf)) == nullptr)
+                    throw std::runtime_error("pcap::sockaddr::addr");
             } break;
             }
             
@@ -163,9 +163,9 @@ namespace more { namespace pcap {
     class bpf_prog
     {
     public:
-        bpf_prog(const std::string &str, bool optimize = true, bpf_u_int32 netmask = 0)
+        bpf_prog(std::string str, bool optimize = true, bpf_u_int32 netmask = 0)
         : m_prog(), 
-          m_str(str),
+          m_str(std::move(str)),
           m_opt(optimize),
           m_netmask(netmask)
         {}
@@ -182,7 +182,7 @@ namespace more { namespace pcap {
         operator()(pcap_t *p)  // the program is to be compiled by the pcap class...
         {
             if (pcap_compile(p, &m_prog, m_str.c_str(), m_opt, m_netmask) == -1)
-               throw std::runtime_error( std::string("pcap: ").append(pcap_geterr(p))); 
+               throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(p))); 
         }
         
         bpf_program&
@@ -317,7 +317,7 @@ namespace more { namespace pcap {
         int dispatch(int cnt)
         {
             int n;
-            if (  (n = pcap_dispatch(m_handle, cnt, static_handler, reinterpret_cast<u_char *>(this))) == -1)
+            if ((n = pcap_dispatch(m_handle, cnt, static_handler, reinterpret_cast<u_char *>(this))) == -1)
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(m_handle)));
             return n;
         }
@@ -326,7 +326,7 @@ namespace more { namespace pcap {
         int dispatch(int cnt, pcap_handler h, u_char *u = 0)
         {
             int n;
-            if (  (n = pcap_dispatch(m_handle, cnt, h, u)) == -1)
+            if ((n = pcap_dispatch(m_handle, cnt, h, u)) == -1)
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(m_handle)));
             return n;
         }
@@ -334,7 +334,7 @@ namespace more { namespace pcap {
         int loop(int cnt)
         {
             int n;
-            if (  (n = pcap_loop(m_handle, cnt, static_handler, reinterpret_cast<u_char *>(this))) == -1)
+            if ((n = pcap_loop(m_handle, cnt, static_handler, reinterpret_cast<u_char *>(this))) == -1)
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(m_handle)));
             return n;
         }
@@ -343,7 +343,7 @@ namespace more { namespace pcap {
         int loop(int cnt, pcap_handler h, u_char *u = 0)
         {
             int n;
-            if (  (n = pcap_loop(m_handle, cnt, h, u)) == -1)
+            if ((n = pcap_loop(m_handle, cnt, h, u)) == -1)
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(m_handle)));
             return n;
         }
@@ -361,7 +361,7 @@ namespace more { namespace pcap {
         int next_ex(struct pcap_pkthdr **pkt_header, const u_char **pkt_data)
         {
             int n;
-            if( (n=pcap_next_ex(m_handle, pkt_header, pkt_data)) == -1 )
+            if((n=pcap_next_ex(m_handle, pkt_header, pkt_data)) == -1)
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(m_handle)));
             return n;
         }
@@ -380,14 +380,14 @@ namespace more { namespace pcap {
             //
             prog(m_handle);
 
-            if ( pcap_setfilter(m_handle, &prog.c_prg()) == -1)
+            if (pcap_setfilter(m_handle, &prog.c_prg()) == -1)
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(m_handle)));
                 
         }
 
         void direction(pcap_direction_t dir)
         {
-            if ( pcap_setdirection(m_handle, dir) == -1)
+            if (pcap_setdirection(m_handle, dir) == -1)
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(m_handle)));
         } 
 
@@ -396,7 +396,7 @@ namespace more { namespace pcap {
         int inject(const void *buf, size_t size)
         {
             int r;
-            if ( ( r = pcap_inject(m_handle, buf,size) ) == -1)
+            if (( r = pcap_inject(m_handle, buf,size) ) == -1)
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(m_handle)));
 
             return r;
@@ -423,7 +423,7 @@ namespace more { namespace pcap {
         void 
         set_datalink(int dlt)
         {
-            if ( pcap_set_datalink(m_handle, dlt) == -1 )
+            if (pcap_set_datalink(m_handle, dlt) == -1)
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(m_handle))); 
         }
 
@@ -535,11 +535,11 @@ namespace more { namespace pcap {
     
     static inline
     std::pair<bpf_u_int32, bpf_u_int32> 
-    lookupnet(const std::string &dev)
+    lookupnet(const char *dev)
     {
         char errbuf[PCAP_ERRBUF_SIZE];
         bpf_u_int32 net, mask;
-        if (pcap_lookupnet(dev.c_str(), &net, &mask, errbuf) == -1)
+        if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1)
             throw std::runtime_error(std::string("pcap: ").append(errbuf)); 
     
         return std::make_pair(net,mask);
@@ -550,7 +550,7 @@ namespace more { namespace pcap {
     ipv4_dotform(bpf_u_int32 value)
     {
         char buf[16];
-        if (inet_ntop(AF_INET, &value, buf, sizeof(buf)) == nullptr )
+        if (inet_ntop(AF_INET, &value, buf, sizeof(buf)) == nullptr)
             throw std::runtime_error("sockaddress::inet_ntop");
 
         return std::string(buf);
@@ -607,9 +607,9 @@ namespace more { namespace pcap {
     class pcap_live : public pcap_base
     {   
     public:     
-        pcap_live(const std::string &dev, int snaplen, bool promisc, int to_ms)
+        pcap_live(std::string dev, int snaplen, bool promisc, int to_ms)
         : pcap_base(),
-          m_device(dev),
+          m_device(std::move(dev)),
           m_snaplen(snaplen),
           m_promisc(promisc),
           m_to_ms(to_ms)
@@ -756,9 +756,9 @@ namespace more { namespace pcap {
     class pcap_offline : public pcap_base
     {   
     public:          
-        explicit pcap_offline(const std::string &fname)        
+        explicit pcap_offline(std::string fname)        
         : pcap_base(),
-          m_device(fname)
+          m_device(std::move(fname))
         {
             clear_errbuf();
             m_handle = pcap_open_offline(m_device.c_str(), m_errbuf);
@@ -827,7 +827,7 @@ namespace more { namespace pcap {
         : m_dumper(0)
         {
             pcap_t * h = source.handle();
-            if ( (m_dumper = pcap_dump_open(h, fname)) == nullptr )
+            if ((m_dumper = pcap_dump_open(h, fname)) == nullptr)
                 throw std::runtime_error(std::string("pcap: ").append(pcap_geterr(h)));
         }
 
@@ -845,7 +845,7 @@ namespace more { namespace pcap {
         void
         flush()
         {
-            if ( pcap_dump_flush(m_dumper) == -1 )
+            if (pcap_dump_flush(m_dumper) == -1)
                 throw std::runtime_error(std::string("pcap: pcap_dump_flush")); 
         }
 
