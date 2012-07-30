@@ -28,8 +28,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         add_executable(double_checked_sinlegon-test double_checked_sinlegon-test.cpp)
         add_executable(entangled_ptr-test entangled_ptr-test.cpp)
         add_executable(enumap-test enumap-test.cpp)
-        #add_executable(errcode-test errcode-test.cpp)
-        #add_executable(error-test error-test.cpp)
         add_executable(exec-test exec-test.cpp)
         add_executable(exprtempl-test exprtempl-test.cpp)
         add_executable(factory-test factory-test.cpp)
@@ -72,11 +70,11 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         add_executable(value_ptr-test value_ptr-test.cpp)
         add_executable(variant-test variant-test.cpp)
         add_executable(variant_mutex-test variant_mutex-test.cpp)
-        #add_executable(yats-test yats-test.cpp)
-        
+       
+
 target_link_libraries(cpufreq-test -lcpufreq)
 target_link_libraries(pcap-test -lpcap)
 target_link_libraries(pcap-test-header -lpcap)
-target_link_libraries(spinlock-test -pthread)
+#target_link_libraries(spinlock-test -pthread)
 
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
