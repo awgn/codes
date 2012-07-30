@@ -30,27 +30,29 @@ namespace more {
 
         ///////////////////// I/O does not throw ///////////////////// 
 
-        int 
+        ssize_t 
         send(const void *buf, size_t len, int flags) const
         { 
             return ::send(m_fd, buf, len, flags); 
         }
 
         template <std::size_t N>
-        int send(const std::array<iovec,N> &iov, int flags) const
+        ssize_t
+        send(const std::array<iovec,N> &iov, int flags) const
         { 
             const msghdr msg = { nullptr, 0, const_cast<iovec *>(&iov.front()), N, nullptr, 0, 0 };    
             return ::sendmsg(m_fd, &msg, flags); 
         }
 
-        int 
+        ssize_t 
         recv(void *buf, size_t len, int flags) const
         { 
             return ::recv(m_fd, buf, len, flags); 
         }
 
         template <std::size_t N>
-        int recv(std::array<iovec,N> &iov, int flags) const
+        ssize_t
+        recv(std::array<iovec,N> &iov, int flags) const
         { 
             msghdr msg = { nullptr, 0, &iov.front(), N, nullptr, 0, 0 };    
             return ::recvmsg(m_fd, &msg, flags); 
@@ -63,7 +65,7 @@ namespace more {
                             reinterpret_cast<const struct sockaddr *>(&to), to.len()); 
         }
 
-        int 
+        ssize_t 
         recvfrom(void *buf, size_t len, int flags, sockaddress<FAMILY> &from) const
         { 
             return ::recvfrom(m_fd, buf, len, flags, 

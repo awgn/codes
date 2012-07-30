@@ -107,8 +107,8 @@ namespace more {
             for(unsigned int i = 0; i < m_redir.size(); i++)
             {
                 int fd = m_redir[i].first;
-                if ( m_pipe.at(fd)[!fd] > fileno(stderr) )
-                    ::close(m_pipe.at(fd)[!fd]);
+                if ( m_pipe.at(static_cast<unsigned int>(fd))[!fd] > fileno(stderr) )
+                    ::close(m_pipe.at(static_cast<unsigned int>(fd))[!fd]);
             }
 
             if (m_wait)
@@ -153,7 +153,7 @@ namespace more {
             for(unsigned int i = 0; i < m_redir.size(); i++)
             {
                 int fd = m_redir[i].first;
-                if (::pipe( m_pipe.at(fd) ) < 0) 
+                if (::pipe( m_pipe.at(static_cast<unsigned int>(fd)) ) < 0) 
                     throw std::system_error(errno, std::generic_category());
             }
             
@@ -172,10 +172,10 @@ namespace more {
                 for(unsigned int i=0; i < m_redir.size(); i++)
                 {
                     int fd = m_redir[i].first;
-                    ::close(m_pipe.at(fd)[0]);
-                    ::close(m_pipe.at(fd)[1]);
-                    m_pipe.at(fd)[0] = 0;
-                    m_pipe.at(fd)[1] = 0;
+                    ::close(m_pipe.at(static_cast<unsigned int>(fd))[0]);
+                    ::close(m_pipe.at(static_cast<unsigned int>(fd))[1]);
+                    m_pipe.at(static_cast<unsigned int>(fd))[0] = 0;
+                    m_pipe.at(static_cast<unsigned int>(fd))[1] = 0;
                 }
                 
                 throw std::system_error(errno_, std::generic_category());
@@ -194,9 +194,9 @@ namespace more {
                 for(unsigned int i=0; i < m_redir.size(); i++)
                 {
                     int fd = m_redir[i].first;
-                    ::close(m_pipe.at(fd)[!fd]);
+                    ::close(m_pipe.at(static_cast<unsigned int>(fd))[!fd]);
                     ::close(fd);
-                    ::dup2(m_pipe.at(fd)[!!fd], fd); 
+                    ::dup2(m_pipe.at(static_cast<unsigned int>(fd))[!!fd], fd); 
                 }
 
                 if ( m_run() < 0 ) {
@@ -210,8 +210,8 @@ namespace more {
             for(unsigned int i = 0; i < m_redir.size(); i++)
             {
                 int fd = m_redir[i].first;
-                ::close(m_pipe.at(fd)[!!fd]);
-                m_redir[i].second.get() = m_pipe.at(fd)[!fd];
+                ::close(m_pipe.at(static_cast<unsigned int>(fd))[!!fd]);
+                m_redir[i].second.get() = m_pipe.at(static_cast<unsigned int>(fd))[!fd];
             }
 
             return exec_ret;
@@ -310,11 +310,11 @@ namespace more {
 
         int m_run()
         {
-            int n = m_arg.size();
+            auto n = m_arg.size();
             const char *argv[n+1];
             argv[n] = 0;
             
-            for(int i=0; i < n;i++) 
+            for(unsigned int i=0; i < n;i++) 
                 argv[i]=m_arg[i].c_str();
 
             if ( m_exec(argv[0], const_cast<char * const *>(argv)) == -1 ) {

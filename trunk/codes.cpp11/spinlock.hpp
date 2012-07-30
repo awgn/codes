@@ -137,8 +137,11 @@ namespace more {
         {             
             const unsigned int my_ticket = m_ticket++;
             int t = Policy::threshold;
-            for(int n = 1, d = 0; (d=(my_ticket-m_value)); n++) 
+            for(int n = 1, d = 0;; n++) 
             { 
+                d = static_cast<int>(my_ticket) - static_cast<int>(m_value.load());
+                if (d == 0)
+                    break;
                 Policy::wait(n,t,d);
             }
         }

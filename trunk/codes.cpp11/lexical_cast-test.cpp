@@ -27,7 +27,7 @@ Context(more_lexical_cast)
 
     Test(unsigned_integer)
     {
-        Assert( more::lexical_cast<unsigned int>("123"), is_equal_to(123) );
+        Assert( more::lexical_cast<unsigned int>("123"), is_equal_to(123U) );
     }
 
     Test(int_to_string)

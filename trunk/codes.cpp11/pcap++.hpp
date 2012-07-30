@@ -134,7 +134,7 @@ namespace more { namespace pcap {
         std::string name;
         std::string description;
         std::vector<address> addresses;
-        int flags;   
+        unsigned int flags;   
 
         explicit interface(pcap_if_t * i)
         : name(i->name),
@@ -491,8 +491,8 @@ namespace more { namespace pcap {
                 // case DLT_PRISM_HEADER: return -1;
                 // case DLT_AIRONET_HEADER: return -1;
             }
+
             throw std::runtime_error("pcap: unknown datalink type");
-            return -1;
         }
 
     protected:

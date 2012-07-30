@@ -28,28 +28,28 @@ namespace more {
     {
         typedef std::vector<std::vector<int> > matrix_type;
         
-        auto n = std::distance(__beg,  __end);
-        auto m = std::distance(__beg2, __end2);
+        auto n = static_cast<unsigned long>(std::distance(__beg,  __end));
+        auto m = static_cast<unsigned long>(std::distance(__beg2, __end2));
    
         if (!(n && m))
            return n ? : m;
 
         matrix_type matrix(n+1, std::vector<int>(m+1));
    
-        for (int i = 0; i <= n; i++) {
+        for (size_t i = 0; i <= n; i++) {
             matrix[i][0]=i;
         }
-        for (int j = 0; j <= m; j++) {
+        for (size_t j = 0; j <= m; j++) {
             matrix[0][j]=j;
         }
 
         It __s = __beg;
 
-        for (int i = 1; i <= n; i++, ++__s) {
+        for (size_t i = 1; i <= n; i++, ++__s) {
 
             It __t = __beg2;
 
-            for (int j = 1; j <= m; j++, ++__t) {
+            for (size_t j = 1; j <= m; j++, ++__t) {
 
                 const int cost  = dist(* __s,* __t);
                 const int above = matrix[i-1][j];

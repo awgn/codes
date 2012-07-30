@@ -42,7 +42,7 @@ namespace more {
         {
             static 
             typename std::result_of<Fun(T*)>::type 
-            on(char *s, int type, int t)
+            on(char *s, unsigned int type, unsigned int t)
             {
                 if (t == type) 
                 { 
@@ -57,7 +57,7 @@ namespace more {
         {
             static 
             typename std::result_of<Fun(T*)>::type 
-            on(char *s, int, int)
+            on(char *s, unsigned int, unsigned int)
             {
                 return Fun()(reinterpret_cast<T *>(s)); 
             }

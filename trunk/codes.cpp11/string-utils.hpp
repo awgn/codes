@@ -53,52 +53,54 @@ namespace more {
         std::ios_base::iostate __err = std::ios_base::goodbit;
         
         const typename std::basic_string<CharT, Traits, Alloc>::size_type n = __str.max_size();
-        CharT c = __in.rdbuf()->sgetc();
+        auto c = static_cast<typename Traits::char_type>(__in.rdbuf()->sgetc());
+        auto __eof = static_cast<typename Traits::char_type>(Traits::eof());
+        
         unsigned int extracted = 0;
 
         bool esc = false;
         __str.erase();        
 
         if (do_escape) {   
-            while ( extracted < n && !Traits::eq(c,Traits::eof()) &&
-                    (__delim.find(c) == std::basic_string<CharT,Traits,Alloc>::npos || esc) ) 
+            while ( extracted < n && !Traits::eq(c,__eof) &&
+                    (__delim.find(static_cast<CharT>(c)) == std::basic_string<CharT,Traits,Alloc>::npos || esc) ) 
             {
-                if ( Traits::eq(c, '\\') && !esc) {
+                if ( Traits::eq(static_cast<CharT>(c), '\\') && !esc) {
                     esc = true;
-                    c = __in.rdbuf()->snextc();
+                    c = static_cast<typename Traits::char_type>(__in.rdbuf()->snextc());
                     continue;
                 }
 
                 if (esc) {
                     esc = false;
-                    if (__delim.find(c) == std::basic_string<CharT,Traits,Alloc>::npos && !Traits::eq(c,'\\') ) {
+                    if (__delim.find(static_cast<CharT>(c)) == std::basic_string<CharT,Traits,Alloc>::npos && !Traits::eq(static_cast<CharT>(c),'\\') ) {
                         __str += '\\'; 
                         ++extracted;
                     }
                 }
 
-                __str += c;
+                __str += static_cast<CharT>(c);
                 ++extracted;
-                c = __in.rdbuf()->snextc();
+                c = static_cast<typename Traits::char_type>(__in.rdbuf()->snextc());
             }
         } else {
-            while ( extracted < n && !Traits::eq(c,Traits::eof()) &&
-                    __delim.find(c) == std::basic_string<CharT,Traits,Alloc>::npos ) 
+            while ( extracted < n && !Traits::eq(c,__eof) &&
+                    __delim.find(static_cast<CharT>(c)) == std::basic_string<CharT,Traits,Alloc>::npos ) 
             {
-                __str += c;
+                __str += static_cast<CharT>(c);
                 ++extracted;
-                c = __in.rdbuf()->snextc();
+                c = static_cast<typename Traits::char_type>(__in.rdbuf()->snextc());
             }
         }
 
-        while ( !Traits::eq(c, Traits::eof()) &&
-                __delim.find(c) != std::basic_string<CharT,Traits,Alloc>::npos )
+        while ( !Traits::eq(c, __eof) &&
+                __delim.find(static_cast<CharT>(c)) != std::basic_string<CharT,Traits,Alloc>::npos )
         {
             ++extracted;
-            c = __in.rdbuf()->snextc();    
+            c = static_cast<typename Traits::char_type>(__in.rdbuf()->snextc());    
         }            
 
-        if ( Traits::eq(c,Traits::eof()) )
+        if ( Traits::eq(c, __eof) )
             __err |= std::ios_base::eofbit;
 
         if (!extracted)

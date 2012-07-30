@@ -90,7 +90,7 @@ namespace more { namespace net {
         //  by Gary R. Wright and W. Richard Stevens.  
 
         static inline
-        uint32_t csum_partial(void *buf, int len, uint32_t sum) 
+        uint32_t csum_partial(void *buf, size_t len, uint32_t sum) 
         {
             uint16_t *p = static_cast<uint16_t *>(buf);
 
@@ -113,7 +113,7 @@ namespace more { namespace net {
         {
             while(sum>>16)
                 sum = (sum & 0xffff) + (sum >> 16);
-            return ~sum;
+            return static_cast<uint16_t>(~sum);
         }
 
         template <typename Tp, size_t N>
@@ -257,7 +257,7 @@ namespace more { namespace net {
         template <typename I>
         void check(more::range_iterator_adapter<I> &it, size_t size, std::integral_constant<int,0>)
         {
-            ssize_t n = m_header.size(it.capacity(), size);
+            auto n = static_cast<ssize_t>(m_header.size(it.capacity(), size));
             if (it.capacity() < n)
                 throw std::range_error(std::string(header_traits<typename std::remove_cv<Tp>::type>::name()).append("::size() [dynamic size]"));
             it += n;
@@ -314,7 +314,7 @@ namespace more { namespace net {
             if ( it.capacity() < header_traits<typename std::remove_cv<Tp>::type>::min_size )
                 throw std::range_error(std::string(header_traits<typename std::remove_cv<Tp>::type>::name()).
                                        append("::size() [minimal size]"));
-            it += m_header.size(it.capacity());
+            it += static_cast<ptrdiff_t>(m_header.size(it.capacity()));
         }
 
     public:
@@ -539,8 +539,8 @@ namespace more { namespace net {
                 throw std::range_error("ip::size()");
             if (size < 20 || size > 60 || size % 4)
                 throw std::range_error("ip::size(): bad lenght");
-            this->ihl(size>>2);
-            return this->ihl()<<2;
+            this->ihl(static_cast<uint8_t>(size>>2));
+            return static_cast<size_t>(this->ihl()<<2);
         } 
 
     public:
@@ -550,15 +550,15 @@ namespace more { namespace net {
 
         size_t size() const
         {
-            return this->ihl()<<2;
+            return static_cast<size_t>(this->ihl()<<2);
         }
 
-        MORE_NET_READER_RAW(int, version);
-        MORE_NET_WRITER_RAW(int, version);
+        MORE_NET_READER_RAW(uint8_t, version);
+        MORE_NET_WRITER_RAW(uint8_t, version);
 
-        MORE_NET_READER_RAW(int, ihl);       // header len in words: 5 -> * 4 = 20 bytes
+        MORE_NET_READER_RAW(uint8_t, ihl);       // header len in words: 5 -> * 4 = 20 bytes
     private:
-        MORE_NET_WRITER_RAW(int, ihl);       // header len in words: 5 -> * 4 = 20 bytes
+        MORE_NET_WRITER_RAW(uint8_t, ihl);       // header len in words: 5 -> * 4 = 20 bytes
     public:
         MORE_NET_READER(uint8_t, tos);
         MORE_NET_WRITER(uint8_t, tos);
@@ -707,7 +707,7 @@ namespace more { namespace net {
                 throw std::range_error("tcp::size(): bad lenght");
             
             this->doff(size>>2);
-            return this->doff()<<2;
+            return static_cast<size_t>(this->doff()<<2);
         } 
 
     public:
@@ -726,7 +726,7 @@ namespace more { namespace net {
 
         size_t size() const
         {
-            return this->doff()<<2;
+            return static_cast<size_t>(this->doff()<<2);
         }
 
         MORE_NET_READER(uint16_t, source);
@@ -740,7 +740,6 @@ namespace more { namespace net {
 
         MORE_NET_READER(uint32_t, ack_seq);
         MORE_NET_WRITER(uint32_t, ack_seq);
-
 
         MORE_NET_READER(uint16_t,doff);
     private:
@@ -804,7 +803,7 @@ namespace more { namespace net {
         uint8_t 
         flags() const 
         {
-            return *(reinterpret_cast<char *>(m_header) + 13);
+            return *(reinterpret_cast<unsigned char *>(m_header) + 13);
         }
 
         MORE_NET_READER(uint16_t, window);
@@ -816,7 +815,7 @@ namespace more { namespace net {
         void 
         chksum_update(const ipv4 & ip, ssize_t data_len) 
         {
-            ssize_t tcp_data_len = ip.tot_len() - ip.size() - this->size();
+            auto tcp_data_len = static_cast<ssize_t>(ip.tot_len() - ip.size() - this->size());
             if (tcp_data_len < 0)
                 throw std::runtime_error("tcp::checksum: tcp_data_len");
 
@@ -829,7 +828,7 @@ namespace more { namespace net {
         bool 
         chksum_verify(const ipv4 & ip, ssize_t data_len) const
         {
-            ssize_t tcp_data_len = ip.tot_len() - ip.size() - this->size();
+            auto tcp_data_len = static_cast<ssize_t>(ip.tot_len() - ip.size() - this->size());
             if (tcp_data_len < 0)
                 throw std::runtime_error("tcp::checksum: tcp_data_len");
 
@@ -841,7 +840,7 @@ namespace more { namespace net {
 
     private:
         void
-        chksum_update(uint32_t src, uint32_t dst, int tcp_data_len)
+        chksum_update(uint32_t src, uint32_t dst, uint16_t tcp_data_len)
         {
             pseudo_header ph;
 
@@ -859,7 +858,7 @@ namespace more { namespace net {
 
 
         bool
-        chksum_verify(uint32_t src, uint32_t dst, int tcp_data_len) const
+        chksum_verify(uint32_t src, uint32_t dst, uint16_t tcp_data_len) const
         {
             pseudo_header ph;
 
@@ -867,7 +866,7 @@ namespace more { namespace net {
             ph.daddr = htonl(dst);
             ph.zero  = 0;
             ph.protocol = IPPROTO_TCP;
-            ph.length = htons(this->size() + tcp_data_len); // tcp header + tcp_data 
+            ph.length = htons(static_cast<uint16_t>(this->size()) + tcp_data_len); // tcp header + tcp_data 
 
             uint32_t sum = details::csum_partial((uint16_t *)& ph, sizeof(pseudo_header), 0); 
             return details::csum_fold(details::csum_partial((uint16_t *)m_header, this->size() + tcp_data_len, sum) ) == 0; 

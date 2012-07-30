@@ -80,10 +80,10 @@ namespace more { namespace gotopt {
         std::stringstream out;
         out << prolog << std::endl;
 
-        long unsigned int maxlen = 16;
+        int maxlen = 16;
         for(auto & option : options)
         {
-            maxlen = std::max(maxlen, option.name ? strlen(option.name) : 0UL);    
+            maxlen = std::max(maxlen, option.name ? static_cast<int>(strlen(option.name)) : 0);    
         }
 
         for(auto & option : options)
@@ -174,7 +174,7 @@ namespace more { namespace gotopt {
         
         size_t size() const
         {
-           return std::distance(current(), cend()); 
+           return static_cast<size_t>(std::distance(current(), cend())); 
         }
  
         void reset()
@@ -275,8 +275,8 @@ namespace more { namespace gotopt {
             // update the context with the current opt
             //
 
-            unsigned char r = std::abs(m_mopt[*m_it++].opt);
-            m_context[r] = true;
+            char r = m_mopt[*m_it++].opt;
+            m_context[static_cast<size_t>(r)] = true;
             return r;
         }
 
@@ -294,10 +294,10 @@ namespace more { namespace gotopt {
             return more::lexical_cast<T>(*m_it++);
         }
 
-        unsigned int 
+        size_t
         optind() const
         {
-            return std::distance(m_args.begin(), m_it);
+            return static_cast<size_t>(std::distance(m_args.begin(), m_it));
         }
 
     private:

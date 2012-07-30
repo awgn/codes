@@ -69,7 +69,7 @@ namespace more {
                 for (; isdigit(obj.m_format[i]); i++)
                 {
                     n *= 10;
-                    n += (obj.m_format[i]-'0');
+                    n += static_cast<unsigned int>(obj.m_format[i]-'0');
                 }
 
                 assert ( n <= obj.m_args.size() );

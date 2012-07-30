@@ -100,8 +100,8 @@ Context(entangled_ptr_tests)
 
     Test(use_count)
     {
-        Assert(p.use_count(), is_equal_to(2));
-        Assert(q.use_count(), is_equal_to(2));
+        Assert(p.use_count(), is_equal_to(2UL));
+        Assert(q.use_count(), is_equal_to(2UL));
     }
 
     Test(bad)

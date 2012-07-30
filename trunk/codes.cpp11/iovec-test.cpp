@@ -44,7 +44,7 @@ Context(more_iovec_test)
 
         std::vector<iovec> iov = more::get_iovec(abc.begin(), abc.end());
         
-        Assert(iov.size(),     is_equal_to(2));
+        Assert(iov.size(),     is_equal_to(2UL));
         Assert(iov[0].iov_len, is_equal_to(sizeof(int)*4));
         Assert(iov[1].iov_len, is_equal_to(sizeof(int)*4));
     }
@@ -94,9 +94,9 @@ Context(more_iovec_test)
 
         std::vector<iovec> iov = more::get_iovec(vec.begin(), vec.end());
 
-        Assert(iov.size(),     is_equal_to(2));
-        Assert(iov[0].iov_len, is_equal_to(6));
-        Assert(iov[1].iov_len, is_equal_to(7));
+        Assert(iov.size(),     is_equal_to(2UL));
+        Assert(iov[0].iov_len, is_equal_to(6UL));
+        Assert(iov[1].iov_len, is_equal_to(7UL));
 
         Assert(memcmp(iov[0].iov_base, "Hello,",  6), is_equal_to(0)); 
         Assert(memcmp(iov[1].iov_base, " World!", 7), is_equal_to(0)); 
@@ -106,7 +106,7 @@ Context(more_iovec_test)
     {
         std::vector<char> vec;
         std::vector<iovec> iov = more::get_iovec(vec.begin(), vec.end());
-        Assert( iov.size(), is_equal_to(0));
+        Assert( iov.size(), is_equal_to(0UL));
     }
 }
 

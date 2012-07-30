@@ -30,7 +30,7 @@ namespace more {
     std::basic_istream<charT,Traits> &
     ignore_line(std::basic_istream<charT,Traits> &__in)
     {
-        __in.ignore(std::numeric_limits<std::streamsize>::max(), __in.widen('\n'));
+        __in.ignore(std::numeric_limits<std::streamsize>::max(), static_cast<typename Traits::int_type>(__in.widen('\n')));
         return __in;
     }
 

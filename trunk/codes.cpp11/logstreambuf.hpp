@@ -68,7 +68,7 @@ namespace more {
                 m_priority = -1;
 
             if ( p <= m_loglevel)  
-               return m_out->sputc(c);
+               return m_out->sputc(static_cast<char_type>(c));
              
             return c;
         }

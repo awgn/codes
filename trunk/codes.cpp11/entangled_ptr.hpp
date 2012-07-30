@@ -97,7 +97,8 @@ namespace more {
             return m_ptr;
         }
 
-        int use_count() const
+        size_t
+        use_count() const
         {
             return m_check_ptr(m_ptr)->m_use_count();
         }
@@ -182,7 +183,8 @@ namespace more {
             std::replace(m_ref.begin(), m_ref.end(), ptr_old, ptr_new);
         }
 
-        long m_use_count() const
+        size_t 
+        m_use_count() const
         {
             return m_ref.size();
         }

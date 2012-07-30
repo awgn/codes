@@ -40,7 +40,7 @@ main(int, char *[])
 
     char buffer[1024+1];
     
-    int c;
+    ssize_t c;
     while ( (c = read(out,buffer, 1024)) > 0 ) {
         buffer[c]='\0';
         std::cout << buffer;

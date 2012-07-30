@@ -613,28 +613,28 @@ namespace more {
         row_begin(size_t r) 
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return m_mat.begin() + (r * col());
+            return m_mat.begin() + static_cast<ptrdiff_t>(r * col());
         }
         
         const_row_iterator
         row_begin(size_t r) const
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return m_mat.begin() + (r * col());
+            return m_mat.begin() + static_cast<ptrdiff_t>(r * col());
         }
 
         row_iterator 
         row_end(size_t r) 
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return m_mat.begin() + ((r+1) * col());
+            return m_mat.begin() + static_cast<ptrdiff_t>((r+1) * col());
         }
 
         const_row_iterator
         row_end(size_t r) const
         {
             scoped_assert( r < row(), "matrix::row_iterator bad index");    
-            return m_mat.begin() +((r+1) * col());
+            return m_mat.begin() + static_cast<ptrdiff_t>((r+1) * col());
         }
 
         //////// col_iterator:
@@ -643,28 +643,28 @@ namespace more {
         col_begin(size_t c) 
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return col_iterator(m_mat.begin() + c, col());
+            return col_iterator(m_mat.begin() + static_cast<ptrdiff_t>(c), col());
         }
         
         const_col_iterator
         col_begin(size_t c) const
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return const_col_iterator(m_mat.begin() + c, col());
+            return const_col_iterator(m_mat.begin() + static_cast<ptrdiff_t>(c), col());
         }
 
         col_iterator 
         col_end(size_t c) 
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return col_iterator(m_mat.begin() + (c+row()*col()), col());
+            return col_iterator(m_mat.begin() + static_cast<ptrdiff_t>(c+row()*col()), col());
         }
 
         const_col_iterator
         col_end(size_t c) const
         {
             scoped_assert( c < col(), "matrix::col_iterator bad index");    
-            return const_col_iterator(m_mat.begin() + (c+row()*col()), col());
+            return const_col_iterator(m_mat.begin() + static_cast<ptrdiff_t>(c+row()*col()), col());
         }
  
         ////////////////////////////////////

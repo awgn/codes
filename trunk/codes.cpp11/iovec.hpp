@@ -107,7 +107,7 @@ namespace more
             if ( n && n == (&*__end - &*__it) ) 
             {
                 iovec iov = { static_cast<void *>(& *__it), 
-                    n * sizeof(typename std::iterator_traits<Iterator>::value_type) };
+                    static_cast<size_t>(n) * sizeof(typename std::iterator_traits<Iterator>::value_type) };
                 return std::vector<iovec>(1, iov);
             }
 

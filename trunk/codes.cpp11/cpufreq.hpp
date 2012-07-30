@@ -34,7 +34,7 @@ namespace more {
                  cpufreq library wrapper 
          **************************************/       
 
-        cpufreq(int n)
+        cpufreq(unsigned int n)
         : m_cpu(n)
         {
             if (cpufreq_cpu_exists(m_cpu))
@@ -206,7 +206,7 @@ namespace more {
         }
 
     private:
-        int m_cpu;
+        unsigned int m_cpu;
     };
 
 } // namespace more

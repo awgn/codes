@@ -71,8 +71,8 @@ Context(functional_tests)
         unsigned int a = 10;
         unsigned int b = 52;
 
-        Assert( dist(a,b) , is_equal_to(42));
-        Assert( dist(b,a) , is_equal_to(42));
+        Assert( dist(a,b) , is_equal_to(42U));
+        Assert( dist(b,a) , is_equal_to(42U));
     }
 
 

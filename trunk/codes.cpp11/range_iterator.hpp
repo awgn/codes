@@ -230,7 +230,7 @@ namespace more {
         }
 
         range_iterator_adapter & 
-        operator+=(int n)
+        operator+=(ptrdiff_t n)
         { 
             this->m_current += n;
             return *this;
@@ -239,7 +239,7 @@ namespace more {
         { return lhs+=n; }
 
         range_iterator_adapter & 
-        operator-=(int n)
+        operator-=(ptrdiff_t n)
         { 
             this->m_current -= n;
             return *this;
@@ -426,7 +426,7 @@ namespace more {
         }
 
         range_const_iterator_adapter & 
-        operator+=(int n)
+        operator+=(ptrdiff_t n)
         { 
             this->m_current += n;
             return *this;
@@ -435,7 +435,7 @@ namespace more {
         { return lhs+=n; }
 
         range_const_iterator_adapter & 
-        operator-=(int n)
+        operator-=(ptrdiff_t n)
         { 
             this->m_current -= n;
             return *this;
