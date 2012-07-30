@@ -338,7 +338,7 @@ namespace more {
             {
                 if (n == var.m_type) 
                 {
-                    out << var.get<T>();
+                    out << var.template get<T>();
                     return;
                 }
                 printon<Tp...>::apply(out, var, n+1);    
@@ -352,7 +352,7 @@ namespace more {
             {
                 if (n == var.m_type) 
                 {
-                    out << var.get<T>();
+                    out << var.template get<T>();
                     return;
                 }
                 throw std::runtime_error("internal error");
@@ -369,7 +369,7 @@ namespace more {
             {
                 if (n == var.m_type) 
                 {
-                    cw(var.get<T>());
+                    cw(var.template get<T>());
                     return;
                 }
                 visitor<Tp...>::apply(cw, var, n+1);    
@@ -383,7 +383,7 @@ namespace more {
             {
                 if (n == var.m_type) 
                 {
-                    cw(var.get<T>());
+                    cw(var.template get<T>());
                     return;
                 }
                 throw std::runtime_error("internal error");

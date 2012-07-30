@@ -765,7 +765,7 @@ namespace more {
         template <typename Key, int N>
         typename std::add_lvalue_reference<typename more::type::get<map_type, Key>::type>::type
         get_(std::integral_constant<int,N>) 
-        { return m_parser.get_<Key>(std::integral_constant<int, N-1>()); }
+        { return m_parser.template get_<Key>(std::integral_constant<int, N-1>()); }
 
         template <typename Key>
         typename std::add_lvalue_reference<value_type>::type
@@ -867,7 +867,7 @@ namespace more {
         typename more::type::get<typename key_value_pack<Ti...>::map_type, T>::type>::type 
     get(key_value_pack<Ti...> &p) 
     {                                           
-        return p.get<T>();
+        return p.template get<T>();
     }
 
     template<typename T, typename ...Ti>
@@ -877,7 +877,7 @@ namespace more {
             typename more::type::get<typename key_value_pack<Ti...>::map_type, T>::type>::type>::type 
     get(const key_value_pack<Ti...> &p) 
     {       
-        return p.get<T>();
+        return p.template get<T>();
     }
 
 } // namespace more
