@@ -83,5 +83,5 @@ Context(more_static_allocator)
 int
 main(int argc, char *argv[])
 {
-    return yats::run();
+    return yats::run(argc, argv);
 }

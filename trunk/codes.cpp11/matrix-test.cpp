@@ -298,6 +298,6 @@ Context(more_matrix_test)
 int
 main(int argc, char *argv[])
 {
-    return yats::run();
+    return yats::run(argc, argv);
 }
 

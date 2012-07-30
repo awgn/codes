@@ -173,7 +173,7 @@ catch(...) \
     struct static_error {\
         static_error() \
         { expr; \
-            std::cerr << "Static error failure: Test(" # expr ") is not an error. Reason -> " msg << std::endl; \
+            std::cerr << "Static error failure: Test(" # expr "): " msg " is falsifiable." << std::endl; \
             _Exit(EXIT_FAILURE);\
         } \
     } maybe_error_ = static_error();
@@ -599,7 +599,7 @@ namespace ctx
 #define Test(name) \
 void test_ ## name(const char *); \
 yats::task_register hook_ ## name(test_ ## name, task_register::type::test, _context_name, #name); \
-void test_ ## name(const char *_name)
+void test_ ## name(const char *_name __attribute__((unused)))
 
 #define Setup(name) \
 void setup_ ## name(const char *); \
