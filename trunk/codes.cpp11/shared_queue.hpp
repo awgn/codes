@@ -15,12 +15,7 @@
 #include <thread>
 #include <mutex>
 #include <array>
-
-#if __GNUC__ == 4 &&  __GNUC_MINOR__ == 4
-#include <cstdatomic>
-#elif __GNUC__ == 4 &&  __GNUC_MINOR__ >= 5
 #include <atomic>
-#endif
 
 namespace more 
 {

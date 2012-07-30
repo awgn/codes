@@ -78,7 +78,7 @@ namespace more
     template <typename T, typename Ty> 
     class singleton<T, Ty, singleton_type>  : public singleton_base
     {
-#ifdef __clag__
+#ifdef __clang__
         friend T;
 #else
         friend class identity<T>::value_type;

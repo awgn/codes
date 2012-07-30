@@ -29,8 +29,7 @@ namespace more {
 
     struct scoped_assert
     {
-        scoped_assert()
-        {}
+        scoped_assert() = default;
 
         scoped_assert(bool value, const char *what)
         {

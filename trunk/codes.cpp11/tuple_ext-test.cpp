@@ -40,7 +40,7 @@ Context(tuple_extended)
 
     Test(call_forward)
     {
-        auto mistery = [](int &a, int b) { 
+        auto mistery = [](int &a, int b) -> int { 
                 a = 10;
             return a+b; };
 
@@ -51,16 +51,32 @@ Context(tuple_extended)
     }
 
 
+    template <typename T> 
+    void test(T &v) 
+    {
+        int sum = 0;
+        more::tuple_for_each(v, [&](typename std::tuple_element<0, T>::type n) {
+                              sum += n;
+                             });
+    }
+              
+
     Test(for_each)
     {
         std::tuple<int,int,int> v {1,2,3};
-        int sum = 0;
+        std::tuple<long, long> q {1,2};
+        
+        // int sum = 0;
 
-        more::tuple_for_each(v, [&](int n) {
-                              sum += n;
-                             });
+        test(v);
+        test(q);
 
-        Assert(sum, is_equal_to(6));
+
+        // more::tuple_for_each(v, [&](int n) {
+        //                       sum += n;
+        //                      });
+
+        // Assert(sum, is_equal_to(6));
     }
     
     Test(for_each_const)

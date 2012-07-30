@@ -11,7 +11,7 @@
 #ifndef _MORE_NULLPTR_HPP_
 #define _MORE_NULLPTR_HPP_ 
 
-#if defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 6)  
+#if defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 6) && !defined(__clang__)
 
 // c++11 nullptr which can only be assigned to pointers (for compilers not supporting it yet).
 // Nicola
