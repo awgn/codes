@@ -72,7 +72,7 @@ typedef more::key_value_pack<unsigned_int,
                                matrix> my_config;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     const my_config conf("key_value_test.txt", more::key_value_opt::non_strict());
 

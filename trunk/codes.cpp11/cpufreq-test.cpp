@@ -15,7 +15,7 @@
 #include <cpufreq.hpp>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::cpufreq cpu0(0);
 

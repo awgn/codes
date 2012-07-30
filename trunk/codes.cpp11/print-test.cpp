@@ -16,7 +16,7 @@
 #include <boost/format.hpp>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::print(std::cout, "%1 %2\n", "hello", std::string("world"));
     more::print(std::cout, "0x%1\n", more::flags<std::ios::hex>(3735928559U));

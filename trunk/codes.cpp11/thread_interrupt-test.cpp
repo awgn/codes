@@ -24,7 +24,7 @@ using namespace more;
 struct thread_one : public std::unary_function<int, void>
 {
     void
-    operator()(int n) const
+    operator()(int) const
     {
         thread_interrupt::hook interrupt_requested;
 
@@ -45,7 +45,7 @@ struct thread_one : public std::unary_function<int, void>
 struct thread_two : public std::binary_function<int, more::thread_interrupt::hook, void>
 {
     void
-    operator()(int n, more::thread_interrupt::hook interrupt_requested) const
+    operator()(int, more::thread_interrupt::hook interrupt_requested) const
     {
         for(;;)
         {
@@ -58,8 +58,8 @@ struct thread_two : public std::binary_function<int, more::thread_interrupt::hoo
 };
  
 
-  int
-main(int argc, char *argv[])
+int
+main(int, char *[])
 {
     std::thread one(thread_one(), 42);
 

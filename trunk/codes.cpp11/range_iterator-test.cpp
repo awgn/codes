@@ -15,7 +15,7 @@
 #include <list>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     char buffer[4];
     const char *const_buffer = buffer;

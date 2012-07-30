@@ -16,7 +16,7 @@
 typedef more::double_checked::singleton<int> single_int;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     int & n = single_int::instance(42);
 

@@ -29,7 +29,7 @@ struct print_on
 using namespace std::placeholders;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::vector<double> vec;
 

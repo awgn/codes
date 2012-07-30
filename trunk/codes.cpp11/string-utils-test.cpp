@@ -14,7 +14,7 @@
 #include <vector>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << "\n////////////////////// string ///////////////////\n" << std::endl;
     

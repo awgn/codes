@@ -40,7 +40,7 @@ struct visitor
 };
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     {
         more::variant<hello, int, std::string> abc;

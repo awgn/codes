@@ -26,7 +26,7 @@ struct option opts[] =
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::vector<bool> context(128, false);
     

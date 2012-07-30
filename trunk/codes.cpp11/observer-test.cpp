@@ -85,7 +85,7 @@ struct obs3 : public observer<int, std::string>
 };
  
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
      std::cout << "\n[*] subject/observer: basic\n\n"; 
      sub1 captain;

@@ -54,7 +54,7 @@ thread_routine_more()
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
 #ifndef _REENTRANT
     thread_routine_boost();

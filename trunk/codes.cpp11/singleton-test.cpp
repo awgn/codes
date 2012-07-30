@@ -59,7 +59,7 @@ struct s2: public more::singleton<s2, const more::indestructible_singleton_type>
 };
 
 int 
-main(int argc, char *argv[])
+main(int, char *[])
 {
     s0 & r0 = s0::instance();
     volatile s1 & r1 = s1::instance(97);

@@ -12,7 +12,7 @@
 #include <iostream>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << "tsc: " << more::this_cpu::get_cycles() << std::endl;
     std::cout << "tsc: " << more::this_cpu::get_cycles() << std::endl;

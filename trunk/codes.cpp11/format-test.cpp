@@ -12,7 +12,7 @@
 #include <format.hpp>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::string hello("hello");
     std::cout << more::format("%1 %2 %3... %%%4 %5%%!") % 1 % 2 % 3 % hello % "world" << std::endl;

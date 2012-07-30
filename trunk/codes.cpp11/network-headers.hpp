@@ -80,8 +80,8 @@ namespace more { namespace net {
         struct host_byte_order_t {};     // to read value in host order
         struct network_byte_order_t {};  // to read value in host order
 
-        host_byte_order_t    host_byte_order = {};
-        network_byte_order_t network_byte_order = {};
+        host_byte_order_t    host_byte_order = host_byte_order_t{};
+        network_byte_order_t network_byte_order = network_byte_order_t{};
     }
 
     namespace details

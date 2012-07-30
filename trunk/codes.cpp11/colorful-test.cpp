@@ -14,7 +14,7 @@
 using namespace more;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << colorful<ecma::bold, ecma::fg::red>()  << "hello"  << 
                  colorful<ecma::bold, ecma::fg::blue>() << " world" << 

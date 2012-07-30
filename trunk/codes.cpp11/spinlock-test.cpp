@@ -42,7 +42,7 @@ void thread_consumer()
 }
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::thread a(thread_producer);
     std::thread b(thread_consumer);

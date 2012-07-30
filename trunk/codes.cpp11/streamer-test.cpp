@@ -16,7 +16,7 @@
 #include <iostream>
 
 int 
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << "string                     : " << std::string("hello world") << std::endl; 
     std::vector<int> v1;

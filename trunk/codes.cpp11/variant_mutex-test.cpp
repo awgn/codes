@@ -42,7 +42,7 @@ struct null_mutex
 typedef more::variant_mutex<null_mutex, std::mutex> mutex;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     mutex x(0);
 

@@ -30,7 +30,7 @@ struct hello
 };
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     hello x(0);
     hello y(1);

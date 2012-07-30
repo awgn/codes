@@ -14,7 +14,7 @@
 #include <iterator.hpp>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     typedef std::map<int, std::string> map_type;
 

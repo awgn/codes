@@ -33,7 +33,7 @@ Context(more_typemap_test)
     Test(size)
     {
         get<map0, name>::type _me = "Nicola";
-        get<map0, age>::type  _age = 38;
+        get<map0, age>::type  _age __attribute__((unused)) = 38;
 
         Assert( static_cast<int>(size<map0>::value), is_equal_to(3));
     }
