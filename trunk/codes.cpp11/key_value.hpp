@@ -124,15 +124,17 @@ namespace more {
             static bool parse_lexeme(L &lex,  std::tuple<Ti...> &tup)
             {
 #ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
+                std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
                 typename std::tuple_element<sizeof...(Ti)-N,
                                              typename std::tuple<Ti...>   
-                                                >::type elem; 
+                                                >::type elem{}; 
                 bool ok = lex.parse_lexeme(elem);
-                if (!ok)
+                if (!ok) 
                     return false;
-
+#ifdef LEXEME_DEBUG
+                std::cout << details::BLUE << ":: lex::tuple<Ti>[" << elem << "]" << details::RESET << std::endl;
+#endif
                 std::get<sizeof...(Ti) - N>(tup) = std::move(elem);
                 return tuple_helper<N-1>::parse_lexeme(lex, tup);
             }
@@ -144,15 +146,18 @@ namespace more {
             static bool parse_lexeme(L &lex,  std::tuple<Ti...> &tup)
             {
 #ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
+                std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
                 typename std::tuple_element<sizeof...(Ti)-1,
                                              typename std::tuple<Ti...>   
-                                                >::type elem;
+                                                >::type elem{};
 
                 bool ok = lex.parse_lexeme(elem);
                 if (ok)
                     std::get<sizeof...(Ti) - 1>(tup) = std::move(elem);
+#ifdef LEXEME_DEBUG
+                std::cout << details::BLUE << ":: lex::tuple<Ti>[" << elem << "]" << details::RESET << std::endl;
+#endif
                 return ok;
             }
         };
@@ -240,7 +245,7 @@ namespace more {
 
     typedef std::tuple<bool,        // whether it is strict or non strict parsing 
                        char,        // assign separator -> default =
-                       char,        // comment          -> defualt #
+                       char,        // comment          -> default #
                        std::string> parser_options;
 
     template <typename CharT, typename Traits>
@@ -261,11 +266,13 @@ namespace more {
         bool _(char c)
         {
             char _c;
-            if(!(m_in >> std::ws))
+            if(!(m_in >> std::ws)) {
                 return false;
+            }
             _c = m_in.peek();
-            if (!m_in)
+            if (!m_in) {
                 return false;
+            }
             if (c == _c) {
                 m_in >> _c;
                 assert(m_in);
@@ -787,7 +794,7 @@ namespace more {
         {
             if (key == _T0::type::first_type::str()) {
                 
-                if (!lex.parse_lexeme(that.m_value) || in.fail() ) {
+                if (!lex.parse_lexeme(that.m_value) || in.fail()) {
                     std::clog << std::get<3>(mode) << ": parse error: key[" << 
                     _T0::type::first_type::str() << "] unexpected argument (line " << 
                     details::line_number(in) << ")" << std::endl;
