@@ -56,6 +56,103 @@ namespace more {
         const char * const BLUE  = "\E[1;34m";
 #endif
 
+        class streambuf : public std::streambuf 
+        {
+            enum class state 
+            {
+                none, string1, string2, comment, backslash 
+            };
+
+        public:
+            streambuf(std::streambuf *in, char commkey = '#')
+            : m_in(in)
+            , m_line(1)
+            , m_commkey(commkey)
+            , m_state(state::none)
+            {
+                if (m_commkey == '\'' ||
+                    m_commkey == '"')
+                    throw std::runtime_error("streambuf: invalid comment-key");
+            }
+
+            virtual int_type underflow()
+            {
+                int_type c = m_in->sgetc();
+                
+                auto ns = next_(c);
+
+                return ns == state::comment ||
+                     ( ns == state::backslash && m_state == state::comment) ? ' ' : c;
+            }
+
+            virtual int_type uflow()
+            {
+                int_type c = m_in->sbumpc();
+
+                if (c == '\n')
+                    m_line++;
+                
+                auto prev = m_state; 
+                m_state = next_(c);
+                m_prev  = prev;
+
+                return m_state == state::comment ||
+                     ( m_state == state::backslash && m_prev == state::comment) ? ' ' : c;
+            }
+
+            int line() const
+            { 
+                return m_line; 
+            }
+
+        private:
+
+            state next_(char c)
+            {
+                switch(m_state)
+                {
+                case state::none:
+                    return  c == '\''       ? state::string1   :
+                            c == '"'        ? state::string2   :
+                            c == m_commkey  ? state::comment   : 
+                            c == '\\'       ? state::backslash : state::none;
+                
+                case state::string1:
+                    return  c == '\''       ? state::none      : 
+                            c == '\\'       ? state::backslash : state::string1;
+                
+                case state::string2:
+                    return  c == '"'        ? state::none      :
+                            c == '\\'       ? state::backslash : state::string2;
+                
+                case state::comment:
+                    return  c == '\n'       ? state::none      : 
+                            c == '\\'       ? state::backslash : state::comment;
+
+                case state::backslash:
+                    return m_prev;
+                }
+
+                return state::none;
+            }
+            
+            std::streambuf * m_in;
+            int     m_line;
+            char    m_commkey;
+
+            state   m_state, m_prev;
+        };
+
+        template <class CharT, class Traits>
+        inline int line_number(std::basic_istream<CharT,Traits> &in)
+        {
+            streambuf * ln = dynamic_cast<streambuf *>(in.rdbuf());
+            if (ln) {
+                return ln->line();
+            }
+            return -1;
+        }
+        
         template <class CharT, class Traits>
         inline
         std::basic_istream<CharT,Traits> &
@@ -65,43 +162,6 @@ namespace more {
             return in_;
         }
     
-        class line_streambuf : public std::streambuf 
-        {
-            std::streambuf * m_in;
-            int m_line;
-
-        public:
-            line_streambuf(std::streambuf *in)
-            : m_in(in), m_line(1)
-            {}
-
-            virtual int_type underflow()
-            {
-                return  m_in->sgetc();
-            }
-
-            virtual int_type uflow()
-            {
-                int_type c = m_in->sbumpc();
-                if (c == '\n')
-                    m_line++;
-                return c;
-            }
-
-            int line() const
-            { return m_line; }
-        };
-
-        template <class CharT, class Traits>
-        inline int line_number(std::basic_istream<CharT,Traits> &in)
-        {
-            line_streambuf * ln = dynamic_cast<line_streambuf *>(in.rdbuf());
-            if (ln) {
-                return ln->line();
-            }
-            return -1;
-        }
-
         template <typename KEY, typename TYPE, bool has_default>
         struct get_default
         {
@@ -286,20 +346,6 @@ namespace more {
             std::string _s; return (m_in >> _s && _s.compare(s) == 0) ? true : false;
         }
         
-        // skip comment lines
-
-        void skip_comments()
-        {
-            for(;;) {
-                m_in >> std::ws;
-                if (m_in.peek() == std::get<2>(m_option)) {
-                    m_in >> details::ignore_line;
-                    continue;
-                }
-                break;
-            }
-        }
-
         // very generic parser for types supporting operator>> ...
         //
         
@@ -498,7 +544,6 @@ namespace more {
             bool ok = _('(') &&
                         details::tuple_helper<sizeof...(Ti)>::parse_lexeme(*this, tup) &&
                       _(')');
-
             if (ok)
                 lex = std::move(tup);          
 #ifdef LEXEME_DEBUG
@@ -522,8 +567,6 @@ namespace more {
                 return false;
             
             do {
-                skip_comments();
-
                 if (_(']')) 
                     break;
         
@@ -582,14 +625,9 @@ namespace more {
                     key.push_back(c);
                 }
                 
-                // skip comments/empty lines
-                //
-                if (key.empty() || key[0] == std::get<2>(m_option)) {
-                    if (c != '\n') 
-                        m_in >> details::ignore_line;
-                    continue;    
-                }
-
+                if (key.empty())
+                    continue;
+                
                 if (bracket && !key.compare("}")) {
                     bracket = false;
                     break;
@@ -760,8 +798,8 @@ namespace more {
         typename std::add_lvalue_reference<typename more::type::get<map_type, Key>::type>::type
         get() 
         { return get_<Key>(std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); }
+        
         template <typename Key>
-
         typename std::add_lvalue_reference<
             typename std::add_const<
                 typename more::type::get<map_type, Key>::type>::type>::type
@@ -852,7 +890,7 @@ namespace more {
                 return false;
             }
 
-            details::line_streambuf sb(sc.rdbuf());
+            details::streambuf sb(sc.rdbuf(), std::get<2>(mode));
             std::istream in(&sb);    
             return open(in, mode);
         }
