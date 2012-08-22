@@ -24,7 +24,6 @@ strings =  [ hello
              'alternate quotation mark' ]
   
 booleans = [ false 1 ]  
-  
 simple_pair = ( 0.2 2.3)
 
 simple_tuple = (true 2 3.5 'hello!' )
@@ -46,6 +45,18 @@ matrix = [[1 2]
 
 unknown = key  # ignored in non-strict mode 
 
-unknown_on_multiple_line = [ 1
+
+unknown_on_multiple_lines = [ 1
                              2
                              3 ]
+unknown_vector = [ 1 2 3 4 ]
+
+unknown_pair = (1 2)
+unknown_tuple = (1 2 3)
+
+
+unknown_tuple_on_multiple_lines = ( 
+                                    1 
+                                    2 
+                                    3 
+                                  )

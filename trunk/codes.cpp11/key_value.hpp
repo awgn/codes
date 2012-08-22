@@ -664,13 +664,13 @@ namespace more {
                             
                             return false;
                         }
-                        if ( c == '[' ) {
+                        if ( c == '[' || c == '(') {
                             level++;
                         }
-                        else if ( c == ']') {
+                        else if ( c == ']' || c == ')') {
                             if (--level < 0) {
                                 std::cout << level << std::endl;
-                                std::clog << std::get<3>(m_option) << ": parse error at foreing key '" 
+                                std::clog << std::get<3>(m_option) << ": parse error at key '" 
                                     << key << "' unbalanced brackets (line "<< details::line_number(m_in) << ")" << std::endl;
                                 
                                 return false;
@@ -679,7 +679,7 @@ namespace more {
                     }
                     while (level > 0 && m_in.get());
 
-                    if (c == ']')
+                    if (c == ']' || c == ')')
                         m_in.get();
                     else
                         m_in >> details::ignore_line;
