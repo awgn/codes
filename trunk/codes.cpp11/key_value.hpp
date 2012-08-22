@@ -331,9 +331,14 @@ namespace more {
 
     public:
 
-        lexer(std::basic_istream<CharT, Traits> &in, const parser_options &opt)
-        : m_in(in), m_option(opt)
-        {}
+        lexer(std::basic_istream<CharT, Traits> &in, parser_options opt)
+        : m_in(in)
+        , m_option(std::move(opt))
+        {
+            m_in.unsetf(std::ios::dec);
+            m_in.unsetf(std::ios::hex);
+            m_in.unsetf(std::ios::oct);
+        }
 
         ~lexer()
         {}
@@ -358,8 +363,16 @@ namespace more {
 
         bool _(const char *s)
         {
-            std::string _s; return (m_in >> _s && _s.compare(s) == 0) ? true : false;
-        }
+            std::string _s; 
+            m_in >> _s;
+
+#ifdef LEXEME_DEBUG
+            if (_s.compare(s)) {
+                std::cout << "_: expected '" << s << "' got '" << _s  << "'" << std::endl;
+            }
+#endif
+            return (m_in && _s.compare(s) == 0) ? true : false;
+        }                                                            
 
         // very generic parser for types supporting operator>> ...
         //
@@ -610,10 +623,6 @@ namespace more {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            m_in.unsetf(std::ios::dec);
-            m_in.unsetf(std::ios::hex);
-            m_in.unsetf(std::ios::oct);
-
             if (bracket &&  ! _('{')) {
                 std::clog << std::get<target_name>(m_option) << 
                 ": parse error: missing open bracket (line " << 
@@ -705,10 +714,10 @@ namespace more {
 
                 // parse the value...
                 // 
-                if (!tmp.parse(m_in, key, m_option, *this)) 
+                if (!tmp.parse(m_in, key, m_option, *this)) {
                     return false;
+                }
             }
-
             if (bracket) { 
                 std::clog << std::get<target_name>(m_option) << ": parse error: missing close bracket (line "<< details::line_number(m_in) << ")" << std::endl;
                 return false;
