@@ -28,24 +28,27 @@
 #include <stdexcept>
 #include <cassert>
 
+
 #define MAP_KEY(t,k)  struct k { \
     typedef std::pair<k,t> type; \
-    static const bool has_default = false; \
-    static const char * str() \
+    static constexpr bool has_default = false; \
+    static constexpr const char * str() \
     { return # k; } \
 };
 
 #define MAP_KEY_VALUE(t,k,v)  struct k { \
     typedef std::pair<k,t> type; \
-    static const bool has_default = true; \
-    static const char * str() \
+    static constexpr bool has_default = true; \
+    static constexpr const char * str() \
     { return # k; } \
-    static t default_value() \
+    static constexpr t default_value() \
     { return v; } \
 };
 
+
 //////////////////////////////////
 //  key-value config file parser 
+
 
 namespace more { 
 
@@ -79,11 +82,11 @@ namespace more {
             virtual int_type underflow()
             {
                 int_type c = m_in->sgetc();
-                
+
                 auto ns = next_(c);
 
                 return ns == state::comment ||
-                     ( ns == state::backslash && m_state == state::comment) ? ' ' : c;
+                ( ns == state::backslash && m_state == state::comment) ? ' ' : c;
             }
 
             virtual int_type uflow()
@@ -92,13 +95,13 @@ namespace more {
 
                 if (c == '\n')
                     m_line++;
-                
+
                 auto prev = m_state; 
                 m_state = next_(c);
                 m_prev  = prev;
 
                 return m_state == state::comment ||
-                     ( m_state == state::backslash && m_prev == state::comment) ? ' ' : c;
+                ( m_state == state::backslash && m_prev == state::comment) ? ' ' : c;
             }
 
             int line() const
@@ -113,22 +116,22 @@ namespace more {
                 switch(m_state)
                 {
                 case state::none:
-                    return  c == '\''       ? state::string1   :
-                            c == '"'        ? state::string2   :
-                            c == m_commkey  ? state::comment   : 
-                            c == '\\'       ? state::backslash : state::none;
-                
+                    return  c == '\''   ? state::string1   :
+                    c == '"'            ? state::string2   :
+                    c == m_commkey      ? state::comment   : 
+                    c == '\\'           ? state::backslash : state::none;
+
                 case state::string1:
-                    return  c == '\''       ? state::none      : 
-                            c == '\\'       ? state::backslash : state::string1;
-                
+                    return  c == '\''   ? state::none      : 
+                    c == '\\'           ? state::backslash : state::string1;
+
                 case state::string2:
-                    return  c == '"'        ? state::none      :
-                            c == '\\'       ? state::backslash : state::string2;
-                
+                    return  c == '"'    ? state::none      :
+                    c == '\\'           ? state::backslash : state::string2;
+
                 case state::comment:
-                    return  c == '\n'       ? state::none      : 
-                            c == '\\'       ? state::backslash : state::comment;
+                    return  c == '\n'   ? state::none      : 
+                    c == '\\'           ? state::backslash : state::comment;
 
                 case state::backslash:
                     return m_prev;
@@ -136,7 +139,7 @@ namespace more {
 
                 return state::none;
             }
-            
+
             std::streambuf * m_in;
             int     m_line;
             char    m_commkey;
@@ -153,7 +156,7 @@ namespace more {
             }
             return -1;
         }
-        
+
         template <class CharT, class Traits>
         inline
         std::basic_istream<CharT,Traits> &
@@ -190,8 +193,8 @@ namespace more {
                 std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
                 typename std::tuple_element<sizeof...(Ti)-N,
-                                             typename std::tuple<Ti...>   
-                                                >::type elem{}; 
+                         typename std::tuple<Ti...>   
+                         >::type elem{}; 
                 bool ok = lex.parse_lexeme(elem);
                 if (!ok) 
                     return false;
@@ -212,8 +215,8 @@ namespace more {
                 std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
                 typename std::tuple_element<sizeof...(Ti)-1,
-                                             typename std::tuple<Ti...>   
-                                                >::type elem{};
+                         typename std::tuple<Ti...>   
+                         >::type elem{};
 
                 bool ok = lex.parse_lexeme(elem);
                 if (ok)
@@ -237,7 +240,7 @@ namespace more {
         struct mutable_type<std::pair<T,V>>
         {
             typedef std::pair<typename std::remove_const<T>::type,
-                              typename std::remove_const<V>::type> type;
+                    typename std::remove_const<V>::type> type;
         };
         template <typename ... Ti>
         struct mutable_type<std::tuple<Ti...>>
@@ -303,13 +306,14 @@ namespace more {
     } // namespace details
 
     /////////////////////////////////////////////////////////////////////////////////////////
-    
+
     template <typename ...T> struct key_value_pack;
 
-    typedef std::tuple<bool,        // whether it is strict or non strict parsing 
-                       char,        // assign separator -> default =
-                       char,        // comment          -> default #
-                       std::string> parser_options;
+    typedef std::tuple<
+            bool,        // whether it is strict or non strict parsing 
+            char,        // assign separator -> default =
+            char,        // comment          -> default #
+            std::string> parser_options;
 
     template <typename CharT, typename Traits>
     class lexer 
@@ -348,10 +352,10 @@ namespace more {
         {
             std::string _s; return (m_in >> _s && _s.compare(s) == 0) ? true : false;
         }
-        
+
         // very generic parser for types supporting operator>> ...
         //
-        
+
         template <typename T>
         typename std::enable_if<!more::traits::is_container<T>::value,bool>::type 
         parse_lexeme(T &lex)
@@ -364,7 +368,7 @@ namespace more {
             static_assert(more::traits::has_extraction_operator<T>::value, "parse_lexeme: *** T must have a valid extraction operator>>() ***");
 #endif
             typename std::remove_const<T>::type e;
-            
+
             if(m_in >> e)
                 lex = std::move(e);
 #ifdef LEXEME_DEBUG
@@ -383,7 +387,7 @@ namespace more {
 #endif
             std::string s;
             if (!parse_lexeme(s))
-               return false;
+                return false;
             lex = strdup(s.c_str());    
             return true;
         }
@@ -443,24 +447,24 @@ namespace more {
                 m_in.get();
                 c = m_in.peek();
 #ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: quote -> " << quote << std::endl;
+                std::cout << details::BLUE << ":: quote -> " << quote << std::endl;
 #endif
             }
 
             while(c != traits_type::eof() && (
                     (quote && (c != quote)) ||
-                        (!quote && ( std::isalnum(c) || traits_type::eq(c, '_') || traits_type::eq(c, '-'))) ||
-                            traits_type::eq(c, '\\')
-                            )) {
+                    (!quote && ( std::isalnum(c) || traits_type::eq(c, '_') || traits_type::eq(c, '-'))) ||
+                    traits_type::eq(c, '\\')
+                    )) {
 
-                   c = m_in.get(); // get char
-                   if (c == '\\')
-                        c = m_in.get();
+                c = m_in.get(); // get char
+                if (c == '\\')
+                    c = m_in.get();
 
-                   str.push_back(c);
-                   c = m_in.peek();
+                str.push_back(c);
+                c = m_in.peek();
             }
-            
+
             if (quote) {
                 c = m_in.get();
                 if (!traits_type::eq(c, quote)) { 
@@ -477,7 +481,6 @@ namespace more {
 #endif
             return true;
         }
-
 
         // parser for boolean
         //
@@ -513,15 +516,15 @@ namespace more {
             if (_('('))
             {
                 ok =  parse_lexeme(first)     &&
-                      parse_lexeme(second)    &&
-                      _(')');  
+                parse_lexeme(second)    &&
+                _(')');  
             }
             else {
                 ok = _('[') &&
-                     parse_lexeme(first)        &&
-                     _("->")                    &&
-                     parse_lexeme(second)       &&
-                     _(']');
+                parse_lexeme(first)        &&
+                _("->")                    &&
+                parse_lexeme(second)       &&
+                _(']');
             }
 
             if (ok)
@@ -544,8 +547,8 @@ namespace more {
             std::tuple<Ti...> tup;
 
             bool ok = _('(') &&
-                        details::tuple_helper<sizeof...(Ti)>::parse_lexeme(*this, tup) &&
-                      _(')');
+            details::tuple_helper<sizeof...(Ti)>::parse_lexeme(*this, tup) &&
+            _(')');
             if (ok)
                 lex = std::move(tup);          
 #ifdef LEXEME_DEBUG
@@ -567,19 +570,19 @@ namespace more {
             bool ok = true;
             if (!_('[')) 
                 return false;
-            
+
             do {
                 if (_(']')) 
                     break;
-        
+
                 typename details::mutable_type<
-                    typename C::value_type>::type value;
+                typename C::value_type>::type value;
                 ok = parse_lexeme(value);
                 if (ok) {
                     if (!details::insert(lex,std::move(value))) {
                         std::clog << std::get<3>(m_option) << 
-                            ": insert error (dup value at line " << 
-                            details::line_number(m_in) << ")" << std::endl;
+                        ": insert error (dup value at line " << 
+                        details::line_number(m_in) << ")" << std::endl;
                         return false;
                     }
                 }
@@ -590,7 +593,7 @@ namespace more {
 #endif
             return ok;
         }
-        
+
         // recursive parser for key_value_pack
         //
         template <typename ...Ti>
@@ -605,15 +608,15 @@ namespace more {
 
             if (bracket &&  ! _('{')) {
                 std::clog << std::get<3>(m_option) << 
-                    ": parse error: missing open bracket (line " << 
-                        details::line_number(m_in) << ")" << std::endl;
+                ": parse error: missing open bracket (line " << 
+                details::line_number(m_in) << ")" << std::endl;
                 return false;
             }
 
             key_value_pack<Ti...> tmp;
-            
+
             while(m_in) {
-                
+
                 m_in >> std::noskipws >> std::ws;
 
                 std::string key;
@@ -626,10 +629,10 @@ namespace more {
                 while ((m_in >> c) && !isspace(c) && c != std::get<1>(m_option) ) {
                     key.push_back(c);
                 }
-                
+
                 if (key.empty())
                     continue;
-                
+
                 // got the key...
                 //
                 if (bracket && !key.compare("}")) {
@@ -656,7 +659,7 @@ namespace more {
 
                 // parse value for the current key (or skip it)...
                 // 
-                
+
                 if (!tmp.has_key(key) && !std::get<0>(m_option)) 
                 {
                     int level = 0;
@@ -665,8 +668,8 @@ namespace more {
                         c = m_in.peek();
                         if (!m_in) {
                             std::clog << std::get<3>(m_option) << ": parse error at key '" 
-                                << key << "' missing brackets (line "<< details::line_number(m_in) << ")" << std::endl;
-                            
+                            << key << "' missing brackets (line "<< details::line_number(m_in) << ")" << std::endl;
+
                             return false;
                         }
                         if ( c == '[' || c == '(') {
@@ -676,8 +679,8 @@ namespace more {
                             if (--level < 0) {
                                 std::cout << level << std::endl;
                                 std::clog << std::get<3>(m_option) << ": parse error at key '" 
-                                    << key << "' unbalanced brackets (line "<< details::line_number(m_in) << ")" << std::endl;
-                                
+                                << key << "' unbalanced brackets (line "<< details::line_number(m_in) << ")" << std::endl;
+
                                 return false;
                             }
                         }
@@ -687,8 +690,8 @@ namespace more {
                     if (c == ']' || c == ')')
                         m_in.get();
                     else
-                         m_in >> details::ignore_line;
-                    
+                        m_in >> details::ignore_line;
+
                     continue;
                 }
 
@@ -716,7 +719,7 @@ namespace more {
     {
         return lexer<CharT, Traits>(in, opt);
     }
-    
+
     //////////////////////////////////////////////////////////////////////////
     //   options 
     namespace key_value_opt {
@@ -730,16 +733,28 @@ namespace more {
             {}
 
             options &
-            strict() { std::get<0>(m_opt) = true; return *this; }
+            strict() 
+            { 
+                std::get<0>(m_opt) = true; return *this; 
+            }
 
             options &
-            non_strict() { std::get<0>(m_opt) = false; return *this; }
- 
+            non_strict() 
+            { 
+                std::get<0>(m_opt) = false; return *this; 
+            }
+
             options &
-            separator(char c) { std::get<1>(m_opt) = c; return *this; }
-            
+            separator(char c) 
+            { 
+                std::get<1>(m_opt) = c; return *this; 
+            }
+
             options &
-            comment(char c) { std::get<2>(m_opt) = c; return *this; }
+            comment(char c) 
+            { 
+                std::get<2>(m_opt) = c; return *this; 
+            }
 
             operator parser_options()
             {
@@ -748,16 +763,28 @@ namespace more {
         };
 
         static inline options
-        strict() { return options().strict(); }
+        strict() 
+        { 
+            return options().strict(); 
+        }
 
         static inline options
-        non_strict() { return options().non_strict(); }
+        non_strict() 
+        { 
+            return options().non_strict(); 
+        }
 
         static inline options
-        separator(char c) { return options().separator(c); }
-        
+        separator(char c) 
+        { 
+            return options().separator(c); 
+        }
+
         static inline options
-        comment(char c) { return options().comment(c); }
+        comment(char c) 
+        { 
+            return options().comment(c); 
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -769,6 +796,7 @@ namespace more {
     struct key_value_pack<T0, Ti...>
     {
     public:
+
         typedef more::type::typemap<typename T0::type, typename Ti::type...>    map_type;
         typedef typename T0::type::first_type                                   key_type;
         typedef typename T0::type::second_type                                  value_type;
@@ -780,14 +808,16 @@ namespace more {
         value_type   m_value;
 
         key_value_pack()
-        : m_parser(),
-          m_key(), m_value(details::get_default<key_type, value_type, key_type::has_default>::value()) 
-        {}
-                          
+        : m_parser()
+        , m_key()
+        , m_value(details::get_default<key_type, value_type, key_type::has_default>::value()) 
+        { }
+
         key_value_pack(const char *name, 
-            const parser_options &mode = std::make_tuple(false, '=', '#', "pack")) 
-        : m_parser(),
-          m_key(), m_value(details::get_default<key_type, value_type, key_type::has_default>::value()) 
+                       const parser_options &mode = std::make_tuple(false, '=', '#', "pack")) 
+        : m_parser()
+        , m_key()
+        , m_value(details::get_default<key_type, value_type, key_type::has_default>::value()) 
         {
             if(!this->open(name, mode))
                 throw std::runtime_error("key_value_pack");
@@ -802,25 +832,31 @@ namespace more {
         template <typename Key>
         typename std::add_lvalue_reference<typename more::type::get<map_type, Key>::type>::type
         get() 
-        { return get_<Key>(std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); }
-        
+        { 
+            return get_<Key>(std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); 
+        }
+
         template <typename Key>
         typename std::add_lvalue_reference<
-            typename std::add_const<
-                typename more::type::get<map_type, Key>::type>::type>::type
+        typename std::add_const<typename more::type::get<map_type, Key>::type>::type>::type
         get() const
-        { return const_cast<key_value_pack *>(this)->get_<Key>
-            (std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); }
-        
+        { 
+            return const_cast<key_value_pack *>(this)->get_<Key>(std::integral_constant<int, more::type::index_of<map_type, Key>::value>()); 
+        }
+
         template <typename Key, int N>
         typename std::add_lvalue_reference<typename more::type::get<map_type, Key>::type>::type
         get_(std::integral_constant<int,N>) 
-        { return m_parser.template get_<Key>(std::integral_constant<int, N-1>()); }
+        { 
+            return m_parser.template get_<Key>(std::integral_constant<int, N-1>()); 
+        }
 
         template <typename Key>
         typename std::add_lvalue_reference<value_type>::type
         get_(std::integral_constant<int,0>) 
-        { return m_value; } 
+        { 
+            return m_value; 
+        }
 
     public:
         //////////////////////////////////////////////////////////////////////////
@@ -828,19 +864,21 @@ namespace more {
 
         template <typename CharT, typename Traits>
         bool parse(std::basic_istream<CharT, Traits> &in, const std::string &key, 
-                         const parser_options &mode, lexer<CharT, Traits> &lex)
-        { return parse_(in, key, *this, mode, lex); }
+                   const parser_options &mode, lexer<CharT, Traits> &lex)
+        { 
+            return parse_(in, key, *this, mode, lex); 
+        }
 
         template <typename CharT, typename Traits, typename _T0, typename ..._Ti>
-        static bool parse_(std::basic_istream<CharT, Traits> &in, const std::string &key, 
-                                  key_value_pack<_T0, _Ti...> &that, const parser_options &mode, lexer<CharT, Traits> &lex)
+        static bool parse_(std::basic_istream<CharT, Traits> &in, const std::string &key, key_value_pack<_T0, _Ti...> &that, 
+                           const parser_options &mode, lexer<CharT, Traits> &lex)
         {
             if (key == _T0::type::first_type::str()) {
-                
+
                 if (!lex.parse_lexeme(that.m_value) || in.fail()) {
-                    
+
                     std::clog << std::get<3>(mode) << ": parse error: key[" << _T0::type::first_type::str() 
-                              << "] unexpected argument at line " << details::line_number(in) << std::endl;
+                    << "] unexpected argument at line " << details::line_number(in) << std::endl;
                     return false;
                 }
                 return true;
@@ -850,7 +888,7 @@ namespace more {
 
         template <typename CharT, typename Traits>
         static bool parse_(std::basic_istream<CharT, Traits> &in, const std::string &key, 
-                                  key_value_pack<> &, const parser_options &mode, lexer<CharT, Traits>&)
+                           key_value_pack<> &, const parser_options &mode, lexer<CharT, Traits>&)
         {
             // unknown key-value...
             if (std::get<0>(mode)) {   // strict mode: dump-error 
@@ -858,7 +896,7 @@ namespace more {
                 details::line_number(in) << ")" << std::endl;
                 return false;
             }
-            
+
             // non-strict mode: skip this line
             in >> details::ignore_line;
             return true;
@@ -866,7 +904,7 @@ namespace more {
 
         // predicate: has_key 
         //
-        
+
         bool has_key(const std::string &key) 
         {
             return has_key_(key, *this);
@@ -884,13 +922,15 @@ namespace more {
         {
             return false;
         }
+
     public:
+
         bool 
         open(const char *name, parser_options mode = std::make_tuple(false, '=', '#', "")) 
         {
             std::ifstream sc(name);
             std::get<3>(mode) = std::string(name);
-            
+
             if (!sc) {
                 std::clog << name << ": parse error: no such file" << std::endl;
                 return false;
