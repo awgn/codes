@@ -45,7 +45,9 @@ namespace simple_block {
     typedef more::key_value_pack<first, second>  type;
 }
 
-MAP_KEY(simple_block::type, block); 
+typedef std::vector<std::pair<simple_block::type,bool>> block_vec;
+
+MAP_KEY(block_vec, block); 
 
 // smart pointer support
 
@@ -118,8 +120,8 @@ main(int, char *[])
     std::get<2>( more::get<simple_tuple>(conf) ) << " , " <<
     std::get<3>( more::get<simple_tuple>(conf) ) << ")" << std::endl;
 
-    std::cout << "   block -> first:  " << more::get<simple_block::first>(more::get<block>(conf)) << '\n' <<
-    "            second: " << more::get<simple_block::second>(more::get<block>(conf)) << std::endl;
+    // std::cout << "   block -> first:  " << more::get<simple_block::first>(more::get<block>(conf)) << '\n' <<
+    // "            second: " << more::get<simple_block::second>(more::get<block>(conf)) << std::endl;
 
     std::cout << " -> " << raw_double::str() << " => " << std::boolalpha << static_cast<bool>(more::get<raw_double>(conf));
     if (more::get<raw_double>(conf))
