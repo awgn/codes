@@ -353,7 +353,6 @@ namespace more {
         //
         
         template <typename T>
-        inline 
         typename std::enable_if<!more::traits::is_container<T>::value,bool>::type 
         parse_lexeme(T &lex)
         { 
@@ -377,7 +376,7 @@ namespace more {
         // parser for string literal:    
         //
 
-        inline bool parse_lexeme(const char * &lex)
+        bool parse_lexeme(const char * &lex)
         {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -393,7 +392,7 @@ namespace more {
         //
 
         template <typename T>
-        inline bool parse_lexeme(T * &ptr)
+        bool parse_lexeme(T * &ptr)
         {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -409,7 +408,7 @@ namespace more {
         //
 
         template <typename T>
-        inline bool parse_lexeme(std::shared_ptr<T> &ptr)
+        bool parse_lexeme(std::shared_ptr<T> &ptr)
         {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -423,7 +422,7 @@ namespace more {
 
         // parser for std::string:
         //
-        inline bool parse_lexeme(std::string &lex)
+        bool parse_lexeme(std::string &lex)
         {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -483,7 +482,7 @@ namespace more {
         // parser for boolean
         //
 
-        inline bool parse_lexeme(bool &lex)
+        bool parse_lexeme(bool &lex)
         {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -503,7 +502,7 @@ namespace more {
         // 
 
         template <typename T, typename V>
-        inline bool parse_lexeme(std::pair<T,V> &lex)
+        bool parse_lexeme(std::pair<T,V> &lex)
         { 
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -559,7 +558,7 @@ namespace more {
         //
 
         template <typename C>
-        inline typename std::enable_if<more::traits::is_container<C>::value,bool>::type 
+        typename std::enable_if<more::traits::is_container<C>::value,bool>::type 
         parse_lexeme(C & lex)
         {
 #ifdef LEXEME_DEBUG
