@@ -1,4 +1,5 @@
 /* ----------------------------------------------------------------------------
+ *
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
@@ -161,7 +162,9 @@ namespace more {
             in_.ignore(std::numeric_limits<std::streamsize>::max(), in_.widen('\n'));
             return in_;
         }
-    
+
+        // key-value helper 
+        //
         template <typename KEY, typename TYPE, bool has_default>
         struct get_default
         {
@@ -176,7 +179,7 @@ namespace more {
         };
 
         // detail::tuple_helper<sizeof...(Ti)>::parse_lexeme(*this, tup) &&
-
+        //
         template <size_t N>
         struct tuple_helper
         {
@@ -259,7 +262,7 @@ namespace more {
         // 
         template <typename C, typename V>
         typename std::enable_if<!more::traits::has_key_type<C>::value && 
-                                !more::traits::has_container_type<C>::value,bool>::type 
+                                !more::traits::has_container_type<C>::value, bool>::type 
         insert(C &cont, V &&value)
         {
             cont.push_back(std::forward<V>(value));
@@ -270,7 +273,7 @@ namespace more {
         // 
         template <typename C, typename V>
         typename std::enable_if<!more::traits::has_key_type<C>::value && 
-                                more::traits::has_container_type<C>::value,bool>::type 
+                                more::traits::has_container_type<C>::value, bool>::type 
         insert(C &cont, V &&value)
         {
             cont.push(std::forward<V>(value));
@@ -281,7 +284,7 @@ namespace more {
         // std::unordered_multiset
         // 
         template <typename C, typename K>
-        typename std::enable_if<more::traits::has_key_type<C>::value ,bool>::type 
+        typename std::enable_if<more::traits::has_key_type<C>::value, bool>::type 
         insert(C &cont, K && value)
         {
             return insert_check(cont.insert(std::forward<K>(value)));
@@ -291,7 +294,7 @@ namespace more {
         // std::unordered_multimap
         // 
         template <typename C, typename T, typename V>
-        typename std::enable_if<more::traits::has_key_type<C>::value ,bool>::type 
+        typename std::enable_if<more::traits::has_key_type<C>::value, bool>::type 
         insert(C &cont, std::pair<T,V> && value)
         {
             return insert_check(cont.insert(std::move(value)));
@@ -628,6 +631,8 @@ namespace more {
                 if (key.empty())
                     continue;
                 
+                // got the key...
+                //
                 if (bracket && !key.compare("}")) {
                     bracket = false;
                     break;
@@ -647,9 +652,10 @@ namespace more {
                         return false;
                     }
                 }
+
                 m_in >> std::ws;
 
-                // parse value for known keys (or skip it)...
+                // parse value for the current key (or skip it)...
                 // 
                 
                 if (!tmp.has_key(key) && !std::get<0>(m_option)) 
@@ -659,7 +665,7 @@ namespace more {
                     do {
                         c = m_in.peek();
                         if (!m_in) {
-                            std::clog << std::get<3>(m_option) << ": parse error at foreing key '" 
+                            std::clog << std::get<3>(m_option) << ": parse error at key '" 
                                 << key << "' missing brackets (line "<< details::line_number(m_in) << ")" << std::endl;
                             
                             return false;
@@ -682,12 +688,12 @@ namespace more {
                     if (c == ']' || c == ')')
                         m_in.get();
                     else
-                        m_in >> details::ignore_line;
-
+                         m_in >> details::ignore_line;
+                    
                     continue;
                 }
 
-                // parse value...
+                // parse the value...
                 // 
                 if (!tmp.parse(m_in, key, m_option, *this)) 
                     return false;
@@ -833,9 +839,9 @@ namespace more {
             if (key == _T0::type::first_type::str()) {
                 
                 if (!lex.parse_lexeme(that.m_value) || in.fail()) {
-                    std::clog << std::get<3>(mode) << ": parse error: key[" << 
-                    _T0::type::first_type::str() << "] unexpected argument (line " << 
-                    details::line_number(in) << ")" << std::endl;
+                    
+                    std::clog << std::get<3>(mode) << ": parse error: key[" << _T0::type::first_type::str() 
+                              << "] unexpected argument at line " << details::line_number(in) << std::endl;
                     return false;
                 }
                 return true;
@@ -853,6 +859,7 @@ namespace more {
                 details::line_number(in) << ")" << std::endl;
                 return false;
             }
+            
             // non-strict mode: skip this line
             in >> details::ignore_line;
             return true;
