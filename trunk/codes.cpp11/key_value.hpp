@@ -315,6 +315,14 @@ namespace more {
             char,        // comment          -> default #
             std::string> parser_options;
 
+    enum 
+    {
+        parser_mode,
+        assign_key,
+        comment_key,
+        target_name
+    };
+
     template <typename CharT, typename Traits>
     class lexer 
     {
@@ -580,7 +588,7 @@ namespace more {
                 ok = parse_lexeme(value);
                 if (ok) {
                     if (!details::insert(lex,std::move(value))) {
-                        std::clog << std::get<3>(m_option) << 
+                        std::clog << std::get<target_name>(m_option) << 
                         ": insert error (dup value at line " << 
                         details::line_number(m_in) << ")" << std::endl;
                         return false;
@@ -607,7 +615,7 @@ namespace more {
             m_in.unsetf(std::ios::oct);
 
             if (bracket &&  ! _('{')) {
-                std::clog << std::get<3>(m_option) << 
+                std::clog << std::get<target_name>(m_option) << 
                 ": parse error: missing open bracket (line " << 
                 details::line_number(m_in) << ")" << std::endl;
                 return false;
@@ -626,7 +634,7 @@ namespace more {
                 //
                 char c = '\0';
 
-                while ((m_in >> c) && !isspace(c) && c != std::get<1>(m_option) ) {
+                while ((m_in >> c) && !isspace(c) && c != std::get<assign_key>(m_option) ) {
                     key.push_back(c);
                 }
 
@@ -646,11 +654,11 @@ namespace more {
 
                 // parse separator ('=')
                 //
-                if (c != std::get<1>(m_option)) {
+                if (c != std::get<assign_key>(m_option)) {
                     m_in >> c;
-                    if (c != std::get<1>(m_option)) {
-                        std::clog << std::get<3>(m_option) << ": parse error: key[" << key << "] missing separator '" 
-                        << std::get<1>(m_option) << "' (line "<< details::line_number(m_in) << ")" << std::endl;
+                    if (c != std::get<assign_key>(m_option)) {
+                        std::clog << std::get<target_name>(m_option) << ": parse error: key[" << key << "] missing separator '" 
+                        << std::get<assign_key>(m_option) << "' (line "<< details::line_number(m_in) << ")" << std::endl;
                         return false;
                     }
                 }
@@ -660,14 +668,14 @@ namespace more {
                 // parse value for the current key (or skip it)...
                 // 
 
-                if (!tmp.has_key(key) && !std::get<0>(m_option)) 
+                if (!tmp.has_key(key) && !std::get<parser_mode>(m_option)) 
                 {
                     int level = 0;
 
                     do {
                         c = m_in.peek();
                         if (!m_in) {
-                            std::clog << std::get<3>(m_option) << ": parse error at key '" 
+                            std::clog << std::get<target_name>(m_option) << ": parse error at key '" 
                             << key << "' missing brackets (line "<< details::line_number(m_in) << ")" << std::endl;
 
                             return false;
@@ -678,7 +686,7 @@ namespace more {
                         else if ( c == ']' || c == ')') {
                             if (--level < 0) {
                                 std::cout << level << std::endl;
-                                std::clog << std::get<3>(m_option) << ": parse error at key '" 
+                                std::clog << std::get<target_name>(m_option) << ": parse error at key '" 
                                 << key << "' unbalanced brackets (line "<< details::line_number(m_in) << ")" << std::endl;
 
                                 return false;
@@ -702,7 +710,7 @@ namespace more {
             }
 
             if (bracket) { 
-                std::clog << std::get<3>(m_option) << ": parse error: missing close bracket (line "<< details::line_number(m_in) << ")" << std::endl;
+                std::clog << std::get<target_name>(m_option) << ": parse error: missing close bracket (line "<< details::line_number(m_in) << ")" << std::endl;
                 return false;
             }
 
@@ -735,25 +743,25 @@ namespace more {
             options &
             strict() 
             { 
-                std::get<0>(m_opt) = true; return *this; 
+                std::get<parser_mode>(m_opt) = true; return *this; 
             }
 
             options &
             non_strict() 
             { 
-                std::get<0>(m_opt) = false; return *this; 
+                std::get<parser_mode>(m_opt) = false; return *this; 
             }
 
             options &
             separator(char c) 
             { 
-                std::get<1>(m_opt) = c; return *this; 
+                std::get<assign_key>(m_opt) = c; return *this; 
             }
 
             options &
             comment(char c) 
             { 
-                std::get<2>(m_opt) = c; return *this; 
+                std::get<comment_key>(m_opt) = c; return *this; 
             }
 
             operator parser_options()
@@ -877,7 +885,7 @@ namespace more {
 
                 if (!lex.parse_lexeme(that.m_value) || in.fail()) {
 
-                    std::clog << std::get<3>(mode) << ": parse error: key[" << _T0::type::first_type::str() 
+                    std::clog << std::get<target_name>(mode) << ": parse error: key[" << _T0::type::first_type::str() 
                     << "] unexpected argument at line " << details::line_number(in) << std::endl;
                     return false;
                 }
@@ -891,8 +899,8 @@ namespace more {
                            key_value_pack<> &, const parser_options &mode, lexer<CharT, Traits>&)
         {
             // unknown key-value...
-            if (std::get<0>(mode)) {   // strict mode: dump-error 
-                std::clog << std::get<3>(mode) << ": parse error: key[" << key << "] unknown (line " << 
+            if (std::get<parser_mode>(mode)) {   // strict mode: dump-error 
+                std::clog << std::get<target_name>(mode) << ": parse error: key[" << key << "] unknown (line " << 
                 details::line_number(in) << ")" << std::endl;
                 return false;
             }
@@ -929,14 +937,14 @@ namespace more {
         open(const char *name, parser_options mode = std::make_tuple(false, '=', '#', "")) 
         {
             std::ifstream sc(name);
-            std::get<3>(mode) = std::string(name);
+            std::get<target_name>(mode) = std::string(name);
 
             if (!sc) {
                 std::clog << name << ": parse error: no such file" << std::endl;
                 return false;
             }
 
-            details::streambuf sb(sc.rdbuf(), std::get<2>(mode));
+            details::streambuf sb(sc.rdbuf(), std::get<comment_key>(mode));
             std::istream in(&sb);    
             return open(in, mode);
         }
