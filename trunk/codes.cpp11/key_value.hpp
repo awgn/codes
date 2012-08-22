@@ -531,21 +531,19 @@ namespace more {
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            T first = T(); V second = V();
+            T first{}; V second{};
 
             bool ok;
             if (_('('))
             {
-                ok =  parse_lexeme(first)     &&
-                parse_lexeme(second)    &&
-                _(')');  
+                ok =  parse_lexeme(first)   &&
+                      parse_lexeme(second)  &&
+                      _(')');  
             }
             else {
-                ok = _('[') &&
-                parse_lexeme(first)        &&
-                _("->")                    &&
-                parse_lexeme(second)       &&
-                _(']');
+                ok = parse_lexeme(first)    &&
+                     _("->")                &&
+                     parse_lexeme(second);   
             }
 
             if (ok)
@@ -722,8 +720,10 @@ namespace more {
                 std::clog << std::get<target_name>(m_option) << ": parse error: missing close bracket (line "<< details::line_number(m_in) << ")" << std::endl;
                 return false;
             }
-
+            
             // parsing correct...
+
+            m_in >> std::skipws;
 
             elem  = tmp;
             return true;
