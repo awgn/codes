@@ -64,16 +64,20 @@ namespace std {
     //
 
     template <typename CharT, typename Traits, typename T>
-    inline typename std::enable_if<more::traits::is_container<T>::value && 
-    !is_same<typename std::string,T>::value, 
+    inline typename std::enable_if<
+        (more::traits::is_container<T>::value && 
+            !is_same<typename std::string,T>::value) ||
+        (rank<T>::value > 0 && 
+            !is_same<char, typename remove_cv<typename remove_all_extents<T>::type>::type>::value),
         std::basic_ostream<CharT,Traits>>::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
     {
-        out << "{ ";  
-        std::copy(v.begin(), v.end(), 
-                  std::ostream_iterator<typename T::value_type>(
-                      out, " "));
-        return out << "}";
+        out << "{ ";
+        for(auto & e : v)
+        {
+            out << e << ' ';
+        }
+        return out << '}';
     };
 
     //////////////////////////
@@ -95,7 +99,7 @@ namespace std {
     {
         out << "[ ";
         more::streamer::printon<CharT, Traits, std::array<T,N>, N>::apply(out,rhs);
-        return out << "]";
+        return out << ']';
     }
 
     ////////////////////////////////////////////////////////
@@ -107,7 +111,7 @@ namespace std {
     {
         out << "{ ";
         more::streamer::printon<CharT, Traits, T, std::tuple_size<T>::value>::apply(out,rhs);
-        return out << "}";
+        return out << '}';
     }
 
     ////////////////////////////////////////////////////////
