@@ -17,23 +17,70 @@
 #include <unistd.h>
 
 #include <sockaddress.hpp>           // more!
+#include <buffer.hpp>                // more!
 
 #include <string>
 #include <array>
 
 namespace more {
 
-    template <int FAMILY>
+    template <int F>
     class generic_socket  
     {
+    public:
+
+        generic_socket(generic_socket&& rhs)
+        : m_fd(-1)
+        {
+            if ( rhs.m_fd == -1 )
+                throw std::runtime_error("generic_socket: bad file descriptor");
+           
+            std::swap(m_fd, rhs.m_fd);
+        }
+
+        generic_socket &
+        operator=(generic_socket&& rhs)
+        {
+            if (this != &rhs) 
+            {
+                if ( rhs.m_fd == -1 )
+                    throw std::runtime_error("generic_socket: bad file descriptor");
+                
+                this->close_fd();
+                std::swap(m_fd, rhs.m_fd);
+            }
+            return *this;         
+        }
+ 
+    protected:
+
+        generic_socket(int s = -1) 
+        : m_fd(s)
+        {}
+
+        virtual ~generic_socket()
+        {
+            this->close_fd();
+        }
+ 
+        generic_socket(const generic_socket&) = delete;
+        generic_socket& operator=(const generic_socket&) = delete;
+
+        generic_socket(__socket_type type, int protocol=0)
+        : m_fd(::socket(F, type, protocol))
+        {
+            if ( m_fd == -1) 
+                throw std::system_error(errno, std::generic_category());
+        }
+
     public:
 
         ///////////////////// I/O does not throw ///////////////////// 
 
         ssize_t 
-        send(const void *buf, size_t len, int flags) const
+        send(const_buffer buf, int flags) const
         { 
-            return ::send(m_fd, buf, len, flags); 
+            return ::send(m_fd, buf.addr(), buf.size(), flags); 
         }
 
         template <std::size_t N>
@@ -45,9 +92,9 @@ namespace more {
         }
 
         ssize_t 
-        recv(void *buf, size_t len, int flags) const
+        recv(mutable_buffer buf, int flags) const
         { 
-            return ::recv(m_fd, buf, len, flags); 
+            return ::recv(m_fd, buf.addr(), buf.size(), flags); 
         }
 
         template <std::size_t N>
@@ -59,21 +106,21 @@ namespace more {
         }
 
         int 
-        sendto(const void *buf, size_t len, int flags, const sockaddress<FAMILY> &to) const 
+        sendto(const_buffer buf, int flags, const sockaddress<F> &to) const 
         { 
-            return ::sendto(m_fd, buf, len, flags, &to.c_addr(), to.len()); 
+            return ::sendto(m_fd, buf.addr(), buf.size(), flags, &to.c_addr(), to.len()); 
         }
 
         ssize_t 
-        recvfrom(void *buf, size_t len, int flags, sockaddress<FAMILY> &from) const
+        recvfrom(mutable_buffer buf, int flags, sockaddress<F> &from) const
         { 
-            return ::recvfrom(m_fd, buf, len, flags, &from.c_addr(), &from.len()); 
+            return ::recvfrom(m_fd, buf.addr(), buf.size(), flags, &from.c_addr(), &from.len()); 
         }
     
-        ////////////////// connect/bind/listen/accept: throw in case of non-blocking socket related errors
+        ////////////////// connect/bind/listen/accept: throw when errors occur with non-blocking socket 
 
         virtual int 
-        connect(const sockaddress<FAMILY> &addr)
+        connect(const sockaddress<F> &addr)
         { 
             if (::connect(m_fd, &addr.c_addr(), addr.len()) < 0)
             {
@@ -85,9 +132,9 @@ namespace more {
         }
 
         virtual void 
-        bind(const sockaddress<FAMILY> &my_addr)
+        bind(const sockaddress<F> &addr)
         { 
-            if (::bind(m_fd, &my_addr.c_addr(), my_addr.len()) < 0)
+            if (::bind(m_fd, &addr.c_addr(), addr.len()) < 0)
                throw std::system_error(errno, std::generic_category());
         }
 
@@ -99,7 +146,7 @@ namespace more {
         }
 
         int 
-        accept(sockaddress<FAMILY> &addr, generic_socket<FAMILY> &remote) 
+        accept(sockaddress<F> &addr, generic_socket<F> &remote) 
         {
             int s = ::accept(m_fd, &addr.c_addr(), &addr.len());
             if (s < 0) {
@@ -107,6 +154,7 @@ namespace more {
                     throw std::system_error(errno, std::generic_category());
                 return -1; 
             }
+
             remote.close_fd();
             remote.m_fd = s;
             return s;
@@ -115,13 +163,13 @@ namespace more {
         ////////////////// other methods...
 
         int 
-        getsockname(sockaddress<FAMILY> &name) const
+        getsockname(sockaddress<F> &name) const
         { 
             return ::getsockname(m_fd, &name.c_addr(), &name.len()); 
         }
 
         int 
-        getpeername(sockaddress<FAMILY> &name) const
+        getpeername(sockaddress<F> &name) const
         { 
             return ::getpeername(m_fd, &name.c_addr(), &name.len()); 
         }
@@ -146,7 +194,9 @@ namespace more {
 
         bool
         is_open() const
-        { return m_fd == -1; }
+        { 
+            return m_fd == -1; 
+        }
 
         void 
         close()
@@ -154,59 +204,9 @@ namespace more {
             this->close_fd();
         }
 
-        void 
-        init(int type,int protocol=0) 
-        {
-            close_fd();
-            m_fd = ::socket(FAMILY, type, protocol);
-            if (m_fd == -1) {
-                throw std::system_error(errno, std::generic_category());
-            }
-        }
-
-        generic_socket(generic_socket&& rhs)
-        : m_fd(-1)
-        {
-            if ( rhs.m_fd == -1 )
-                throw std::runtime_error("bad file descriptor");
-            m_fd = rhs.release();
-        }
-
-        generic_socket &
-        operator=(generic_socket&& rhs)
-        {
-            if (this != &rhs) 
-            {
-                if ( rhs.m_fd == -1 )
-                    throw std::runtime_error("bad file descriptor");
-                this->close_fd();
-                m_fd = rhs.release();
-            }
-            return *this;         
-        }
- 
     protected: //////////////////////////////////////////////////////////////
 
         int m_fd;
-
-        generic_socket(int s = -1) 
-        : m_fd(s)
-        {}
-
-        virtual ~generic_socket()
-        {
-            this->close_fd();
-        }
- 
-        generic_socket(const generic_socket&) = delete;
-        generic_socket& operator=(const generic_socket&) = delete;
-
-        generic_socket(__socket_type type, int protocol=0)
-        : m_fd(::socket(FAMILY, type, protocol))
-        {
-            if ( m_fd == -1) 
-                throw std::system_error(errno, std::generic_category());
-        }
 
         void close_fd()
         {
@@ -216,39 +216,31 @@ namespace more {
                 m_fd = -1;
             }
         }
-
-        int release()
-        {
-            int __tmp = m_fd;
-            m_fd = -1;
-            return __tmp;
-        }
     };
-
 
     //////////////////////////////////////////////
     // generic socket: PF_INET/PF_INET6...
     //
 
-    template <int FAMILY> 
-    struct socket : public generic_socket<FAMILY> 
+    template <int F> 
+    struct socket : public generic_socket<F> 
     {
         socket()
-        : generic_socket<FAMILY>()
+        : generic_socket<F>()
         {}
 
         socket(__socket_type type, int protocol=0)
-        : generic_socket<FAMILY>(type,protocol) 
+        : generic_socket<F>(type,protocol) 
         {}
 
         socket(socket&& rhs)
-        : generic_socket<FAMILY>(std::move(rhs))
+        : generic_socket<F>(std::move(rhs))
         {}
 
         socket& 
         operator=(socket&& rhs)
         {
-            static_cast< generic_socket<FAMILY> &>(*this) = std::move(rhs);
+            generic_socket<F>::operator=(std::move(rhs));
             return *this;
         }
     };
@@ -264,9 +256,9 @@ namespace more {
         {}
 
         socket(__socket_type type, int protocol=0)
-        : generic_socket<PF_UNIX>(type,protocol),
-        m_pathname(),
-        m_bound(false)
+        : generic_socket<PF_UNIX>(type,protocol)
+        , m_pathname()
+        , m_bound(false)
         {}
 
         ~socket() 
@@ -283,15 +275,15 @@ namespace more {
         socket& 
         operator=(socket&& rhs)
         {
-            static_cast< generic_socket<PF_UNIX> &>(*this) = std::move(rhs);
+            generic_socket<PF_UNIX>::operator=(std::move(rhs));
             return *this;
         }
  
-        void bind(const sockaddress<PF_UNIX> &my_addr)
+        void bind(const sockaddress<PF_UNIX> &addr)
         {
-            if(::bind(this->m_fd, &my_addr.c_addr(), my_addr.len())<0)
+            if(::bind(this->m_fd, &addr.c_addr(), addr.len())<0)
                 throw std::system_error(errno, std::generic_category());
-            m_pathname = my_addr.name();
+            m_pathname = addr.name();
         }
 
         int
