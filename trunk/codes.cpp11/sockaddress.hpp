@@ -58,6 +58,15 @@ namespace more {
             m_addr.sin_addr   = sa.sin_addr;
         }
 
+        sockaddress(const in_addr &addr, unsigned short port) 
+        : m_addr()
+        , m_len(sizeof(sockaddr_in))
+        {
+            m_addr.sin_family = AF_INET;
+            m_addr.sin_addr   = addr;
+            m_addr.sin_port   = htons(port);
+        }
+
         sockaddress(const std::string &host, unsigned short port) 
         : m_addr()
         , m_len(sizeof(sockaddr_in))
@@ -218,6 +227,15 @@ namespace more {
             m_addr.sin6_family = AF_INET6;
             m_addr.sin6_port   = sa.sin6_port;
             memcpy(m_addr.sin6_addr.s6_addr, sa.sin6_addr.s6_addr, sizeof(in6_addr));
+        }
+        
+        sockaddress(const in6_addr &addr, unsigned short port) 
+        : m_addr()
+        , m_len(sizeof(sockaddr_in))
+        {
+            m_addr.sin6_family = AF_INET6;
+            m_addr.sin6_port   = htons(port);
+            memcpy(m_addr.sin6_addr.s6_addr, addr.s6_addr, sizeof(in6_addr));
         }
 
         sockaddress(const std::string &host, unsigned short port ) 
