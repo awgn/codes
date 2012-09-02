@@ -61,15 +61,13 @@ namespace more {
         int 
         sendto(const void *buf, size_t len, int flags, const sockaddress<FAMILY> &to) const 
         { 
-            return ::sendto(m_fd, buf, len, flags, 
-                            reinterpret_cast<const struct sockaddr *>(&to), to.len()); 
+            return ::sendto(m_fd, buf, len, flags, &to.c_addr(), to.len()); 
         }
 
         ssize_t 
         recvfrom(void *buf, size_t len, int flags, sockaddress<FAMILY> &from) const
         { 
-            return ::recvfrom(m_fd, buf, len, flags, 
-                              reinterpret_cast<struct sockaddr *>(&from), &from.len()); 
+            return ::recvfrom(m_fd, buf, len, flags, &from.c_addr(), &from.len()); 
         }
     
         ////////////////// connect/bind/listen/accept: throw in case of non-blocking socket related errors
@@ -77,7 +75,7 @@ namespace more {
         virtual int 
         connect(const sockaddress<FAMILY> &addr)
         { 
-            if (::connect(m_fd, reinterpret_cast<const struct sockaddr *>(&addr), addr.len()) < 0)
+            if (::connect(m_fd, &addr.c_addr(), addr.len()) < 0)
             {
                 if (errno != EINPROGRESS && errno != EALREADY)
                     throw std::system_error(errno, std::generic_category());
@@ -89,7 +87,7 @@ namespace more {
         virtual void 
         bind(const sockaddress<FAMILY> &my_addr)
         { 
-            if (::bind(m_fd,reinterpret_cast<const struct sockaddr *>(&my_addr), my_addr.len()) < 0)
+            if (::bind(m_fd, &my_addr.c_addr(), my_addr.len()) < 0)
                throw std::system_error(errno, std::generic_category());
         }
 
@@ -103,7 +101,7 @@ namespace more {
         int 
         accept(sockaddress<FAMILY> &addr, generic_socket<FAMILY> &remote) 
         {
-            int s = ::accept(m_fd,reinterpret_cast<struct sockaddr *>(&addr), &addr.len());
+            int s = ::accept(m_fd, &addr.c_addr(), &addr.len());
             if (s < 0) {
                 if (errno != EAGAIN && errno != EWOULDBLOCK)
                     throw std::system_error(errno, std::generic_category());
@@ -119,13 +117,13 @@ namespace more {
         int 
         getsockname(sockaddress<FAMILY> &name) const
         { 
-            return ::getsockname(m_fd, reinterpret_cast<struct sockaddr *>(&name), &name.len()); 
+            return ::getsockname(m_fd, &name.c_addr(), &name.len()); 
         }
 
         int 
         getpeername(sockaddress<FAMILY> &name) const
         { 
-            return ::getpeername(m_fd, reinterpret_cast<struct sockaddr *>(&name), &name.len()); 
+            return ::getpeername(m_fd, &name.c_addr(), &name.len()); 
         }
 
         int 
@@ -291,21 +289,21 @@ namespace more {
  
         void bind(const sockaddress<PF_UNIX> &my_addr)
         {
-            if(::bind(this->m_fd,reinterpret_cast<const struct sockaddr *>(&my_addr), my_addr.len())<0)
+            if(::bind(this->m_fd, &my_addr.c_addr(), my_addr.len())<0)
                 throw std::system_error(errno, std::generic_category());
-            m_pathname = my_addr;
+            m_pathname = my_addr.name();
         }
 
         int
         connect(const sockaddress<PF_UNIX> &addr)
         {
-            if (::connect(this->m_fd, reinterpret_cast<const struct sockaddr *>(&addr), addr.len()) < 0)
+            if (::connect(this->m_fd, &addr.c_addr(), addr.len()) < 0)
             {
                 if ( errno != EINPROGRESS && errno != EALREADY)
                     throw std::system_error(errno, std::generic_category());
                 return -1;
             }
-            m_pathname = addr;
+            m_pathname = addr.name();
             return 0;
         }
 
