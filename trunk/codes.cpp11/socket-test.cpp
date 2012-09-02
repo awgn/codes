@@ -11,7 +11,7 @@
 #include <socket.hpp>
 #include <cstdlib>
 
-char buffer[80];
+char buf[80];
 
 int main()
 {
@@ -40,17 +40,17 @@ int main()
         local.accept(peer, remote);
         
         std::cout << "[" << peer.host() << ":" << peer.port() << "]" << std::endl; 
-        auto n = remote.recv(buffer, sizeof(buffer), 0);
+        auto n = remote.recv(more::mutable_buffer(buf), 0);
         
-        // r.send(buffer, n, 0); 
+        // r.send(buf, 0); 
         // send double-echo by means of iovec...
 
         std::array<iovec,2> iov;
 
-        iov[0].iov_base = buffer;
+        iov[0].iov_base = buf;
         iov[0].iov_len  = static_cast<size_t>(n);
 
-        iov[1].iov_base = buffer;
+        iov[1].iov_base = buf;
         iov[1].iov_len  = static_cast<size_t>(n);
 
         remote.send(iov,0);
