@@ -12,6 +12,7 @@
 #define _CURRYING_HPP_ 
 
 #include <utility>
+#include <type_traits>
 
 namespace more {
 
@@ -41,6 +42,9 @@ namespace more {
         T a_;
     };
 
+    /// curry
+    ///
+    
     template <typename C, typename T> 
     _curry_type<C, T>
     curry(C call, T && a)
@@ -56,6 +60,23 @@ namespace more {
         return curry(c, std::forward<Ts>(as)...); 
     }
 
+    /// closure
+    ///
+    
+    template <typename C, typename T> 
+    _curry_type<C, typename std::remove_reference<T>::type>
+    closure(C call, T && a)
+    {
+        return _curry_type<C, typename std::remove_reference<T>::type>(call, std::forward<T>(a));
+    }
+
+    template <typename C, typename T, typename ... Ts> 
+    auto closure(C call, T && a, Ts && ... as) 
+    -> decltype(closure(_curry_type<C, typename std::remove_reference<T>::type>(call, std::forward<T>(a)), std::forward<Ts>(as)...)) 
+    {
+        auto c = closure(call, std::forward<T>(a));
+        return closure(c, std::forward<Ts>(as)...); 
+    }
 
 } // namespace more
 

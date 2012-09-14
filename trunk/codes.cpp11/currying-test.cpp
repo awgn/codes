@@ -12,11 +12,23 @@
 
 #include <string>
 #include <iostream>
-
+#include <functional>
 
 void fun(int a, std::string b, char c, bool q)
 {
     std::cout << std::boolalpha << a << ' ' << b << ' ' << c << ' ' << q << std::endl;
+}
+
+
+int add(int a, int  b)
+{
+    return a+b;
+}
+
+
+std::function<int(int)> factory_add(int n)
+{
+    return more::closure(add,n);
 }
 
 
@@ -27,6 +39,10 @@ main(int argc, char *argv[])
     auto q = more::curry(f, 'x');
     
     q(true); 
+
+    auto add2 = factory_add(2);
+
+    std::cout << add2(40) << std::endl;
 
     return 0;
 }
