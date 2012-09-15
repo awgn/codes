@@ -13,8 +13,10 @@
 #include <string>
 #include <iostream>
 #include <functional>
-
 #include <cassert>
+
+using namespace more;
+
 
 void f0(int a, std::string b, char c, bool q)
 {
@@ -30,7 +32,7 @@ int add(int a, int  b)
 
 std::function<int(int)> factory_add(int n)
 {
-    return more::closure(add,n);
+    return closure(add,n);
 }
 
 
@@ -40,19 +42,60 @@ void incr(int &n)
 }
 
 
+struct moveable
+{
+    moveable()
+    : count()
+    {}
+    
+    moveable(const moveable &) = delete;
+    moveable& operator=(const moveable &) = delete;
+
+    moveable(moveable &&other)
+    : count(other.count+1)
+    {
+        other.count = 0;
+    }
+
+    moveable& 
+    operator=(moveable &&other)
+    {
+        count = other.count+1;
+        other.count = 0;
+        return *this;
+    }
+
+    int count;
+};
+
+
+int take(moveable &&m, int n)
+{
+    std::cout << "count: " << m.count << std::endl;
+    return m.count;
+}
+
+
+
 int
 main(int argc, char *argv[])
 {
-    auto f1 = more::curry(f0, 42, "hello");    
-    auto f2 = more::curry(f1, 'x');
+    auto f1 = curry(f0, 42, "hello");    
+    auto f2 = curry(f1, 'x');
     f2(true); 
 
     auto add2 = factory_add(2);
+    
+    // test full curry 
+
+    auto f3 = curry(add, 1, 2);
+
+    assert(f3() == 3);
 
     assert(add2(40) == 42);
 
     int  n = 0;
-    auto f = more::curry(incr, n);
+    auto f = curry(incr, n);
 
     f();
 
@@ -60,8 +103,14 @@ main(int argc, char *argv[])
     
     // err: closure with callable that takes
     //      arg by non-const l-value reference...
-    // auto x = more::closure(incr, n);
+    // auto x = closure(incr, n);
     // x();
+    
+    moveable m;
+
+    auto z = curry(&take, std::move(m), 0);
+
+    z();
 
     return 0;
 }
