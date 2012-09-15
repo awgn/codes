@@ -21,9 +21,13 @@ namespace more {
     {                            
         template <typename Ti>
         _curry_type(C call, Ti && a)
-        : call_(call)
+        : call_(std::move(call))
         , a_(std::forward<Ti>(a))
         {}
+
+        _curry_type(_curry_type const &) = default;
+
+        _curry_type(_curry_type &&) = default;
 
         ~_curry_type() = default;
 
@@ -50,15 +54,16 @@ namespace more {
     _curry_type<C, T>
     curry(C call, T && a)
     {
-        return _curry_type<C, T>(call, std::forward<T>(a));
+        return _curry_type<C, T>(std::move(call), std::forward<T>(a));
     }
 
     template <typename C, typename T, typename ... Ts> 
     auto curry(C call, T && a, Ts && ... as) 
-    -> decltype(curry(_curry_type<C, T>(call, std::forward<T>(a)), std::forward<Ts>(as)...)) 
+    -> decltype(curry(_curry_type<C, T>(std::move(call), std::forward<T>(a)), std::forward<Ts>(as)...)) 
     {
-        auto c = curry(call, std::forward<T>(a));
-        return curry(c, std::forward<Ts>(as)...); 
+        // auto && c = curry(std::move(call), std::forward<T>(a));
+        // return std::move(curry(std::move(c), std::forward<Ts>(as)...)); 
+        return curry(curry(std::move(call), std::forward<T>(a)), std::forward<Ts>(as)...); 
     }
 
     /// closure
