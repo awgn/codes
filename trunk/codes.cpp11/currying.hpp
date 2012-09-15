@@ -61,8 +61,6 @@ namespace more {
     auto curry(C call, T && a, Ts && ... as) 
     -> decltype(curry(_curry_type<C, T>(std::move(call), std::forward<T>(a)), std::forward<Ts>(as)...)) 
     {
-        // auto && c = curry(std::move(call), std::forward<T>(a));
-        // return std::move(curry(std::move(c), std::forward<Ts>(as)...)); 
         return curry(curry(std::move(call), std::forward<T>(a)), std::forward<Ts>(as)...); 
     }
 
@@ -86,8 +84,7 @@ namespace more {
     auto closure(C call, T && a, Ts && ... as) 
     -> decltype(closure(_curry_type<C, typename closure_type<T>::type>(call, std::forward<T>(a)), std::forward<Ts>(as)...)) 
     {
-        auto c = closure(call, std::forward<T>(a));
-        return closure(c, std::forward<Ts>(as)...); 
+        return closure(closure(call, std::forward<T>(a)), std::forward<Ts>(as)...); 
     }
 
 } // namespace more
