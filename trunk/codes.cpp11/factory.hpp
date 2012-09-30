@@ -31,7 +31,7 @@ namespace more {
     template <typename B, typename E, typename ... Arg>   // B must be a base class of E 
     struct factory_allocator : public factory_base_allocator<B,Arg...>
     {
-        static_assert(std::is_base_of<B,E>::value, "base_of relationship violated");
+        static_assert(std::is_base_of<B,E>::value, "base_of relationship broken");
 
         virtual B * alloc(Arg && ... arg)
         {
@@ -56,7 +56,7 @@ namespace more {
               >
     struct factory_register
     {
-        static_assert(std::is_base_of<B,E>::value, "base_of relationship violated");
+        static_assert(std::is_base_of<B,E>::value, "base_of relationship broken");
 
         template <typename F, typename K>
         factory_register(F &f, const K &key)
