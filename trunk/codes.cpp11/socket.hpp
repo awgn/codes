@@ -30,12 +30,9 @@ namespace more {
     public:
 
         generic_socket(generic_socket&& rhs)
-        : m_fd(-1)
+        : m_fd(rhs.m_fd)
         {
-            if ( rhs.m_fd == -1 )
-                throw std::runtime_error("generic_socket: bad file descriptor");
-           
-            std::swap(m_fd, rhs.m_fd);
+            rhs.m_fd = -1;
         }
 
         generic_socket &
@@ -43,11 +40,9 @@ namespace more {
         {
             if (this != &rhs) 
             {
-                if ( rhs.m_fd == -1 )
-                    throw std::runtime_error("generic_socket: bad file descriptor");
-                
                 this->close_fd();
-                std::swap(m_fd, rhs.m_fd);
+                m_fd = rhs.m_fd;
+                rhs.m_fd = -1;
             }
             return *this;         
         }

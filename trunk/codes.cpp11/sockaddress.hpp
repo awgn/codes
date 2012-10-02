@@ -24,7 +24,12 @@
 #include <system_error>
 
 #ifndef UNIX_PATH_MAX
-#define UNIX_PATH_MAX 108
+#ifdef __APPLE__
+# define UNIX_PATH_MAX 104
+#else
+# define UNIX_PATH_MAX 108
+#endif
+
 #endif
 
 namespace more {
@@ -34,14 +39,13 @@ namespace more {
     template <>
     class sockaddress<AF_INET> 
     {
-        sockaddr_in m_addr;
         socklen_t   m_len;
+        sockaddr_in m_addr;
 
     public:
 
         sockaddress() 
-        : m_addr()
-        , m_len(sizeof(sockaddr_in))
+        : m_len(sizeof(sockaddr_in))
         {
             m_addr.sin_family = AF_INET;
             m_addr.sin_port   = 0;
@@ -49,8 +53,7 @@ namespace more {
         }
 
         sockaddress(const sockaddr_in &sa) 
-        : m_addr()
-        , m_len(sizeof(sockaddr_in))
+        : m_len(sizeof(sockaddr_in))
         {
             assert(sa.sin_family == AF_INET);
             m_addr.sin_family = AF_INET;
@@ -59,8 +62,7 @@ namespace more {
         }
 
         sockaddress(const in_addr &addr, unsigned short port) 
-        : m_addr()
-        , m_len(sizeof(sockaddr_in))
+        : m_len(sizeof(sockaddr_in))
         {
             m_addr.sin_family = AF_INET;
             m_addr.sin_addr   = addr;
@@ -68,8 +70,7 @@ namespace more {
         }
 
         sockaddress(const std::string &host, unsigned short port) 
-        : m_addr()
-        , m_len(sizeof(sockaddr_in))
+        : m_len(sizeof(sockaddr_in))
         { 
             m_addr.sin_family = AF_INET;
             m_addr.sin_port   = htons(port);
@@ -94,28 +95,12 @@ namespace more {
             freeaddrinfo(res);
         }
 
-        sockaddress(sockaddress const &so)
-        : m_addr()
-        , m_len(sizeof(sockaddr_in))
-        {
-            m_addr.sin_family = so.m_addr.sin_family;
-            m_addr.sin_addr   = so.m_addr.sin_addr;
-            m_addr.sin_port   = so.m_addr.sin_port;
-        }
+        sockaddress(sockaddress const &) = default;
+        sockaddress& operator=(sockaddress const &) = default;
 
-        const sockaddress &
-        operator=(sockaddress const &so)
-        {
-            if(this == &so)
-                return *this;
-
-            m_addr.sin_family = so.m_addr.sin_family;
-            m_addr.sin_addr   = so.m_addr.sin_addr;
-            m_addr.sin_port   = so.m_addr.sin_port;
-            return *this;
-        }
-
-
+        sockaddress(sockaddress &&) = default;
+        sockaddress& operator=(sockaddress &&) = default;
+        
         ~sockaddress() = default;
 
         // set...
@@ -206,13 +191,13 @@ namespace more {
     template <>
     class sockaddress<AF_INET6> {
 
-        sockaddr_in6 m_addr;
         socklen_t    m_len;
+        sockaddr_in6 m_addr;
 
     public:
+
         sockaddress()
-        : m_addr()
-        , m_len(sizeof(sockaddr_in6))
+        : m_len(sizeof(sockaddr_in6))
         {
             m_addr.sin6_family = AF_INET6;
             m_addr.sin6_port   = 0;
@@ -220,8 +205,7 @@ namespace more {
         }
 
         sockaddress(const sockaddr_in6 &sa) 
-        : m_addr()
-        , m_len(sizeof(sockaddr_in6))
+        : m_len(sizeof(sockaddr_in6))
         {
             assert(sa.sin6_family == AF_INET6);
             m_addr.sin6_family = AF_INET6;
@@ -230,8 +214,7 @@ namespace more {
         }
         
         sockaddress(const in6_addr &addr, unsigned short port) 
-        : m_addr()
-        , m_len(sizeof(sockaddr_in))
+        : m_len(sizeof(sockaddr_in))
         {
             m_addr.sin6_family = AF_INET6;
             m_addr.sin6_port   = htons(port);
@@ -239,8 +222,7 @@ namespace more {
         }
 
         sockaddress(const std::string &host, unsigned short port ) 
-        : m_addr()
-        , m_len(sizeof(sockaddr_in6))
+        : m_len(sizeof(sockaddr_in6))
         {
             m_addr.sin6_family = AF_INET6;
             m_addr.sin6_port   = htons(port);
@@ -253,27 +235,12 @@ namespace more {
             }
         }
 
-        sockaddress(sockaddress const &so)
-        : m_addr()
-        , m_len(sizeof(sockaddr_in6))
-        {
-            m_addr.sin6_family = so.m_addr.sin6_family;
-            m_addr.sin6_port   = so.m_addr.sin6_port;
-            memcpy(&m_addr.sin6_addr.s6_addr, so.m_addr.sin6_addr.s6_addr, sizeof(in6_addr));
-        }
+        sockaddress(sockaddress const &) = default;
+        sockaddress& operator=(sockaddress const &) = default;
 
-        const sockaddress &
-        operator=(sockaddress const &so)
-        {
-            if(this == &so)
-                return *this;
-            m_addr.sin6_family = so.m_addr.sin6_family;
-            m_addr.sin6_port   = so.m_addr.sin6_port;
-            memcpy(&m_addr.sin6_addr.s6_addr, so.m_addr.sin6_addr.s6_addr, sizeof(in6_addr));
-            return *this;
-        }
-
-
+        sockaddress(sockaddress &&) = default;
+        sockaddress& operator=(sockaddress &&) = default;
+        
         ~sockaddress() = default;
 
         // set...
@@ -351,47 +318,31 @@ namespace more {
     template <>
     class sockaddress<AF_UNIX> {
 
-        sockaddr_un m_addr;
         socklen_t m_len;
+        sockaddr_un m_addr;
 
     public:
         sockaddress()
-        : m_addr()
-        , m_len(sizeof(sockaddr_un))
+        : m_len(sizeof(sockaddr_un))
         {
             m_addr.sun_family = AF_UNIX;
             m_addr.sun_path[0]= '\0';
         }
 
         sockaddress(const std::string &name) 
-        : m_addr()
-        , m_len(sizeof(sockaddr_un))
+        : m_len(sizeof(sockaddr_un))
         {
             m_addr.sun_family = AF_UNIX;
             strncpy(m_addr.sun_path, name.c_str(), UNIX_PATH_MAX-1);
             m_addr.sun_path[UNIX_PATH_MAX-1]='\0';
         }
 
-        sockaddress(sockaddress const &so)
-        : m_addr()
-        , m_len(sizeof(sockaddr_un))
-        {
-            m_addr.sun_family = AF_UNIX;
-            strncpy(m_addr.sun_path, so.m_addr.sun_path, UNIX_PATH_MAX-1);
-            m_addr.sun_path[UNIX_PATH_MAX-1]='\0';
-        }
+        sockaddress(sockaddress const &) = default;
+        sockaddress& operator=(sockaddress const &) = default;
 
-        sockaddress &
-        operator=(sockaddress const &so)
-        {
-            if (this == &so)
-                return *this;
-            m_addr.sun_family = AF_UNIX;
-            strncpy(m_addr.sun_path, so.m_addr.sun_path, UNIX_PATH_MAX-1);
-            m_addr.sun_path[UNIX_PATH_MAX-1]='\0';
-            return *this;
-        }
-
+        sockaddress(sockaddress &&) = default;
+        sockaddress& operator=(sockaddress &&) = default;
+        
         ~sockaddress() = default;
 
         int 
@@ -407,6 +358,7 @@ namespace more {
         }
 
         // taking address..
+        
         sockaddr &
         c_addr() 
         { 
