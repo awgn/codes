@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <cassert>
 #include <stdexcept>
 #include <system_error>
