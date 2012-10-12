@@ -36,12 +36,13 @@
     { return # k; } \
 };
 
+
 #define MAP_KEY_VALUE(t,k,v)  struct k { \
     typedef std::pair<k,t> type; \
     static constexpr bool has_default = true; \
     static constexpr const char * str() \
     { return # k; } \
-    static constexpr t default_value() \
+    static t default_value() \
     { return v; } \
 };
 
@@ -595,7 +596,7 @@ namespace more {
                     break;
 
                 typename details::mutable_type<
-                typename C::value_type>::type value;
+                    typename C::value_type>::type value;
                 ok = parse_lexeme(value);
                 if (ok) {
                     if (!details::insert(lex,std::move(value))) {
