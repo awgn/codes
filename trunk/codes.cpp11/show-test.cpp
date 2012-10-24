@@ -79,19 +79,20 @@ main(int, char *[])
     std::cout << show(std::chrono::milliseconds(10)) << std::endl;
     std::cout << show(test()) << std::endl;
 
+    int c_array[3] = {1,2,3};
+    
     std::cout << "\n--- with typename:\n\n";
 
     auto c = std::make_tuple(std::vector<int>{1,2}, std::make_pair(1,2), std::chrono::seconds(1), std::make_tuple(1,2));
+    
     std::cout << show(c, "") << std::endl;
-
+    std::cout << show(c_array, "") << std::endl;
+    
     std::cout << "\n--- with custom name:\n\n";
-
+    
+    std::cout << show(c_array, "C_array") << std::endl;
     std::cout << show(42, "Integer:") << std::endl;
     
-    int c_array[3] = {1,2,3};
-    
-    std::cout << show(c_array, "") << std::endl;
-    std::cout << show(c_array, "C array") << std::endl;
 
     return 0;
 }
