@@ -105,7 +105,8 @@ inline namespace more_show {
         template <typename T, int N>
         struct show_on
         {
-            static void apply(std::string &out, const T &tupl, const char *n)
+            static inline
+            void apply(std::string &out, const T &tupl, const char *n)
             {
                 out += show(std::get< std::tuple_size<T>::value - N>(tupl), nullptr) + " ";
                 show_on<T,N-1>::apply(out,tupl, n);
@@ -114,7 +115,8 @@ inline namespace more_show {
         template <typename T>
         struct show_on<T, 0>
         {
-            static void apply(std::string&, const T &, const char *)
+            static inline
+            void apply(std::string&, const T &, const char *)
             {}
         };
 
