@@ -13,11 +13,14 @@
 
 #include <type_traits.hpp>  // more!
 
-#include <type_traits>
+#include <ios>
+#include <iomanip>
 #include <array>
 #include <tuple>
 #include <chrono>
 #include <memory>
+#include <cstdint>
+#include <type_traits>
 
 #include <iostream>
 #include <algorithm>
@@ -33,6 +36,9 @@ inline namespace more_show {
     // forward declarations:
     //
 
+    inline std::string
+    show(uint8_t c, const char * n = nullptr);
+
     inline std::string 
     show(const char *v, const char *n = nullptr);
 
@@ -41,7 +47,7 @@ inline namespace more_show {
 
     template <typename T> 
     inline 
-    typename std::enable_if<std::is_arithmetic<T>::value, std::string>::type 
+    typename std::enable_if<std::is_arithmetic<T>::value && !std::is_same<T,uint8_t>::value, std::string>::type 
     show(T const &value, const char * n = nullptr);
 
     template <typename T>
@@ -135,6 +141,19 @@ inline namespace more_show {
 
     } // namespace show_helper
 
+    
+    ///////////////////////////////////////
+    // show for const char *
+    //
+
+    inline std::string
+    show(uint8_t c, const char *n)
+    {
+        std::ostringstream o;
+        o << "'\\x" << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(c) << '\'';
+        return show_helper::header<const char *>(n) + o.str();
+    }
+    
     ///////////////////////////////////////
     // show for const char *
     //
@@ -160,7 +179,7 @@ inline namespace more_show {
     //
 
     template <typename T>
-    inline typename std::enable_if<std::is_arithmetic<T>::value, std::string>::type
+    inline typename std::enable_if<std::is_arithmetic<T>::value && !std::is_same<T, uint8_t>::value, std::string>::type
     show(T const &value, const char * n)
     {
         return show_helper::header<T>(n) + std::to_string(value);
