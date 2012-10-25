@@ -32,10 +32,10 @@ inline namespace more_show {
 
     // forward declarations:
     //
-    
+
     inline std::string 
     show(const char *v, const char *n = nullptr);
-    
+
     inline std::string 
     show(std::string const &s, const char *n = nullptr);
 
@@ -64,28 +64,32 @@ inline namespace more_show {
     template <typename Rep, typename Period>
     inline std::string
     show(std::chrono::duration<Rep, Period> const &dur, const char *n = nullptr);
-    
+
     template <typename Clock, typename Dur>
     inline std::string
     show(std::chrono::time_point<Clock, Dur> const &r, const char *n = nullptr);
 
     template <typename T>
     inline typename std::enable_if<
-        (!std::is_pointer<T>::value) && (
+    (!std::is_pointer<T>::value) && (
         (more::traits::is_container<T>::value && !std::is_same<typename std::string,T>::value) ||
         (std::rank<T>::value > 0 && !std::is_same<char, typename std::remove_cv<typename std::remove_all_extents<T>::type>::type>::value)),
     std::string>::type 
     show(const T &v, const char * n = nullptr);
+
     
-    namespace details {
+    namespace show_helper
+    {
+        // utilities 
+        //
 
         inline std::string
-        cxa_demangle(const char *name)
+        demangle(const char *name)
         {
             int status;
             std::unique_ptr<char, void(*)(void *)> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
             if (status < 0) {
-                return std::string("?");
+                return std::string(1,'?');
             }
             return std::string(ret.get());
         }
@@ -95,8 +99,8 @@ inline namespace more_show {
         header(const char *n)
         {
             return n == nullptr ? std::string() : 
-                    *n == '\0' ? cxa_demangle(typeid(T).name()) + " " :
-                     std::string(n) + " ";
+            *n == '\0' ? demangle(typeid(T).name()) + ' ' :
+            std::string(n) + ' ';
         }
 
         // show_on policy 
@@ -108,7 +112,7 @@ inline namespace more_show {
             static inline
             void apply(std::string &out, const T &tupl, const char *n)
             {
-                out += show(std::get< std::tuple_size<T>::value - N>(tupl), nullptr) + " ";
+                out += show(std::get< std::tuple_size<T>::value - N>(tupl), nullptr) + ' ';
                 show_on<T,N-1>::apply(out,tupl, n);
             }
         }; 
@@ -121,58 +125,58 @@ inline namespace more_show {
         };
 
         template <typename T>
-        struct _duration_traits;
-            template <> struct _duration_traits<std::chrono::nanoseconds>  { static constexpr const char *str = "_ns"; };
-            template <> struct _duration_traits<std::chrono::microseconds> { static constexpr const char *str = "_us"; };
-            template <> struct _duration_traits<std::chrono::milliseconds> { static constexpr const char *str = "_ms"; };
-            template <> struct _duration_traits<std::chrono::seconds>      { static constexpr const char *str = "_s"; };
-            template <> struct _duration_traits<std::chrono::minutes>      { static constexpr const char *str = "_m"; };
-            template <> struct _duration_traits<std::chrono::hours>        { static constexpr const char *str = "_h"; };
+        struct duration_traits;
+        template <> struct duration_traits<std::chrono::nanoseconds>  { static constexpr const char *str = "_ns"; };
+        template <> struct duration_traits<std::chrono::microseconds> { static constexpr const char *str = "_us"; };
+        template <> struct duration_traits<std::chrono::milliseconds> { static constexpr const char *str = "_ms"; };
+        template <> struct duration_traits<std::chrono::seconds>      { static constexpr const char *str = "_s"; };
+        template <> struct duration_traits<std::chrono::minutes>      { static constexpr const char *str = "_m"; };
+        template <> struct duration_traits<std::chrono::hours>        { static constexpr const char *str = "_h"; };
 
-    }
+    } // namespace show_helper
 
     ///////////////////////////////////////
     // show for const char *
     //
-    
+
     inline std::string
     show(const char *v, const char *n)
     {
-        return details::header<const char *>(n) + "\"" + std::string(v) + "\"";
+        return show_helper::header<const char *>(n) + '"' + std::string(v) + '"';
     }
-    
+
     ///////////////////////////////////////
     // show for std::string
     //
-    
+
     inline std::string
     show(std::string const &s, const char *n)
     {
-        return details::header<std::string>(n) + "\"" + s + "\"";
+        return show_helper::header<std::string>(n) + '"' + s + '"';
     }
 
     ///////////////////////////////////////
     // show for arithmetic types..
     //
-    
+
     template <typename T>
     inline typename std::enable_if<std::is_arithmetic<T>::value, std::string>::type
     show(T const &value, const char * n)
     {
-        return details::header<T>(n) + std::to_string(value);
+        return show_helper::header<T>(n) + std::to_string(value);
     }
 
     ///////////////////////////////////////
     // show for pointers *
     //
-    
+
     template <typename T> 
     inline typename std::enable_if<std::is_pointer<T>::value, std::string>::type
     show(T const &p, const char *n)
     {
         std::ostringstream o;
         o << static_cast<void *>(p);
-        return details::header<T>(n) + o.str();
+        return show_helper::header<T>(n) + o.str();
     }
 
     //////////////////////////
@@ -182,9 +186,9 @@ inline namespace more_show {
     inline std::string
     show(const std::pair<U,V> &r, const char * n)
     {
-        return details::header<std::pair<U,V>>(n) + 
-                "(" + show(r.first) + 
-                "," + show(r.second) + ")";
+        return show_helper::header<std::pair<U,V>>(n) + 
+        '(' + show(r.first) + 
+        ',' + show(r.second) + ')';
     }
 
     ///////////////////////////
@@ -195,8 +199,8 @@ inline namespace more_show {
     show(std::array<T,N> const &a, const char * n)
     {
         std::string out("[ ");
-        details::show_on<std::array<T,N>, N>::apply(out,a, n ? "" : nullptr);
-        return details::header<std::array<T,N>>(n) + out + "]";
+        show_helper::show_on<std::array<T,N>, N>::apply(out,a, n);
+        return show_helper::header<std::array<T,N>>(n) + out + ']';
     }
 
     ////////////////////////////////////////////////////////
@@ -207,8 +211,8 @@ inline namespace more_show {
     show(std::tuple<Ts...> const &t, const char * n)
     {
         std::string out("{ ");
-        details::show_on<std::tuple<Ts...>, sizeof...(Ts)>::apply(out,t, n ? "" : nullptr);
-        return details::header<std::tuple<Ts...>>(n) + out + "}";
+        show_helper::show_on<std::tuple<Ts...>, sizeof...(Ts)>::apply(out,t,n);
+        return show_helper::header<std::tuple<Ts...>>(n) + out + '}';
     }                                              
 
     ////////////////////////////////////////////////////////
@@ -219,14 +223,14 @@ inline namespace more_show {
     show(std::chrono::duration<Rep, Period> const &dur, const char *n)
     {
         std::string out(std::to_string(dur.count()));
-        return details::header<std::chrono::duration<Rep,Period>>(n) + out + std::string(details::_duration_traits<std::chrono::duration<Rep,Period>>::str);
+        return show_helper::header<std::chrono::duration<Rep,Period>>(n) + out + std::string(show_helper::duration_traits<std::chrono::duration<Rep,Period>>::str);
     }
 
     template <typename Clock, typename Dur>
     inline std::string
     show(std::chrono::time_point<Clock, Dur> const &r, const char *n)
     {    
-        return details::header<std::chrono::time_point<Clock,Dur>>(n) + show(r.time_since_epoch());
+        return show_helper::header<std::chrono::time_point<Clock,Dur>>(n) + show(r.time_since_epoch());
     }
 
     ///////////////////////////////////////
@@ -235,7 +239,7 @@ inline namespace more_show {
 
     template <typename T>
     inline typename std::enable_if<
-        (!std::is_pointer<T>::value) && (
+    (!std::is_pointer<T>::value) && (
         (more::traits::is_container<T>::value && !std::is_same<typename std::string,T>::value) ||
         (std::rank<T>::value > 0 && !std::is_same<char, typename std::remove_cv<typename std::remove_all_extents<T>::type>::type>::value)),
     std::string>::type 
@@ -244,9 +248,9 @@ inline namespace more_show {
         std::string s("{ ");
         for(auto & e : v)
         {
-            s += show(e) + " ";
+            s += show(e) + ' ';
         }
-        return details::header<T>(n) + s + "}";
+        return show_helper::header<T>(n) + s + '}';
     };
 
 } // namespace more_show
