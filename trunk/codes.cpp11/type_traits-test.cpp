@@ -65,6 +65,14 @@ Context(more_typetraits_test)
         Assert( more::traits::is_pair< int >::value , is_false() );
     }
 
+    struct xxx {};
+
+    Test(has_insertion_operator)
+    {
+        Assert( more::traits::has_insertion_operator<int>::value, is_true()); 
+        Assert( more::traits::has_insertion_operator<xxx>::value, is_false()); 
+    }
+    
 }
 
 int
