@@ -17,13 +17,13 @@
 
 struct test
 {
-    int value;
+    std::string value;
 };
 
 inline std::string
 show(const test &t)
 {
-    return "test " + std::to_string(t.value);    
+    return "test " + show(t.value);    
 }
 
 
@@ -31,6 +31,13 @@ int
 main(int, char *[])
 {
     std::cout << "--- basic (only values):\n\n";
+
+    uint8_t uc = '\x42';
+
+    const uint8_t ua[3] = {1, 2, 3};
+
+    std::cout << show(uc) << std::endl; 
+    std::cout << show(ua) << std::endl; 
 
     std::cout << show("hello world") << std::endl; 
     std::cout << show(std::string("hello world")) << std::endl; 
@@ -77,7 +84,7 @@ main(int, char *[])
 
     std::cout << show(std::chrono::system_clock::now()) << std::endl;
     std::cout << show(std::chrono::milliseconds(10)) << std::endl;
-    std::cout << show(test()) << std::endl;
+    std::cout << show(test{"abc"}) << std::endl;
 
     int c_array[3] = {1,2,3};
     
