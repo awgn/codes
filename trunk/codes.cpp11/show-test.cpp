@@ -26,7 +26,6 @@ show(const test &t)
     return "test " + show(t.value);    
 }
 
-
 int 
 main(int, char *[])
 {
@@ -100,6 +99,15 @@ main(int, char *[])
     std::cout << show(c_array, "C_array") << std::endl;
     std::cout << show(42, "Integer:") << std::endl;
     
+    std::cout << "\n--- with hex format:\n\n";
+
+    int value = 0xdeadbeef;
+
+    std::cout << show(value) << std::endl;
+    std::cout << show(hex(value)) << std::endl;
+    
+    value = 01234;
+    std::cout << show(oct(value)) << std::endl;
 
     return 0;
 }

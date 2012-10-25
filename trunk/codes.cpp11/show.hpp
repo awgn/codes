@@ -33,6 +33,30 @@
 
 inline namespace more_show {
 
+    template <typename T>
+    struct _hex 
+    {
+        T value;
+    };
+
+    template <typename T>
+    _hex<T> hex(T const &value)
+    {
+        return _hex<T>{value};
+    }
+
+    template <typename T>
+    struct _oct 
+    {
+        T value;
+    };
+
+    template <typename T>
+    _oct<T> oct(T const &value)
+    {
+        return _oct<T>{value};
+    }
+
     // forward declarations:
     //
 
@@ -50,6 +74,14 @@ inline namespace more_show {
     typename std::enable_if<std::is_arithmetic<T>::value && !std::is_same<T,uint8_t>::value, std::string>::type 
     show(T const &value, const char * n = nullptr);
 
+    template <typename T>
+    inline typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, uint8_t>::value, std::string>::type
+    show(_hex<T> const &value, const char * n = nullptr);
+    
+    template <typename T>
+    inline typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, uint8_t>::value, std::string>::type
+    show(_oct<T> const &value, const char * n = nullptr);
+    
     template <typename T>
     inline  
     typename std::enable_if<std::is_pointer<T>::value, std::string>::type 
@@ -83,7 +115,6 @@ inline namespace more_show {
     std::string>::type 
     show(const T &v, const char * n = nullptr);
 
-    
     namespace show_helper
     {
         // utilities 
@@ -183,6 +214,32 @@ inline namespace more_show {
     show(T const &value, const char * n)
     {
         return show_helper::header<T>(n) + std::to_string(value);
+    }
+
+    /////////////////////////////////////////////
+    // show for arithmetic types as hex values...
+    //
+
+    template <typename T>
+    inline typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, uint8_t>::value, std::string>::type
+    show(_hex<T> const &value, const char * n)
+    {
+        std::ostringstream o;
+        o << std::hex << value.value;
+        return show_helper::header<T>(n) + "0x" + o.str();
+    }
+
+    /////////////////////////////////////////////
+    // show for arithmetic types as oct values...
+    //
+
+    template <typename T>
+    inline typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, uint8_t>::value, std::string>::type
+    show(_oct<T> const &value, const char * n)
+    {
+        std::ostringstream o;
+        o << std::oct << value.value;
+        return show_helper::header<T>(n) + '0' + o.str();
     }
 
     ///////////////////////////////////////
