@@ -79,9 +79,6 @@ inline namespace more_show {
     // forward declarations:
     //
 
-    inline std::string
-    show(uint8_t c, label);
-
     inline std::string 
     show(const char *v, label);
 
@@ -90,15 +87,15 @@ inline namespace more_show {
 
     template <typename T> 
     inline 
-    typename std::enable_if<std::is_arithmetic<T>::value && !std::is_same<T,uint8_t>::value, std::string>::type 
+    typename std::enable_if<std::is_arithmetic<T>::value || std::is_enum<T>::value, std::string>::type 
     show(T const &value, label);
 
     template <typename T>
-    inline typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, uint8_t>::value, std::string>::type
+    inline typename std::enable_if<std::is_integral<T>::value, std::string>::type
     show(_hex<T> const &value, label);
     
     template <typename T>
-    inline typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, uint8_t>::value, std::string>::type
+    inline typename std::enable_if<std::is_integral<T>::value, std::string>::type
     show(_oct<T> const &value, label);
     
     template <typename T>
@@ -194,18 +191,6 @@ inline namespace more_show {
 
     
     ///////////////////////////////////////
-    // show for uint8_t
-    //
-
-    inline std::string
-    show(uint8_t c, label n)
-    {
-        std::ostringstream out;
-        out << "'\\x" << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(c) << '\'';
-        return show_helper::header<uint8_t>(n) + out.str();
-    }
-    
-    ///////////////////////////////////////
     // show for const char *
     //
 
@@ -230,7 +215,7 @@ inline namespace more_show {
     //
 
     template <typename T>
-    inline typename std::enable_if<std::is_arithmetic<T>::value && !std::is_same<T, uint8_t>::value, std::string>::type
+    inline typename std::enable_if<std::is_arithmetic<T>::value || std::is_enum<T>::value, std::string>::type
     show(T const &value, label n)
     {
         return show_helper::header<T>(n) + std::to_string(value);
@@ -241,7 +226,7 @@ inline namespace more_show {
     //
 
     template <typename T>
-    inline typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, uint8_t>::value, std::string>::type
+    inline typename std::enable_if<std::is_integral<T>::value, std::string>::type
     show(_hex<T> const &value, label n)
     {
         std::ostringstream out;
@@ -254,7 +239,7 @@ inline namespace more_show {
     //
 
     template <typename T>
-    inline typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, uint8_t>::value, std::string>::type
+    inline typename std::enable_if<std::is_integral<T>::value, std::string>::type
     show(_oct<T> const &value, label n)
     {
         std::ostringstream out;
