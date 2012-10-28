@@ -80,6 +80,9 @@ inline namespace more_show {
     //
 
     inline std::string 
+    show(char c, label);
+    
+    inline std::string 
     show(const char *v, label);
 
     inline std::string 
@@ -189,10 +192,17 @@ inline namespace more_show {
 
     } // namespace show_helper
 
+    ///////////////////////////////////////
+    // show for char 
+
+    inline std::string
+    show(char c, label n)
+    {
+        return show_helper::header<const char *>(n) + c;
+    }
     
     ///////////////////////////////////////
     // show for const char *
-    //
 
     inline std::string
     show(const char *v, label n)
@@ -202,7 +212,6 @@ inline namespace more_show {
 
     ///////////////////////////////////////
     // show for std::string
-    //
 
     inline std::string
     show(std::string const &s, label n)
@@ -212,7 +221,6 @@ inline namespace more_show {
 
     ///////////////////////////////////////
     // show for arithmetic types..
-    //
 
     template <typename T>
     inline typename std::enable_if<std::is_arithmetic<T>::value || std::is_enum<T>::value, std::string>::type
@@ -223,7 +231,6 @@ inline namespace more_show {
 
     /////////////////////////////////////////////
     // show for arithmetic types as hex values...
-    //
 
     template <typename T>
     inline typename std::enable_if<std::is_integral<T>::value, std::string>::type
@@ -236,7 +243,6 @@ inline namespace more_show {
 
     /////////////////////////////////////////////
     // show for arithmetic types as oct values...
-    //
 
     template <typename T>
     inline typename std::enable_if<std::is_integral<T>::value, std::string>::type
@@ -249,7 +255,6 @@ inline namespace more_show {
 
     ///////////////////////////////////////
     // show for pointers *
-    //
 
     template <typename T> 
     inline typename std::enable_if<std::is_pointer<T>::value, std::string>::type
@@ -317,7 +322,6 @@ inline namespace more_show {
 
     ///////////////////////////////////////
     // show for generic containers...
-    //
 
     template <typename T>
     inline typename std::enable_if<

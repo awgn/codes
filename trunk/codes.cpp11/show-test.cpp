@@ -20,11 +20,13 @@ struct test
     std::string value;
 };
 
+
 inline std::string
 show(const test &t, label)
 {
     return "test " + show(t.value, none);    
 }
+
 
 int 
 main(int, char *[])
@@ -34,6 +36,8 @@ main(int, char *[])
     uint8_t uc = '\x42';
 
     const uint8_t ua[3] = {1, 2, 3};
+    
+    std::cout << show('x', none) << std::endl;
 
     std::cout << show(uc, none) << std::endl; 
     std::cout << show(ua, none) << std::endl; 
