@@ -221,7 +221,13 @@ inline namespace more_show {
     show(_hex<T> const &value, const char * n)
     {
         std::ostringstream out;
-        out << std::hex << value.value;
+        out << std::hex;
+
+        if (std::is_same<T, uint8_t>::value)
+            out << static_cast<uint32_t>(value.value);
+        else
+            out << value.value;
+
         return show_helper::header<T>(n) + "0x" + out.str();
     }                                               
 
@@ -234,6 +240,12 @@ inline namespace more_show {
     {
         std::ostringstream out;
         out << std::oct << value.value;
+
+        if (std::is_same<T, uint8_t>::value)
+            out << static_cast<uint32_t>(value.value);
+        else
+            out << value.value;
+        
         return show_helper::header<T>(n) + '0' + out.str();
     }
 
