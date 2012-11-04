@@ -116,6 +116,7 @@ main(int, char *[])
          a = b;
          a.apply_visitor(visitor());
      }
+
     return 0;
 }
  

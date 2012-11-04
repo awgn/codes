@@ -29,15 +29,15 @@ namespace more {
     cxa_demangle(const char *name)
     {
 #ifdef _REENTRANT
-        static std::mutex _S_mutex;
-        std::lock_guard<std::mutex> _L_(_S_mutex);
+        static std::mutex mutex_;
+        std::lock_guard<std::mutex> lock(mutex);
 #endif
         int status;
 
         auto deleter = [](void *a) { ::free(a); };
 
         std::unique_ptr<char, decltype(deleter)> 
-            ret(abi::__cxa_demangle(name,0,0, &status), deleter);
+            ret(abi::__cxa_demangle(name, 0, 0, &status), deleter);
 
         if (status < 0) {
 #ifdef __EXCEPTIONS

@@ -15,16 +15,21 @@
 #include <map>
 #include <iostream>
 
-struct test
-{
-    std::string value;
-};
 
-
-inline std::string
-show(const test &t, label)
+namespace example
 {
-    return "test " + show(t.value, none);    
+    struct test
+    {
+        std::string value;
+    };
+
+    using ::show;
+    
+    inline std::string
+    show(const test &t, const char * = nullptr)
+    {
+        return "test " + show(t.value);    
+    }
 }
 
 
@@ -37,19 +42,19 @@ main(int, char *[])
 
     const uint8_t ua[3] = {1, 2, 3};
     
-    std::cout << show('x', none) << std::endl;
+    std::cout << show('x') << std::endl;
 
-    std::cout << show(uc, none) << std::endl; 
-    std::cout << show(ua, none) << std::endl; 
+    std::cout << show(uc) << std::endl; 
+    std::cout << show(ua) << std::endl; 
 
-    std::cout << show("hello world", none) << std::endl; 
-    std::cout << show(std::string("hello world"), none) << std::endl; 
+    std::cout << show("hello world") << std::endl; 
+    std::cout << show(std::string("hello world")) << std::endl; 
 
-    std::cout << show((void *)0xdeadbeef, none) << std::endl; 
+    std::cout << show((void *)0xdeadbeef) << std::endl; 
 
     auto p = std::make_pair("hello world", 42);
 
-    std::cout << show(p,none) << std::endl; 
+    std::cout << show(p) << std::endl; 
     
     std::vector<int> v1;
 
@@ -57,7 +62,7 @@ main(int, char *[])
     v1.push_back(1);
     v1.push_back(2);
 
-    std::cout << show(v1,none) << std::endl;
+    std::cout << show(v1) << std::endl;
 
     std::vector<char> v2;
 
@@ -65,7 +70,7 @@ main(int, char *[])
     v2.push_back('b');
     v2.push_back('c');
 
-    std::cout << show(v2,none) << std::endl;
+    std::cout << show(v2) << std::endl;
 
     std::list<std::pair<int,int> > l1;
 
@@ -73,24 +78,24 @@ main(int, char *[])
     l1.push_back( std::make_pair(1,1) );
     l1.push_back( std::make_pair(2,2) );
 
-    std::cout << show(l1,none) << std::endl;
+    std::cout << show(l1) << std::endl;
 
     std::map<std::string,int> m;
 
     m["hello"]=0;
     m["world"]=1;
 
-    std::cout << show(m,none) << std::endl;
+    std::cout << show(m) << std::endl;
 
-    std::cout << show(std::tuple<int,double>(1,1.1), none) << std::endl;
+    std::cout << show(std::tuple<int,double>(1,1.1)) << std::endl;
     
     std::array<int,3> ax = {{1, 2, 3}};
     
-    std::cout << show(ax, none) << std::endl;
+    std::cout << show(ax) << std::endl;
 
-    std::cout << show(std::chrono::system_clock::now(), none ) << std::endl;
-    std::cout << show(std::chrono::milliseconds(10), none) << std::endl;
-    std::cout << show(test{"abc"}, none) << std::endl;
+    std::cout << show(std::chrono::system_clock::now()) << std::endl;
+    std::cout << show(std::chrono::milliseconds(10)) << std::endl;
+    std::cout << show(example::test{"abc"}) << std::endl;
 
     int c_array[3] = {1,2,3};
     
@@ -98,23 +103,23 @@ main(int, char *[])
 
     auto c = std::make_tuple(std::vector<int>{1,2}, std::make_pair(1,2), std::chrono::seconds(1), std::make_tuple(1,2));
     
-    std::cout << show(c, label("")) << std::endl;
-    std::cout << show(c_array, label("")) << std::endl;
+    std::cout << show(c, "") << std::endl;
+    std::cout << show(c_array, "") << std::endl;
     
     std::cout << "\n--- with custom name:\n\n";
     
-    std::cout << show(c_array, label("C_array")) << std::endl;
-    std::cout << show(42, label("Integer:")) << std::endl;
+    std::cout << show(c_array, "C_array") << std::endl;
+    std::cout << show(42, "Integer:") << std::endl;
     
     std::cout << "\n--- with hex format:\n\n";
 
     int value = 0xdeadbeef;
 
-    std::cout << show(value, none) << std::endl;
-    std::cout << show(hex(value), none) << std::endl;
+    std::cout << show(value) << std::endl;
+    std::cout << show(hex(value)) << std::endl;
     
     value = 01234;
-    std::cout << show(oct(value), none) << std::endl;
+    std::cout << show(oct(value)) << std::endl;
 
     return 0;
 }

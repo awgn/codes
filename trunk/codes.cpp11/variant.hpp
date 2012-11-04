@@ -103,6 +103,13 @@ namespace more {
             copyctor<Ti...>::apply(rhs.m_storage, m_storage, m_type); 
         }
         
+        variant(const variant &&rhs)
+        : m_type(rhs.m_type)
+        {
+            rhs.m_mtype = -1;
+            movector<Ti...>::apply(rhs.m_storage, m_storage, m_type); 
+        }
+
         variant& operator=(variant rhs)
         {    
             rhs.swap(*this);
@@ -111,7 +118,8 @@ namespace more {
  
         ~variant()
         {
-            dtor<Ti...>::apply(m_storage, m_type);
+            if (m_type != -1)
+                dtor<Ti...>::apply(m_storage, m_type);
         }
         
         void swap(variant &rhs)
@@ -328,6 +336,33 @@ namespace more {
         };
  
         
+        template <typename ...Tp> struct movector;                   
+        template <typename T, typename ...Tp>
+        struct movector<T, Tp...> 
+        {
+            static void apply(const char *from, char *to, int type, int n = 0)
+            {
+                if (n == type) 
+                {
+                    new (to) T(std::move(*reinterpret_cast<const T *>(from)));
+                    return;
+                }
+                movector<Tp...>::apply(from, to, type, n+1);    
+            }
+        };
+        template <typename T>
+        struct movector<T>
+        {
+            static void apply(const char *from, char *to, int type, int n = 0)
+            {
+                if (n == type) 
+                {
+                    new (to) T(std::move(*reinterpret_cast<const T *>(from)));
+                    return;
+                }
+                throw std::runtime_error("internal error");
+            }
+        };
 
         template <typename ...Tp> struct printon;
         template <typename T, typename ...Tp>
