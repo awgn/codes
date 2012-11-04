@@ -17,6 +17,13 @@
 
 namespace more { 
 
+    template <typename Tp>
+    struct remove_reference_and_cv
+    {
+        typedef typename std::remove_cv<
+                typename std::remove_reference<Tp>::type>::type type;
+    };
+
     /// tuple_for_each
     
     // can't use simple recursion with variadic template functions
@@ -30,7 +37,7 @@ namespace more {
         static inline 
         void for_each(TupleT &&tup, Fun fun) 
         {
-            fun(std::get<std::tuple_size<typename std::remove_reference<TupleT>::type>::value - N>(std::forward<TupleT>(tup)));
+            fun(std::get<std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value - N>(std::forward<TupleT>(tup)));
             tuple_<N-1>::for_each(std::forward<TupleT>(tup), fun);
         }
         
@@ -38,8 +45,8 @@ namespace more {
         static inline 
         void for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun) 
         {
-            fun(std::get<std::tuple_size<typename std::remove_reference<Tuple1>::type>::value - N>(std::forward<Tuple1>(t1)),
-                std::get<std::tuple_size<typename std::remove_reference<Tuple2>::type>::value - N>(std::forward<Tuple2>(t2)));
+            fun(std::get<std::tuple_size<typename remove_reference_and_cv<Tuple1>::type>::value - N>(std::forward<Tuple1>(t1)),
+                std::get<std::tuple_size<typename remove_reference_and_cv<Tuple2>::type>::value - N>(std::forward<Tuple2>(t2)));
             tuple_<N-1>::for_each2(std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), fun);
         }
 
@@ -60,15 +67,15 @@ namespace more {
         void for_each(TupleT &&tup, Fun fun)
         { 
             fun(std::get<std::tuple_size<
-                            typename std::remove_reference<TupleT>::type>::value - 1>(std::forward<TupleT>(tup)));
+                            typename remove_reference_and_cv<TupleT>::type>::value - 1>(std::forward<TupleT>(tup)));
         }
         
         template <typename Fun, typename Tuple1, typename Tuple2>
         static inline 
         void for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun)
         { 
-            fun(std::get<std::tuple_size<typename std::remove_reference<Tuple1>::type>::value - 1>(std::forward<Tuple1>(t1)),
-                std::get<std::tuple_size<typename std::remove_reference<Tuple2>::type>::value - 1>(std::forward<Tuple2>(t2)));
+            fun(std::get<std::tuple_size<typename remove_reference_and_cv<Tuple1>::type>::value - 1>(std::forward<Tuple1>(t1)),
+                std::get<std::tuple_size<typename remove_reference_and_cv<Tuple2>::type>::value - 1>(std::forward<Tuple2>(t2)));
         }
         
         template <typename Tuple1, typename Tuple2, typename TupleT>
@@ -83,7 +90,7 @@ namespace more {
     void tuple_for_each(TupleT &&tup, Fun fun)
     {
         tuple_<std::tuple_size<
-                typename std::remove_reference<TupleT>::type>::value>::for_each(std::forward<TupleT>(tup), fun);
+                typename remove_reference_and_cv<TupleT>::type>::value>::for_each(std::forward<TupleT>(tup), fun);
     }   
 
     /// tuple_for_each2
@@ -97,8 +104,8 @@ namespace more {
     template <typename Fun, typename Tuple1, typename Tuple2>
     void tuple_for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun)
     {
-        tuple_<min(std::tuple_size<typename std::remove_reference<Tuple1>::type>::value,
-                   std::tuple_size<typename std::remove_reference<Tuple2>::type>::value)
+        tuple_<min(std::tuple_size<typename remove_reference_and_cv<Tuple1>::type>::value,
+                   std::tuple_size<typename remove_reference_and_cv<Tuple2>::type>::value)
               >::for_each2(std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), fun);
     }   
 
@@ -135,7 +142,7 @@ namespace more {
     -> decltype(tuple_call_ret(fun, std::forward<TupleT>(tup)))
     {
         return tuple_args<std::tuple_size<
-                typename std::remove_reference<TupleT>::type>::value>::call(fun, std::forward<TupleT>(tup)); 
+                typename remove_reference_and_cv<TupleT>::type>::value>::call(fun, std::forward<TupleT>(tup)); 
     }
 
     /// tuple zip!
