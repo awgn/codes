@@ -228,7 +228,7 @@ inline namespace more_show {
         else
             out << value.value;
 
-        return show_helper::header<T>(n) + "0x" + out.str();
+        return show_helper::header<T>(n) + out.str();
     }                                               
 
     /////////////////////////////////////////////
@@ -246,7 +246,7 @@ inline namespace more_show {
         else
             out << value.value;
         
-        return show_helper::header<T>(n) + '0' + out.str();
+        return show_helper::header<T>(n) + out.str();
     }
 
     ///////////////////////////////////////
