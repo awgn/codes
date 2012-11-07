@@ -18,27 +18,26 @@ using namespace yats;
 
 Context(tuple_extended)
 {
-
-    Test(call)
+    Test(apply)
     {
         auto add = [](int a, int b) { return a+b; };
 
         std::tuple<int, int> tup{40,2};
 
-        Assert(more::tuple_call(add, tup), is_equal_to(42));
+        Assert(more::tuple_apply(add, tup), is_equal_to(42));
     }
 
-    Test(call_const)
+    Test(apply_const)
     {
         auto add = [](int a, int b) { return a+b; };
 
         std::tuple<int, int> const tup{40,2};
 
-        Assert(more::tuple_call(add, tup), is_equal_to(42));
+        Assert(more::tuple_apply(add, tup), is_equal_to(42));
 
     }
 
-    Test(call_forward)
+    Test(apply_forward)
     {
         auto mistery = [](int &a, int b) -> int { 
                 a = 10;
@@ -46,7 +45,7 @@ Context(tuple_extended)
 
         int a = 40;
 
-        Assert(more::tuple_call(mistery, std::forward_as_tuple(a,2)), is_equal_to(12));
+        Assert(more::tuple_apply(mistery, std::forward_as_tuple(a,2)), is_equal_to(12));
         Assert(a, is_equal_to(10));
     }
 
@@ -60,23 +59,13 @@ Context(tuple_extended)
                              });
     }
               
-
     Test(for_each)
     {
         std::tuple<int,int,int> v {1,2,3};
         std::tuple<long, long> q {1,2};
         
-        // int sum = 0;
-
         test(v);
         test(q);
-
-
-        // more::tuple_for_each(v, [&](int n) {
-        //                       sum += n;
-        //                      });
-
-        // Assert(sum, is_equal_to(6));
     }
     
     Test(for_each_const)
@@ -90,6 +79,7 @@ Context(tuple_extended)
 
         Assert(sum, is_equal_to(6));
     }
+    
     Test(for_each_forward)
     {
         int a = 1, b = 2, c = 3;
@@ -100,6 +90,30 @@ Context(tuple_extended)
                              });
 
         Assert(sum, is_equal_to(6));
+    }
+
+    Test(map)
+    {
+        auto t = more::tuple_map(strlen, std::make_tuple("hello", "world"));
+
+        size_t len = 0;
+
+        more::tuple_for_each(t, [&len](size_t n) { len+=n; });
+
+        Assert(len, is_equal_to(10));
+    }
+    
+    Test(map_const)
+    {
+        auto const t = std::make_tuple("hello", "world");
+
+        auto ts = more::tuple_map(strlen, t);
+
+        size_t len = 0;
+
+        more::tuple_for_each(ts, [&len](size_t n) { len+=n; });
+
+        Assert(len, is_equal_to(10));
     }
 }
 

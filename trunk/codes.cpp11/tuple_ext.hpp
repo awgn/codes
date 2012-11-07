@@ -15,146 +15,167 @@
 #include <tuple>
 #include <algorithm>
 
+
 namespace more { 
+ 
+    /// Inspired by litb:
+    /// http://stackoverflow.com/questions/7858817/unpacking-a-tuple-to-call-a-matching-function-pointer
+    ///
+    
+    /// both gens forward and backward, written in Haskell:
+    ///
+    /// gen_forward 0 xs = xs
+    /// gen_forward n xs = gen_forward (n-1) $ (n-1):xs
+    /// 
+    /// gen_backward x xs = gen_backward' x 0 xs
+    ///         where gen_backward' n m xs
+    ///                 | n == m = xs
+    ///                 | otherwise = gen_backward' n (m+1) (m : xs)
+
+    //////////////////////////////////////////////////////////////
+    // numeric sequence utility
+    // 
+
+    template <int ...>
+    struct seq { };
+
+    //////////////////////////////////////////////////////////////
+    // gen_forward
+    //
+
+    template <int N, int ...Xs>
+    struct gen_forward : gen_forward<N-1, N-1, Xs...> { };
+
+    template <int ...Xs>
+    struct gen_forward<0, Xs...> {
+        typedef seq<Xs...> type;
+    };
+
+    //////////////////////////////////////////////////////////////
+    // gen_backward
+    //
+
+    template <int N, int M, int ...Xs>
+    struct __gen_backward : __gen_backward<N, M+1, M, Xs...> {};
+    template <int N, int ...Xs> 
+
+    struct __gen_backward<N,N,Xs...>
+    {
+        typedef seq<Xs...> type;
+    };
+
+    template <int N, int ...Xs>
+    struct gen_backward : __gen_backward<N, 0, Xs...> {};
+
+    
+    //////////////////////////////////////////////////////////////
+    // remove_reference_and_cv
+    //
 
     template <typename Tp>
     struct remove_reference_and_cv
     {
         typedef typename std::remove_cv<
-                typename std::remove_reference<Tp>::type>::type type;
+        typename std::remove_reference<Tp>::type>::type type;
     };
 
-    /// tuple_for_each
+    //////////////////////////////////////////////////////////////
+    /// the pass trick:
+    ///
     
-    // can't use simple recursion with variadic template functions
-    // because there's no simple way to get the tail of a tuple 
-    //
+    template <typename ...Ts>
+    void pass(Ts && ...)
+    { }
     
-    template <size_t N>
-    struct tuple_
+    //////////////////////////////////////////////////////////////
+    /// tuple_for_each 
+
+    template <typename TupleT, typename Fun, int ...S>
+    void call_for_each(TupleT &&tup, Fun fun, seq<S...>)
     {
-        template <typename Fun, typename TupleT>
-        static inline 
-        void for_each(TupleT &&tup, Fun fun) 
-        {
-            fun(std::get<std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value - N>(std::forward<TupleT>(tup)));
-            tuple_<N-1>::for_each(std::forward<TupleT>(tup), fun);
-        }
-        
-        template <typename Fun, typename Tuple1, typename Tuple2>
-        static inline 
-        void for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun) 
-        {
-            fun(std::get<std::tuple_size<typename remove_reference_and_cv<Tuple1>::type>::value - N>(std::forward<Tuple1>(t1)),
-                std::get<std::tuple_size<typename remove_reference_and_cv<Tuple2>::type>::value - N>(std::forward<Tuple2>(t2)));
-            tuple_<N-1>::for_each2(std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), fun);
-        }
+        pass((fun(std::get<S>(tup)),0)...);
+    }
 
-        template <typename Tuple1, typename Tuple2, typename TupleT>
-        static inline
-        void zip(Tuple1 const &t1, Tuple2 const &t2, TupleT &t)
-        {
-            std::get<N-1>(t) = std::make_pair(std::get<N-1>(t1), std::get<N-1>(t2));
-            tuple_<N-1>::zip(t1,t2,t);
-        }
-
-    };
-    template <>
-    struct tuple_<1>
-    {
-        template <typename Fun, typename TupleT>
-        static inline 
-        void for_each(TupleT &&tup, Fun fun)
-        { 
-            fun(std::get<std::tuple_size<
-                            typename remove_reference_and_cv<TupleT>::type>::value - 1>(std::forward<TupleT>(tup)));
-        }
-        
-        template <typename Fun, typename Tuple1, typename Tuple2>
-        static inline 
-        void for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun)
-        { 
-            fun(std::get<std::tuple_size<typename remove_reference_and_cv<Tuple1>::type>::value - 1>(std::forward<Tuple1>(t1)),
-                std::get<std::tuple_size<typename remove_reference_and_cv<Tuple2>::type>::value - 1>(std::forward<Tuple2>(t2)));
-        }
-        
-        template <typename Tuple1, typename Tuple2, typename TupleT>
-        static inline
-        void zip(Tuple1 const &t1, Tuple2 const &t2, TupleT &t)
-        {
-            std::get<0>(t) = std::make_pair(std::get<0>(t1), std::get<0>(t2));
-        }
-    };
-
-    template <typename Fun, typename TupleT>
+    template <typename TupleT, typename Fun>
     void tuple_for_each(TupleT &&tup, Fun fun)
     {
-        tuple_<std::tuple_size<
-                typename remove_reference_and_cv<TupleT>::type>::value>::for_each(std::forward<TupleT>(tup), fun);
+        call_for_each(std::forward<TupleT>(tup), 
+                      fun, typename gen_forward<
+                        std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value
+                      >::type());
     }   
 
+    //////////////////////////////////////////////////////////////
     /// tuple_for_each2
-    
+
     template <typename Tp>
     constexpr Tp && min(Tp &&a, Tp &&b)
     {
         return a < b ? a : b;
     }
+    
+    template <typename Tuple1, typename Tuple2, typename Fun, int ...S>
+    void call_for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun, seq<S...>)
+    {
+        pass((fun(std::get<S>(t1), std::get<S>(t2)),0)...);
+    }
 
-    template <typename Fun, typename Tuple1, typename Tuple2>
+    template <typename Tuple1, typename Tuple2, typename Fun>
     void tuple_for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun)
     {
-        tuple_<min(std::tuple_size<typename remove_reference_and_cv<Tuple1>::type>::value,
-                   std::tuple_size<typename remove_reference_and_cv<Tuple2>::type>::value)
-              >::for_each2(std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), fun);
+        call_for_each2(std::forward<Tuple1>(t1),
+                      std::forward<Tuple2>(t2), 
+                      fun, typename gen_forward<
+                            min(std::tuple_size<typename remove_reference_and_cv<Tuple1>::type>::value,
+                                std::tuple_size<typename remove_reference_and_cv<Tuple2>::type>::value) 
+                      >::type());
     }   
 
-    /// tuple_call
+    //////////////////////////////////////////////////////////////
+    /// tuple_map
     
-    template <typename Fun, typename ...Ts>
-    auto tuple_call_ret(Fun fun, std::tuple<Ts...>) -> decltype(fun(std::declval<Ts>()...));
-    
-    template <size_t N>
-    struct tuple_args 
+    template <typename Fun, typename TupleT, int ...S>
+    auto call_map(Fun fun, TupleT &&tup, seq<S...>)
+    -> decltype(std::make_tuple(fun(std::get<S>(tup))...))
     {
-        template <typename Fun, typename TupleT, typename ...Ti>
-        static inline 
-        auto call(Fun fun, TupleT &&tup, Ti && ... args)
-        -> decltype(tuple_call_ret(fun,std::forward<TupleT>(tup)))
-        {
-            return tuple_args<N-1>::call(fun, std::forward<TupleT>(tup), std::get<N-1>(std::forward<TupleT>(tup)), std::forward<Ti>(args)...);
-        }
-    };
-    template <>
-    struct tuple_args<1> 
-    {
-        template <typename Fun, typename TupleT, typename ...Ti>
-        static inline
-        auto call(Fun fun, TupleT &&tup, Ti && ... args) 
-        -> decltype(tuple_call_ret(fun,std::forward<TupleT>(tup)))
-        {
-            return fun(std::get<0>(std::forward<TupleT>(tup)), std::forward<Ti>(args)...);
-        }
-    };
+        return std::make_tuple(fun(std::get<S>(tup))...);
+    }
 
     template <typename Fun, typename TupleT>
-    auto tuple_call(Fun fun, TupleT &&tup)
-    -> decltype(tuple_call_ret(fun, std::forward<TupleT>(tup)))
+    auto tuple_map(Fun fun, TupleT &&tup)
+    -> decltype(call_map(fun, std::forward<TupleT>(tup),                                       
+                        typename gen_forward<                                                   
+                          std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value
+                        >::type()))                                                             
+    {                                               
+        return call_map(fun, std::forward<TupleT>(tup), 
+                      typename gen_forward<
+                        std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value
+                      >::type());
+    }   
+
+    //////////////////////////////////////////////////////////////
+    /// tuple_apply
+
+    template <typename Fun, typename TupleT, int ...S>
+    auto call_apply(Fun fun, TupleT &&tup, seq<S...>)
+        -> decltype(fun(std::get<S>(tup)...))
     {
-        return tuple_args<std::tuple_size<
-                typename remove_reference_and_cv<TupleT>::type>::value>::call(fun, std::forward<TupleT>(tup)); 
+        return fun(std::get<S>(tup)...);
     }
 
-    /// tuple zip!
-    
-    template <typename ...T1, typename ...T2>
-    auto tuple_zip(std::tuple<T1...> const & t1, std::tuple<T2...> const &t2)
-    -> std::tuple<std::pair<T1,T2>...>
+    template <typename Fun, typename TupleT>
+    auto tuple_apply(Fun fun, TupleT &&tup)
+        -> decltype(call_apply(fun, std::forward<TupleT>(tup), 
+                      typename gen_forward<
+                        std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value
+                      >::type()))
     {
-        std::tuple<std::pair<T1,T2>...> ret;
-        tuple_<sizeof...(T1)>::zip(t1,t2,ret);
-        return ret;
-    }
+        return call_apply(fun, std::forward<TupleT>(tup), 
+                      typename gen_forward<
+                        std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value
+                      >::type());
+    }   
 
 } // namespace more
 
