@@ -22,7 +22,7 @@ namespace more {
     /// http://stackoverflow.com/questions/7858817/unpacking-a-tuple-to-call-a-matching-function-pointer
     ///
     
-    /// both gens forward and backward, written in Haskell:
+    /// both gens forward and backward, in Haskell:
     ///
     /// gen_forward 0 xs = xs
     /// gen_forward n xs = gen_forward (n-1) $ (n-1):xs
@@ -67,18 +67,6 @@ namespace more {
     template <int N, int ...Xs>
     struct gen_backward : __gen_backward<N, 0, Xs...> {};
 
-    
-    //////////////////////////////////////////////////////////////
-    // remove_reference_and_cv
-    //
-
-    template <typename Tp>
-    struct remove_reference_and_cv
-    {
-        typedef typename std::remove_cv<
-        typename std::remove_reference<Tp>::type>::type type;
-    };
-
     //////////////////////////////////////////////////////////////
     /// the pass trick:
     ///
@@ -101,7 +89,7 @@ namespace more {
     {
         call_for_each(std::forward<TupleT>(tup), 
                       fun, typename gen_forward<
-                        std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value
+                        std::tuple_size<typename std::decay<TupleT>::type>::value
                       >::type());
     }   
 
@@ -126,8 +114,8 @@ namespace more {
         call_for_each2(std::forward<Tuple1>(t1),
                       std::forward<Tuple2>(t2), 
                       fun, typename gen_forward<
-                            min(std::tuple_size<typename remove_reference_and_cv<Tuple1>::type>::value,
-                                std::tuple_size<typename remove_reference_and_cv<Tuple2>::type>::value) 
+                            min(std::tuple_size<typename std::decay<Tuple1>::type>::value,
+                                std::tuple_size<typename std::decay<Tuple2>::type>::value) 
                       >::type());
     }   
 
@@ -145,12 +133,12 @@ namespace more {
     auto tuple_map(Fun fun, TupleT &&tup)
     -> decltype(call_map(fun, std::forward<TupleT>(tup),                                       
                         typename gen_forward<                                                   
-                          std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value
+                          std::tuple_size<typename std::decay<TupleT>::type>::value
                         >::type()))                                                             
     {                                               
         return call_map(fun, std::forward<TupleT>(tup), 
                       typename gen_forward<
-                        std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value
+                        std::tuple_size<typename std::decay<TupleT>::type>::value
                       >::type());
     }   
 
@@ -168,12 +156,12 @@ namespace more {
     auto tuple_apply(Fun fun, TupleT &&tup)
         -> decltype(call_apply(fun, std::forward<TupleT>(tup), 
                       typename gen_forward<
-                        std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value
+                        std::tuple_size<typename std::decay<TupleT>::type>::value
                       >::type()))
     {
         return call_apply(fun, std::forward<TupleT>(tup), 
                       typename gen_forward<
-                        std::tuple_size<typename remove_reference_and_cv<TupleT>::type>::value
+                        std::tuple_size<typename std::decay<TupleT>::type>::value
                       >::type());
     }   
 
