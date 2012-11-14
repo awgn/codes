@@ -8,429 +8,537 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef _VARIANT_HPP_
-#define _VARIANT_HPP_ 
+#pragma once 
 
 #include <typeinfo>
-#include <iostream>
 #include <stdexcept>
 #include <algorithm>
 #include <type_traits>
+#include <typeinfo>
+#include <functional>
 
-// Yet another boost tribute: the class variant.
+// Yet another boost tribute: the variant class.
 //
 
 namespace more { 
 
-    namespace detail 
-    {
-        template <typename ...Ti>  struct max_sizeof;
-        template <typename T0, typename ...Ti>
-        struct max_sizeof<T0, Ti...>
+    namespace variant_details {
+        
+        template <typename T>
+        struct assert_is_nothrow_move_constructible
         {
-            enum { value = (sizeof(T0) > max_sizeof<Ti...>::value) ? static_cast<int>(sizeof(T0)) : max_sizeof<Ti...>::value };
-        };  
+#if (__clang__) || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 6))
+            static_assert(std::is_nothrow_move_constructible<T>::value,
+                          "all types must be nothrow move constructible");
+#else
+#pragma message "Types in variant must be nothrow move constructible"
+#endif
+            typedef int type;
+        };
 
-        template <typename T0>
-        struct max_sizeof<T0>
+        template <template <typename> class F, typename ... Ts> struct for_each;
+        template <template <typename> class F, typename T>
+        struct for_each<F, T>
         {
-            enum { value = sizeof(T0) };
-        };  
+            typedef typename F<T>::type type;
+        };
+        
+        template <template <typename> class F, typename T, typename ...Ts>
+        struct for_each<F, T, Ts...> : for_each <F, Ts...>
+        {
+            typedef typename F<T>::type type;
+        };
+
+        ///////////////////////////////////////////// max - sizeof
+         
+        template <typename T> 
+        struct size_of
+        {
+            static constexpr size_t value = sizeof(T); 
+        };
+
+        template <template <typename> class F, typename ...Ts> struct max;
+        template <template <typename> class F>
+        struct max<F>
+        {
+            static constexpr size_t head  = 0;
+            static constexpr size_t tail  = 0;
+            static constexpr size_t value = 0;
+        };
+        template <template <typename> class F, typename T, typename ...Ts>
+        struct max<F, T, Ts...>
+        {
+            static constexpr size_t head  = F<T>::value;
+            static constexpr size_t tail  = max<F, Ts...>::value;
+            static constexpr size_t value = head > tail ? head : tail;
+        };
 
         ///////////////////////////////////////////// type index 
 
-        template <int N, typename T, typename ...Ti> struct __index_of;
+        template <int N, typename T, typename ...Ti> struct index_of_;
 
         template <int N, typename T, typename T0, typename ...Ti>
-        struct __index_of<N,T,T0,Ti...>
+        struct index_of_<N,T,T0,Ti...>
         {
-            enum { value = std::is_same<T,T0>::value ? N : __index_of<N+1, T, Ti...>::value };
+            enum { value = std::is_same<T,T0>::value ? N : index_of_<N+1, T, Ti...>::value };
         };
-
         template <int N, typename T, typename T0>
-        struct __index_of<N,T,T0>
+        struct index_of_<N,T,T0>
         {
             enum { value = std::is_same<T,T0>::value ? N : -1 };
         };
 
         template <typename T, typename ...Ti> struct index_of
         {
-            enum { value = __index_of<0, T, Ti...>::value };    
+            enum { value = index_of_<0, T, Ti...>::value };    
         };
 
         ////////////////////////////////////////////// get n-th type
 
-        template <int i, int N, typename ...Ti> struct __get_type;
+        template <int i, int N, typename ...Ti> struct get_type_;
         template <int i, int N, typename T0, typename ...Ti>
-        struct __get_type<i,N, T0, Ti...>
+        struct get_type_<i,N, T0, Ti...>
         {
-            typedef typename __get_type<i+1, N, Ti...>::type type;
+            typedef typename get_type_<i+1, N, Ti...>::type type;
         };
         template <int N, typename T0, typename ...Ti>
-        struct __get_type<N,N, T0, Ti...>
+        struct get_type_<N,N, T0, Ti...>
         {
             typedef T0 type;
         };
+
         template <int N, typename ...Ti> struct get_type
         {
-            typedef typename __get_type<0,N, Ti...>::type type;
+            typedef typename get_type_<0,N, Ti...>::type type;
         };  
- 
-    }   // namespace detail
 
-    template <typename ...Ti>  
-    class variant {
+        ////////////////////////////////////////////// stream_on:
 
-    public:
-        template <typename CharT, typename Traits>
-        friend std::basic_ostream<CharT,Traits> &
-        operator<<(std::basic_ostream<CharT,Traits> &out, const more::variant<Ti...> & var)
+        template <typename Out>
+        struct stream_on
         {
-            variant<Ti...>::printon<Ti...>::apply(out, var);
-            return out; 
-        }
-
-    public:
-        variant()
-        : m_type(0)
-        {
-            ctor<Ti...>::apply(m_storage, 0);
-        }
-
-        variant(const variant &rhs)
-        : m_type(rhs.m_type)
-        {
-            copyctor<Ti...>::apply(rhs.m_storage, m_storage, m_type); 
-        }
-        
-        variant(const variant &&rhs)
-        : m_type(rhs.m_type)
-        {
-            rhs.m_mtype = -1;
-            movector<Ti...>::apply(rhs.m_storage, m_storage, m_type); 
-        }
-
-        variant& operator=(variant rhs)
-        {    
-            rhs.swap(*this);
-            return *this;
-        }
- 
-        ~variant()
-        {
-            if (m_type != -1)
-                dtor<Ti...>::apply(m_storage, m_type);
-        }
-        
-        void swap(variant &rhs)
-        {
-            std::swap_ranges(m_storage, m_storage+_S_storage_size, rhs.m_storage);
-            std::swap(m_type, rhs.m_type);
-        }
-
-        template <typename T>
-        variant(const T &value)
-        : m_type(0)
-        {
-            ctor<Ti...>::apply(m_storage, 0);
-            try 
-            {
-                this->store(value);
-            }
-            catch(...)
-            {
-                dtor<Ti...>::apply(m_storage, 0);
-                throw;
-            }
-        }
-
-        template <typename T>
-        variant &operator=(const T& rhs)
-        {
-            this->store(rhs);
-            return *this;
-        }
- 
-        bool 
-        empty() const 
-        {
-            return false;   // never empty
-        }
-
-        int
-        which() const
-        { return m_type; }
-
-        int
-        storage_size() const
-        {
-            return sizeof(m_storage)/sizeof(m_storage[0]);
-        }
-
-        const std::type_info &
-        type() const
-        {
-            return __type<Ti...>::get(m_type);
-        }
-
-        /////////////////////
-
-        template <typename T>
-        T & get()
-        {
-            if ( detail::index_of<T,Ti...>::value != m_type )
-                throw std::bad_cast();
-
-            return *reinterpret_cast<T *>(m_storage);
-        }
-
-        template <typename T>
-        const T & get() const
-        {
-            if ( detail::index_of<T,Ti...>::value != m_type )
-                throw std::bad_cast();
-
-            return *reinterpret_cast<const T *>(m_storage);
-        }
-
-        template <typename F>
-        void apply_visitor(F cw)
-        {
-            visitor<Ti...>::apply(cw, *this);
-        }
-
-        template <typename V>
-        void store(const V &value)
-        {    
-            static_assert(detail::index_of<V, Ti...>::value != -1, "type not in variant");
-            char tmp[_S_storage_size];
-                   
-            // try to construct the new value in a temporary storage
-            //
-            new (tmp) V(value);
+            Out &out_;
             
-            // destroy the object in the m_storage (as m_type) ...
-            //
-            dtor<Ti...>::apply(m_storage, m_type);  
- 
-            // copy the temporary storage to m_storage
-            //
-            std::copy(tmp, tmp + _S_storage_size, m_storage);
-            m_type = detail::index_of<V, Ti...>::value;
+            stream_on(Out &o)
+            : out_(o)
+            {}
+
+            template <typename T>
+            void operator()(const T & elem)
+            {
+                out_ << elem;
+            }
+        };
+
+        ///////////////////////////////////////////////////////////// FIXME!
+        // this workaround is required as long as compliers do not implement
+        // ref-qualifier (see variant<>::get method).
+
+        template <typename Tp>
+        inline Tp move_if(Tp &value, std::true_type)
+        { return value; }
+        
+        template <typename Tp>
+        inline Tp & move_if(Tp &value, std::false_type)
+        { return value; }
+
+        template <bool V, typename Tp>
+        inline auto 
+        move_if(Tp & value)
+        -> decltype(move_if(value, std::integral_constant<bool, V>()))
+        {
+            return move_if(value, std::integral_constant<bool, V>());
         }
 
-    private:
+        ////////////////////////////////////////////// visitor:
 
-        template <typename ... Tp> struct __type;
-        template <typename T, typename ... Tp> 
-        struct __type<T, Tp...>
-        {
-            static const std::type_info &
-            get(int tp, int n = 0)
-            {
-                if (tp == n)
-                    return typeid(T);
-                else
-                    return __type<Tp...>::get(tp, n+1);
-            }
-        };
-        template <typename T>
-        struct __type<T>
-        {
-            static const std::type_info &
-            get(int tp, int n = 0)
-            {
-                if (tp == n)
-                    return typeid(T);
-                else
-                    throw std::runtime_error("__type: internal error");
-            }
-        };
- 
-        ////////
-        
-        template <typename ...Tp> struct ctor;
-        template <typename T, typename ...Tp>
-        struct ctor<T, Tp...> 
-        {
-            static void apply(char *storage, int type, int n = 0)
-            {
-                if (n == type) 
-                {
-                    new(storage)T;
-                    return;
-                }
-                ctor<Tp...>::apply(storage, type, n+1);    
-            }
-        };
-        template <typename T>
-        struct ctor<T>
-        {
-            static void apply(char *storage, int type, int n = 0)
-            {
-                if (n == type) 
-                {
-                    new(storage)T;
-                    return;
-                }
-                throw std::runtime_error("internal error");
-            }
-        };
- 
-        
-        template <typename ...Tp> struct dtor;
-        template <typename T, typename ...Tp>
-        struct dtor<T, Tp...> 
-        {
-            static void apply(char *storage, int type, int n = 0)
-            {
-                if (n == type) 
-                {
-                    reinterpret_cast<T *>(storage)->~T();
-                    return;
-                }
-                dtor<Tp...>::apply(storage, type, n+1);    
-            }
-        };
-        template <typename T>
-        struct dtor<T>
-        {
-            static void apply(char *storage, int type, int n = 0)
-            {
-                if (n == type) 
-                {
-                    reinterpret_cast<T *>(storage)->~T();
-                    return;
-                }
-                throw std::runtime_error("internal error");
-            }
-        };
-
-
-        template <typename ...Tp> struct copyctor;                   
-        template <typename T, typename ...Tp>
-        struct copyctor<T, Tp...> 
-        {
-            static void apply(const char *from, char *to, int type, int n = 0)
-            {
-                if (n == type) 
-                {
-                    new (to) T(*reinterpret_cast<const T *>(from));
-                    return;
-                }
-                copyctor<Tp...>::apply(from, to, type, n+1);    
-            }
-        };
-        template <typename T>
-        struct copyctor<T>
-        {
-            static void apply(const char *from, char *to, int type, int n = 0)
-            {
-                if (n == type) 
-                {
-                    new (to) T(*reinterpret_cast<const T *>(from));
-                    return;
-                }
-                throw std::runtime_error("internal error");
-            }
-        };
- 
-        
-        template <typename ...Tp> struct movector;                   
-        template <typename T, typename ...Tp>
-        struct movector<T, Tp...> 
-        {
-            static void apply(const char *from, char *to, int type, int n = 0)
-            {
-                if (n == type) 
-                {
-                    new (to) T(std::move(*reinterpret_cast<const T *>(from)));
-                    return;
-                }
-                movector<Tp...>::apply(from, to, type, n+1);    
-            }
-        };
-        template <typename T>
-        struct movector<T>
-        {
-            static void apply(const char *from, char *to, int type, int n = 0)
-            {
-                if (n == type) 
-                {
-                    new (to) T(std::move(*reinterpret_cast<const T *>(from)));
-                    return;
-                }
-                throw std::runtime_error("internal error");
-            }
-        };
-
-        template <typename ...Tp> struct printon;
-        template <typename T, typename ...Tp>
-        struct printon<T, Tp...> 
-        {
-            template <typename CharT, typename Traits, typename V>
-            static void apply(std::basic_ostream<CharT, Traits> &out, const V &var, int n = 0)
-            {
-                if (n == var.m_type) 
-                {
-                    out << var.template get<T>();
-                    return;
-                }
-                printon<Tp...>::apply(out, var, n+1);    
-            }
-        };
-        template <typename T>
-        struct printon<T>
-        {
-            template <typename CharT, typename Traits, typename V>
-            static void apply(std::basic_ostream<CharT, Traits> &out, const V &var, int n = 0)
-            {
-                if (n == var.m_type) 
-                {
-                    out << var.template get<T>();
-                    return;
-                }
-                throw std::runtime_error("internal error");
-            }
-        };
-      
-       
         template <typename ...Tp> struct visitor;
         template <typename T, typename ...Tp>
         struct visitor<T, Tp...> 
         {
             template <typename F, typename V>
-            static void apply(F cw, const V &var, int n = 0)
+            static auto 
+            apply(F fun, V &&var, int n = 0)
+            -> decltype(fun(std::declval<T &>())) 
             {
-                if (n == var.m_type) 
+                if (n == var.which()) 
                 {
-                    cw(var.template get<T>());
-                    return;
+                    return fun(move_if<std::is_rvalue_reference<V &&>::value>(var.template get<T>()));
                 }
-                visitor<Tp...>::apply(cw, var, n+1);    
+                return visitor<Tp...>::apply(fun, std::forward<V>(var), n+1);    
+            }
+            
+            template <typename F, typename V1, typename V2>
+            static auto 
+            apply2(F fun, V1 &&var1, V2 &&var2, int n = 0)
+            -> decltype(fun(std::declval<T &>(), std::declval<T &>())) 
+            {
+                if (n == var1.which() && n == var2.which()) 
+                {
+                    // std::cout << T(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>())) << " " 
+                    //           << T(move_if<std::is_rvalue_reference<V2 &&>::value>(var2.template get<T>())) << std::endl;
+
+                    return fun(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>()), 
+                               move_if<std::is_rvalue_reference<V2 &&>::value>(var2.template get<T>()));
+                }
+                return visitor<Tp...>::apply2(fun, std::forward<V1>(var1), std::forward<V2>(var2), n+1);    
             }
         };
         template <typename T>
         struct visitor<T>
         {
             template <typename F, typename V>
-            static void apply(F cw, const V &var, int n = 0)
+            static auto 
+            apply(F fun, V &&var, int n = 0)
+            -> decltype(fun(std::declval<T&>()))
             {
-                if (n == var.m_type) 
+                if (n == var.which()) 
                 {
-                    cw(var.template get<T>());
-                    return;
+                    return fun(move_if<std::is_rvalue_reference<V &&>::value>(var.template get<T>()));
                 }
-                throw std::runtime_error("internal error");
+                throw std::runtime_error("variant: internal error");
+            }
+            template <typename F, typename V1, typename V2>
+            static auto 
+            apply2(F fun, V1 &&var1, V2 &&var2, int n = 0)
+            -> decltype(fun(std::declval<T &>(), std::declval<T &>())) 
+            {
+                if (n == var1.which() && n == var2.which()) 
+                {           
+                    // std::cout << T(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>())) << " " 
+                    //           << T(move_if<std::is_rvalue_reference<V2 &&>::value>(var2.template get<T>())) << std::endl;
+                    
+                    return fun(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>()), 
+                               move_if<std::is_rvalue_reference<V2 &&>::value>(var2.template get<T>()));
+                }
+                throw std::runtime_error("variant: internal error");
             }
         };
- 
-        static const int _S_storage_size = detail::max_sizeof<Ti...>::value;
+
+    }  // namespace details
+
+    
+    ////////////////////////////////////////////// variant class...
+    ////////////////////////////////////////////// 
+
+
+    template <typename ...Ts>  
+    class variant 
+    {
+        // ensure the types have nothrow move or the copy constructors:
+        //
         
-        int  m_type;
-        char m_storage[_S_storage_size];
+        typedef typename variant_details::for_each<variant_details::assert_is_nothrow_move_constructible, Ts...>::type check;
+
+    public: 
+
+        // determine the storage_type:
+        //
+
+        static constexpr size_t storage_len   = variant_details::max<variant_details::size_of, Ts...>::value;
+        static constexpr size_t storage_align = variant_details::max<std::alignment_of, Ts...>::value;
+
+        typedef typename std::aligned_storage<storage_len, storage_align>::type storage_type;
+
+    public:
+        
+        variant()
+        : type_(-1)
+        {}
+
+        ~variant()
+        {
+            if (type_ != -1)
+            {
+                variant_details::visitor<Ts...>::apply(dtor(), *this);
+            }
+        }
+
+        template <typename T, typename V = typename std::enable_if<!std::is_same<typename std::decay<T>::type,variant>::value, void>::type>
+        variant(T && arg)
+        : type_(-1) 
+        {
+            set(std::forward<T>(arg));
+        }
+        
+        variant(const variant &rhs)   // copy constructor
+        : type_(rhs.type_)
+        {
+            if (rhs.type_ != -1)
+            {
+                variant_details::visitor<Ts...>::apply2(copy_ctor(), *this, rhs);
+            }
+        }
+
+        variant(variant && rhs)       // move constructor
+        : type_(rhs.type_)
+        {
+            if (rhs.type_ != -1)
+            {
+                variant_details::visitor<Ts...>::apply2(move_ctor(), *this, std::move(rhs));
+                variant_details::visitor<Ts...>::apply(dtor(), rhs);
+                rhs.type_ = -1;
+            }
+        }
+
+        variant& operator=(variant const &rhs)  // assignment operator
+        {
+            if (type_ == rhs.type_)
+            {
+                if (type_ != -1)  
+                {
+                    variant_details::visitor<Ts...>::apply2(assign_op(), *this, rhs);
+                }
+            }
+            else
+            {
+                if (rhs.type_ != -1) 
+                {
+                    variant tmp(rhs);
+                    
+                    if (type_ != -1) 
+                        variant_details::visitor<Ts...>::apply(dtor(), *this);
+                
+                    type_ = rhs.type_;
+
+                    variant_details::visitor<Ts...>::apply2(move_ctor(), *this, std::move(tmp));
+                }
+                else
+                {
+                    variant_details::visitor<Ts...>::apply(dtor(), *this);
+                    type_ = -1;
+                }
+            }
+            return *this;
+        }
+
+
+        variant& operator=(variant &&rhs)   // move assignment operator
+        {
+            if (type_ == rhs.type_)
+            {
+                if (type_ != -1)  
+                {
+                    variant_details::visitor<Ts...>::apply2(move_assign_op(), *this, std::move(rhs));
+                    variant_details::visitor<Ts...>::apply(dtor(), rhs);
+                    rhs.type_ = -1;
+                }
+            }
+            else
+            {
+                if (type_ != -1) 
+                    variant_details::visitor<Ts...>::apply(dtor(), *this);
+             
+                type_ = rhs.type_;
+                
+                if (type_ != -1)
+                {
+                    variant_details::visitor<Ts...>::apply2(move_ctor(), *this, std::move(rhs));
+                    variant_details::visitor<Ts...>::apply(dtor(), rhs);
+                    rhs.type_ = -1;
+                }
+            }
+            return *this;
+        }
+        
+        // universal assignment operator
+        //
+        
+        template <typename T, typename V = typename std::enable_if<!std::is_same<typename std::decay<T>::value,variant>::value, variant>::type>
+        variant &
+        operator=(T && arg)
+        {
+            set(std::forward<T>(arg));
+            return *this;
+        }
+        
+        bool
+        empty() const
+        {
+            return type_ == -1;
+        }
+
+        int 
+        which() const
+        {
+            return type_;
+        }
+
+        // get methods: these methods require ref-qualifier which is not 
+        //              yet implemented in common compilers: i.e. g++-4.8 
+        
+        template <typename T>
+        T & get()
+        {
+            if (variant_details::index_of<T,Ts...>::value != type_)
+                throw std::bad_cast();
+
+            return *reinterpret_cast<T *>(&storage_);
+        }
+
+        template <typename T>
+        const T & get() const
+        {
+            if (variant_details::index_of<T,Ts...>::value != type_)
+                throw std::bad_cast();
+
+            return *reinterpret_cast<const T *>(&storage_);
+        }
+
+        template <typename T>
+        void set(T value)
+        {
+            constexpr auto t = variant_details::index_of<typename std::decay<T>::type, Ts...>::value;
+
+            static_assert(t != -1, "T not found in variant");
+            
+            // destroy the object in the variant...
+            
+            this->~variant();            
+
+            // move the object to the storage_
+            
+            new (&storage_) T(std::move(value));
+            
+            type_  = t;
+        }
+
+        bool operator==(variant const &rhs)
+        {
+            if (type_ == rhs.type_)
+            {
+                if (type_ == -1)
+                    return true;
+
+                return variant_details::visitor<Ts...>::apply2(op_equal(), *this, rhs);
+            }
+            else
+                return false;
+        }
+
+        bool operator!=(variant const &rhs)
+        {
+            return !(*this == rhs);
+        }
+
+    private:
+        
+        struct ctor
+        {
+            template <typename T1, typename T2>
+            void operator()(T1&& v1, T2 &&v2)
+            {
+                new (&v1) T2(std::forward<T2>(v2));
+            }
+        };
+
+        struct dtor
+        {
+            template <typename T>
+            void operator()(T &instance)
+            {
+                instance.~T();
+            }
+        };
+
+        struct copy_ctor
+        {
+            template <typename T>
+            void operator()(T &lhs, const T &rhs)
+            {
+                new (&lhs) T(rhs);
+            }
+        };
+
+        struct move_ctor
+        {
+            template <typename T, typename Tr>
+            void operator()(T &lhs, Tr &&rhs)
+            {
+                new (&lhs) T(std::move(rhs));
+            }
+        };
+        
+        struct assign_op
+        {
+            template <typename T>
+            void operator()(T &lhs, const T &rhs)
+            {
+                lhs = rhs;
+            }
+        };
+        
+        struct move_assign_op
+        {
+            template <typename T, typename Tp>
+            void operator()(T &lhs, Tp &&rhs)
+            {
+                lhs = std::forward<Tp>(rhs);
+            }
+        };
+
+        struct op_equal
+        {
+            template <typename T>
+            bool operator()(T &lhs, const T &rhs)
+            {
+                return lhs == rhs;
+            }
+        };
+
+    private:
+        
+        storage_type storage_;
+        int type_;
+    };
+
+
+    template <typename CharT, typename Traits, typename ...Ts>
+    typename std::basic_ostream<CharT, Traits> &
+    operator<<(std::basic_ostream<CharT,Traits>& out, variant<Ts...> const&  that)
+    {
+        return variant_details::visitor<Ts...>::apply(
+            variant_details::stream_on<decltype(out)>(out), that), out;
+    }
+
+    template <typename Fun, typename ...Ts>
+    auto visitor(Fun f, variant<Ts...> &v)
+    -> decltype(variant_details::visitor<Ts...>::apply(f, v))
+    {
+        return variant_details::visitor<Ts...>::apply(f, v);    
+    }
+
+    template <typename Fun, typename ...Ts>
+    auto visitor(Fun f, variant<Ts...> const &v)
+    -> decltype(variant_details::visitor<Ts...>::apply(f, v))
+    {
+        return variant_details::visitor<Ts...>::apply(f, v);    
+    }
+
+    struct variant_hash
+    {
+        template <typename T>
+        size_t operator()(const T& x) const
+        {
+            return std::hash<T>()(x);
+        }
     };
 
 } // namespace more
 
-#endif /* _VARIANT_HPP_ */
+
+// Specialization for std::hash...
+//
+namespace std 
+{
+    template <typename ...Ts>
+    struct hash<more::variant<Ts...>>
+    {
+        size_t operator()(const more::variant<Ts...>& x) const
+        {
+            return more::visitor(more::variant_hash(), x);
+        }
+    };
+}
+
+
