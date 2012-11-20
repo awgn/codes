@@ -43,7 +43,7 @@ namespace more
     {};
     
     // has member type helper (using SFINAE... Vandevoorde/Josuttis)
-    #define __has_member_type_helper(abc) \
+    #define HAS_MEMBER_HELPER(abc) \
     template <typename T>   \
     class __has_ ## abc ## _helper : public __sfinae_types   \
     {   \
@@ -54,21 +54,21 @@ namespace more
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };   \
     }
 
-    __has_member_type_helper(value_type);
-    __has_member_type_helper(key_type);
-    __has_member_type_helper(mapped_type);
-    __has_member_type_helper(container_type);
+    HAS_MEMBER_HELPER(value_type);
+    HAS_MEMBER_HELPER(key_type);
+    HAS_MEMBER_HELPER(mapped_type);
+    HAS_MEMBER_HELPER(container_type);
 
-    __has_member_type_helper(pointer);
-    __has_member_type_helper(const_pointer);
-    __has_member_type_helper(reference);
-    __has_member_type_helper(const_reference);
-    __has_member_type_helper(iterator);
-    __has_member_type_helper(const_iterator);
-    __has_member_type_helper(reverse_iterator);
-    __has_member_type_helper(const_reverse_iterator);
-    __has_member_type_helper(size_type);
-    __has_member_type_helper(difference_type);
+    HAS_MEMBER_HELPER(pointer);
+    HAS_MEMBER_HELPER(const_pointer);
+    HAS_MEMBER_HELPER(reference);
+    HAS_MEMBER_HELPER(const_reference);
+    HAS_MEMBER_HELPER(iterator);
+    HAS_MEMBER_HELPER(const_iterator);
+    HAS_MEMBER_HELPER(reverse_iterator);
+    HAS_MEMBER_HELPER(const_reverse_iterator);
+    HAS_MEMBER_HELPER(size_type);
+    HAS_MEMBER_HELPER(difference_type);
 
     template <typename T>
     struct has_value_type : public std::integral_constant<bool, __has_value_type_helper<T>::value>
@@ -128,6 +128,7 @@ namespace more
     
 
     // is_container 
+    //
     
     template <typename T>
     struct is_container : public std::integral_constant<bool, __has_value_type_helper<T>::value && 
@@ -143,7 +144,8 @@ namespace more
     {};
 
     // is_tuple 
-
+    //
+    
     template <typename T>
     struct is_tuple : public std::integral_constant<bool, false>
     {};
@@ -153,7 +155,8 @@ namespace more
     {};
 
     // is_pair
-
+    //
+    
     template <typename T>
     struct is_pair : public std::integral_constant<bool, false>
     {};
@@ -163,9 +166,10 @@ namespace more
     {};
 
     // has_insertion_operator: operator<<()
+    //
     
     template <typename T>
-    class has_insertion_operator : public __sfinae_types
+    class __has_insertion_operator_helper : public __sfinae_types
     {
         template <typename C> static __one test(typename std::remove_reference< decltype((std::cout << std::declval<C>())) >::type *);
         template <typename C> static __two test(...);
@@ -173,16 +177,25 @@ namespace more
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };
     };
 
+    template <typename T>
+    struct has_insertion_operator : public std::integral_constant<bool, __has_insertion_operator_helper<T>::value>
+    {};
+
     // has_extraction_operator: operator>>()
+    //
     
     template <typename T>
-    class has_extraction_operator : public __sfinae_types
+    class __has_extraction_operator_helper : public __sfinae_types
     {
         template <typename C> static __one test(typename std::remove_reference< decltype((std::cin >> std::declval<C &>())) >::type *);
         template <typename C> static __two test(...);
     public:    
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };
     };
+
+    template <typename T>
+    struct has_extraction_operator : public std::integral_constant<bool, __has_extraction_operator_helper<T>::value>
+    {};
 
 
     } // namespace traits
