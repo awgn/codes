@@ -12,35 +12,46 @@
 #define _MORE_FACTORY_HPP_ 
 
 #include <type_traits>
+#include <tuple>
 #include <memory>
 #include <string>
 #include <map>
 
+#include <tuple_ext.hpp>
+
 namespace more { 
 
-    template <typename B, typename ... Arg>  
+    template <typename B>  
     struct factory_base_allocator
     {
         virtual ~factory_base_allocator() 
         {}
 
-        virtual B * alloc(Arg&& ... ) = 0;
-        virtual std::shared_ptr<B> shared_alloc(Arg&& ... ) = 0;
+        template <typename ...Ts>
+        B * alloc(Ts&& ...args)
+        {
+            std::tuple<typename std::remove_reference<Ts>::type...> tmp(std::forward<Ts>(args)...);
+            return xalloc(static_cast<void *>(&tmp));
+        }
+
+        virtual B * xalloc(void *) = 0;
     };
 
     template <typename B, typename E, typename ... Arg>   // B must be a base class of E 
-    struct factory_allocator : public factory_base_allocator<B,Arg...>
+    struct factory_allocator : public factory_base_allocator<B>
     {
         static_assert(std::is_base_of<B,E>::value, "base_of relationship broken");
 
-        virtual B * alloc(Arg && ... arg)
+        template <typename Tuple, int ...S>
+        B * talloc(Tuple &t, seq<S...>)
         {
-            return new E(std::forward<Arg>(arg)...);
+            return new E(std::move(std::get<S>(t))...);
         }
 
-        virtual std::shared_ptr<B> shared_alloc(Arg && ... arg)
+        virtual B * xalloc(void *tmp)
         {
-            return std::make_shared<E>(std::forward<Arg>(arg)...);
+            auto t = static_cast<std::tuple<typename std::remove_reference<Arg>::type...> *>(tmp);
+            return talloc(*t, typename gen_forward<sizeof...(Arg)>::type());
         }
     };
 
@@ -58,17 +69,16 @@ namespace more {
     {
         static_assert(std::is_base_of<B,E>::value, "base_of relationship broken");
 
-        template <typename F, typename K>
-        factory_register(F &f, const K &key)
+        template <typename F, typename K, typename ...Ti>
+        factory_register(F &f, const K &key, fac_args<Ti...> = fac_args<>())
         {
-            unpack_register(f, key, typename F::args_pack());
+            pack_register(f, key, fac_args<Ti...>());
         }
 
         template <typename F, typename K, typename ... Ti>
-        void unpack_register(F &f, const K &key, fac_args<Ti...>)
+        void pack_register(F &f, const K &key, fac_args<Ti...>)
         {
-            f.regist(key, std::unique_ptr<factory_base_allocator<B, Ti...>>(new 
-                                            typename more::factory_allocator<B, E, Ti...>()));    
+            f.regist(key, std::unique_ptr<factory_base_allocator<B>>(new typename more::factory_allocator<B, E, Ti...>()));    
         }
     };
 
@@ -76,7 +86,7 @@ namespace more {
     // factory class: K:key -> B:base_element
 
 
-    template <typename K, typename B, typename ... Arg> 
+    template <typename K, typename B> 
     class factory
     {
     public:
@@ -84,21 +94,19 @@ namespace more {
 #if __GNUC__ == 4 && __GNUC_MINOR__ < 6
         // buggy std::map when used with std::unique_ptr...    
         //
-        typedef std::map<K, std::shared_ptr<factory_base_allocator<B,Arg...>>> map_type;
+        typedef std::map<K, std::shared_ptr<factory_base_allocator<B>>> map_type;
 #else
-        typedef std::map<K, std::unique_ptr<factory_base_allocator<B,Arg...>>> map_type;
+        typedef std::map<K, std::unique_ptr<factory_base_allocator<B>>> map_type;
 #endif
-
-        typedef fac_args<Arg...> args_pack;
 
         factory()  = default;
         ~factory() = default;
 
         bool
-        regist(const K & key, std::unique_ptr<factory_base_allocator<B, Arg...>> value)
+        regist(const K & key, std::unique_ptr<factory_base_allocator<B>> value)
         { 
 #if __GNUC__ == 4 && __GNUC_MINOR__ < 6
-            std::shared_ptr<factory_base_allocator<B, Arg...>> sp(std::move(value));
+            std::shared_ptr<factory_base_allocator<B>> sp(std::move(value));
             return m_map.insert(make_pair(key, std::move(sp))).second; 
 #else                                                    
             return m_map.insert(make_pair(key, std::move(value))).second; 
@@ -126,17 +134,6 @@ namespace more {
                 return std::unique_ptr<B>();
 
             return std::unique_ptr<B>(it->second->alloc(std::forward<Ti>(arg)...));
-        }
-
-        template <typename ...Ti>
-        std::shared_ptr<B> 
-        shared(const K &key, Ti&& ... arg) const
-        {
-            auto it = m_map.find(key);
-            if (it == m_map.end())
-                return std::shared_ptr<B>();
-
-            return it->second->shared_alloc(std::forward<Ti>(arg)...);
         }
 
     private:

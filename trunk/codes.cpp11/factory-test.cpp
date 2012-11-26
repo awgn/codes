@@ -23,6 +23,7 @@ struct base
 
 struct der0  // error
 {
+    virtual ~der0() {}
     virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 };
  
@@ -31,7 +32,7 @@ struct der1 : public base
     der1() : base() 
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 
-    ~der1()
+    virtual ~der1()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
     
     virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
@@ -42,7 +43,7 @@ struct der2 : public base
     der2() : base() 
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 
-    ~der2()
+    virtual ~der2()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
  
     virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
@@ -52,57 +53,31 @@ struct der2 : public base
 
 struct der3 : public base 
 {
-    der3(const std::string &n) : base() 
-    { std::cout << __PRETTY_FUNCTION__ << " -> " << n << std::endl; }
-
-    ~der3() 
+    der3(std::string n) 
+    : base() 
+    , value(std::move(n))
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 
-    virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
-};
-
-struct der4 : public base 
-{
-    der4(const std::string &m) : base() 
-    { std::cout << __PRETTY_FUNCTION__ << " -> " << m << std::endl; }
-
-    ~der4() 
+    virtual ~der3() 
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 
-    virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
-};
+    std::string value;
 
-
-struct der5 : public base
-{
-    der5(std::string && m) : base() 
-    { std::cout << __PRETTY_FUNCTION__ << " -> " << m << std::endl; }
-
-    der5(const std::string & m) : base() 
-    { std::cout << __PRETTY_FUNCTION__ << " -> " << m << std::endl; }
-    
-    ~der5() 
-    { std::cout << __PRETTY_FUNCTION__ << std::endl; }
-
-    virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
+    virtual void hello_world() { std::cout << value << std::endl; }
 };
 
 
 ////////////////  global factories: simple and 1-parameter  //////////////// 
 
-more::factory<std::string, base> factory_0;                 // simple factory
-more::factory<std::string, base, std::string> factory_1;    // factory of objects whose constructors accept a std::string 
-more::factory<std::string, base, std::string &&> factory_2; // factory of objects whose constructors accept a r-value ref. to std::string 
+more::factory<std::string, base> factory;                   // generic factory: for objects default-constructible or for types that accept a variadic number of arguments
 
 namespace 
 {
     // automatic hook: by means of the factory_register object
 
-    more::factory_register<base, der1> _void_1_(factory_0,"der1");
-    more::factory_register<base, der2> _void_2_(factory_0,"der2");
-    more::factory_register<base, der3> _void_3_(factory_1,"der3");
-    more::factory_register<base, der4> _void_4_(factory_1,"der4");
-    more::factory_register<base, der5> _void_5_(factory_2,"der5");
+    more::factory_register<base, der1> _void_1_(factory,"der1");
+    more::factory_register<base, der2> _void_2_(factory,"der2");
+    more::factory_register<base, der3> _void_3_(factory,"der3", more::fac_args<std::string>());
 }
 
 
@@ -116,31 +91,22 @@ Context(factory_test)
     std::cout << "--- start here ---" << std::endl;
 
     {
-        auto p1 = factory_0("der1");
-        std::unique_ptr<base> p2 = factory_0("der2");
-        std::shared_ptr<base> p3 = factory_1.shared("der3",std::string("hello"));
-
-        std::string hello("hello");
-
-        auto p4 = factory_2("der5", std::move(hello));
-        auto p5 = factory_2("der5", std::string("hello"));
+        auto p1 = factory("der1");
+        auto p2 = factory("der2");
+        auto p3 = factory("der3", std::string("ciao mondo!"));
 
         p1->hello_world();
         p2->hello_world();
         p3->hello_world();
-        p4->hello_world();
-        p5->hello_world();
     }
 
     std::cout << "--- out of scope ---" << std::endl;
 
-    factory_0.unregist("der2");
-    factory_1.unregist("der4");
+    factory.unregist("der2");
     
-    Assert(factory_0.is_registered("der1"), is_true());
-    Assert(factory_0.is_registered("der2"), is_false());
-    Assert(factory_1.is_registered("der3"), is_true());
-    Assert(factory_1.is_registered("der4"), is_false());
+    Assert(factory.is_registered("der1"), is_true());
+    Assert(factory.is_registered("der2"), is_false());
+    Assert(factory.is_registered("der3"), is_true());
 
     }
 }
