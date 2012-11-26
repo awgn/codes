@@ -91,13 +91,7 @@ namespace more {
     {
     public:
         
-#if __GNUC__ == 4 && __GNUC_MINOR__ < 6
-        // buggy std::map when used with std::unique_ptr...    
-        //
-        typedef std::map<K, std::shared_ptr<factory_base_allocator<B>>> map_type;
-#else
         typedef std::map<K, std::unique_ptr<factory_base_allocator<B>>> map_type;
-#endif
 
         factory()  = default;
         ~factory() = default;
@@ -105,12 +99,7 @@ namespace more {
         bool
         regist(const K & key, std::unique_ptr<factory_base_allocator<B>> value)
         { 
-#if __GNUC__ == 4 && __GNUC_MINOR__ < 6
-            std::shared_ptr<factory_base_allocator<B>> sp(std::move(value));
-            return m_map.insert(make_pair(key, std::move(sp))).second; 
-#else                                                    
             return m_map.insert(make_pair(key, std::move(value))).second; 
-#endif
         }
         
         bool
@@ -126,7 +115,7 @@ namespace more {
         }
 
         template <typename ...Ti>
-        std::unique_ptr<B> 
+        std::unique_ptr<B>
         operator()(const K &key, Ti&& ... arg) const
         {
             auto it = m_map.find(key);
