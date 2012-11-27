@@ -15,6 +15,7 @@
 #include <tuple>
 #include <algorithm>
 
+#include <iostream>
 
 namespace more { 
  
@@ -68,28 +69,21 @@ namespace more {
     struct gen_backward : __gen_backward<N, 0, Xs...> {};
 
     //////////////////////////////////////////////////////////////
-    /// the pass trick:
-    ///
-    
-    template <typename ...Ts>
-    void pass(Ts && ...)
-    { }
-    
-    //////////////////////////////////////////////////////////////
     /// tuple_for_each 
 
     template <typename TupleT, typename Fun, int ...S>
     void call_for_each(TupleT &&tup, Fun fun, seq<S...>)
     {
-        pass((fun(std::get<S>(tup)),0)...);
+        // In brace initializer list, the evaluation of element is sequenced!
+        //
+        auto sink __attribute__((unused)) = { (fun(std::get<S>(tup)),0)... };
     }
 
     template <typename TupleT, typename Fun>
     void tuple_for_each(TupleT &&tup, Fun fun)
     {
-        call_for_each(std::forward<TupleT>(tup), 
-                      fun, typename gen_forward<
-                        std::tuple_size<typename std::decay<TupleT>::type>::value
+        call_for_each(std::forward<TupleT>(tup), fun, 
+                      typename gen_forward<std::tuple_size<typename std::decay<TupleT>::type>::value
                       >::type());
     }   
 
@@ -105,7 +99,7 @@ namespace more {
     template <typename Tuple1, typename Tuple2, typename Fun, int ...S>
     void call_for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun, seq<S...>)
     {
-        pass((fun(std::get<S>(t1), std::get<S>(t2)),0)...);
+        auto sink __attribute__((unused)) = { (fun(std::get<S>(t1), std::get<S>(t2)),0)... };
     }
 
     template <typename Tuple1, typename Tuple2, typename Fun>
