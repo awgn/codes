@@ -90,9 +90,10 @@ namespace more {
     class factory
     {
     public:
-        
-        typedef std::map<K, std::unique_ptr<factory_base_allocator<B>>> map_type;
 
+        typedef std::map<K, std::unique_ptr<factory_base_allocator<B>>> map_type;
+        typedef typename map_type::const_iterator const_iterator;
+        
         factory()  = default;
         ~factory() = default;
 
@@ -123,6 +124,30 @@ namespace more {
                 return std::unique_ptr<B>();
 
             return std::unique_ptr<B>(it->second->alloc(std::forward<Ti>(arg)...));
+        }
+
+        const_iterator
+        begin() const
+        {
+            return m_map.begin();
+        }
+
+        const_iterator
+        end() const
+        {
+            return m_map.end();
+        }
+        
+        const_iterator
+        cbegin() const
+        {
+            return m_map.begin();
+        }
+
+        const_iterator
+        cend() const
+        {
+            return m_map.end();
         }
 
     private:
