@@ -58,8 +58,8 @@ namespace more {
 
     template <int N, int M, int ...Xs>
     struct __gen_backward : __gen_backward<N, M+1, M, Xs...> {};
+    
     template <int N, int ...Xs> 
-
     struct __gen_backward<N,N,Xs...>
     {
         typedef seq<Xs...> type;
