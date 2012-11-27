@@ -74,8 +74,10 @@ namespace more {
     template <typename TupleT, typename Fun, int ...S>
     void call_for_each(TupleT &&tup, Fun fun, seq<S...>)
     {
-        // In brace initializer list, the evaluation of element is sequenced!
+        // 8.5.4: Within the initializer-list of a braced-init-list, the initializer-clauses, 
+        // including any that result from pack expansions (14.5.3), are evaluated in the order in which they appear
         //
+        
         auto sink __attribute__((unused)) = { (fun(std::get<S>(tup)),0)... };
     }
 
