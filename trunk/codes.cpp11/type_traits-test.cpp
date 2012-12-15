@@ -72,7 +72,15 @@ Context(more_typetraits_test)
         Assert( more::traits::has_insertion_operator<int>::value, is_true()); 
         Assert( more::traits::has_insertion_operator<xxx>::value, is_false()); 
     }
-    
+
+    Test(is_callable)
+    {
+        Assert( more::traits::is_callable<int>::value, is_false());
+
+        auto l = []() -> void { };
+
+        Assert( more::traits::is_callable<decltype(l)>::value, is_true());
+    }
 }
 
 int
