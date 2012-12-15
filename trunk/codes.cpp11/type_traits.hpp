@@ -222,6 +222,25 @@ namespace more
     struct is_callable : public std::integral_constant<bool, __is_callable_helper<T>::value>
     {};
 
+    // is_copy_constructing:
+    //
+
+    template <typename T, typename ...U>
+    struct is_copy_constructing : std::false_type {};
+    
+    template <typename T, typename U>
+    struct is_copy_constructing<T,U> : std::is_same<typename std::decay<T>::type, typename std::decay<U>::type> {};
+
+    // is_not_copy_constructing: trait useful to disable universal constructor when 
+    //                       copy constructing:
+    //
+    //  template <typename ...Ts, typename V = std::enable_if<is_not_copy_constructing<ThisClass, Ts...>::value>::type> 
+    //  ThisClass(Ts&& ...args) 
+    //
+    
+    template <typename T, typename ...U>
+    struct is_not_copy_constructing : not_type<is_copy_constructing<T,U...>> {};
+    
 
     } // namespace traits
 

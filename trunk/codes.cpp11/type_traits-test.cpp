@@ -91,7 +91,18 @@ Context(more_typetraits_test)
         Assert(v2, is_false());
     }
 
+    Test(is_copy_constructing)
+    {
+        auto v1 = more::traits::is_copy_constructing<int, int>::value;
+        auto v2 = more::traits::is_copy_constructing<int, double>::value;
+        auto v3 = more::traits::is_copy_constructing<int, int, double>::value;
+
+        Assert(v1, is_true());
+        Assert(v2, is_false());
+        Assert(v3, is_false());
+    }
 }
+
 
 int
 main(int argc, char *argv[])
