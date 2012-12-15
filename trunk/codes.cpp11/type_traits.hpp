@@ -143,6 +143,15 @@ namespace more
                                                                >
     {};
 
+    // not_type
+    //
+    
+    template <typename Trait, bool V = Trait::value> 
+    struct not_type : std::false_type {};
+
+    template <typename Trait> 
+    struct not_type<Trait, false> : std::true_type {};
+    
     // is_tuple 
     //
     

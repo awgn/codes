@@ -81,6 +81,16 @@ Context(more_typetraits_test)
 
         Assert( more::traits::is_callable<decltype(l)>::value, is_true());
     }
+
+    Test(not_type)
+    {
+        auto v1 = more::traits::not_type< std::is_same<int, double> >::value;
+        Assert(v1, is_true());
+
+        auto v2 = more::traits::not_type< std::is_same<int, int> >::value;
+        Assert(v2, is_false());
+    }
+
 }
 
 int
