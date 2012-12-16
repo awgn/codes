@@ -83,17 +83,21 @@ namespace more {
             virtual int_type underflow()
             {
                 int_type c = m_in->sgetc();
+                if (c == EOF)
+                    return c;
 
                 auto ns = next_(c);
 
                 return ns == state::comment ||
-                ( ns == state::backslash && m_state == state::comment) ? ' ' : c;
+                    ( ns == state::backslash && m_state == state::comment) ? ' ' : c;
             }
 
             virtual int_type uflow()
             {
                 int_type c = m_in->sbumpc();
-
+                if (c == EOF)
+                    return c;
+                
                 if (c == '\n')
                     m_line++;
 
