@@ -73,7 +73,7 @@ namespace std {
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
     {
         out << "{ ";
-        for(auto & e : v)
+        for(auto const & e : v)
         {
             out << e << ' ';
         }
