@@ -17,16 +17,16 @@ intset  = [2 3 4]
   # strings: use quotation " to include spaces, use \" to include
   #          quotation
   
-strings =  [ hello
+    strings =  [ hello 
               hello\ world
              "hello world!"
              "\"Hello, world!\"" 
-             'alternate quotation mark' ]
+            ]
   
 booleans = [ false 1 ]  
 simple_pair = ( 0.2 2.3)
 
-simple_tuple = (true 2 3.5 'hello!' )
+simple_tuple = (true 2 3.5 "hello!" )
  
 block = [ 
              { first = 12 second = 42 }  -> true 
@@ -36,7 +36,7 @@ raw_double = 13.2
  
 shared_int = 42
  
-literal = 'string_literal'
+literal = "string_literal"
 
 
 matrix = [[1 2] 

@@ -12,6 +12,7 @@
 
 #include <type_traits.hpp>      // more!
 #include <typemap.hpp>          // more!
+
 #ifdef LEXEME_DEBUG
 #include <streamer.hpp>         // more!
 #endif
@@ -400,7 +401,7 @@ namespace more {
 #ifdef LEXEME_DEBUG
             std::cout << details::BLUE << ":: lex<T>[" << lex << "]" << details::RESET << std::endl;
 #endif
-            return m_in;
+            return m_in ? true : false;
         }        
 
         // parser for string literal:    
@@ -454,58 +455,82 @@ namespace more {
         //
         bool parse_lexeme(std::string &lex)
         {
+            typedef std::string::traits_type traits_type;
+            
+            m_in >> std::noskipws >> std::ws;
+
 #ifdef LEXEME_DEBUG
             std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-            m_in >> std::noskipws >> std::ws;
 
-            std::string str;
-            str.reserve(32);
+            std::string str; str.reserve(32);
+            traits_type::char_type c;
 
-            typedef std::string::traits_type traits_type;
-            traits_type::char_type c, quote = traits_type::char_type('\0');
+            enum class pstate { null, raw_string, escaped_char, quoted_string, escaped_char2 };
+            auto state = pstate::null;
+            
+            auto raw_char = [](traits_type::char_type c) -> bool {
+                return std::isalnum(c) || traits_type::eq(c, '_') || traits_type::eq(c, '-');
+            };
 
-            c = m_in.peek();
-
-            if ( traits_type::eq(c, '"') ||
-                 traits_type::eq(c, '\'')) {
-                quote = c;
-                m_in.get();
+            bool stop = false; 
+            while (!stop)
+            {
                 c = m_in.peek();
-#ifdef LEXEME_DEBUG
-                std::cout << details::BLUE << ":: quote -> " << quote << std::endl;
-#endif
-            }
+                if (c == traits_type::eof())
+                    break;
 
-            while(c != traits_type::eof() && (
-                    (quote && (c != quote)) ||
-                    (!quote && ( std::isalnum(c) || traits_type::eq(c, '_') || traits_type::eq(c, '-'))) ||
-                    traits_type::eq(c, '\\')
-                    )) {
+                switch(state)
+                {
+                    case pstate::null:
+                    {
+                        if (c == '"')       { m_in.get(); state = pstate::quoted_string; break;}
+                        if (raw_char(c))    { m_in.get(); state = pstate::raw_string; str.push_back(c); break;}
+                        if (c == '\\')      { m_in.get(); state = pstate::escaped_char;  break;} 
+                        
+                        stop = true;
+                    
+                    } break;
 
-                c = m_in.get(); // get char
-                if (c == '\\')
-                    c = m_in.get();
+                    case pstate::raw_string:
+                    {
+                        if (raw_char(c))    { m_in.get(); state = pstate::raw_string; str.push_back(c); break; }
+                        if (c == '\\')      { m_in.get(); state = pstate::escaped_char; break; } 
+                        
+                        stop = true;
 
-                str.push_back(c);
-                c = m_in.peek();
-            }
+                    } break;
 
-            if (quote) {
-                c = m_in.get();
-                if (!traits_type::eq(c, quote)) { 
-                    std::clog << "parse: error at string '" << str << "': missing quotation mark?!\n"; 
-                    return false;
+                    case pstate::escaped_char:
+                    {
+                        m_in.get(); state = pstate::raw_string; str.push_back(c);
+
+                    } break;
+                    
+                    case pstate::quoted_string:
+                    {
+                        if (c == '"')       { m_in.get(); state = pstate::quoted_string; stop = true; break;}
+                        if (c == '\\')      { m_in.get(); state = pstate::escaped_char2; break;} 
+                        
+                        m_in.get(); str.push_back(c); 
+                        
+                    } break;
+                    
+                    case pstate::escaped_char2:
+                    {
+                        m_in.get(); str.push_back(c); state = pstate::quoted_string;
+                    
+                    } break;
                 }
             }
-
-            lex = std::move(str);
-            m_in >> std::skipws;
 
 #ifdef LEXEME_DEBUG
             std::cout << details::BLUE << ":: lex<string>[" << lex << "]" << details::RESET << std::endl;
 #endif
-            return true;
+            lex = std::move(str);
+            m_in >> std::skipws;
+
+            return lex.size() > 0; 
         }
 
         // parser for boolean
@@ -524,7 +549,7 @@ namespace more {
 #ifdef LEXEME_DEBUG
             std::cout << details::BLUE << ":: lex<bool>[" << lex << "]" << details::RESET << std::endl;
 #endif
-            return m_in;
+            return m_in ? true : false;
         }
 
         // parser for generic pairs
@@ -545,6 +570,12 @@ namespace more {
                       parse_lexeme(second)  &&
                       _(')');  
             }
+            else if (_('[')) {
+                ok = parse_lexeme(first)        &&
+                     _("->")                    &&
+                     parse_lexeme(second)       &&
+                     _(']');
+            }
             else {
                 ok = parse_lexeme(first)    &&
                      _("->")                &&
@@ -553,6 +584,7 @@ namespace more {
 
             if (ok)
                 lex = std::make_pair(first,second);
+
 #ifdef LEXEME_DEBUG
             std::cout << details::BLUE << ":: lex<pair>[" << lex << "]" << details::RESET << std::endl;
 #endif
@@ -991,6 +1023,13 @@ namespace more {
     get(const key_value_pack<Ti...> &p) 
     {       
         return p.template get<T>();
+    }
+
+    template <typename CharT, typename Traits, typename ...Ti>
+    typename std::basic_ostream<CharT, Traits> &
+    operator<<(std::basic_ostream<CharT,Traits>& out, key_value_pack<Ti...> const&)
+    {
+        return out << "key_value_pack<Ti...>";
     }
 
 } // namespace more
