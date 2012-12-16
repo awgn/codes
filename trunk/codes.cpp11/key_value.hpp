@@ -530,7 +530,7 @@ namespace more {
             lex = std::move(str);
             m_in >> std::skipws;
 
-            return lex.size() > 0; 
+            return true; 
         }
 
         // parser for boolean
