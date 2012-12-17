@@ -469,11 +469,12 @@ namespace more {
             enum class pstate { null, raw_string, escaped_char, quoted_string, escaped_char2 };
             auto state = pstate::null;
             
-            auto raw_char = [](traits_type::char_type c) -> bool {
+            auto raw_char = [](traits_type::char_type c) -> bool 
+            {
                 return std::isalnum(c) || traits_type::eq(c, '_') || traits_type::eq(c, '-');
             };
 
-            bool stop = false; 
+            bool stop = false, quoted = false; 
             while (!stop)
             {
                 c = m_in.peek();
@@ -509,7 +510,7 @@ namespace more {
                     
                     case pstate::quoted_string:
                     {
-                        if (c == '"')       { m_in.get(); state = pstate::quoted_string; stop = true; break;}
+                        if (c == '"')       { m_in.get(); state = pstate::quoted_string; stop = true; quoted = true; break;}
                         if (c == '\\')      { m_in.get(); state = pstate::escaped_char2; break;} 
                         
                         m_in.get(); str.push_back(c); 
@@ -530,7 +531,7 @@ namespace more {
             lex = std::move(str);
             m_in >> std::skipws;
 
-            return true; 
+            return (!quoted && lex.size() == 0) ? false : true; 
         }
 
         // parser for boolean
