@@ -18,7 +18,7 @@ main(int, char *[])
 {
     typedef std::map<int, std::string> map_type;
 
-    map_type m { {1, "hello"}, {2, "world"}};
+    map_type m { {1, "hello"}, {2, "world"}, {3, "abc"}};
 
     std::for_each(more::first_iterator(m.begin()),
                   more::first_iterator(m.end()),
@@ -44,7 +44,32 @@ main(int, char *[])
     std::cout << std::boolalpha;
     std::cout << it[0] << std::endl;
     std::cout << it[1] << std::endl;
-    
+
+    std::vector<const int *> vec(2);
+
+    std::copy(more::address_iterator(more::first_iterator(m.begin())),
+              more::address_iterator(more::first_iterator(m.end())),
+              vec.begin());
+
+    for(auto p : vec)
+    {
+        std::cout << *p << std::endl;
+    }
+
+    std::vector<std::string *> vec2(3);
+
+    std::partial_sort_copy(more::address_iterator(more::second_iterator(m.begin())),
+                           more::address_iterator(more::second_iterator(m.end())),
+                           std::begin(vec2),
+                           std::end(vec2), [](std::string *lhs, std::string *rhs) {
+                                return *lhs < *rhs;
+                           });
+
+    for(auto p : vec2)
+    {
+        std::cout << *p << std::endl;
+    }
+
     return 0;
 }
  
