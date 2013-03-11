@@ -15,7 +15,7 @@ main(int argc, char *argv[])
 {
     more::logger out(std::cout);
 
-    out.log([](std::ostream &o){
+    out.async([](std::ostream &o){
 
                 std::this_thread::sleep_for(std::chrono::seconds(2));
 
@@ -23,23 +23,19 @@ main(int argc, char *argv[])
 
              });
 
-    out.log([](std::ostream &o){
+    out.async([](std::ostream &o){
 
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 o << "Ciao mondo!" << std::endl;
 
              });
 
-    out.log([=](std::ostream &o){
+    out.sync([=](std::ostream &o){
 
                 o << 'a' << ' ' << 'b' << ' ' << 'c' << '!' << std::endl;
 
              });
 
-
-    std::cout << "waiting for the logger threads to be finished...\n";
-
-    std::this_thread::sleep_for(std::chrono::seconds(5));
 }
 
  

@@ -50,28 +50,28 @@ namespace more
         {}
 
         template <typename Fun>
-        void log(Fun const &fun)
+        void async(Fun const &fun)
         {
             auto t = ticket_++;
             
             std::thread([this, fun, t]() 
             { 
-                sync_log_(t, fun); 
+                sync_(t, fun); 
             
             }).detach();
         }
 
         template <typename Fun>
-        void sync_log(Fun const &fun)
+        void sync(Fun const &fun)
         {
             auto t = ticket_++;
-            sync_log_(t, fun);
+            sync_(t, fun);
         }
 
     private:
 
         template <typename Fun>
-        void sync_log_(unsigned long t, Fun const &fun)
+        void sync_(unsigned long t, Fun const &fun)
         {
             std::unique_lock<std::mutex> lock(mutex_);
             cond_.wait(lock, [&]() -> bool { return t == done_; });
