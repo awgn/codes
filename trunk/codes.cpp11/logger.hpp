@@ -12,12 +12,15 @@
 #define _LOGGER_HPP_
 
 #include <iostream>
+#include <fstream>
 #include <exception>
 #include <thread>
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
 #include <ctime>
+#include <cerrno>
+#include <system_error>
 
 namespace more
 {
@@ -48,14 +51,17 @@ namespace more
         {
         }
 
+    
         ~logger()
         {
         }
+
 
         void rdbuf(std::streambuf *sb)
         {
             log_.rdbuf(sb);
         }
+
 
         std::streambuf *
         rdbuf() const
@@ -63,6 +69,7 @@ namespace more
             return log_.rdbuf();
         }
 
+        
         template <typename Fun>
         void async(Fun const &fun)
         {
@@ -75,6 +82,7 @@ namespace more
             }).detach();
         }
 
+        
         template <typename Fun>
         void sync(Fun const &fun)
         {
@@ -82,7 +90,52 @@ namespace more
             sync_(t, fun);
         }
 
+        
+        void rotate(const std::string &filename, int maxsize, int level = 3)
+        {
+            std::thread([=]() {
+
+                std::lock_guard<std::mutex> lock(mutex_);
+
+                std::filebuf * fout = dynamic_cast<std::filebuf *>(log_.rdbuf());
+                if (fout == nullptr) 
+                    return; 
+                
+                // get the size of the out streambuf...
+                
+                auto size = log_.rdbuf()->pubseekoff(0, std::ios_base::cur);
+                if (size > maxsize) {  
+
+                    fout->close();
+
+                    rotate_(filename, level);
+
+                    if (!fout->open(filename, std::ios::out))
+                        throw std::runtime_error( "logger: rotate " + filename);
+                }
+
+            }).detach();
+        }
+
+
     private:
+
+        static void rotate_(const std::string &name, int level)
+        {
+            auto ext = [](int n) -> std::string 
+            { 
+                return n > 0 ? ("." + std::to_string(n)) : ""; 
+            };
+
+            for(int i = level-1; i >= 0; i--)
+            {
+                if(std::rename((name + ext(i)).c_str(), (name + ext(i+1)).c_str()) != 0)
+                    if (errno != ENOENT)
+                    {
+                        throw std::system_error(errno, std::generic_category(), "std::rename");        
+                    }
+            }
+        }
 
         template <typename Fun>
         void sync_(unsigned long t, Fun const &fun)
