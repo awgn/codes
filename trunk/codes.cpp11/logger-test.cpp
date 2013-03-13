@@ -13,7 +13,7 @@
 int
 main(int argc, char *argv[])
 {
-    more::logger out(std::cout);
+    more::logger out(std::cout.rdbuf());
 
     out.async([](std::ostream &o){
 

@@ -38,16 +38,30 @@ namespace more
     {
     
     public:
-        logger(std::ostream &log, bool timestamp = true)
-        : log_(log)
+
+        logger(std::streambuf *sb, bool timestamp = true)
+        : log_(sb)
         , mutex_()
         , timestamp_(timestamp)
         , ticket_(0)
         , done_()
-        {}
+        {
+        }
 
         ~logger()
-        {}
+        {
+        }
+
+        void rdbuf(std::streambuf *sb)
+        {
+            log_.rdbuf(sb);
+        }
+
+        std::streambuf *
+        rdbuf() const
+        {
+            return log_.rdbuf();
+        }
 
         template <typename Fun>
         void async(Fun const &fun)
@@ -76,22 +90,24 @@ namespace more
             std::unique_lock<std::mutex> lock(mutex_);
             cond_.wait(lock, [&]() -> bool { return t == done_; });
             if (timestamp_)
-                put_timestamp_();
+                log_ << make_timestamp();
             fun(log_);
             done_++;
             cond_.notify_all();
         }
 
-        void put_timestamp_()
+        std::string
+        make_timestamp()
         {
             auto now_c = std::chrono::system_clock::to_time_t(
                             std::chrono::system_clock::now()
                          );
             struct tm tm_c;
-            log_ << put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
+            return put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
         }
 
-        std::ostream& log_;
+        std::ostream log_;
+        
         std::mutex mutex_;
         std::condition_variable cond_;
 
