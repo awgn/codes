@@ -42,7 +42,7 @@ namespace more
 
     /////////////////////////   logger
 
-
+    struct log_stream;
     template <typename ...Ts> struct lazy_stream;
 
     class logger
@@ -123,7 +123,8 @@ namespace more
         }
 
         
-        lazy_stream<> stream();
+        log_stream stream();
+
 
     private:
 
@@ -181,6 +182,16 @@ namespace more
     /////////////////////////   lazy_stream
 
 
+    struct log_stream
+    {
+        log_stream(logger &l)
+        : log_(l)
+        {}
+
+        logger &log_;
+    };
+
+    
     template <typename ...Ts>
     struct lazy_stream
     {
@@ -237,6 +248,9 @@ namespace more
     
     typedef std::ostream& (manip_t)(std::ostream&);
 
+    // lazy_stream:
+    //
+
     template <typename ...Ts>
     inline lazy_stream<Ts..., const manip_t &>
     operator<<(lazy_stream<Ts...> const &l, manip_t const &m)
@@ -244,9 +258,6 @@ namespace more
         return lazy_stream<Ts..., const manip_t &>(l, m);
     }
 
-    // overloading of operator<< for a lazy_stream and any stream-able type
-    //
-    
     template <typename ...Ts, typename T>
     inline lazy_stream<Ts..., const T &>
     operator<<(lazy_stream<Ts...> const &l, const T &data)
@@ -254,12 +265,28 @@ namespace more
         return lazy_stream<Ts..., const T &>(l, data);
     }
 
+    // log_stream:
+    //
+
+    inline lazy_stream<const manip_t &>
+    operator<<(log_stream const &l, manip_t const &m)
+    {
+        return lazy_stream<>(l.log_) << m;
+    }
+
+    template <typename T>
+    inline lazy_stream<const T &>
+    operator<<(log_stream const &l, const T &data)
+    {
+        return lazy_stream<>(l.log_) << data;
+    }
+    
     // stream() return a lazy_stream object 
     //
     
-    inline lazy_stream<> logger::stream()
+    inline log_stream logger::stream()
     {
-        return lazy_stream<>(*this);
+        return log_stream(*this);
     }
 
 };
