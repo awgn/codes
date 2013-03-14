@@ -71,6 +71,11 @@ namespace more {
     //////////////////////////////////////////////////////////////
     /// tuple_for_each 
 
+    template <typename TupleT, typename Fun>
+    void call_for_each(TupleT &&, Fun, seq<>)
+    {
+    }
+
     template <typename TupleT, typename Fun, int ...S>
     void call_for_each(TupleT &&tup, Fun fun, seq<S...>)
     {
@@ -96,6 +101,11 @@ namespace more {
     constexpr Tp && min(Tp &&a, Tp &&b)
     {
         return a < b ? a : b;
+    }
+    
+    template <typename Tuple1, typename Tuple2, typename Fun>
+    void call_for_each2(Tuple1 &&, Tuple2 &&, Fun, seq<>)
+    {
     }
     
     template <typename Tuple1, typename Tuple2, typename Fun, int ...S>
