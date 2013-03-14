@@ -22,6 +22,8 @@
 #include <cerrno>
 #include <system_error>
 
+#include <tuple_ext.hpp>   // !more
+
 namespace more
 {
     // std::put_time is missing in g++ up to 4.7.x
@@ -36,10 +38,15 @@ namespace more
             return buf;
         }
     }
+   
+
+    /////////////////////////   logger
+
+
+    template <typename ...Ts> struct lazy_stream;
 
     class logger
     {
-    
     public:
 
         logger(std::streambuf *sb, bool timestamp = true)
@@ -51,7 +58,6 @@ namespace more
         {
         }
 
-    
         ~logger()
         {
         }
@@ -61,7 +67,6 @@ namespace more
         {
             log_.rdbuf(sb);
         }
-
 
         std::streambuf *
         rdbuf() const
@@ -117,6 +122,8 @@ namespace more
             }).detach();
         }
 
+        
+        lazy_stream<> stream();
 
     private:
 
@@ -143,14 +150,14 @@ namespace more
             std::unique_lock<std::mutex> lock(mutex_);
             cond_.wait(lock, [&]() -> bool { return t == done_; });
             if (timestamp_)
-                log_ << make_timestamp();
+                log_ << make_timestamp_();
             fun(log_);
             done_++;
             cond_.notify_all();
         }
 
         std::string
-        make_timestamp()
+        make_timestamp_()
         {
             auto now_c = std::chrono::system_clock::to_time_t(
                             std::chrono::system_clock::now()
@@ -169,6 +176,91 @@ namespace more
         std::atomic_ulong ticket_;
         unsigned long done_;
     };
+
+
+    /////////////////////////   lazy_stream
+
+
+    template <typename ...Ts>
+    struct lazy_stream
+    {
+        lazy_stream(logger &l)
+        : refs_()
+        , run_(true)
+        , log_(l)
+        {}
+
+        template <typename ... Tx, typename T>
+        lazy_stream(lazy_stream<Tx...> const &l, const T &data)
+        : refs_(std::tuple_cat(l.refs_, std::tie(data)))
+        , run_(true)
+        , log_(l.log_)
+        {
+            l.run_ = false;
+        }
+
+ 
+        ~lazy_stream()
+        {
+            if (run_)
+            {
+                log_.sync([this](std::ostream &o)
+                {
+                    tuple_for_each(refs_,stream(o));                           
+                });
+            }
+        }
+
+        struct stream
+        {
+            stream(std::ostream &out)
+            : out_(out)
+            {}
+            
+            template <typename T>
+            void operator()(const T &ref)
+            {
+                out_ << ref;
+            }
+
+            std::ostream &out_;
+        };
+
+        std::tuple<Ts...> refs_;
+        mutable bool run_;
+        logger &log_;
+    };
+
+    // manipulator are function template (unresolved function types) which cannot be
+    // deduced by the template machinery
+    //
+    
+    typedef std::ostream& (manip_t)(std::ostream&);
+
+    template <typename ...Ts>
+    inline lazy_stream<Ts..., const manip_t &>
+    operator<<(lazy_stream<Ts...> const &l, manip_t const &m)
+    {
+        return lazy_stream<Ts..., const manip_t &>(l, m);
+    }
+
+    // overloading of operator<< for a lazy_stream and any stream-able type
+    //
+    
+    template <typename ...Ts, typename T>
+    inline lazy_stream<Ts..., const T &>
+    operator<<(lazy_stream<Ts...> const &l, const T &data)
+    {
+        return lazy_stream<Ts..., const T &>(l, data);
+    }
+
+    // stream() return a lazy_stream object 
+    //
+    
+    inline lazy_stream<> logger::stream()
+    {
+        return lazy_stream<>(*this);
+    }
 
 };
 
