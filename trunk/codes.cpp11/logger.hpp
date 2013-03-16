@@ -26,7 +26,8 @@
 
 namespace more
 {
-    // std::put_time is missing in g++ up to 4.7.x
+    /////////////////////////   std::put_time is missing in g++ up to 4.7.x
+   
     namespace 
     { 
         std::string 
@@ -39,11 +40,7 @@ namespace more
         }
     }
    
-
-    /////////////////////////   logger
-
-    struct log_stream;
-    template <typename ...Ts> struct lazy_stream;
+    /////////////////////////   more::logger
 
     class logger
     {
@@ -122,10 +119,6 @@ namespace more
             }).detach();
         }
 
-        
-        log_stream stream();
-
-
     private:
 
         static void rotate_(const std::string &name, int level)
@@ -179,22 +172,27 @@ namespace more
     };
 
 
-    /////////////////////////   lazy_stream
+    /////////////////////////   more::lazy_stream
 
 
-    struct log_stream
-    {
-        log_stream(logger &l)
-        : log_(l)
-        {}
-
-        logger &log_;
-    };
-
-    
     template <typename ...Ts>
     struct lazy_stream
     {
+        struct stream_on
+        {
+            stream_on(std::ostream &out)
+            : out_(out)
+            {}
+            
+            template <typename T>
+            void operator()(const T &ref)
+            {
+                out_ << ref;
+            }
+
+            std::ostream &out_;
+        };
+
         lazy_stream(logger &l)
         : refs_()
         , run_(true)
@@ -217,25 +215,10 @@ namespace more
             {
                 log_.sync([this](std::ostream &o)
                 {
-                    tuple_for_each(refs_,stream(o));                           
+                    tuple_for_each(refs_,stream_on(o));                           
                 });
             }
         }
-
-        struct stream
-        {
-            stream(std::ostream &out)
-            : out_(out)
-            {}
-            
-            template <typename T>
-            void operator()(const T &ref)
-            {
-                out_ << ref;
-            }
-
-            std::ostream &out_;
-        };
 
         std::tuple<Ts...> refs_;
         mutable bool run_;
@@ -248,7 +231,7 @@ namespace more
     
     typedef std::ostream& (manip_t)(std::ostream&);
 
-    // lazy_stream:
+    // lazy_stream<Ts...> << data
     //
 
     template <typename ...Ts>
@@ -265,30 +248,22 @@ namespace more
         return lazy_stream<Ts..., const T &>(l, data);
     }
 
-    // log_stream:
+    // more::logger << data
     //
 
     inline lazy_stream<const manip_t &>
-    operator<<(log_stream const &l, manip_t const &m)
+    operator<<(logger &l, manip_t const &m)
     {
-        return lazy_stream<>(l.log_) << m;
+        return lazy_stream<>(l) << m;
     }
 
     template <typename T>
     inline lazy_stream<const T &>
-    operator<<(log_stream const &l, const T &data)
+    operator<<(logger &l, const T &data)
     {
-        return lazy_stream<>(l.log_) << data;
+        return lazy_stream<>(l) << data;
     }
     
-    // stream() return a lazy_stream object 
-    //
-    
-    inline log_stream logger::stream()
-    {
-        return log_stream(*this);
-    }
-
 };
 
 

@@ -36,6 +36,8 @@ main(int argc, char *argv[])
 
              });
 
+
+    out << "bye!" << std::endl;
 }
 
  
