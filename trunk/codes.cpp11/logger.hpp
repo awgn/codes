@@ -72,6 +72,17 @@ namespace more
         }
 
         
+        void timestamp(bool value)
+        {
+            timestamp_ = value;
+        }
+        
+        bool timestamp() const
+        {
+            return timestamp_;
+        }
+
+
         template <typename Fun>
         void async(Fun const &fun)
         {
@@ -150,7 +161,7 @@ namespace more
             cond_.notify_all();
         }
 
-        std::string
+        static std::string
         make_timestamp_()
         {
             auto now_c = std::chrono::system_clock::to_time_t(
