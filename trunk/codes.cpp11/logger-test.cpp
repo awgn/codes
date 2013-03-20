@@ -19,14 +19,14 @@ main(int argc, char *argv[])
 
                 std::this_thread::sleep_for(std::chrono::seconds(2));
 
-                o << "Hello world!" << std::endl;
+                throw std::runtime_error("user disaster!");
 
              });
 
     out.async([](std::ostream &o){
 
                 std::this_thread::sleep_for(std::chrono::seconds(1));
-                o << "Ciao mondo!" << std::endl;
+                o << "Hello world!" << std::endl;
 
              });
 

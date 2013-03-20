@@ -86,13 +86,23 @@ namespace more
         template <typename Fun>
         void async(Fun const &fun)
         {
-            auto t = ticket_++;
-            
-            std::thread([this, fun, t]() 
-            { 
-                sync_(t, fun); 
-            
-            }).detach();
+            try
+            {
+                std::thread([this, fun]() 
+                { 
+                    auto t = this->ticket_++;
+                    sync_(t, fun); 
+                
+                }).detach();
+            }
+            catch(...)
+            {
+                sync([fun](std::ostream &out) 
+                {
+                    out << "exception: thread could not be started!" << std::endl;
+                    fun(out);
+                });
+            }
         }
 
         
@@ -154,9 +164,18 @@ namespace more
         {
             std::unique_lock<std::mutex> lock(mutex_);
             cond_.wait(lock, [&]() -> bool { return t == done_; });
-            if (timestamp_)
-                log_ << make_timestamp_();
-            fun(log_);
+            try
+            {
+                if (timestamp_)
+                    log_ << make_timestamp_();
+
+                fun(log_);
+            }
+            catch(std::exception &e)
+            {
+                log_ << "logger exception: " << e.what() << std::endl;
+            }
+
             done_++;
             cond_.notify_all();
         }
