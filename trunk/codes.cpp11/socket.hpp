@@ -18,6 +18,7 @@
 
 #include <sockaddress.hpp>           // more!
 #include <buffer.hpp>                // more!
+#include <type_traits.hpp>           // more!
 
 #include <string>
 #include <array>
@@ -78,11 +79,14 @@ namespace more {
             return ::send(m_fd, buf.addr(), buf.size(), flags); 
         }
 
-        template <std::size_t N>
+        template <typename Cont, typename T = typename std::enable_if<traits::is_vector_like<Cont>::value>::type >
         ssize_t
-        send(const std::array<iovec,N> &iov, int flags) const
+        send(const Cont &iov, int flags) const
         { 
-            const msghdr msg = { nullptr, 0, const_cast<iovec *>(&iov.front()), N, nullptr, 0, 0 };    
+            const msghdr msg = { nullptr, 0, 
+                                 const_cast<iovec *>(std::addressof(*std::begin(iov))), 
+                                 static_cast<size_t>(std::distance(std::begin(iov), std::end(iov))), 
+                                 nullptr, 0, 0 };    
             return ::sendmsg(m_fd, &msg, flags); 
         }
 
@@ -92,11 +96,14 @@ namespace more {
             return ::recv(m_fd, buf.addr(), buf.size(), flags); 
         }
 
-        template <std::size_t N>
+        template <typename Cont, typename T = typename std::enable_if<traits::is_vector_like<Cont>::value>::type >
         ssize_t
-        recv(std::array<iovec,N> &iov, int flags) const
+        recv(Cont &iov, int flags) const
         { 
-            msghdr msg = { nullptr, 0, &iov.front(), N, nullptr, 0, 0 };    
+            msghdr msg = { nullptr, 0, 
+                           std::addressof(*std::begin(iov)), 
+                           static_cast<size_t>(std::distance(std::begin(iov), std::end(iov))), 
+                           nullptr, 0, 0 };    
             return ::recvmsg(m_fd, &msg, flags); 
         }
 
