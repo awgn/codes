@@ -15,6 +15,8 @@
 #include <type_traits>   
 #include <utility>
 #include <tuple>         
+#include <vector>
+#include <array>
 
 namespace more 
 {
@@ -143,6 +145,36 @@ namespace more
                                                                >
     {};
 
+    // is_vector_like
+    //
+    
+    template <typename C>
+    struct __is_vector_like
+    {
+        enum { value = false };
+    };
+
+    template <typename T>
+    struct __is_vector_like<std::vector<T>>
+    {
+        enum { value = true };
+    };
+    template <typename T, size_t N>
+    struct __is_vector_like<std::array<T, N>>
+    {
+        enum { value = true };
+    };
+    template <typename T, size_t N>
+    struct __is_vector_like<T[N]>
+    {
+        enum { value = true };
+    };
+
+    template <typename T>
+    struct is_vector_like: public std::integral_constant<bool, __is_vector_like<T>::value>
+    {};
+    
+    
     // not_type
     //
     
