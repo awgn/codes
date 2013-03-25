@@ -67,11 +67,45 @@ namespace more {
         {
             if ( m_fd == -1) 
                 throw std::system_error(errno, std::generic_category());
+        
+        template <typename Fun, typename Ptr>
+        static size_t
+        atomic_io(Fun fun, int fd, Ptr _s, size_t n, int flags)
+        {
+            Ptr s = _s;
+            size_t pos = 0;
+            ssize_t res;
+
+            while (n > pos) {
+                res = fun (fd, s + pos, n - pos, flags);
+                switch (res) {
+                case -1:
+                    if (errno == EINTR || errno == EAGAIN)
+                        continue;
+                    return 0;
+                case 0:
+                    errno = EPIPE;
+                    return pos;
+                default:
+                    pos += res;
+                }
+            }
+            return pos;
         }
 
     public:
 
-        ///////////////////// I/O does not throw ///////////////////// 
+        ///////////////////// I/O methods do not throw ///////////////////// 
+
+        ssize_t
+        send_atomic(const_buffer buf, int flags) const
+        {
+            auto byte = atomic_io(::send, m_fd, buf.addr(), buf.size(), flags);
+            if (byte != buf.size())
+                return -1;
+
+            return byte;
+        }
 
         ssize_t 
         send(const_buffer buf, int flags) const
@@ -90,6 +124,17 @@ namespace more {
             return ::sendmsg(m_fd, &msg, flags); 
         }
 
+        
+        ssize_t
+        recv_atomic(mutable_buffer buf, int flags) const
+        {
+            auto byte = atomic_io(::recv, m_fd, buf.addr(), buf.size(), flags);
+            if (byte != buf.size())
+                return -1;
+
+            return byte;
+        }
+        
         ssize_t 
         recv(mutable_buffer buf, int flags) const
         { 
