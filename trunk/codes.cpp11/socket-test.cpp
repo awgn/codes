@@ -10,49 +10,105 @@
 
 #include <socket.hpp>
 #include <cstdlib>
+#include <memory>
 
-char buf[80];
-
-int main()
+void client(std::string host, unsigned short port)
 {
     // simple echo server
-    //
+    std::cout << "connecting to " << host << ':' << port << std::endl;
+    
+    more::sockaddress<AF_INET> addr(host, port);
+    
+    more::socket<AF_INET> sock(SOCK_STREAM);
 
-    more::sockaddress<AF_INET> addr("127.0.0.1",31337);
+    sock.connect(addr);
+
+    const char hello_world[] = "hello world!";
+
+    int len = htonl(static_cast<int>(sizeof(hello_world)));  // this include '\0'
+
+    sock.send_atomic(more::const_buffer(reinterpret_cast<const char *>(&len), sizeof(len)), 0);
+    sock.send_atomic(more::const_buffer(hello_world, sizeof(hello_world)), 0);
+
+    /// recv echo
+    
+    sock.recv_atomic(more::mutable_buffer(reinterpret_cast<char *>(&len), sizeof(len)), 0);
+
+    auto size = ntohl(len);
+            
+    std::unique_ptr<char[]> buffer(new char[size]);
+
+    sock.recv_atomic(more::mutable_buffer(buffer.get(), size), 0); 
+
+    std::cout << buffer.get() << std::endl;
+}
+
+
+void server(std::string host, unsigned short port)
+{
+    // simple echo server
+    std::cout << "simple echo-server on " << host << ':' << port << std::endl;
+
+    more::sockaddress<AF_INET> addr(host, port);
     more::sockaddress<AF_INET> peer;
-    more::socket<AF_INET> tmp(SOCK_STREAM);
 
-    more::socket<AF_INET> local(std::move(tmp));
-
-    assert(tmp.fd() == -1);
+    more::socket<AF_INET> local(SOCK_STREAM);
 
     local.bind(addr);
     local.listen(1);
 
-    std::cout << "Simple double-echo server on 127.0.0.1:31337..." << std::endl << std::endl;
+    for(;;) 
+    {  
+        try
+        {
+            std::cout << "waiting for a client... ";
+            std::cout.flush();
 
-    for(;;) {
-        std::cout << "waiting for a client... ";
-        std::cout.flush();
+            more::socket<AF_INET> remote(SOCK_STREAM);
 
-        more::socket<AF_INET> remote(SOCK_STREAM);
+            local.accept(peer, remote);
 
-        local.accept(peer, remote);
-        
-        std::cout << "[" << peer.host() << ":" << peer.port() << "]" << std::endl; 
-        auto n = remote.recv(more::mutable_buffer(buf), 0);
-        
-        // r.send(buf, 0); 
-        // send double-echo by means of iovec...
+            std::cout << "[" << peer.host() << ":" << peer.port() << "]" << std::endl; 
 
-        std::array<iovec,2> iov;
+            unsigned int s;
 
-        iov[0].iov_base = buf;
-        iov[0].iov_len  = static_cast<size_t>(n);
+            remote.recv_atomic(more::mutable_buffer(reinterpret_cast<char *>(&s), sizeof(int)), 0);
+             
+            auto size = ntohl(s);
+            
+            std::unique_ptr<char[]> buffer(new char[size]);
 
-        iov[1].iov_base = buf;
-        iov[1].iov_len  = static_cast<size_t>(n);
+            remote.recv_atomic(more::mutable_buffer(reinterpret_cast<char *>(buffer.get()), size), 0);
 
-        remote.send(iov,0);
+            /// send echo 
+            
+            remote.send_atomic(more::const_buffer(reinterpret_cast<const char *>(&s), sizeof(int)), 0);
+            remote.send_atomic(more::const_buffer(buffer.get(), size), 0);
+
+        }
+        catch(std::exception &e)
+        {
+            std::cerr << "error: " << e.what() << std::endl;
+        }    
     }
+}
+
+int main(int argc, const char *argv[])
+try
+{
+    if (argc < 4)
+        throw std::runtime_error("socket-test [client|server] host port");
+
+    if (strcmp(argv[1],"client") == 0)
+        client(argv[2], atoi(argv[3]));
+    else
+    if (strcmp(argv[1], "server") == 0)
+        server(argv[2], atoi(argv[3]));
+    else
+        throw std::runtime_error("error: unknown mode " + std::string(argv[1]));
+
+}
+catch(std::exception &e)
+{
+    std::cerr << e.what() << std::endl;
 }
