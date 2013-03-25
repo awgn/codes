@@ -22,6 +22,7 @@
 
 #include <string>
 #include <array>
+#include <cstdint>
 
 namespace more {
 
@@ -66,7 +67,8 @@ namespace more {
         : m_fd(::socket(F, type, protocol))
         {
             if ( m_fd == -1) 
-                throw std::system_error(errno, std::generic_category());
+                throw std::system_error(errno, std::generic_category(), "generic_socket");
+        }
         
         template <typename Fun, typename Ptr>
         static size_t
@@ -97,24 +99,14 @@ namespace more {
 
         ///////////////////// I/O methods do not throw ///////////////////// 
 
-        ssize_t
-        send_atomic(const_buffer buf, int flags) const
-        {
-            auto byte = atomic_io(::send, m_fd, buf.addr(), buf.size(), flags);
-            if (byte != buf.size())
-                return -1;
-
-            return byte;
-        }
-
-        ssize_t 
+        std::ptrdiff_t 
         send(const_buffer buf, int flags) const
         { 
             return ::send(m_fd, buf.addr(), buf.size(), flags); 
         }
 
         template <typename Cont, typename T = typename std::enable_if<traits::is_vector_like<Cont>::value>::type >
-        ssize_t
+        std::ptrdiff_t
         send(const Cont &iov, int flags) const
         { 
             const msghdr msg = { nullptr, 0, 
@@ -124,25 +116,14 @@ namespace more {
             return ::sendmsg(m_fd, &msg, flags); 
         }
 
-        
-        ssize_t
-        recv_atomic(mutable_buffer buf, int flags) const
-        {
-            auto byte = atomic_io(::recv, m_fd, buf.addr(), buf.size(), flags);
-            if (byte != buf.size())
-                return -1;
-
-            return byte;
-        }
-        
-        ssize_t 
+        std::ptrdiff_t 
         recv(mutable_buffer buf, int flags) const
         { 
             return ::recv(m_fd, buf.addr(), buf.size(), flags); 
         }
 
         template <typename Cont, typename T = typename std::enable_if<traits::is_vector_like<Cont>::value>::type >
-        ssize_t
+        std::ptrdiff_t
         recv(Cont &iov, int flags) const
         { 
             msghdr msg = { nullptr, 0, 
@@ -158,12 +139,30 @@ namespace more {
             return ::sendto(m_fd, buf.addr(), buf.size(), flags, &to.c_addr(), to.len()); 
         }
 
-        ssize_t 
+        std::ptrdiff_t 
         recvfrom(mutable_buffer buf, int flags, sockaddress<F> &from) const
         { 
             return ::recvfrom(m_fd, buf.addr(), buf.size(), flags, &from.c_addr(), &from.len()); 
         }
+        
+        ////////////////// atomic send/recv
     
+        void
+        send_atomic(const_buffer buf, int flags) const
+        {
+            if (atomic_io(::send, m_fd, buf.addr(), buf.size(), flags) !=
+                    buf.size())
+                throw std::system_error(errno, std::generic_category(), "send_atomic");
+        }
+
+        void
+        recv_atomic(mutable_buffer buf, int flags) const
+        {
+            if (atomic_io(::recv, m_fd, buf.addr(), buf.size(), flags) !=
+                    buf.size())
+                throw std::system_error(errno, std::generic_category(), "recv_atomic");
+        }
+        
         ////////////////// connect/bind/listen/accept: throw when errors occur with non-blocking socket 
 
         virtual int 
@@ -172,7 +171,7 @@ namespace more {
             if (::connect(m_fd, &addr.c_addr(), addr.len()) < 0)
             {
                 if (errno != EINPROGRESS && errno != EALREADY)
-                    throw std::system_error(errno, std::generic_category());
+                    throw std::system_error(errno, std::generic_category(), "connect");
                 return -1;
             }
             return 0;
@@ -182,14 +181,14 @@ namespace more {
         bind(const sockaddress<F> &addr)
         { 
             if (::bind(m_fd, &addr.c_addr(), addr.len()) < 0)
-               throw std::system_error(errno, std::generic_category());
+               throw std::system_error(errno, std::generic_category(), "bind");
         }
 
         void 
         listen(int backlog) 
         { 
             if(::listen(m_fd, backlog) <0)
-               throw std::system_error(errno, std::generic_category());
+               throw std::system_error(errno, std::generic_category(), "listen");
         }
 
         int 
@@ -198,7 +197,7 @@ namespace more {
             int s = ::accept(m_fd, &addr.c_addr(), &addr.len());
             if (s < 0) {
                 if (errno != EAGAIN && errno != EWOULDBLOCK)
-                    throw std::system_error(errno, std::generic_category());
+                    throw std::system_error(errno, std::generic_category(), "accept");
                 return -1; 
             }
 
@@ -329,7 +328,7 @@ namespace more {
         void bind(const sockaddress<PF_UNIX> &addr)
         {
             if(::bind(this->m_fd, &addr.c_addr(), addr.len())<0)
-                throw std::system_error(errno, std::generic_category());
+                throw std::system_error(errno, std::generic_category(), "bind");
             m_pathname = addr.name();
         }
 
@@ -339,7 +338,7 @@ namespace more {
             if (::connect(this->m_fd, &addr.c_addr(), addr.len()) < 0)
             {
                 if ( errno != EINPROGRESS && errno != EALREADY)
-                    throw std::system_error(errno, std::generic_category());
+                    throw std::system_error(errno, std::generic_category(), "connect");
                 return -1;
             }
             m_pathname = addr.name();
