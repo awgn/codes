@@ -167,10 +167,10 @@ namespace more
         }
         
         void
-        name(std::string filename) 
+        name(std::string filename, std::ios_base::openmode mode)  
         {
             file_.close();
-            file_.open(filename);
+            file_.open(filename, mode);
 
             log_.rdbuf(file_.rdbuf());
         }
@@ -241,11 +241,11 @@ namespace more
         {
             std::lock_guard<std::mutex> lock(mutex_);
 
-            std::filebuf * fout = dynamic_cast<std::filebuf *>(log_.rdbuf());
-            if (fout == nullptr) 
+            auto fb = dynamic_cast<std::filebuf *>(log_.rdbuf());
+            if (fb == nullptr) 
                 return 0;
             
-            return log_.rdbuf()->pubseekoff(0, std::ios_base::cur);
+            return fb->pubseekoff(0, std::ios_base::cur);
         }
         
 
@@ -262,15 +262,15 @@ namespace more
                 
                 std::lock_guard<std::mutex> lock(mutex_);
 
-                std::filebuf * fout = dynamic_cast<std::filebuf *>(log_.rdbuf());
-                if (fout == nullptr) 
+                std::filebuf * fb = dynamic_cast<std::filebuf *>(log_.rdbuf());
+                if (fb == nullptr) 
                     return; 
                 
-                fout->close();
+                fb->close();
 
                 rotate_file(name, level);
 
-                if (!fout->open(name, std::ios::out))
+                if (!fb->open(name, std::ios::out))
                     throw std::runtime_error( "logger: rotate " + name);
 
             }).detach();
