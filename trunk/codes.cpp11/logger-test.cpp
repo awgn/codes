@@ -13,13 +13,13 @@
 int
 main(int argc, char *argv[])
 {
-    more::logger out(std::cout.rdbuf());
+    more::logger out;
 
-    out.async([](std::ostream &o){
+    out.async([](std::ostream &){
 
                 std::this_thread::sleep_for(std::chrono::seconds(2));
 
-                throw std::runtime_error("user disaster!");
+                throw std::runtime_error("log user disaster!");
 
              });
 
@@ -30,6 +30,8 @@ main(int argc, char *argv[])
 
              });
 
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
     out.sync([=](std::ostream &o){
 
                 o << 'a' << ' ' << 'b' << ' ' << 'c' << '!' << std::endl;
@@ -38,6 +40,12 @@ main(int argc, char *argv[])
 
 
     out << "bye!" << std::endl;
+
+    std::cout << "log size: " << out.size() << std::endl;
+
+    out.rotate();
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
  

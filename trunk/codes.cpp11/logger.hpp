@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <fstream>
+
 #include <exception>
 #include <thread>
 #include <atomic>
@@ -26,10 +27,10 @@
 
 namespace more
 {
-    /////////////////////////   std::put_time is missing in g++ up to 4.7.x
-   
     namespace 
     { 
+        //////////// std::put_time is missing in g++ up to 4.7.x
+        
         std::string 
         put_time(const struct tm *tmb, const char *fmt)
         {
@@ -38,16 +39,114 @@ namespace more
                 throw std::runtime_error("put_time: strftime");
             return buf;
         }
+        
+        //////////// rotate_file function
+        
+        void rotate_file(const std::string &name, int level)
+        {
+            auto ext = [](int n) -> std::string 
+            { 
+                return n > 0 ? ("." + std::to_string(n)) : ""; 
+            };
+
+            for(int i = level-1; i >= 0; i--)
+            {
+                if(std::rename((name + ext(i)).c_str(), (name + ext(i+1)).c_str()) != 0)
+                    if (errno != ENOENT)
+                    {
+                        throw std::system_error(errno, std::generic_category(), "std::rename");        
+                    }
+            }
+        }
     }
-   
+
+    //// an ofstream that remember its filename
+
+    template <typename CharT, typename Traits = std::char_traits<CharT> >
+    struct named_ofstream : public std::basic_ofstream<CharT, Traits>
+    {
+        named_ofstream()
+        : std::basic_ofstream<CharT, Traits>()
+        , filename_()
+        {}
+
+        explicit
+        named_ofstream(const char *s,
+                       std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)
+        : std::basic_ofstream<CharT, Traits>(s, mode)
+        , filename_(s)
+        {}
+
+        explicit
+        named_ofstream(const std::string &s,
+                       std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)
+        : std::basic_ofstream<CharT, Traits>(s, mode)
+        , filename_(s)
+        {}
+
+        std::string
+        name() const
+        {
+            return filename_;
+        }
+
+        void open(const char *filename, std::ios_base::openmode mode = std::ios_base::out)
+        {
+            std::basic_ofstream<CharT, Traits>::open(filename, mode);
+            filename_.assign(filename);
+        }
+
+        void open(const std::string &filename, std::ios_base::openmode mode = std::ios_base::out)
+        {
+            std::basic_ofstream<CharT, Traits>::open(filename, mode);
+            filename_.assign(filename);
+        }
+
+        void close()
+        {
+            std::basic_ofstream<CharT, Traits>::close();
+            filename_.clear();
+        }
+
+    private:
+        std::string filename_;
+    };
+
+    typedef named_ofstream<char>    onfstream;
+    typedef named_ofstream<wchar_t> wonfstream;
+
+
     /////////////////////////   more::logger
 
     class logger
     {
     public:
 
+        logger(bool timestamp = true)
+        : file_()
+        , log_(std::cout.rdbuf())
+        , mutex_()
+        , timestamp_(timestamp)
+        , ticket_()
+        , done_()
+        {
+        }
+
+        explicit
         logger(std::streambuf *sb, bool timestamp = true)
-        : log_(sb)
+        : file_()
+        , log_(sb)
+        , mutex_()
+        , timestamp_(timestamp)
+        , ticket_(0)
+        , done_()
+        {
+        }
+        
+        explicit
+        logger(const char *filename, bool timestamp = true)
+        : file_(filename)
+        , log_(file_.rdbuf())
         , mutex_()
         , timestamp_(timestamp)
         , ticket_(0)
@@ -55,13 +154,32 @@ namespace more
         {
         }
 
+
         ~logger()
         {
         }
 
 
-        void rdbuf(std::streambuf *sb)
+        std::string
+        name() const
         {
+            return file_.name();
+        }
+        
+        void
+        name(std::string filename) 
+        {
+            file_.close();
+            file_.open(filename);
+
+            log_.rdbuf(file_.rdbuf());
+        }
+        
+
+        void
+        rdbuf(std::streambuf *sb) 
+        {
+            file_.close();
             log_.rdbuf(sb);
         }
 
@@ -82,6 +200,7 @@ namespace more
             return timestamp_;
         }
 
+        //// log message: async
 
         template <typename Fun>
         void async(Fun const &fun)
@@ -105,6 +224,7 @@ namespace more
             }
         }
 
+        //// log message: sync
         
         template <typename Fun>
         void sync(Fun const &fun)
@@ -114,50 +234,49 @@ namespace more
         }
 
         
-        void rotate(const std::string &filename, int maxsize, int level = 3)
+        //// return the size of the log file
+        
+        size_t
+        size() const
         {
-            std::thread([=]() {
+            std::lock_guard<std::mutex> lock(mutex_);
 
+            std::filebuf * fout = dynamic_cast<std::filebuf *>(log_.rdbuf());
+            if (fout == nullptr) 
+                return 0;
+            
+            return log_.rdbuf()->pubseekoff(0, std::ios_base::cur);
+        }
+        
+
+        //// rotate the log file 
+
+        void rotate(int level = 3)
+        {
+            auto name = file_.name();
+            
+            if (name.empty())
+                return;
+
+            std::thread([=]() {
+                
                 std::lock_guard<std::mutex> lock(mutex_);
 
                 std::filebuf * fout = dynamic_cast<std::filebuf *>(log_.rdbuf());
                 if (fout == nullptr) 
                     return; 
                 
-                // get the size of the out streambuf...
-                
-                auto size = log_.rdbuf()->pubseekoff(0, std::ios_base::cur);
-                if (size > maxsize) {  
+                fout->close();
 
-                    fout->close();
+                rotate_file(name, level);
 
-                    rotate_(filename, level);
-
-                    if (!fout->open(filename, std::ios::out))
-                        throw std::runtime_error( "logger: rotate " + filename);
-                }
+                if (!fout->open(name, std::ios::out))
+                    throw std::runtime_error( "logger: rotate " + name);
 
             }).detach();
         }
 
     private:
-
-        static void rotate_(const std::string &name, int level)
-        {
-            auto ext = [](int n) -> std::string 
-            { 
-                return n > 0 ? ("." + std::to_string(n)) : ""; 
-            };
-
-            for(int i = level-1; i >= 0; i--)
-            {
-                if(std::rename((name + ext(i)).c_str(), (name + ext(i+1)).c_str()) != 0)
-                    if (errno != ENOENT)
-                    {
-                        throw std::system_error(errno, std::generic_category(), "std::rename");        
-                    }
-            }
-        }
 
         template <typename Fun>
         void sync_(unsigned long t, Fun const &fun)
@@ -188,11 +307,13 @@ namespace more
                          );
             struct tm tm_c;
             return put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
-        }
+        }   
+
+        onfstream file_;
 
         std::ostream log_;
         
-        std::mutex mutex_;
+        mutable std::mutex mutex_;
         std::condition_variable cond_;
 
         bool timestamp_;
