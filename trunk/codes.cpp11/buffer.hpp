@@ -15,6 +15,8 @@
 #include <array>
 #include <utility>
 #include <string>
+#include <memory>
+#include <cstring>
 
 // A buffer class, inspiered to that of boost
 //
@@ -37,6 +39,12 @@ namespace more {
         , m_size(numb)
         {}
 
+        template <typename Tp>
+        mutable_buffer(Tp *addr, size_t numb)
+        : m_addr(reinterpret_cast<char *>(addr))
+        , m_size(numb)
+        {}
+        
         mutable_buffer(const mutable_buffer &other)
         : m_addr(other.m_addr)
         , m_size(other.m_size)
@@ -93,6 +101,14 @@ namespace more {
             return m_addr != nullptr;
         }
 
+        std::unique_ptr<char[]>
+        clone() const
+        {
+            auto ptr = new char[m_size];
+            memcpy(ptr, m_addr, m_size);
+            return std::unique_ptr<char[]>(ptr);
+        }
+
     private:
         char     *m_addr;
         size_t    m_size; 
@@ -110,6 +126,12 @@ namespace more {
         , m_size(numb)
         {}
 
+        template <typename Tp>
+        const_buffer(const Tp *addr, size_t numb)
+        : m_addr(reinterpret_cast<const char *>(addr))
+        , m_size(numb)
+        {}
+        
         const_buffer(const const_buffer &other)
         : m_addr(other.m_addr)
         , m_size(other.m_size)
@@ -170,6 +192,14 @@ namespace more {
         explicit operator bool() const
         {
             return m_addr != nullptr;
+        }
+
+        std::unique_ptr<const char[]>
+        clone() const
+        {
+            auto ptr = new char[m_size];
+            memcpy(ptr, m_addr, m_size);
+            return std::unique_ptr<const char[]>(const_cast<const char *>(ptr));
         }
 
     private:
