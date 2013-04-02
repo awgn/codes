@@ -101,12 +101,20 @@ namespace more {
             return m_addr != nullptr;
         }
 
-        std::unique_ptr<char[]>
+        std::pair<std::unique_ptr<char[]>, size_t>
         clone() const
         {
             auto ptr = new char[m_size];
             memcpy(ptr, m_addr, m_size);
-            return std::unique_ptr<char[]>(ptr);
+            return std::make_pair(std::unique_ptr<char[]>(ptr), m_size);
+        }
+
+        std::pair<std::shared_ptr<char>, size_t>
+        clone_shared() const
+        {
+            auto ptr = new char[m_size];
+            memcpy(ptr, m_addr, m_size);
+            return std::make_pair(std::shared_ptr<char>(ptr, [](char *p) { delete []p; }), m_size);
         }
 
     private:
@@ -194,12 +202,20 @@ namespace more {
             return m_addr != nullptr;
         }
 
-        std::unique_ptr<const char[]>
+        std::pair<std::unique_ptr<const char[]>, size_t>
         clone() const
         {
             auto ptr = new char[m_size];
             memcpy(ptr, m_addr, m_size);
-            return std::unique_ptr<const char[]>(const_cast<const char *>(ptr));
+            return std::make_pair(std::unique_ptr<const char[]>(const_cast<const char *>(ptr)), m_size);
+        }
+        
+        std::pair<std::shared_ptr<const char>, size_t>
+        clone_shared() const
+        {
+            auto ptr = new char[m_size];
+            memcpy(ptr, m_addr, m_size);
+            return std::make_pair(std::shared_ptr<const char>(ptr, [](const char *p) { delete []p; }), m_size);
         }
 
     private:
