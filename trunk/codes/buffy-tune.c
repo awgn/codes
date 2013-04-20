@@ -56,9 +56,9 @@ static char cvsid[] = "$Id$";
 #define REPT		256	
 #define DELTA		32	
 		
-static void fatal(char *pattern,...) __attribute__((noreturn));
+static void fatal(char const *pattern,...) __attribute__((noreturn));
 static void
-fatal(char *pattern,...)
+fatal(char const *pattern,...)
 {
 	va_list ap;
 	char *mg;

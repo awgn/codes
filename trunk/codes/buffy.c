@@ -42,9 +42,9 @@ static char cvsid[] __attribute__((unused)) = "$Id$";
 #define BUFFY_LIB_C
 #include "buffy.h"
 
-static void fatal(char *pattern,...) __attribute__((noreturn));
+static void fatal(char const *pattern,...) __attribute__((noreturn));
 static void
-fatal(char *pattern,...)
+fatal(char const *pattern,...)
 {
 	va_list ap;
 	char *mg;
