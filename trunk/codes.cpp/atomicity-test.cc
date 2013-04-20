@@ -29,7 +29,7 @@ struct test : private atomicity::emptybase_mutex<atomicity::DEFAULT>
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << sizeof(test) << std::endl;
     return 0;

@@ -28,7 +28,7 @@ struct derived : public base
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::value_ptr<int> a(new int(1));
 

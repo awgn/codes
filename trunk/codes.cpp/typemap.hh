@@ -129,7 +129,7 @@
     static const bool has_default = true; \
     static const char * value() \
     { return # k; } \
-    static const value_type default_value() \
+    static value_type default_value() \
     { return v; } \
 };
 #define TYPEMAP_KEY(...)              XPASTE(TYPEMAP_KEY_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 

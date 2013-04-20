@@ -20,7 +20,7 @@
 using namespace more;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::Timeval a( Timeval::now() );
 

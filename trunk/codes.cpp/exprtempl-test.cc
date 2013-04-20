@@ -33,7 +33,7 @@ namespace {
 }
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << std::boolalpha;
     std::cout << (( !_false ^ _true ) == _false) << " -> " << eval( ( !_false ^ _true ) == _false ) << std::endl;

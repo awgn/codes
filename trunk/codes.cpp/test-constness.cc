@@ -46,7 +46,7 @@ void foo(const test_constness &r)
     const int &b __attribute__((unused))= r.ref();
 }
 
-int main(int argc, char *argv[])
+int main(int, char *[])
 {
     test_constness object;
 

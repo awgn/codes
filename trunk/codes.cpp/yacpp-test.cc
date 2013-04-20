@@ -17,7 +17,7 @@
 #include <yacpp.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *argv[])
 {
     std::ifstream in;
     

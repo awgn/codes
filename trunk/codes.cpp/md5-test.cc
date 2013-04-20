@@ -196,7 +196,7 @@ int md5_self_test()
 }
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     md5_self_test();
     return 0;

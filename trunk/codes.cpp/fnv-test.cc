@@ -15,7 +15,7 @@
 #define msg(format,...) fprintf(stdout,"%s=(" format ")\n" ,#__VA_ARGS__,## __VA_ARGS__)
 #define string_len(x)   (sizeof(x)-1)
 
-int main()
+int main(int, char *[])
 {
     hash::fnv<32> fnv_32;
 

@@ -11,7 +11,7 @@
 #include <memory_barriers.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::memory_barrier();
     more::memory_read_barrier();

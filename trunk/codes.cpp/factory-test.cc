@@ -81,7 +81,7 @@ namespace
 }
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {    
     // basic registration: by invoking the regist() method on the factory object, providing the "id" and the factory_allocator
 

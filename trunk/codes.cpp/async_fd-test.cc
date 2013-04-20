@@ -14,7 +14,7 @@
 using namespace more;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {    
     int fd = open("test.txt", O_RDWR|O_CREAT);
     if ( fd == -1 )

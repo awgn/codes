@@ -41,18 +41,18 @@ factory()
     return more::move(x); 
 }
 
-void function(more::movable<noncopyable> a)
+void function(more::movable<noncopyable>)
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 
-void function(noncopyable a)
+void function(noncopyable)
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     noncopyable abc (factory());
 

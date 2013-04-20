@@ -15,7 +15,7 @@ using namespace more::basic_concepts;
 
 struct test_class {
 
-    bool operator==(const test_class &b) const
+    bool operator==(const test_class &) const
     { return true; }
 
     bool operator!=(const test_class &b) const
@@ -29,7 +29,7 @@ struct test_class {
 };
 
 template <typename T>
-bool test_template_function(T x, T y)
+bool test_template_function(T, T)
 {
     FUNCTION_REQUIRES_CONCEPT(T, PostIncrementable);
     return true;
@@ -49,13 +49,13 @@ struct test_template_class
 
 
 template <typename T>
-bool function( const T &x)
+bool function( const T &)
 {
     FUNCTION_REQUIRES_CONCEPT(T, IsIntegralConcept);
     return true;
 }
 
-int main()
+int main(int, char *[])
 {
     test_class a, b;
     test_template_function(a,b);

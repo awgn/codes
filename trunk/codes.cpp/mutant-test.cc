@@ -52,7 +52,7 @@ struct xxx_2 : public der2
 {};
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     base * b1 = new der1(1);
     base * b2 = new der2(2);

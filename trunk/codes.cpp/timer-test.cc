@@ -121,7 +121,7 @@ struct Thread_4 : public more::posix::thread, private enable_tick<Tc, SIGRT_MIN 
 using namespace more::posix;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {    
     ////////////////////////////////////
     // 1) block sigalarm in this thread 

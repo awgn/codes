@@ -14,7 +14,7 @@
 
 extern char *__progname;
 
-int main(int argc, char **argv)
+int main(int, char *[])
 {
     more::syslog::ctrl(sys::log)->open("sys::log");
     sys::log << "1 - hello " << "world!" << std::endl;

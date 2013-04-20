@@ -12,7 +12,7 @@
 #include <logstream.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::logstreambuf * log = new more::logstreambuf(std::cout.rdbuf());
 

@@ -33,7 +33,7 @@ template<> void test::fun<zero>() __attribute__((alias("fun0")));
 template<> void test::fun<one>()  __attribute__((alias("_Z4fun1v"))); 
 template<> void test::fun<two>()  __attribute__((alias("_ZN4test4fun2Ev"))); 
 
-int main()
+int main(int, char *[])
 {
     test::fun<zero>();
     test::fun<one>();

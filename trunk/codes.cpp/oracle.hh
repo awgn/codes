@@ -269,7 +269,7 @@ namespace more {
         } 
 
         template <typename T1>
-        oracle(const T1 &t1)
+        oracle(const T1 &)
         : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT
@@ -281,7 +281,7 @@ namespace more {
         } 
 
         template <typename T1, typename T2>
-        oracle(const T1 &t1, const T2 &t2)
+        oracle(const T1 &, const T2 &)
         : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT
@@ -293,7 +293,7 @@ namespace more {
         }
 
         template <typename T1, typename T2, typename T3>
-        oracle(const T1 &t1, const T2 &t2, const T3 &t3)
+        oracle(const T1 &, const T2 &, const T3 &)
         : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT
@@ -305,7 +305,7 @@ namespace more {
         }
 
         template <typename T1, typename T2, typename T3, typename T4>
-        oracle(const T1 &t1, const T2 &t2, const T3 &t3, const T4 &t4)
+        oracle(const T1 &, const T2 &, const T3 &, const T4 &)
         : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT
@@ -317,7 +317,7 @@ namespace more {
         }
 
         template <typename T1, typename T2, typename T3, typename T4, typename T5>
-        oracle(const T1 &t1, const T2 &t2, const T3 &t3, const T4 &t4, const T5 &t5)
+        oracle(const T1 &, const T2 &, const T3 &, const T4 &, const T5 &)
         : m_value(oracle_helper::throw_point::counter())
         {
 #ifdef _REENTRANT

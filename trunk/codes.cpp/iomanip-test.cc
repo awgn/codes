@@ -14,7 +14,7 @@
 #include <iomanip.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     // string...
     {

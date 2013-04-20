@@ -33,7 +33,7 @@ struct world : public more::oracle<world>
 oracle_std_swap(world);
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 try
 {    
     more::oracle_trace<hello>::enable();

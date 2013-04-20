@@ -12,7 +12,7 @@
 #include <iostream>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     struct cpp_demangled_struct_name {} a;
     std::cout << more::cxa_demangle(typeid(a).name()) << std::endl; 

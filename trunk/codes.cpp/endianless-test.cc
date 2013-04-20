@@ -13,7 +13,7 @@
 
 using namespace more;
 
-int main()
+int main(int, char *[])
 {
     endianless<short int> x;
     x = 1;

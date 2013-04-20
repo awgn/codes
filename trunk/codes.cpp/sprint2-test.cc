@@ -11,7 +11,7 @@
 #include <sprint2.hh>
 #include <iostream>
 
-int main()
+int main(int, char *[])
 {
     std::cout << more::sprint("hello %s", "world!") << std::endl;
 }

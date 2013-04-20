@@ -57,7 +57,7 @@ namespace example
 
 }
 
-int main()
+int main(int, char *[])
 {
     typedef TYPELIST(int) list0;
     typedef TL::append<list0, bool>::type list1;

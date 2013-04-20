@@ -11,7 +11,7 @@
 #include <dummystreambuf.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::ostream dummy(new more::dummystreambuf);
 

@@ -21,7 +21,7 @@ namespace more {
     protected:
 
         std::streamsize
-        xsputn(const char *s, std::streamsize n)
+        xsputn(const char *, std::streamsize n)
         {
             return n;
         }

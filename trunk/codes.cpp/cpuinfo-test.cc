@@ -11,7 +11,7 @@
 #include <cpuinfo.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::proc::cpuinfo cpu("/proc/cpuinfo");
 

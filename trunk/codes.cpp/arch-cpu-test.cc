@@ -16,7 +16,7 @@
 #include <arch-cpu.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << "current tsc: " << more::arch::cpu::get_cycles() << std::endl;
     std::cout << "Hz : " << more::arch::cpu::Hz() << std::endl;

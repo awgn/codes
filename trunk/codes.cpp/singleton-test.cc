@@ -182,7 +182,7 @@ INDESTRUCTIBLE_VOLATILE_TEST(8, int,int,int,int,int,int,int,int);
 INDESTRUCTIBLE_VOLATILE_TEST(9, int,int,int,int,int,int,int,int,int);
 
 int 
-main(int argc, char *argv[])
+main(int, char *[])
 {
 
 #define RED     "\E[0;31;1m"

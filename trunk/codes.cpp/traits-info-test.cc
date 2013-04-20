@@ -18,7 +18,7 @@ struct null
 };
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << more::traits_info<null>() << std::endl;
     return 0;

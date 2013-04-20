@@ -143,7 +143,7 @@ const inline char *check(int n)
 }
 
 
-int main()
+int main(int, char *[])
 {
     pthread_t a;
     pthread_t b;

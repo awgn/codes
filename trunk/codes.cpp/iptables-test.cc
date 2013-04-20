@@ -16,7 +16,7 @@ using namespace ipt;
 
 char MYTARGET[]="MYTARGET";
 
-int main(int argc, char *argv[])
+int main(int, char *[])
 {
     iptables<table::filter, chain::INPUT>::policy<target::ACCEPT>();
     iptables<table::filter, chain::INPUT>::zero();

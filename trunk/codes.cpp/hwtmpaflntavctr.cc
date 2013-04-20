@@ -14,7 +14,7 @@
 #include <iterator>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::ifstream file;
     file.open("FILENAME", std::ios::in | std::ios::binary);

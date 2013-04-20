@@ -12,7 +12,7 @@
 #include <iostream>
 #include <string>
 
-int main(int argc, char *argv[])
+int main(int, char *[])
 {
     more::mmap<PROT_WRITE|PROT_READ, MAP_ANONYMOUS| MAP_PRIVATE> Map("/dev/zero",1024);
     char * m = reinterpret_cast<char *>( Map() );

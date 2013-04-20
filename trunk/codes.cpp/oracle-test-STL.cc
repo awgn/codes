@@ -27,7 +27,7 @@ oracle_std_swap(hello);
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::oracle_trace<hello>::enable();
 

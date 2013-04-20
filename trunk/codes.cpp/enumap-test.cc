@@ -20,7 +20,7 @@ struct table : more::enumap<table>
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << "\nruntime:\n";
     std::cout << "    hello -> " << table::eval("hello") << std::endl;

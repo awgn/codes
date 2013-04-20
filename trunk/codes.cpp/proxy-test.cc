@@ -11,13 +11,13 @@
 #include <iostream>
 #include <proxy.hh>
 
-void copy(int h)
+void copy(int)
 {}
-void const_copy(const int h)
+void const_copy(const int)
 {}
-void ref(int &h)
+void ref(int &)
 {}
-void const_ref(const int &h)
+void const_ref(const int &)
 {}
 
 using namespace more;
@@ -28,7 +28,7 @@ void fun(ref_proxy<int> ref, int n)
     ref.get() = n;
 }
 
-int main(int argc, char *argv[])
+int main(int, char *[])
 {
     int a = 0;
     int b = 1;

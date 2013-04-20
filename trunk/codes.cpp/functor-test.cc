@@ -33,7 +33,7 @@ void foo(const more::functor<int,int> &ref)
     ref(3);
 }
 
-int main()
+int main(int, char *[])
 {
     aclass test;
 

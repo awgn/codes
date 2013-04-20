@@ -12,7 +12,7 @@
 #include <cursor.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     char buffer[4];
 

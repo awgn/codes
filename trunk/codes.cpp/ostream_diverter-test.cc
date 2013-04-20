@@ -24,7 +24,7 @@ class Test : protected more::osd<Test>
     using more::osd<Test>::clog_divert; 
 };
 
-int main()
+int main(int, char *[])
 {
     Test::cout_divert(std::cerr);
     Test x;

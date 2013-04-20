@@ -44,7 +44,7 @@ my_entry *cc_find(const std::string &key)
 
 
 int 
-main(int argc, char *argv[])
+main(int, char *[])
 {
     my_entry r = { 1 };
     my_entry t = { 2 };

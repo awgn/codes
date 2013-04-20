@@ -13,7 +13,7 @@
 
 char buffer[80];
 
-int main()
+int main(int, char *[])
 {
     // simple echo server
     //

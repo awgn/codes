@@ -12,7 +12,7 @@
 
 using namespace more;
 
-int main()
+int main(int, char *[])
 {
     // atomic_io policy:
     //

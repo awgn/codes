@@ -25,7 +25,7 @@ namespace more
         struct null_deleter
         {
             template <typename Y>
-            void operator()(Y *p)  
+            void operator()(Y *)  
             {}
         };
 

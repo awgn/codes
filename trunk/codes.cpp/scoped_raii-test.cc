@@ -33,7 +33,7 @@ struct fake_mutex
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     fake_mutex m;
 

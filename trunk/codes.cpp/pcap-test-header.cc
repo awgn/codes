@@ -53,7 +53,7 @@ struct replay : public more::pcap_offline
     {}
 
     virtual
-    void packet_handler(const struct pcap_pkthdr *h, const u_char *p)
+    void packet_handler(const struct pcap_pkthdr *h, const u_char *)
     {
         std::cout << "replay: " << *h << std::endl;
     }
@@ -62,13 +62,13 @@ struct replay : public more::pcap_offline
 
 // simple handler
 
-void simple_handler(u_char *user, const struct pcap_pkthdr * h, const u_char *bytes)
+void simple_handler(u_char *, const struct pcap_pkthdr * h, const u_char *)
 {
     std::cout << "simple handler: " << *h << std::endl;
 }
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     // std::string dev = more::pcap::lookupdev();
     // std::cout << "lookup device: " << dev << std::endl;

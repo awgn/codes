@@ -11,7 +11,7 @@
 #include <flock.hh>
 #include <cstdlib>
 
-int main()
+int main(int, char *[])
 {
     std::cout << "test: LOCK_EX...\n";
     {

@@ -44,7 +44,7 @@ static const struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     opt_long dummy(":a:b:c:", long_options, NULL);
     // opt_classic         Y(":a:b:c:");

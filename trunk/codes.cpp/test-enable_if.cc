@@ -15,7 +15,7 @@
 
 template <typename T>
 typename more::mtp::enable_if< more::traits::is_class_or_union<T>,int>::type 
-fun(const T &v) 
+fun(const T &) 
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
     return 0;
@@ -23,7 +23,7 @@ fun(const T &v)
 
 template <typename T>
 typename more::mtp::disable_if< more::traits::is_class_or_union<T>,int>::type 
-fun(T v) 
+fun(T) 
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
     return 0;
@@ -31,7 +31,7 @@ fun(T v)
 
 struct object { };
 
-int main()
+int main(int, char *[])
 {
     int a = 0;
     object b;

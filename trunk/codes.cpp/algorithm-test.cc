@@ -20,7 +20,7 @@
 using namespace std::tr1::placeholders;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     // the strange case of copy_if...
 

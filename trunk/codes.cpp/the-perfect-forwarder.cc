@@ -90,7 +90,7 @@ int the_perfect_forwarder(F f, T1 && t1, T2 && t2, T3 && t3)
 // test case:
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {    
     
     std::cout << red() << "\n[#0] direct call" << rst() << std::endl;

@@ -64,7 +64,7 @@ namespace more {
             template <typename CharT, typename Traits, typename T>
             struct printon<CharT, Traits, T,0>
             {
-                static void apply(std::basic_ostream<CharT, Traits> &out, const T &)
+                static void apply(std::basic_ostream<CharT, Traits> &, const T &)
                 {}
             };
         }

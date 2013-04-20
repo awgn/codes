@@ -28,9 +28,9 @@ namespace more {
 
     struct nullCancel 
     {
-        static void cancel_disable(int &store)
+        static void cancel_disable(int &)
         {}
-        static void cancel_restore(int &store)
+        static void cancel_restore(int &)
         {}
     };
 

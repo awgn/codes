@@ -46,7 +46,7 @@ void *thread_consumer(void *)
 }
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     pthread_t a,b,c,d;
 

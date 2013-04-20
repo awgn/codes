@@ -15,7 +15,7 @@
 
 #include "inotify.hh"
 
-int main()
+int main(int, char *[])
 {
     more::Linux::Inotify<> test;
 

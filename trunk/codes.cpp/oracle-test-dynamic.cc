@@ -14,7 +14,7 @@ struct hello : public more::oracle<hello>
 {};
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::oracle_trace<hello>::enable();
 
@@ -38,6 +38,9 @@ main(int argc, char *argv[])
 
     delete p;
     delete []x;
+
+    (void)q;
+    (void)y;
 
     return 0;
 }

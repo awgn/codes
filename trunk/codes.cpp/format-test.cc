@@ -12,7 +12,7 @@
 #include <format.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::string hello("hello");
 

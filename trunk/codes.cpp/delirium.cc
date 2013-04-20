@@ -18,7 +18,7 @@ struct hexToNibble {
 
 };
 
-int main()
+int main(int, char *[])
 {
    std::cout << hexToNibble<'0'>::value << std::endl;
    std::cout << hexToNibble<'1'>::value << std::endl;

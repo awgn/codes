@@ -22,7 +22,7 @@ struct probe
     ~probe() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 };
 
-int main(int argc, char *argv[])
+int main(int, char *[])
 {
     std::cout << "[*] - tuple<TYPELIST(int)> - \n";
     tuple<TYPELIST(int)> test = make_tuple(1);

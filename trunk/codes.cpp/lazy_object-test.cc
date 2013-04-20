@@ -68,7 +68,7 @@ void test_upcast(const more::lazy_object<base> & lo)
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
 
     std::vector<lazy_derived> vec;

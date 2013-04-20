@@ -19,7 +19,7 @@ class test_single
 class test_multi 
 : public more::refcnt<test_multi, more::refcnt_policy::MultiThread> { };
 
-void *thread_single(void *h)
+void *thread_single(void *)
 {
     for(int i = 0; i< 100000; ++i) {
         test_single tmp0;
@@ -33,7 +33,7 @@ void *thread_single(void *h)
     return NULL;
 }
 
-void *thread_multi(void *h)
+void *thread_multi(void *)
 {
     for(int i = 0; i< 100000; ++i) {
         test_multi tmp0;
@@ -54,7 +54,7 @@ const char *check(int n)
     return " [failed!]";
 }
 
-int main()
+int main(int, char *[])
 {
     pthread_t a;
     pthread_t b;

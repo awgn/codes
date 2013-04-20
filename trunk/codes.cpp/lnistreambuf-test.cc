@@ -12,7 +12,7 @@
 #include <lnistreambuf.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::stringstream str("this is\n a test\nhello world!");
     std::istream in( new more::lnistreambuf(str.rdbuf()) );

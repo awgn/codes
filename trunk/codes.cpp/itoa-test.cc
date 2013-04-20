@@ -13,7 +13,7 @@
 
 #include "itoa.hh"
 
-int main()
+int main(int, char *[])
 {
       struct timeval tv;
       gettimeofday(&tv,NULL);

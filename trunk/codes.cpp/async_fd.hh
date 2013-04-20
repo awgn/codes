@@ -396,7 +396,7 @@ namespace more {
             }
 
             static
-            void block_out(async_base<IO_blocking, IO_nonblocking> &ref)
+            void block_out(async_base<IO_blocking, IO_nonblocking> &)
             {}
         };
 
@@ -404,7 +404,7 @@ namespace more {
         struct async_io_policy<IO_nonblocking, IO_blocking>
         {
             static
-            void block_in(async_base<IO_nonblocking, IO_blocking> &ref)
+            void block_in(async_base<IO_nonblocking, IO_blocking> &)
             {}
 
             static

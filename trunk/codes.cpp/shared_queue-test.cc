@@ -46,7 +46,7 @@ void *thread_consumer(void *)
     return NULL;
 }
 
-int main()
+int main(int, char *[])
 {
     pthread_t a;
     pthread_t b;
@@ -55,11 +55,11 @@ int main()
 
     pthread_create(&a, NULL, thread_producer, NULL);
     pthread_create(&b, NULL, thread_producer, NULL);
-    // pthread_create(&c, NULL, thread_producer, NULL);
+    pthread_create(&c, NULL, thread_producer, NULL);
     pthread_create(&d, NULL, thread_consumer, NULL);
 
     pthread_join(a,NULL);
     pthread_join(b,NULL);
-    //pthread_join(c,NULL);
-    // pthread_join(d,NULL);
+    pthread_join(c,NULL);
+    pthread_join(d,NULL);
 }

@@ -17,7 +17,7 @@ TYPEMAP_KEY(int, age);
 TYPEMAP_KEY(int, size);
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     typedef TYPEMAP(name, std::string, age, int) mymap;
 

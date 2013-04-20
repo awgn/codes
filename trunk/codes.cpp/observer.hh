@@ -127,27 +127,27 @@ namespace more {
         {
             throw std::runtime_error("subject/observer: slot not implemented");
         }
-        virtual void update(T1 x1) 
+        virtual void update(T1) 
         {
             throw std::runtime_error("subject/observer: slot not implemented");
         }
-        virtual void update(T1 x1, T2 x2) 
+        virtual void update(T1, T2) 
         {
             throw std::runtime_error("subject/observer: slot not implemented");
         }
-        virtual void update(T1 x1, T2 x2, T3 x3) 
+        virtual void update(T1, T2, T3) 
         {
             throw std::runtime_error("subject/observer: slot not implemented");
         }
-        virtual void update(T1 x1, T2 x2, T3 x3, T4 x4) 
+        virtual void update(T1, T2, T3, T4) 
         {
             throw std::runtime_error("subject/observer: slot not implemented");
         }
-        virtual void update(T1 x1, T2 x2, T3 x3, T4 x4, T5 x5) 
+        virtual void update(T1, T2, T3, T4, T5) 
         {
             throw std::runtime_error("subject/observer: slot not implemented");
         }
-        virtual void update(T1 x1, T2 x2, T3 x3, T4 x4, T5 x5, T6 x6) 
+        virtual void update(T1, T2, T3, T4, T5, T6) 
         {
             throw std::runtime_error("subject/observer: slot not implemented");
         }

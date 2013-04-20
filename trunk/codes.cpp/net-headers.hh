@@ -105,7 +105,7 @@ namespace more {
         template <typename P>
         void ctor(more::cursor<P> &cur, header_helper::int2type<0>)
         {
-            if ( cur.size() < T::__min_size )
+            if (cur.size() < static_cast<size_t>(T::__min_size) )
                 throw std::range_error(std::string(T::__name_str()).append("::size() [minimal size]"));
 
             ssize_t n = m_value.size(cur.size());
@@ -116,7 +116,7 @@ namespace more {
         void ctor(more::cursor<P> &cur, ssize_t size, header_helper::int2type<0>)
         {
             ssize_t n = m_value.size(cur.size(), size);
-            if (cur.size() < n)
+            if (cur.size() < static_cast<size_t>(n))
                 throw std::range_error(std::string(T::__name_str()).append("::size() [dynamic size]"));
             cur += n;
         }
@@ -261,8 +261,8 @@ namespace net {
 
         // for static-sized headers, just a size() method suffices...
 
-        ssize_t
-        size(ssize_t bytes = -1, ssize_t s = 0) const
+        size_t
+        size(ssize_t = -1, ssize_t = 0) const
         {
             return sizeof(ether_header);
         }
@@ -368,8 +368,8 @@ namespace net {
         // for static-sized headers, just a size() method suffices...
 	    //
 
-        ssize_t
-        size(ssize_t bytes = -1, ssize_t s = 0) const
+        size_t
+        size(ssize_t = -1, ssize_t = 0) const
         {
             return sizeof(vlan_header);
         }
@@ -437,7 +437,7 @@ namespace net {
         : _H_(reinterpret_cast<iphdr *>(h))
         {} 
 
-        ssize_t
+        size_t
         size(ssize_t bytes = -1) const
         {
             // throw if there are no sufficient bytes to calc the size
@@ -610,7 +610,7 @@ namespace net {
         {} 
 
         ssize_t
-        size(ssize_t bytes = -1, ssize_t s = 0) const
+        size(ssize_t = -1, ssize_t = 0) const
         {
             return sizeof(udphdr);
         }
@@ -918,7 +918,7 @@ namespace net {
         {} 
 
         ssize_t
-        size(ssize_t bytes = -1, ssize_t s = 0) const
+        size(ssize_t = -1, ssize_t = 0) const
         {
             return sizeof(icmphdr);
         }
@@ -988,7 +988,7 @@ namespace net {
         {} 
 
         ssize_t
-        size(ssize_t bytes = -1, ssize_t s = 0) const
+        size(ssize_t = -1, ssize_t = 0) const
         {
             return sizeof(np_packet_hdr);
         }

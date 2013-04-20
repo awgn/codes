@@ -46,7 +46,7 @@ struct false_container
 struct s {};
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << "int is a class on union? " << verdict( more::traits::is_class_or_union<int>())  << std::endl; assert(more::traits::is_class_or_union<int>::value == false);
     std::cout << "struct is a class or union? " << verdict(more::traits::is_class_or_union<s>())  << std::endl; assert(more::traits::is_class_or_union<s>::value == true);

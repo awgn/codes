@@ -27,7 +27,7 @@ struct test
 };
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     // logical xor
     std::cout << "logical_xor: " << more::logical_xor(0,0) << std::endl;

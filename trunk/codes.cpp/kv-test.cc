@@ -63,7 +63,7 @@ typedef TYPEMAP_KEY_LIST(unsigned_int, integers, booleans, strings, block, block
 struct script : public more::kv::parser<SCRIPT, false /* non-strict: unknown key are ignored */ > {};
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     script par;
 

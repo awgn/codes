@@ -70,7 +70,7 @@ struct test_6
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     {
         test_1<> a0;

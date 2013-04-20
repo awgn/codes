@@ -11,7 +11,7 @@
 #include <decltype.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     int a;
 

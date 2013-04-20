@@ -293,7 +293,7 @@ namespace more { namespace gotopt {
 
     template <typename CharT, typename Traits, char V>
     inline std::basic_ostream<CharT,Traits> &
-    operator<< (std::basic_ostream<CharT,Traits> &out, const opt<V> &o)
+    operator<< (std::basic_ostream<CharT,Traits> &out, const opt<V> &)
     {
         return out << V; 
     }
@@ -314,7 +314,7 @@ namespace more { namespace gotopt {
                      more::expr::op_or > >::type
     operator>>(T1 _l, T2 _r)
     {
-        return !_l | _r;
+        return (!_l) | _r;
     } 
 
     // _a % _b (mutex)
@@ -343,7 +343,7 @@ namespace more { namespace gotopt {
     struct recursive_evaluation<T,0>
     {
         template <typename C>
-        static bool apply(const T &tupl, const C &)
+        static bool apply(const T &, const C &)
         {
             return true;
         }

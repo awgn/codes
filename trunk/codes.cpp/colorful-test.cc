@@ -14,7 +14,7 @@
 using namespace more;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     std::cout << colorful< TYPELIST(ecma::bold, ecma::fg_red) >()  << "hello" << 
                  colorful< TYPELIST(ecma::bold, ecma::fg_blue) >() << " world" << colorful< TYPELIST(ecma::reset) >() << "!\n";

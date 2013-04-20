@@ -12,7 +12,7 @@
 
 more::singleton_proc s("/tmp/singleton_proc");
 
-int main(int argc, char *argv[])
+int main(int, char *[])
 {
     sleep(10);
 }

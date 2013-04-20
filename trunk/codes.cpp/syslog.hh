@@ -104,15 +104,15 @@ namespace more
             return *this;
         }
 
-        const int 
+        int 
         facility() const  
         { return const_cast<syslog *>(this)->m_facility(); }
 
-        const int 
+        int 
         level() const  
         { return const_cast<syslog *>(this)->m_level(); }
 
-        const int 
+        int 
         priority() const  
         { return m_priority ? : const_cast<syslog *>(this)->m_facility() | 
             const_cast<syslog *>(this)->m_level(); 

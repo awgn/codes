@@ -22,7 +22,7 @@
 #include <lexical_cast.hh>
 
 int
-main(int argc, char *argv[])
+main(int, char *argv[])
 {
     more::random_access::vector_heap< int, int > test1;
     more::random_access::priority_queue_heap< int, int > test2;
@@ -69,7 +69,7 @@ main(int argc, char *argv[])
 
         more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
         
-        // printf("%d\n", v.first );
+        printf("%d\n", v.first );
         printf("%llu\n", a2-a1);
     }
     
@@ -85,7 +85,7 @@ main(int argc, char *argv[])
 
         more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
 
-        // printf("%d\n", v.first );
+        printf("%d\n", v.first );
         printf("%llu\n", a2-a1);
     }
 
@@ -100,7 +100,7 @@ main(int argc, char *argv[])
 
         more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
 
-        // printf("%d\n", v.first );
+        printf("%d\n", v.first );
         printf("%llu\n", a2-a1);
     }
 
@@ -115,7 +115,7 @@ main(int argc, char *argv[])
 
         more::arch::cpu::cycles_type a2 = more::arch::cpu::get_cycles();
 
-        // printf("%d\n", v.first );
+        printf("%d\n", v.first );
         printf("%llu\n", a2-a1);
     }
 

@@ -42,7 +42,7 @@ struct Post : public posix::thread
     } 
 };
 
-int main()
+int main(int, char *[])
 {
     posix::concrete_thread<Post> p;
     posix::concrete_thread<Wait> w;

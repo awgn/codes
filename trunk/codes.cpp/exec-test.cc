@@ -13,7 +13,7 @@
 using namespace more;
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     // 1)
     // abc.cmdline("/bin/ls -la /");

@@ -245,7 +245,7 @@ struct Controller : public posix::thread
 #define RED     "\e[0;31;1m"
 #define RESET   "\e[0m"
 
-int main(int argc, char *argv[])
+int main(int, char *[])
 {
     std::cout << "\n[*]" RED " non-const reference in thread constructor..." RESET "\n";
     {

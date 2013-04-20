@@ -12,7 +12,7 @@
 #include <iostream>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::any a(1);
     const more::any b(std::string("hello world!"));

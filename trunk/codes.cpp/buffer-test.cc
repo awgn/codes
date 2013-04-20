@@ -43,7 +43,7 @@ struct object
 };
 
 
-int main()
+int main(int, char *[])
 {
     more::buffer<int> abc(10);
     dump_buff("abc", abc);

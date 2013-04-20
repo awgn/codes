@@ -33,7 +33,7 @@ public:
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     test_class x;
 
