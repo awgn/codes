@@ -250,6 +250,12 @@ namespace more {
             this->close_fd();
         }
 
+        int
+        shutdown(int how)
+        {
+            return ::shutdown(m_fd, how);
+        }
+
     protected: //////////////////////////////////////////////////////////////
 
         int m_fd;
