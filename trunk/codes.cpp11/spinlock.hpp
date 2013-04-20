@@ -63,7 +63,8 @@ namespace more {
             static void wait(int n, int& t, int)
             {
                 if ((n % t) == 0) {
-                    t= t>>1 ? : 1;
+                    auto t_ = t >> 1;
+                    t = t_ ? t_ : 1;
                     lock_yield::wait(0,0,0);
                 }
             }
@@ -75,8 +76,9 @@ namespace more {
             enum { threshold = N };
             static void wait(int n, int &t, int d)
             {
-                if (d > 1 || (n % t) == 0) { 
-                    t= t>>1 ? : 1;
+                if (d > 1 || (n % t) == 0) {
+                    auto t_ = t >> 1;
+                    t = t_ ? t_ : 1;
                     lock_yield::wait(0,0,0);
                 }
             }

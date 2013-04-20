@@ -333,7 +333,7 @@ inline namespace more_show {
             out += show(e) + ' ';
         }
         return show_helper::header<T>(n) + out + '}';
-    };
+    }
 
 } // namespace more_show
 

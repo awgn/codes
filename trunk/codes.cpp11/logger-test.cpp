@@ -11,7 +11,7 @@
 #include <logger.hpp>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::logger out;
 

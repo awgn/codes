@@ -113,7 +113,7 @@ main(int, char *[])
     
     std::cout << "\n--- with hex format:\n\n";
 
-    int value = 0xdeadbeef;
+    auto value = 0xdeadbeef;
 
     std::cout << show(value) << std::endl;
     std::cout << show(hex(value)) << std::endl;

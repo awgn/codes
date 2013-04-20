@@ -21,6 +21,7 @@
 #include <condition_variable>
 #include <ctime>
 #include <cerrno>
+#include <cassert>
 #include <system_error>
 
 #include <tuple_ext.hpp>   // !more
@@ -303,8 +304,11 @@ namespace more
             auto fb = dynamic_cast<std::filebuf *>(log_.rdbuf());
             if (fb == nullptr) 
                 return 0;
-            
-            return fb->pubseekoff(0, std::ios_base::cur);
+
+            auto n = fb->pubseekoff(0, std::ios_base::cur);
+            assert(n >= 0);
+
+            return static_cast<size_t>(n);
         }
         
 
@@ -474,7 +478,6 @@ namespace more
         return lazy_stream<>(l) << data;
     }
     
-};
-
+}
 
 #endif /* _LOGGER_HPP_ */

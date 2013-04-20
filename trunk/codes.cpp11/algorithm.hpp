@@ -26,21 +26,21 @@ namespace more {
     template <typename It, typename Distance >  
     int levenshtein_distance(It __beg, It __end, It __beg2, It __end2, Distance dist)
     {
-        typedef std::vector<std::vector<int> > matrix_type;
+        typedef std::vector<std::vector<int>> matrix_type;
         
-        auto n = static_cast<unsigned long>(std::distance(__beg,  __end));
-        auto m = static_cast<unsigned long>(std::distance(__beg2, __end2));
+        size_t n = static_cast<size_t>(std::distance(__beg,  __end));
+        size_t m = static_cast<size_t>(std::distance(__beg2, __end2));
    
         if (!(n && m))
-           return n ? : m;
+           return n ? static_cast<int>(n) : static_cast<int>(m);
 
         matrix_type matrix(n+1, std::vector<int>(m+1));
    
         for (size_t i = 0; i <= n; i++) {
-            matrix[i][0]=i;
+            matrix[i][0] = static_cast<int>(i);
         }
         for (size_t j = 0; j <= m; j++) {
-            matrix[0][j]=j;
+            matrix[0][j] = static_cast<int>(j);
         }
 
         It __s = __beg;
@@ -56,6 +56,7 @@ namespace more {
                 const int left  = matrix[i][j-1];
                 const int diag  = matrix[i-1][j-1];
                 int cell = std::min(above + 1, std::min(left + 1, diag + cost));
+
                 matrix[i][j] = cell;
             }
         }

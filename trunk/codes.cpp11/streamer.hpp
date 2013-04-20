@@ -78,7 +78,7 @@ namespace std {
             out << e << ' ';
         }
         return out << '}';
-    };
+    }
 
     //////////////////////////
     // operator<< for pair...

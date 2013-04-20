@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include <cctype>
 
 namespace more { 
 
@@ -39,7 +40,7 @@ namespace more {
 
         const bool escape_disabled = false;
         const bool escape_enabled  = true;
-    };
+    }
 
     // extended getline with optional escape support and multiple-char separator...
     //
@@ -123,7 +124,7 @@ namespace more {
         std::basic_string<CharT,Traits,Alloc> token;
         while(more::getline(ss, token, sep)) 
             *out ++ = token;
-    };
+    }
     template<typename Iter, typename CharT, typename Traits, typename Alloc>
     inline void 
     __split(const std::basic_string<CharT,Traits,Alloc> &str, Iter out, const std::basic_string<CharT,Traits,Alloc> &sep, wchar_t)
@@ -132,14 +133,14 @@ namespace more {
         std::basic_string<CharT,Traits,Alloc> token;
         while(more::getline(ss, token, sep)) 
             *out ++ = token;
-    };
+    }
 
     template<typename Iter, typename CharT, typename Traits, typename Alloc>
     inline void 
     split(const std::basic_string<CharT,Traits,Alloc> &str, Iter out, const std::basic_string<CharT,Traits,Alloc> &sep)
     {
         __split(str,out,sep,CharT());
-    };
+    }
 
     // join a container of strings into a string
     //
@@ -297,7 +298,8 @@ namespace more {
         typename std::basic_string<CharT,Traits,Alloc>::value_type
         operator()(typename std::basic_string<CharT,Traits,Alloc>::value_type c) const
         { 
-            return ::isupper(c) ? ::tolower(c) : ::toupper(c); 
+            return ::isupper(c) ? static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::tolower(c)) : 
+                                  static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::toupper(c)); 
         }
     };
 
@@ -358,7 +360,8 @@ namespace more {
                 m_state = 0;
                 return c;
             }
-            return m_state++ ? ::tolower(c) : ::toupper(c);
+            return m_state++ ? static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::tolower(c)) : 
+                               static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::toupper(c));
         }
 
         mutable int m_state;

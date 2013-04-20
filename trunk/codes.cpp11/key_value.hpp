@@ -117,7 +117,7 @@ namespace more {
 
         private:
 
-            state next_(char c)
+            state next_(int_type c)
             {
                 switch(m_state)
                 {
@@ -349,9 +349,9 @@ namespace more {
         ~lexer()
         {}
 
-        bool _(char c)
+        bool _(std::basic_istream<char>::int_type c)
         {
-            char _c;
+            decltype(c) _c;
             if(!(m_in >> std::ws)) {
                 return false;
             }
@@ -477,7 +477,7 @@ namespace more {
             bool stop = false, quoted = false; 
             while (!stop)
             {
-                c = m_in.peek();
+                c = static_cast<traits_type::char_type>(m_in.peek());
                 if (c == traits_type::eof())
                     break;
 
@@ -677,7 +677,7 @@ namespace more {
 
                 // parse the key 
                 //
-                char c = '\0';
+                std::string::traits_type::char_type c = '\0';
 
                 while ((m_in >> c) && !isspace(c) && c != std::get<assign_key>(m_option) ) {
                     key.push_back(c);
@@ -718,7 +718,7 @@ namespace more {
                     int level = 0;
 
                     do {
-                        c = m_in.peek();
+                        c = static_cast<std::string::traits_type::char_type>(m_in.peek());
                         if (!m_in) {
                             std::clog << std::get<target_name>(m_option) << ": parse error at key '" 
                             << key << "' missing brackets (line "<< details::line_number(m_in) << ")" << std::endl;

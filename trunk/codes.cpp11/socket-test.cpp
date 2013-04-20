@@ -25,7 +25,7 @@ void client(std::string host, unsigned short port)
 
     const char hello_world[] = "hello world!";
 
-    int len = htonl(static_cast<int>(sizeof(hello_world)));  // this include '\0'
+    auto len = htonl(static_cast<int>(sizeof(hello_world)));  // this include '\0'
 
     sock.send_atomic(more::const_buffer(reinterpret_cast<const char *>(&len), sizeof(len)), 0);
     sock.send_atomic(more::const_buffer(hello_world, sizeof(hello_world)), 0);
@@ -100,10 +100,10 @@ try
         throw std::runtime_error("socket-test [client|server] host port");
 
     if (strcmp(argv[1],"client") == 0)
-        client(argv[2], atoi(argv[3]));
+        client(argv[2], static_cast<unsigned short>(atoi(argv[3])));
     else
     if (strcmp(argv[1], "server") == 0)
-        server(argv[2], atoi(argv[3]));
+        server(argv[2], static_cast<unsigned short>(atoi(argv[3])));
     else
         throw std::runtime_error("error: unknown mode " + std::string(argv[1]));
 

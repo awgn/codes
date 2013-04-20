@@ -43,7 +43,7 @@ namespace more { namespace netdev
 {
     struct isalnum_t
     {
-        bool operator()(char c)
+        bool operator()(int c)
         {
             return std::isalnum(c);
         }

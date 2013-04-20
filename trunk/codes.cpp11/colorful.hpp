@@ -49,7 +49,7 @@ namespace more {
             typedef std::integral_constant<int,46> cyan; 
             typedef std::integral_constant<int,47> light_grey; 
         }
-    };
+    }
 
     template <typename ...Ti> struct colorful {};
     template <typename ...Ti> struct ecma_param {};
@@ -74,7 +74,6 @@ namespace more {
     {
         return out << "\E[" << ecma_param<Ti...>() << "m";
     }
-
 
 } // namespace more
 

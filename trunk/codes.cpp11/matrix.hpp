@@ -797,10 +797,10 @@ namespace more {
         auto it_end = rhs.cend();
 
         out << *it++ << ' ';
-        for(int col = rhs.col(); it != it_end; ++it)
+        for(auto col = rhs.col(); it != it_end; ++it)
         {
             std::cout << *it << ' ';
-            if (! ((std::distance(it_end, it)+1) % col) )
+            if (! ((static_cast<long unsigned int>(std::distance(it_end, it)+1)) % col) )
                 std::cout << std::endl;     
         }
         return out;
@@ -927,7 +927,7 @@ namespace more {
     inline typename __gnu_cxx::__enable_if< std::is_integral<Tp>::value, Tp>::__type  
     _divide(Tp a, Tp b)
     {
-        double safe = static_cast<double>(a)/static_cast<double>(b);
+        auto safe = static_cast<double>(a)/static_cast<double>(b);
         Tp r = a/b;
 
         if ( safe != static_cast<double>(r) )
@@ -951,7 +951,8 @@ namespace more {
     Tp det(matrix<Tp, R, R> mat)
     {
         scoped_assert( is_square(mat), "matrix::det non a square matrix!");    
-        const unsigned int order = mat.row();
+        auto const order = mat.row();
+
         Tp _det = static_cast<Tp>(1);
 
         unsigned int j;

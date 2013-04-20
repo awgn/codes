@@ -53,9 +53,9 @@ Context(tuple_extended)
     template <typename T> 
     void test(T &v) 
     {
-        int sum = 0;
+        long int sum = 0;
         more::tuple_for_each(v, [&](typename std::tuple_element<0, T>::type n) {
-                              sum += n;
+                                sum += n;
                              });
     }
               
@@ -100,7 +100,7 @@ Context(tuple_extended)
 
         more::tuple_for_each(t, [&len](size_t n) { len+=n; });
 
-        Assert(len, is_equal_to(10));
+        Assert(len, is_equal_to(size_t(10)));
     }
     
     Test(map_const)
@@ -113,7 +113,7 @@ Context(tuple_extended)
 
         more::tuple_for_each(ts, [&len](size_t n) { len+=n; });
 
-        Assert(len, is_equal_to(10));
+        Assert(len, is_equal_to(size_t(10)));
     }
 }
 

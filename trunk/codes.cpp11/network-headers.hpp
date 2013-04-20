@@ -706,7 +706,8 @@ namespace more { namespace net {
             if (size < 20 || size > 60 || size % 4)
                 throw std::range_error("tcp::size(): bad lenght");
             
-            this->doff(size>>2);
+            this->doff(static_cast<uint16_t>(size>>2));
+
             return static_cast<size_t>(this->doff()<<2);
         } 
 
@@ -761,7 +762,7 @@ namespace more { namespace net {
         void
         cwr(bool value)
         {
-            m_header->res2 = ( m_header->res2 & 2 ) | value;
+            m_header->res2 = static_cast<uint16_t>((m_header->res2 & 2) | value);
         } 
 
         bool 
@@ -773,7 +774,7 @@ namespace more { namespace net {
         void
         ece(bool value)
         {
-            m_header->res2 = ( m_header->res2 & 1 ) | (value<<1);
+            m_header->res2 = static_cast<uint16_t>((m_header->res2 & 1) | (value <<1));
         } 
 
         MORE_NET_READER_RAW(bool, urg);
@@ -822,7 +823,7 @@ namespace more { namespace net {
             if (data_len < tcp_data_len)
                 throw std::runtime_error("tcp::checksum: missing bytes");
 
-            chksum_update(ip.saddr(host_byte_order), ip.daddr(host_byte_order), tcp_data_len); 
+            chksum_update(ip.saddr(host_byte_order), ip.daddr(host_byte_order), static_cast<uint16_t>(tcp_data_len)); 
         }
 
         bool 
@@ -835,7 +836,7 @@ namespace more { namespace net {
             if (data_len < tcp_data_len)
                 std::clog << "tcp::checksum: missing bytes, checksum unverifiable" << std::endl;
 
-            return chksum_verify(ip.saddr(host_byte_order), ip.daddr(host_byte_order), std::min(data_len,tcp_data_len)); 
+            return chksum_verify(ip.saddr(host_byte_order), ip.daddr(host_byte_order), static_cast<uint16_t>(std::min(data_len,tcp_data_len))); 
         }
 
     private:
@@ -848,7 +849,7 @@ namespace more { namespace net {
             ph.daddr = htonl(dst);
             ph.zero  = 0;
             ph.protocol = IPPROTO_TCP;
-            ph.length = htons(this->size() + tcp_data_len); // tcp header + tcp_data 
+            ph.length = htons(static_cast<uint16_t>(this->size() + tcp_data_len)); // tcp header + tcp_data 
 
             uint32_t sum = details::csum_partial((uint16_t *)& ph, sizeof(pseudo_header), 0); 
 
@@ -866,7 +867,7 @@ namespace more { namespace net {
             ph.daddr = htonl(dst);
             ph.zero  = 0;
             ph.protocol = IPPROTO_TCP;
-            ph.length = htons(static_cast<uint16_t>(this->size()) + tcp_data_len); // tcp header + tcp_data 
+            ph.length = htons(static_cast<uint16_t>(this->size() + tcp_data_len)); // tcp header + tcp_data 
 
             uint32_t sum = details::csum_partial((uint16_t *)& ph, sizeof(pseudo_header), 0); 
             return details::csum_fold(details::csum_partial((uint16_t *)m_header, this->size() + tcp_data_len, sum) ) == 0; 

@@ -289,7 +289,7 @@ Context(more_matrix_test)
 
     Test(det)
     {
-        more::matrix<double> a(3,3);
+        more::matrix<int> a(3,3);
         a = {1, 7, 3, 2, 5, 2, 3, 8, 10};
         Assert( det(a), is_equal_to(-61) );
     }

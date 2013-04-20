@@ -311,13 +311,13 @@ namespace more {
         int m_run()
         {
             auto n = m_arg.size();
-            const char *argv[n+1];
-            argv[n] = 0;
             
-            for(unsigned int i=0; i < n;i++) 
-                argv[i]=m_arg[i].c_str();
+            std::vector<const char *> argv(n+1);
 
-            if ( m_exec(argv[0], const_cast<char * const *>(argv)) == -1 ) {
+            for(unsigned int i=0; i < n;i++) 
+                argv[i] = m_arg[i].c_str();
+
+            if ( m_exec(argv[0], const_cast<char * const *>(argv.data())) == -1 ) {
                 char buff[64];
                 std::clog << "more::exec: " << strerror_r(errno, buff, 63) << std::endl;
                 return -1;

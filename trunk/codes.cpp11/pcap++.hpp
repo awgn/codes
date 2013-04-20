@@ -138,7 +138,7 @@ namespace more { namespace pcap {
 
         explicit interface(pcap_if_t * i)
         : name(i->name),
-          description(i->description ? : ""),
+          description(i->description ? i->description : ""),
           flags(i->flags)
         {
             for(pcap_addr_t * addr = i->addresses; addr; addr = addr->next) {

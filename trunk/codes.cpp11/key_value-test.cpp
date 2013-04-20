@@ -19,45 +19,44 @@
 
 #include <key_value.hpp>
 
-MAP_KEY_VALUE(unsigned int, unsigned_int, 3);   // default value for the key  
+MAP_KEY_VALUE(unsigned int, unsigned_int, 3)   // default value for the key  
 
-MAP_KEY(std::vector<int>, integers);
+MAP_KEY(std::vector<int>, integers)
 
-MAP_KEY(std::vector<bool>, booleans);
-MAP_KEY(std::list<std::string>, strings);
+MAP_KEY(std::vector<bool>, booleans)
+MAP_KEY(std::list<std::string>, strings)
 
-MAP_KEY(std::set<int>, intset);
+MAP_KEY(std::set<int>, intset)
 
 typedef std::map<std::string,int> map_type;
-MAP_KEY(map_type, associative);
+MAP_KEY(map_type, associative)
  
 typedef std::pair<double,double> pair_type;  
-MAP_KEY(pair_type, simple_pair);
+MAP_KEY(pair_type, simple_pair)
 
 typedef std::tuple<bool, int, double, std::string> tuple_type;
-MAP_KEY(tuple_type, simple_tuple);
+MAP_KEY(tuple_type, simple_tuple)
 
 namespace simple_block {
 
-    MAP_KEY(int, first);
-    MAP_KEY(int, second);
+    MAP_KEY(int, first)
+    MAP_KEY(int, second)
 
     typedef more::key_value_pack<first, second>  type;
 }
 
 typedef std::vector<std::pair<simple_block::type,bool>> block_vec;
 
-MAP_KEY(block_vec, block); 
+MAP_KEY(block_vec, block) 
 
 // smart pointer support
 
-MAP_KEY(double *, raw_double);
-MAP_KEY(std::shared_ptr<int>, shared_int);
+MAP_KEY(double *, raw_double)
+MAP_KEY(std::shared_ptr<int>, shared_int)
 
-MAP_KEY(const char *, literal);
+MAP_KEY(const char *, literal)
 
-
-MAP_KEY(std::vector<std::vector<int>>, matrix);
+MAP_KEY(std::vector<std::vector<int>>, matrix)
 
 typedef more::key_value_pack<unsigned_int,
                                integers,

@@ -123,7 +123,7 @@ namespace more { namespace type {
         typedef typelist< typename F<Ti>::type ... > type;
     };
 
-}; // namespace type
-}; // namespace more
+} // namespace type
+} // namespace more
 
 #endif /* _TYPELIST_HPP_ */

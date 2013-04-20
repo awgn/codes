@@ -89,7 +89,7 @@ namespace more {
                     errno = EPIPE;
                     return pos;
                 default:
-                    pos += res;
+                    pos += static_cast<size_t>(res);
                 }
             }
             return pos;
