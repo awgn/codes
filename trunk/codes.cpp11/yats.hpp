@@ -28,10 +28,9 @@
 #ifndef _YATS_HPP_
 #define _YATS_HPP_ 
 
-
-#include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 #include <string>
 #include <cstring>
 #include <type_traits>
@@ -44,6 +43,7 @@
 #include <map>
 #include <set>
 #include <random>
+#include <chrono>
 
 #ifdef __GNUC__
 #include <cxxabi.h>
@@ -67,7 +67,7 @@
 #define Test(name) \
     void test_ ## name(const char *); \
     yats::task_register hook_ ## name(test_ ## name, yats::task_register::type::test, _context_name, #name); \
-    void test_ ## name(const char *_test_name)
+    void test_ ## name(const char *_test_name __attribute__((unused)))
 
 
 #define Setup(name) \
@@ -87,7 +87,7 @@
     yats::task_register rhook_ ## name(yats::extended_tag(), (yats::RandTask<decltype(RandomEngine), FOR_EACH(DIST_TYPE, __VA_ARGS__)>\
                                                               (random_ ## name, RandomEngine, FOR_EACH(DIST_INSTANCE, __VA_ARGS__))), \
                                          yats::task_register::type::random, _context_name, #name); \
-    void random_ ## name(const char *_test_name, FOR_EACH(DIST_RES_ARGT,__VA_ARGS__))
+    void random_ ## name(const char *_test_name __attribute__((unused)), FOR_EACH(DIST_RES_ARGT,__VA_ARGS__))
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -221,8 +221,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-namespace yats 
+inline namespace yats 
 {
     using namespace std::placeholders;
 
@@ -379,6 +378,7 @@ namespace yats
         std::cout << "  -c, --context context   Run tests from the given context.\n";
         std::cout << "  -v, --verbose           Verbose mode.\n";
         std::cout << "  -r, --run int           Number of run per Random test (1000 default).\n";
+        std::cout << "  -l, --list              Print the list of tests\n";
         std::cout << "  -h, --help              Print this help.\n";
 
         _Exit(EXIT_SUCCESS);
@@ -407,8 +407,20 @@ namespace yats
         format(out, std::forward<Ts>(args)...);
         return out.str();
     }
-
-
+    
+    ////////////////////////////////////////////// duration:
+   
+    template <typename Dur>
+    std::string duration_to_string(Dur d)
+    {
+        if (d < std::chrono::milliseconds(10))
+            return std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(d).count()) + " us";
+        if (d < std::chrono::seconds(10))
+            return std::to_string(static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(d).count())/1000.0) + " ms";
+        else
+            return std::to_string(static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(d).count())/1000000.0) + " s";
+    }
+  
     ////////////////////////////////////////////// run tests: 
    
     static int run(int argc = 0, char *argv[] = nullptr)
@@ -451,6 +463,24 @@ namespace yats
                     throw std::runtime_error("YATS: context missing");
                 repeat_run = atoi(*arg);
                 continue;
+            }
+
+            if (strcmp(*arg, "-l") == 0 ||
+                strcmp(*arg, "--list") == 0) {
+            
+                for(auto & c : context::instance()) 
+                {
+                    std::cout << "context " << c.first << ": ";
+                    int n = 1;
+                    for(auto & t : c.second->task_list_)
+                    {
+                        std::cout << t.second << ' ';
+                        if ((n++ & 7) == 0)
+                            std::cout << std::endl << "    ";
+                    }
+                    std::cout << std::endl;
+                }
+                _Exit(1);
             }
 
             run_test.insert(*arg);
@@ -499,9 +529,12 @@ namespace yats
                     continue;
 
                 if (verbose)
-                    std::cout << "+ running test " << t.second << "...\n";
+                    std::cout << "+ running '" << t.second << "'... " << std::flush;
                 
                 run++;
+
+                auto start = std::chrono::system_clock::now();
+
                 try
                 {    
                     // run the test here
@@ -524,6 +557,11 @@ namespace yats
                 
                 if (err && exit_immediatly)
                     _Exit(1);
+
+                if (verbose)
+                    std::cout << "[" << 
+                        duration_to_string(std::chrono::system_clock::now() - start) << "]" << std::endl;
+
             }
             
             // run teardown:
@@ -613,9 +651,19 @@ namespace yats
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };
     };
                                        
+    template <typename T>
+    class is_yats_expression : public __sfinae_types
+    {
+        template <typename C> static __one test(typename std::remove_reference<typename C::yats_expression>::type *);
+        template <typename C> static __two test(...);
+    public:    
+        enum { value = sizeof(test<T>(0)) == sizeof(__one) };
+    };
+
 
     ////////////////////////////////////////////// pretty printer values: 
-    
+
+
     template <typename T>
     typename std::enable_if<std::is_integral<T>::value, std::string>::type
     pretty_value(const T &v)
@@ -623,7 +671,7 @@ namespace yats
         std::ostringstream o;
         o << std::boolalpha << v; 
         if (v > 15) 
-            o << '(' << std::hex << "0x" << v << std::dec << ')';
+            o << ':' << std::hex << "0x" << v << std::dec;
         return o.str();
     }
     template <typename T>
@@ -643,16 +691,17 @@ namespace yats
         return "()";
     }
 
-
     ////////////////////////////////////////////// generic predicate: 
 
     template <typename T>
     struct predicate
     {
+        typedef int yats_expression;
+
         predicate(const char * name, std::function<bool(const T&)> fun, const T& arg)
         : name_(name)
         , fun_(fun)
-        , arg_(std::make_pair(arg, true))
+        , arg_(new T(arg))
         {}
         
         predicate(const char * name, std::function<bool(const T&)> fun)
@@ -674,33 +723,87 @@ namespace yats
             return fun_(std::move(value));
         }
 
-        bool
-        has_arg() const
+        std::string 
+        str() const
         {
-            return arg_.second;
-        }
-
-        const T &
-        arg() const
-        {
-            return arg_.first;
-        }
-
-        const
-        std::string &
-        name() const
-        {
-            return name_;
+            if (arg_)
+                return name_ + std::string("(") + pretty_value(*arg_) + std::string(")");
+            else
+                return name_ + "()";
         }
 
     private:
         std::string name_;
         std::function<bool(const T&)> fun_;
-        std::pair<typename std::remove_reference<T>::type, bool> arg_;
+        std::shared_ptr<typename std::remove_reference<T>::type> arg_;
+    };
+
+    ////////////////////////////////////////////// yats template expressions: 
+
+    template <typename P1, typename P2, typename Fun>
+    struct binary_expression
+    {
+        typedef int yats_expression;
+    
+    private:
+        P1 lhs_;
+        P2 rhs_;
+
+    public:
+        binary_expression(P1 const &lhs, P2 const &rhs)
+        : lhs_(lhs)
+        , rhs_(rhs)
+        {}
+
+        ~binary_expression() = default;
+
+        template <typename T>
+        bool 
+        operator()(T value) const
+        {
+            auto l = lhs_(value);
+            return Fun()(l, rhs_(std::move(value)));
+        }
+
+        std::string
+        str() const
+        {
+            return std::string("(") + lhs_.str() + 
+                   std::string(" ") + Fun::str() + std::string(" ") + rhs_.str() + std::string(")");
+        }
     };
 
     
-    ////////////////////////////////////////////// standard predicats: 
+    template <typename P1, typename Fun>
+    struct unary_expression
+    {
+        typedef int yats_expression;
+    
+    private:
+        P1 arg_;
+
+    public:
+        unary_expression(P1 const &lhs)
+        : arg_(lhs)
+        {}
+
+        ~unary_expression() = default;
+
+        template <typename T>
+        bool 
+        operator()(T value) const
+        {
+            return Fun()(arg_(std::move(value)));
+        }
+
+        std::string
+        str() const
+        {
+            return Fun::str() + std::string("(") + arg_.str() + std::string(")");
+        }
+    };
+
+    ////////////////////////////////////////////// standard predicates: 
 
 #define YATS_FUNCTIONAL(_name_) \
     template <typename T> \
@@ -713,15 +816,55 @@ namespace yats
                                 value); \
     }
 
-    YATS_FUNCTIONAL(greater);
-    YATS_FUNCTIONAL(greater_equal);
-    YATS_FUNCTIONAL(less);
-    YATS_FUNCTIONAL(less_equal);
-    YATS_FUNCTIONAL(equal_to);
-    YATS_FUNCTIONAL(not_equal_to);
+    YATS_FUNCTIONAL(greater)
+    YATS_FUNCTIONAL(greater_equal)
+    YATS_FUNCTIONAL(less)
+    YATS_FUNCTIONAL(less_equal)
+    YATS_FUNCTIONAL(equal_to)
+    YATS_FUNCTIONAL(not_equal_to)
 
+    ////////////////////////////////////////////// boolean combinators: or, and, not... 
     
-    ////////////////////////////////////////////// boolean predicats: 
+    struct Or : std::logical_or<bool>
+    {
+        static const char * str() { return "or"; }
+    };
+
+    struct And : std::logical_and<bool>
+    {
+        static const char * str() { return "and"; }
+    };
+
+    struct Not : std::logical_not<bool>
+    {
+        static const char * str() { return "not"; }
+    };
+
+    template <typename P>
+    typename std::enable_if<is_yats_expression<P>::value,
+    unary_expression<P, Not>>::type
+    operator!(P const &expr)
+    {
+        return unary_expression<P, Not>(expr);
+    }
+
+    template <typename P1, typename P2>
+    typename std::enable_if<is_yats_expression<P1>::value + is_yats_expression<P2>::value == 2,
+    binary_expression<P1, P2, Or>>::type
+    operator ||(P1 const &lhs, P2 const &rhs)
+    {
+        return binary_expression<P1, P2, Or>(lhs, rhs);
+    }
+    
+    template <typename P1, typename P2>
+    typename std::enable_if<is_yats_expression<P1>::value + is_yats_expression<P2>::value == 2,
+    binary_expression<P1, P2, And>>::type
+    operator &&(P1 const &lhs, P2 const &rhs)
+    {
+        return binary_expression<P1, P2, And>(lhs, rhs);
+    }
+
+    ////////////////////////////////////////////// boolean predicates: 
 
     inline predicate<bool>
     is_true()
@@ -739,7 +882,6 @@ namespace yats
                                 std::bind(std::equal_to<bool>(), _1, false)), false); 
     }
 
-
     ////////////////////////////////////////////// predicate factory: 
 
     template <typename Tp, typename Fn>
@@ -752,13 +894,13 @@ namespace yats
 
     ////////////////////////////////////////////// YATS assertions: 
 
-    template <typename T1, typename T2>
-    void assert_predicate(const T1 &value, const predicate<T2> &pred, const char *ctx, const char *name, const char *file, int line)
+    template <typename T1, typename P>
+    void assert_predicate(const T1 &value, const P &pred, const char *ctx, const char *name, const char *file, int line)
     {
         if (!pred(value)) 
         {
             throw yats_error(make_string(YATS_HEADER(ctx, name, file, line), 
-                                        "    -> predicate ", pred.name(), ' ', (pred.has_arg() ? pretty_value(pred.arg()) : ""), " failed: got ", pretty_value(value)));
+                                        "    -> predicate ", pred.str(), " failed: got ", pretty_value(value)));
         }
     }
 
