@@ -14,9 +14,10 @@
 #include <typemap.hpp>          // more!
 
 #ifdef LEXEME_DEBUG
-#include <streamer.hpp>         // more!
+#include <show.hpp>             // more!
 #endif
 
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -29,6 +30,7 @@
 #include <stdexcept>
 #include <cassert>
 
+#include <cxxabi.h>
 
 #define MAP_KEY(t,k)  struct k { \
     typedef std::pair<k,t> type; \
@@ -60,7 +62,30 @@ namespace more {
         const char * const BOLD  = "\E[1m";
         const char * const RESET = "\E[0m";
         const char * const BLUE  = "\E[1;34m";
+        const char * const RED   = "\E[1;31m";
 #endif
+
+        static inline
+        std::string
+        demangle(const char *name)
+        {
+            int status;
+            auto deleter = [](void *a) { ::free(a); };
+
+            std::unique_ptr<char, decltype(deleter)> 
+                ret(abi::__cxa_demangle(name, 0, 0, &status), deleter);
+
+            if (status < 0) {
+                return std::string("?");
+            }
+            return ret.get();
+        }        
+        
+        template <typename Tp>
+        inline std::string type_name()
+        {
+            return demangle(typeid(Tp).name());
+        }
 
         class streambuf : public std::streambuf 
         {
@@ -195,18 +220,15 @@ namespace more {
             template <typename L, typename ...Ti>
             static bool parse_lexeme(L &lex,  std::tuple<Ti...> &tup)
             {
-#ifdef LEXEME_DEBUG
-                std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
                 typename std::tuple_element<sizeof...(Ti)-N,
                          typename std::tuple<Ti...>   
                          >::type elem{}; 
-                bool ok = lex.parse_lexeme(elem);
-                if (!ok) 
+
+                bool ok = lex.log_ret(lex.parse_lexeme(elem)).first;
+                if (!ok) {
                     return false;
-#ifdef LEXEME_DEBUG
-                std::cout << details::BLUE << ":: lex::tuple<Ti>[" << elem << "]" << details::RESET << std::endl;
-#endif
+                }
+
                 std::get<sizeof...(Ti) - N>(tup) = std::move(elem);
                 return tuple_helper<N-1>::parse_lexeme(lex, tup);
             }
@@ -217,19 +239,14 @@ namespace more {
             template <typename L, typename ...Ti>
             static bool parse_lexeme(L &lex,  std::tuple<Ti...> &tup)
             {
-#ifdef LEXEME_DEBUG
-                std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
                 typename std::tuple_element<sizeof...(Ti)-1,
                          typename std::tuple<Ti...>   
                          >::type elem{};
 
-                bool ok = lex.parse_lexeme(elem);
+                bool ok = lex.log_ret(lex.parse_lexeme(elem)).first;
                 if (ok)
                     std::get<sizeof...(Ti) - 1>(tup) = std::move(elem);
-#ifdef LEXEME_DEBUG
-                std::cout << details::BLUE << ":: lex::tuple<Ti>[" << elem << "]" << details::RESET << std::endl;
-#endif
+                
                 return ok;
             }
         };
@@ -352,6 +369,7 @@ namespace more {
         bool _(std::basic_istream<char>::int_type c)
         {
             decltype(c) _c;
+
             if(!(m_in >> std::ws)) {
                 return false;
             }
@@ -359,8 +377,9 @@ namespace more {
             if (!m_in) {
                 return false;
             }
+
             if (c == _c) {
-                m_in >> _c;
+                m_in.get();
                 assert(m_in);
                 return true;
             }
@@ -372,24 +391,38 @@ namespace more {
             std::string _s; 
             m_in >> _s;
 
-#ifdef LEXEME_DEBUG
-            if (_s.compare(s)) {
-                std::cout << "_: expected '" << s << "' got '" << _s  << "'" << std::endl;
-            }
-#endif
             return (m_in && _s.compare(s) == 0) ? true : false;
         }                                                            
+
+        typedef std::pair<bool, std::string> ret_t;
+
+        // wrapper for log/debug 
+        //
+
+        template <typename L = int>
+        static inline
+        ret_t make_ret(bool v, std::string  name, const L &elem = L())
+        {
+            return v ? std::make_pair(true,  details::BLUE + name + "[" + show(elem) + "]" + details::RESET) :
+                       std::make_pair(false, details::RED  + name + "[...]" + details::RESET);
+        }
+
+        static inline 
+        ret_t log_ret(const ret_t &ret)
+        {
+#ifdef LEXEME_DEBUG
+            std::cout << "   " << ret.second << std::endl;
+#endif
+            return ret;
+        }
 
         // very generic parser for types supporting operator>> ...
         //
 
         template <typename T>
-        typename std::enable_if<!more::traits::is_container<T>::value,bool>::type 
+        typename std::enable_if<!more::traits::is_container<T>::value,ret_t>::type 
         parse_lexeme(T &lex)
-        { 
-#ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif 
+        {
 
 #if __GNUC__ == 4 &&  __GNUC_MINOR__ > 4
             static_assert(more::traits::has_extraction_operator<T>::value, "parse_lexeme: *** T must have a valid extraction operator>>() ***");
@@ -398,70 +431,66 @@ namespace more {
 
             if(m_in >> e)
                 lex = std::move(e);
-#ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex<T>[" << lex << "]" << details::RESET << std::endl;
-#endif
-            return m_in ? true : false;
+
+            return make_ret(static_cast<bool>(m_in), "lex<" + details::type_name<T>() + ">", lex);
         }        
 
         // parser for string literal:    
         //
 
-        bool parse_lexeme(const char * &lex)
+        ret_t parse_lexeme(const char * &lex)
         {
-#ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
             std::string s;
-            if (!parse_lexeme(s))
-                return false;
+
+            auto ret = log_ret(parse_lexeme(s));
+
+            if (!ret.first)
+                return make_ret(false, "lex<const char *>");
+
             lex = strdup(s.c_str());    
-            return true;
+            return make_ret(true, "lex<const char *>", lex);
         }
 
         // parser for raw pointer: 
         //
 
         template <typename T>
-        bool parse_lexeme(T * &ptr)
+        ret_t parse_lexeme(T * &ptr)
         {
-#ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
             if (!ptr)
                 ptr = new T;
-            if (!parse_lexeme(*ptr))
-                return false;
-            return true;
+
+            auto ret = log_ret(parse_lexeme(*ptr));
+
+            if (!ret.first)
+                return make_ret(false, "lex<" + details::type_name<T>() + " *>");
+
+            return make_ret(true, "lex<T" + details::type_name<T>() + " *>", (void *)ptr);
         }
 
         // parser for shared_ptr<T>:
         //
 
         template <typename T>
-        bool parse_lexeme(std::shared_ptr<T> &ptr)
+        ret_t parse_lexeme(std::shared_ptr<T> &ptr)
         {
-#ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
             if (!ptr)
                 ptr.reset(new T);
-            if (!parse_lexeme(*ptr))
-                return false;
-            return true;
+
+            auto ret = log_ret(parse_lexeme(*ptr));
+            if (!ret.first)
+                return make_ret(false, "lex<" + details::type_name<std::shared_ptr<T>>() + ">");
+
+            return make_ret(true, "lex<" + details::type_name<std::shared_ptr<T>>() + ">",(void *)ptr.get());
         }
 
         // parser for std::string:
         //
-        bool parse_lexeme(std::string &lex)
+        ret_t parse_lexeme(std::string &lex)
         {
             typedef std::string::traits_type traits_type;
             
             m_in >> std::noskipws >> std::ws;
-
-#ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
 
             std::string str; str.reserve(32);
             traits_type::char_type c;
@@ -525,108 +554,87 @@ namespace more {
                 }
             }
 
-#ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex<string>[" << lex << "]" << details::RESET << std::endl;
-#endif
             lex = std::move(str);
             m_in >> std::skipws;
 
-            return (!quoted && lex.size() == 0) ? false : true; 
+            return make_ret((!quoted && lex.size() == 0) ? false : true, "lex<string>", lex); 
         }
 
         // parser for boolean
         //
 
-        bool parse_lexeme(bool &lex)
+        ret_t parse_lexeme(bool &lex)
         {
-#ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
             m_in >> std::noboolalpha;
+
             if (!(m_in >> lex)) {
                 m_in.clear();
                 m_in >> std::boolalpha >> lex;
             }
-#ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex<bool>[" << lex << "]" << details::RESET << std::endl;
-#endif
-            return m_in ? true : false;
+            
+            return make_ret(m_in ? true : false, "lex<bool>", lex);
         }
 
         // parser for generic pairs
         // 
 
         template <typename T, typename V>
-        bool parse_lexeme(std::pair<T,V> &lex)
+        ret_t parse_lexeme(std::pair<T,V> &lex)
         { 
-#ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
             T first{}; V second{};
 
             bool ok;
             if (_('('))
             {
-                ok =  parse_lexeme(first)   &&
-                      parse_lexeme(second)  &&
+                ok =  parse_lexeme(first).first   &&
+                      parse_lexeme(second).first  &&
                       _(')');  
             }
             else if (_('[')) {
-                ok = parse_lexeme(first)        &&
+                ok = parse_lexeme(first).first  &&
                      _("->")                    &&
-                     parse_lexeme(second)       &&
+                     parse_lexeme(second).first &&
                      _(']');
             }
             else {
-                ok = parse_lexeme(first)    &&
-                     _("->")                &&
-                     parse_lexeme(second);   
+                ok = parse_lexeme(first).first &&
+                     _("->")                   &&
+                     parse_lexeme(second).first;   
             }
 
             if (ok)
                 lex = std::make_pair(first,second);
 
-#ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex<pair>[" << lex << "]" << details::RESET << std::endl;
-#endif
-            return ok;
+            return make_ret(ok, "lex<" + details::type_name<std::pair<T,V>>() + ">", lex);
         }
 
         // parser for generic tuple
         // 
 
         template <typename ...Ti>
-        bool parse_lexeme(std::tuple<Ti...> &lex)
+        ret_t parse_lexeme(std::tuple<Ti...> &lex)
         {
-#ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
             std::tuple<Ti...> tup;
 
-            bool ok = _('(') &&
-            details::tuple_helper<sizeof...(Ti)>::parse_lexeme(*this, tup) &&
-            _(')');
+            bool ok = _('(') && details::tuple_helper<sizeof...(Ti)>::parse_lexeme(*this, tup) && _(')');
+
             if (ok)
                 lex = std::move(tup);          
-#ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex<tuple>[" << lex << "]" << details::RESET << std::endl;
-#endif
-            return ok;
+
+            return make_ret(ok, "lex<" + details::type_name<std::tuple<Ti...>>() + ">", lex);
         }
 
         // parser for generic containers:
         //
 
         template <typename C>
-        typename std::enable_if<more::traits::is_container<C>::value,bool>::type 
+        typename std::enable_if<more::traits::is_container<C>::value,ret_t>::type 
         parse_lexeme(C & lex)
         {
-#ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
             bool ok = true;
+
             if (!_('[')) 
-                return false;
+                return make_ret(false, "lex<" + details::type_name<C>() + ">");
 
             do {
                 if (_(']')) 
@@ -634,36 +642,32 @@ namespace more {
 
                 typename details::mutable_type<
                     typename C::value_type>::type value;
-                ok = parse_lexeme(value);
-                if (ok) {
+                
+                auto ret = log_ret(parse_lexeme(value));
+                
+                if ((ok = ret.first)) {
                     if (!details::insert(lex,std::move(value))) {
                         std::clog << std::get<target_name>(m_option) << 
                         ": insert error (dup value at line " << 
                         details::line_number(m_in) << ")" << std::endl;
-                        return false;
+                        return make_ret(false, "lex<" + details::type_name<C>() + ">");
                     }
                 }
             }
             while(ok);
-#ifdef LEXEME_DEBUG
-            std::cout << details::BLUE << ":: lex<C>[" << lex << "]" << details::RESET << std::endl;
-#endif
-            return ok;
+            return make_ret(ok, "lex<" + details::type_name<C>() + ">", lex);
         }
 
         // recursive parser for key_value_pack
         //
         template <typename ...Ti>
-        bool parse_lexeme(key_value_pack<Ti...> &elem, bool bracket = true)
+        ret_t parse_lexeme(key_value_pack<Ti...> &elem, bool bracket = true)
         {
-#ifdef LEXEME_DEBUG
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-#endif
             if (bracket &&  ! _('{')) {
                 std::clog << std::get<target_name>(m_option) << 
                 ": parse error: missing open bracket (line " << 
                 details::line_number(m_in) << ")" << std::endl;
-                return false;
+                return make_ret(false, "lex<key_value_pack>");
             }
 
             key_value_pack<Ti...> tmp;
@@ -693,7 +697,7 @@ namespace more {
                     break;
                 }
 #ifdef LEXEME_DEBUG
-                std::cout << details::BOLD << ":: key[" << key << "]" << details::RESET << std::endl;
+                std::cout << details::BOLD << ":: key[" << show(key) << "]" << details::RESET << std::endl;
 #endif
                 m_in >> std::skipws;
 
@@ -704,7 +708,7 @@ namespace more {
                     if (c != std::get<assign_key>(m_option)) {
                         std::clog << std::get<target_name>(m_option) << ": parse error: key[" << key << "] missing separator '" 
                         << std::get<assign_key>(m_option) << "' (line "<< details::line_number(m_in) << ")" << std::endl;
-                        return false;
+                        return make_ret(false, "lex<key_value_pack>");
                     }
                 }
 
@@ -723,18 +727,17 @@ namespace more {
                             std::clog << std::get<target_name>(m_option) << ": parse error at key '" 
                             << key << "' missing brackets (line "<< details::line_number(m_in) << ")" << std::endl;
 
-                            return false;
+                            return make_ret(false, "lex<key_value_pack>");
                         }
                         if ( c == '[' || c == '(') {
                             level++;
                         }
                         else if ( c == ']' || c == ')') {
                             if (--level < 0) {
-                                std::cout << level << std::endl;
                                 std::clog << std::get<target_name>(m_option) << ": parse error at key '" 
                                 << key << "' unbalanced brackets (line "<< details::line_number(m_in) << ")" << std::endl;
 
-                                return false;
+                                return make_ret(false, "lex<key_value_pack>");
                             }
                         }
                     }
@@ -751,12 +754,12 @@ namespace more {
                 // parse the value...
                 // 
                 if (!tmp.parse(m_in, key, m_option, *this)) {
-                    return false;
+                    return make_ret(false, "lex<key_value_pack>");
                 }
             }
             if (bracket) { 
                 std::clog << std::get<target_name>(m_option) << ": parse error: missing close bracket (line "<< details::line_number(m_in) << ")" << std::endl;
-                return false;
+                return make_ret(false, "lex<key_value_pack>");
             }
             
             // parsing correct...
@@ -764,7 +767,7 @@ namespace more {
             m_in >> std::skipws;
 
             elem  = tmp;
-            return true;
+            return make_ret(true, "lex<key_value_pack>", true);
         }
     };
 
@@ -930,7 +933,7 @@ namespace more {
         {
             if (key == _T0::type::first_type::str()) {
 
-                if (!lex.parse_lexeme(that.m_value) || in.fail()) {
+                if (!lex.log_ret(lex.parse_lexeme(that.m_value)).first || in.fail()) {
 
                     std::clog << std::get<target_name>(mode) << ": parse error: key[" << _T0::type::first_type::str() 
                     << "] unexpected argument at line " << details::line_number(in) << std::endl;
@@ -1000,7 +1003,7 @@ namespace more {
         bool open(std::basic_istream<CharT, Traits> &in, parser_options mode = std::make_tuple(false, '=', '#', "unnamed")) 
         {
             auto lex = make_lexer(in, mode);
-            return lex.parse_lexeme(*this, false);
+            return lex.parse_lexeme(*this, false).first;
         }
     };
 
