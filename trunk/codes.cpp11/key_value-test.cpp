@@ -78,7 +78,7 @@ main(int, char *[])
     const my_config conf("key_value_test.txt", more::key_value_opt::non_strict());
 
     // or...
-    // if (!conf.open("key_value_test.txt") ) {
+    // if (!conf.load("key_value_test.txt") ) {
     //     return -1;
     // }
 

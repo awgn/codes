@@ -403,8 +403,12 @@ namespace more {
         static inline
         ret_t make_ret(bool v, const L &elem = L())
         {
+#ifdef LEXEME_DEBUG
             return v ? std::make_pair(true,  std::string(details::BLUE) + "lex<" + details::type_name<Tp>() + ">" + details::RESET + " -> [" + show(elem) + "]") :
                        std::make_pair(false, std::string(details::RED)  + "lex<" + details::type_name<Tp>() + ">" + details::RESET + " -> [...]");
+#else
+            (void)v; (void)elem; return std::make_pair(v, "");
+#endif
         }
 
         static inline 
@@ -423,10 +427,8 @@ namespace more {
         typename std::enable_if<!more::traits::is_container<T>::value,ret_t>::type 
         parse_lexeme(T &lex)
         {
-
-#if __GNUC__ == 4 &&  __GNUC_MINOR__ > 4
-            static_assert(more::traits::has_extraction_operator<T>::value, "parse_lexeme: *** T must have a valid extraction operator>>() ***");
-#endif
+            static_assert(more::traits::has_extraction_operator<T>::value, "parse_lexeme: *** T must have a valid extraction operator>> ***");
+            
             typename std::remove_const<T>::type e;
 
             if(m_in >> e)
@@ -780,6 +782,7 @@ namespace more {
 
     //////////////////////////////////////////////////////////////////////////
     //   options 
+    
     namespace key_value_opt {
 
         struct options
@@ -846,7 +849,7 @@ namespace more {
     }
 
     //////////////////////////////////////////////////////////////////////////
-    //   parser: key_value_pack
+    //   key_value_pack
 
     template <typename ...T> struct key_value_pack;
 
@@ -871,22 +874,23 @@ namespace more {
         , m_value(details::get_default<key_type, value_type, key_type::has_default>::value()) 
         { }
 
+
         key_value_pack(const char *name, 
-                       const parser_options &mode = std::make_tuple(false, '=', '#', "pack")) 
+                         const parser_options &mode = std::make_tuple(false, '=', '#', "pack")) 
         : m_parser()
         , m_key()
         , m_value(details::get_default<key_type, value_type, key_type::has_default>::value()) 
         {
-            if(!this->open(name, mode))
+            if(!this->load(name, mode))
                 throw std::runtime_error("key_value_pack");
         }
 
         virtual ~key_value_pack()
         {}
 
-        //////////////////////////////////////////////////////////////////////////
         // get method
-
+        //
+        
         template <typename Key>
         typename std::add_lvalue_reference<typename more::type::get<map_type, Key>::type>::type
         get() 
@@ -917,9 +921,10 @@ namespace more {
         }
 
     public:
-        //////////////////////////////////////////////////////////////////////////
-        // run-time parser 
 
+        // run-time parser 
+        //
+        
         template <typename CharT, typename Traits>
         bool parse(std::basic_istream<CharT, Traits> &in, const std::string &key, 
                    const parser_options &mode, lexer<CharT, Traits> &lex)
@@ -949,6 +954,8 @@ namespace more {
                            key_value_pack<> &, const parser_options &mode, lexer<CharT, Traits>&)
         {
             // unknown key-value...
+            //
+            
             if (std::get<parser_mode>(mode)) {   // strict mode: dump-error 
                 std::clog << std::get<target_name>(mode) << ": parse error: key[" << key << "] unknown (line " << 
                 details::line_number(in) << ")" << std::endl;
@@ -983,8 +990,7 @@ namespace more {
 
     public:
 
-        bool 
-        open(const char *name, parser_options mode = std::make_tuple(false, '=', '#', "")) 
+        bool load(const char *name, parser_options mode = std::make_tuple(false, '=', '#', "")) 
         {
             std::ifstream sc(name);
             std::get<target_name>(mode) = std::string(name);
@@ -996,11 +1002,11 @@ namespace more {
 
             details::streambuf sb(sc.rdbuf(), std::get<comment_key>(mode));
             std::istream in(&sb);    
-            return open(in, mode);
+            return load(in, mode);
         }
 
         template <typename CharT, typename Traits>
-        bool open(std::basic_istream<CharT, Traits> &in, parser_options mode = std::make_tuple(false, '=', '#', "unnamed")) 
+        bool load(std::basic_istream<CharT, Traits> &in, parser_options mode = std::make_tuple(false, '=', '#', "unnamed")) 
         {
             auto lex = make_lexer(in, mode);
             return lex.parse_lexeme(*this, false).first;
@@ -1009,6 +1015,21 @@ namespace more {
 
     template <>
     struct key_value_pack<> {};
+
+#ifdef LEXEME_DEBUG
+
+    template <typename ...Ts>
+    inline std::string
+    show(const key_value_pack<Ts...> &, const char * = nullptr)
+    {
+        return details::type_name<key_value_pack<Ts...>>() + "{ ... }";    
+    }
+
+#endif
+    
+    //////////////////////////////////////////////////////////////////////////
+    //   get utility functions
+
 
     template<typename T, typename ...Ti>
     inline 
