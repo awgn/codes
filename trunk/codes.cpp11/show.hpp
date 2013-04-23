@@ -328,7 +328,7 @@ inline namespace more_show {
     show(const T &v, const char * n)
     {
         std::string out("{ ");
-        for(auto & e : v)
+        for(auto const & e : v)
         {
             out += show(e) + ' ';
         }
