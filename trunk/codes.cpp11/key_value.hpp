@@ -399,12 +399,12 @@ namespace more {
         // wrapper for log/debug 
         //
 
-        template <typename L = int>
+        template <typename Tp, typename L = int>
         static inline
-        ret_t make_ret(bool v, std::string  name, const L &elem = L())
+        ret_t make_ret(bool v, const L &elem = L())
         {
-            return v ? std::make_pair(true,  details::BLUE + name + "[" + show(elem) + "]" + details::RESET) :
-                       std::make_pair(false, details::RED  + name + "[...]" + details::RESET);
+            return v ? std::make_pair(true,  std::string(details::BLUE) + "lex<" + details::type_name<Tp>() + ">" + details::RESET + " -> [" + show(elem) + "]") :
+                       std::make_pair(false, std::string(details::RED)  + "lex<" + details::type_name<Tp>() + ">" + details::RESET + " -> [...]");
         }
 
         static inline 
@@ -432,7 +432,7 @@ namespace more {
             if(m_in >> e)
                 lex = std::move(e);
 
-            return make_ret(static_cast<bool>(m_in), "lex<" + details::type_name<T>() + ">", lex);
+            return make_ret<T>(static_cast<bool>(m_in), lex);
         }        
 
         // parser for string literal:    
@@ -445,10 +445,10 @@ namespace more {
             auto ret = log_ret(parse_lexeme(s));
 
             if (!ret.first)
-                return make_ret(false, "lex<const char *>");
+                return make_ret<const char *>(false);
 
             lex = strdup(s.c_str());    
-            return make_ret(true, "lex<const char *>", lex);
+            return make_ret<const char *>(true, lex);
         }
 
         // parser for raw pointer: 
@@ -463,9 +463,9 @@ namespace more {
             auto ret = log_ret(parse_lexeme(*ptr));
 
             if (!ret.first)
-                return make_ret(false, "lex<" + details::type_name<T>() + " *>");
+                return make_ret<T>(false);
 
-            return make_ret(true, "lex<T" + details::type_name<T>() + " *>", (void *)ptr);
+            return make_ret<T>(true, (void *)ptr);
         }
 
         // parser for shared_ptr<T>:
@@ -479,9 +479,9 @@ namespace more {
 
             auto ret = log_ret(parse_lexeme(*ptr));
             if (!ret.first)
-                return make_ret(false, "lex<" + details::type_name<std::shared_ptr<T>>() + ">");
+                return make_ret<T>(false);
 
-            return make_ret(true, "lex<" + details::type_name<std::shared_ptr<T>>() + ">",(void *)ptr.get());
+            return make_ret<T>(true, (void *)ptr.get());
         }
 
         // parser for std::string:
@@ -557,7 +557,7 @@ namespace more {
             lex = std::move(str);
             m_in >> std::skipws;
 
-            return make_ret((!quoted && lex.size() == 0) ? false : true, "lex<string>", lex); 
+            return make_ret<std::string>((!quoted && lex.size() == 0) ? false : true, lex); 
         }
 
         // parser for boolean
@@ -572,7 +572,7 @@ namespace more {
                 m_in >> std::boolalpha >> lex;
             }
             
-            return make_ret(m_in ? true : false, "lex<bool>", lex);
+            return make_ret<bool>(m_in ? true : false, lex);
         }
 
         // parser for generic pairs
@@ -605,7 +605,7 @@ namespace more {
             if (ok)
                 lex = std::make_pair(first,second);
 
-            return make_ret(ok, "lex<" + details::type_name<std::pair<T,V>>() + ">", lex);
+            return make_ret<std::pair<T,V>>(ok, lex);
         }
 
         // parser for generic tuple
@@ -621,7 +621,7 @@ namespace more {
             if (ok)
                 lex = std::move(tup);          
 
-            return make_ret(ok, "lex<" + details::type_name<std::tuple<Ti...>>() + ">", lex);
+            return make_ret<std::tuple<Ti...>>(ok, lex);
         }
 
         // parser for generic containers:
@@ -634,7 +634,7 @@ namespace more {
             bool ok = true;
 
             if (!_('[')) 
-                return make_ret(false, "lex<" + details::type_name<C>() + ">");
+                return make_ret<C>(false);
 
             do {
                 if (_(']')) 
@@ -650,12 +650,12 @@ namespace more {
                         std::clog << std::get<target_name>(m_option) << 
                         ": insert error (dup value at line " << 
                         details::line_number(m_in) << ")" << std::endl;
-                        return make_ret(false, "lex<" + details::type_name<C>() + ">");
+                        return make_ret<C>(false);
                     }
                 }
             }
             while(ok);
-            return make_ret(ok, "lex<" + details::type_name<C>() + ">", lex);
+            return make_ret<C>(ok, lex);
         }
 
         // recursive parser for key_value_pack
@@ -667,7 +667,7 @@ namespace more {
                 std::clog << std::get<target_name>(m_option) << 
                 ": parse error: missing open bracket (line " << 
                 details::line_number(m_in) << ")" << std::endl;
-                return make_ret(false, "lex<key_value_pack>");
+                return make_ret<key_value_pack<Ti...>>(false);
             }
 
             key_value_pack<Ti...> tmp;
@@ -708,7 +708,7 @@ namespace more {
                     if (c != std::get<assign_key>(m_option)) {
                         std::clog << std::get<target_name>(m_option) << ": parse error: key[" << key << "] missing separator '" 
                         << std::get<assign_key>(m_option) << "' (line "<< details::line_number(m_in) << ")" << std::endl;
-                        return make_ret(false, "lex<key_value_pack>");
+                        return make_ret<key_value_pack<Ti...>>(false);
                     }
                 }
 
@@ -727,7 +727,7 @@ namespace more {
                             std::clog << std::get<target_name>(m_option) << ": parse error at key '" 
                             << key << "' missing brackets (line "<< details::line_number(m_in) << ")" << std::endl;
 
-                            return make_ret(false, "lex<key_value_pack>");
+                            return make_ret<key_value_pack<Ti...>>(false);
                         }
                         if ( c == '[' || c == '(') {
                             level++;
@@ -737,7 +737,7 @@ namespace more {
                                 std::clog << std::get<target_name>(m_option) << ": parse error at key '" 
                                 << key << "' unbalanced brackets (line "<< details::line_number(m_in) << ")" << std::endl;
 
-                                return make_ret(false, "lex<key_value_pack>");
+                                return make_ret<key_value_pack<Ti...>>(false);
                             }
                         }
                     }
@@ -754,12 +754,12 @@ namespace more {
                 // parse the value...
                 // 
                 if (!tmp.parse(m_in, key, m_option, *this)) {
-                    return make_ret(false, "lex<key_value_pack>");
+                    return make_ret<key_value_pack<Ti...>>(false);
                 }
             }
             if (bracket) { 
                 std::clog << std::get<target_name>(m_option) << ": parse error: missing close bracket (line "<< details::line_number(m_in) << ")" << std::endl;
-                return make_ret(false, "lex<key_value_pack>");
+                return make_ret<key_value_pack<Ti...>>(false);
             }
             
             // parsing correct...
@@ -767,7 +767,7 @@ namespace more {
             m_in >> std::skipws;
 
             elem  = tmp;
-            return make_ret(true, "lex<key_value_pack>", true);
+            return make_ret<key_value_pack<Ti...>>(true, true);
         }
     };
 
