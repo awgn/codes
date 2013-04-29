@@ -58,13 +58,13 @@ namespace more {
         template <typename ... Ts>
         void put(Ts && ... value)
         {
+            auto nptr = new Tp(std::move(std::forward<Ts>(value)...));
+            
+            auto cur  = current_.exchange(nptr);
+
             std::lock_guard<std::mutex> lock(mutex_);
-
-            auto cur = current_.load(std::memory_order_relaxed);
+            
             garbage_.reset(cur);
-
-            auto npr = new Tp(std::move(std::forward<Ts>(value)...));
-            current_.store(npr, std::memory_order_release);
         }
         
 
