@@ -101,6 +101,12 @@ inline namespace more_show {
     inline std::string
     show(std::pair<U,V> const &r, const char * = nullptr);
 
+    // array...
+    
+    template <typename T, std::size_t N>
+    inline std::string
+    show(const T(&)[N], const char * = nullptr);
+
     template <typename T, std::size_t N>
     inline std::string
     show(std::array<T,N> const &a, const char * = nullptr);
@@ -309,9 +315,21 @@ inline namespace more_show {
 
     template <typename T, std::size_t N>
     inline std::string
-    show(std::array<T,N> const &a, const char * n)
+    show(const T(&vec)[N], const char * n) 
     {
         std::string out("[ ");
+        for(auto const &v : vec)
+        {
+            out = std::move(out) + show(v) + ' ';
+        }
+        return show_helper::header<T[N]>(n) + out + ']';
+    }
+
+    template <typename T, std::size_t N>
+    inline std::string
+    show(std::array<T,N> const &a, const char * n)
+    {
+        std::string out("[");
         show_helper::show_on<std::array<T,N>, N>::apply(out,a, n);
         return show_helper::header<std::array<T,N>>(n) + out + ']';
     }
