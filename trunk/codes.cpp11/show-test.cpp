@@ -33,6 +33,7 @@ namespace example
 }
 
 
+
 int 
 main(int, char *[])
 {
@@ -128,6 +129,7 @@ main(int, char *[])
     std::cout << show((void *)0xdeadbeef) << std::endl; 
     std::cout << show( std::unique_ptr<int>(new int(0)) ) << std::endl;
     std::cout << show( std::shared_ptr<int>(new int(42)) ) << std::endl;
+
 
     return 0;
 }

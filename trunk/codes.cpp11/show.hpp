@@ -72,11 +72,15 @@ inline namespace more_show {
     inline std::string 
     show(std::string const &s, const char * = nullptr);
 
+    // numeric like...
+    
     template <typename T> 
     inline 
     typename std::enable_if<std::is_arithmetic<T>::value || std::is_enum<T>::value, std::string>::type 
     show(T const &value, const char * = nullptr);
 
+    // manipulators...
+   
     template <typename T>
     inline typename std::enable_if<std::is_integral<T>::value, std::string>::type
     show(_hex<T> const &value, const char * = nullptr);
@@ -84,7 +88,9 @@ inline namespace more_show {
     template <typename T>
     inline typename std::enable_if<std::is_integral<T>::value, std::string>::type
     show(_oct<T> const &value, const char * = nullptr);
-    
+
+    // pointers...
+   
     template <typename T>
     inline std::string 
     show(T const *p, const char * = nullptr);
@@ -97,6 +103,8 @@ inline namespace more_show {
     inline std::string 
     show(std::shared_ptr<T> const &, const char * = nullptr);
 
+    // pair<>
+    
     template <typename U, typename V>
     inline std::string
     show(std::pair<U,V> const &r, const char * = nullptr);
@@ -111,10 +119,14 @@ inline namespace more_show {
     inline std::string
     show(std::array<T,N> const &a, const char * = nullptr);
 
+    // tuple<>
+    
     template <typename ...Ts>
     inline std::string
     show(std::tuple<Ts...> const &t, const char * = nullptr);
 
+    // chrono types
+   
     template <typename Rep, typename Period>
     inline std::string
     show(std::chrono::duration<Rep, Period> const &dur, const char * = nullptr);
@@ -123,6 +135,8 @@ inline namespace more_show {
     inline std::string
     show(std::chrono::time_point<Clock, Dur> const &r, const char * = nullptr);
 
+    // containers
+   
     template <typename T>
     inline typename std::enable_if<
     (!std::is_pointer<T>::value) && (
