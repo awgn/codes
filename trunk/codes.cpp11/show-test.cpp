@@ -14,7 +14,7 @@
 #include <list>
 #include <map>
 #include <iostream>
-
+#include <memory>
 
 namespace example
 {
@@ -50,7 +50,6 @@ main(int, char *[])
     std::cout << show("hello world") << std::endl; 
     std::cout << show(std::string("hello world")) << std::endl; 
 
-    std::cout << show((void *)0xdeadbeef) << std::endl; 
 
     auto p = std::make_pair("hello world", 42);
 
@@ -120,6 +119,15 @@ main(int, char *[])
     
     value = 01234;
     std::cout << show(oct(value)) << std::endl;
+    
+    
+    std::cout << "\n--- pointers:\n\n";
+
+    // pointers:
+
+    std::cout << show((void *)0xdeadbeef) << std::endl; 
+    std::cout << show( std::unique_ptr<int>(new int(0)) ) << std::endl;
+    std::cout << show( std::shared_ptr<int>(new int(42)) ) << std::endl;
 
     return 0;
 }

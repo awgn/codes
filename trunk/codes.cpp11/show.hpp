@@ -86,9 +86,16 @@ inline namespace more_show {
     show(_oct<T> const &value, const char * = nullptr);
     
     template <typename T>
-    inline  
-    typename std::enable_if<std::is_pointer<T>::value, std::string>::type 
-    show(T const &p, const char * = nullptr);
+    inline std::string 
+    show(T const *p, const char * = nullptr);
+
+    template <typename T>
+    inline std::string 
+    show(std::unique_ptr<T> const &, const char * = nullptr);
+    
+    template <typename T>
+    inline std::string 
+    show(std::shared_ptr<T> const &, const char * = nullptr);
 
     template <typename U, typename V>
     inline std::string
@@ -253,11 +260,35 @@ inline namespace more_show {
     // show for pointers *
 
     template <typename T> 
-    inline typename std::enable_if<std::is_pointer<T>::value, std::string>::type
-    show(T const &p, const char * n)
+    inline std::string
+    show(T const *p, const char * n)
     {
         std::ostringstream out;
-        out << static_cast<void *>(p);
+        out << static_cast<const void *>(p);
+        return show_helper::header<T>(n) + out.str();
+    }
+    
+    ///////////////////////////////////////
+    // show for unique_ptr
+
+    template <typename T> 
+    inline std::string
+    show(std::unique_ptr<T> const &p, const char * n)
+    {
+        std::ostringstream out;
+        out << static_cast<const void *>(p.get()) << "_up";
+        return show_helper::header<T>(n) + out.str();
+    }
+
+    ///////////////////////////////////////
+    // show for shared_ptr
+
+    template <typename T> 
+    inline std::string
+    show(std::shared_ptr<T> const &p, const char * n)
+    {
+        std::ostringstream out;
+        out << static_cast<const void *>(p.get()) << "_sp" << p.use_count();
         return show_helper::header<T>(n) + out.str();
     }
 
