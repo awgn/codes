@@ -113,10 +113,6 @@ inline namespace more_show {
     
     template <typename T, std::size_t N>
     inline std::string
-    show(const T(&)[N], const char * = nullptr);
-
-    template <typename T, std::size_t N>
-    inline std::string
     show(std::array<T,N> const &a, const char * = nullptr);
 
     // tuple<>
@@ -326,18 +322,6 @@ inline namespace more_show {
 
     ///////////////////////////
     // show for array...
-
-    template <typename T, std::size_t N>
-    inline std::string
-    show(const T(&vec)[N], const char * n) 
-    {
-        std::string out("[ ");
-        for(auto const &v : vec)
-        {
-            out = std::move(out) + show(v) + ' ';
-        }
-        return show_helper::header<T[N]>(n) + out + ']';
-    }
 
     template <typename T, std::size_t N>
     inline std::string
