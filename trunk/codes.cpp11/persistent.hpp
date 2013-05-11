@@ -35,7 +35,7 @@ namespace more {
             }
             else
             {
-                stream_->read(reinterpret_cast<char *>(&value_), sizeof(Tp));
+                stream_->read(reinterpret_cast<char *>(&value_), static_cast<std::streamsize>(sizeof(Tp)));
                 if (!*stream_)
                     throw std::runtime_error("persistent::persistent");
             }
@@ -103,7 +103,7 @@ namespace more {
         void store_()
         {
             stream_->seekg(0);
-            stream_->write(reinterpret_cast<const char *>(&value_), sizeof(Tp));
+            stream_->write(reinterpret_cast<const char *>(&value_), static_cast<std::streamsize>(sizeof(Tp)));
             if (!*stream_)
                 throw std::runtime_error("persistent::store");
         }
