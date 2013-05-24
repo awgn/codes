@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <stdexcept>
 #include <memory>
+#include <atomic>
 
 namespace more {
 
@@ -24,6 +25,7 @@ namespace more {
 
         persistent(const char *name)
         : stream_(new std::fstream(name, std::ios::in|std::ios::out|std::ios::binary))
+        , value_ (new std::atomic<Tp>())
         {
             if (!*stream_)
             {
@@ -35,9 +37,11 @@ namespace more {
             }
             else
             {
-                stream_->read(reinterpret_cast<char *>(&value_), static_cast<std::streamsize>(sizeof(Tp)));
+                Tp value;
+                stream_->read(reinterpret_cast<char *>(&value), static_cast<std::streamsize>(sizeof(Tp)));
                 if (!*stream_)
                     throw std::runtime_error("persistent::persistent");
+                value_->store(value);
             }
         }
 
@@ -47,7 +51,7 @@ namespace more {
 
         persistent(const char *name, Tp const &value)
         : stream_(name, std::ios::trunc|std::ios::out|std::ios::binary) 
-        , value_(value)
+        , value_(new std::atomic<Tp>(value))
         {
             store_();
         }
@@ -58,7 +62,6 @@ namespace more {
 
         persistent(const persistent &) = delete;
         persistent& operator=(const persistent &) = delete;
-
 
         persistent(persistent &&other)
         : stream_(std::move(other.stream_))
@@ -76,16 +79,18 @@ namespace more {
             return *this;
         }
 
-        const Tp &
+        Tp 
         get() const
         {
-            return value_;
+            return value_->load();
         }
 
         template <typename F>
         void update(F fun)
         {
-            fun(value_);
+            auto value = value_->load();
+            fun(value);
+            value_->store(value);
             store_();
         }
     
@@ -95,7 +100,7 @@ namespace more {
         void value_initialize_(const char *name)
         {
             stream_->open(name, std::ios::trunc|std::ios::out|std::ios::binary);
-            value_ = Tp();
+            value_->store(Tp());
             store_();
             stream_->close();
         }
@@ -103,14 +108,15 @@ namespace more {
         void store_()
         {
             stream_->seekg(0);
-            stream_->write(reinterpret_cast<const char *>(&value_), static_cast<std::streamsize>(sizeof(Tp)));
+            auto value = value_->load();
+            stream_->write(reinterpret_cast<const char *>(&value), static_cast<std::streamsize>(sizeof(Tp)));
             if (!*stream_)
                 throw std::runtime_error("persistent::store");
         }
 
         std::unique_ptr<std::fstream> stream_;
 
-        mutable Tp value_;
+        mutable std::unique_ptr<std::atomic<Tp>> value_;
     };
 
 
