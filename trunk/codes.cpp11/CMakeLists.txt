@@ -15,7 +15,7 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 include_directories(.)
 
 add_definitions(-D_GLIBCXX_USE_NANOSLEEP -D_GLIBCXX_USE_SCHED_YIELD)
-list(APPEND CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra")
+list(APPEND CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -pedantic -Wsign-conversion")
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
@@ -24,7 +24,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         add_executable(colorful-test colorful-test.cpp)
         add_executable(currying-test currying-test.cpp)
         add_executable(cpu-cycles-test cpu-cycles-test.cpp)
-        add_executable(cpufreq-test cpufreq-test.cpp)
+        #add_executable(cpufreq-test cpufreq-test.cpp)
         add_executable(cxa_demangle-test cxa_demangle-test.cpp)
         add_executable(double_checked_sinlegon-test double_checked_sinlegon-test.cpp)
         add_executable(entangled_ptr-test entangled_ptr-test.cpp)
@@ -74,7 +74,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         add_executable(variant_mutex-test variant_mutex-test.cpp)
        
 
-target_link_libraries(cpufreq-test -lcpufreq)
+        #target_link_libraries(cpufreq-test -lcpufreq)
 target_link_libraries(pcap-test -lpcap)
 target_link_libraries(pcap-test-header -lpcap)
 #target_link_libraries(spinlock-test -pthread)
