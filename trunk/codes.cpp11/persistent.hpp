@@ -89,7 +89,7 @@ namespace more {
         Tp update(F fun)
         {
             auto value = value_->load();
-            fun(value);
+            value = fun(value);
             value_->store(value);
             store_();
             return value;
