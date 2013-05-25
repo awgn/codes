@@ -50,7 +50,7 @@ namespace more {
         {}
 
         persistent(const char *name, Tp const &value)
-        : stream_(name, std::ios::trunc|std::ios::out|std::ios::binary) 
+        : stream_(new std::fstream(name, std::ios::trunc|std::ios::out|std::ios::binary)) 
         , value_(new std::atomic<Tp>(value))
         {
             store_();
