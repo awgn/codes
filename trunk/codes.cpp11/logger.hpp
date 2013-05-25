@@ -449,10 +449,10 @@ namespace more
     //
 
     template <typename ...Ts>
-    inline lazy_stream<Ts..., const manip_t &>
-    operator<<(lazy_stream<Ts...> const &l, manip_t const &m)
+    inline lazy_stream<Ts..., manip_t &>
+    operator<<(lazy_stream<Ts...> const &l, manip_t & m)
     {
-        return lazy_stream<Ts..., const manip_t &>(l, m);
+        return lazy_stream<Ts..., manip_t &>(l, m);
     }
 
     template <typename ...Ts, typename T>
@@ -465,8 +465,8 @@ namespace more
     // more::logger << data
     //
 
-    inline lazy_stream<const manip_t &>
-    operator<<(logger &l, manip_t const &m)
+    inline lazy_stream<manip_t &>
+    operator<<(logger &l, manip_t &m)
     {
         return lazy_stream<>(l) << m;
     }
