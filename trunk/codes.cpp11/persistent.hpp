@@ -86,12 +86,13 @@ namespace more {
         }
 
         template <typename F>
-        void update(F fun)
+        Tp update(F fun)
         {
             auto value = value_->load();
             fun(value);
             value_->store(value);
             store_();
+            return value;
         }
     
 
