@@ -23,19 +23,19 @@ main(int argc, char *argv[])
 
     for(;;)
     {
-        // signal_handler::get()...
+        // use signal_handler::get()...
         //
         
         auto sig = more::signal_handler::get();
                                          
         if (sig) {
-            std::cout << "signal " << *sig << " pending..." << std::endl;
+            std::cout << "signal " << sig << " pending..." << std::endl;
         }
         else  {
             std::cout << "no signal pending..." << std::endl;
         }
 
-        // signal_handler::may_throw()... (a unix_signal exception)
+        // or signal_handler::may_throw()... (a unix_signal exception)
         // 
         try 
         {

@@ -167,12 +167,10 @@ namespace more {
             }
         }
 
-        static std::unique_ptr<int>
+        static int
         get()
         {
-            auto sig = instance().sig_.exchange(0);
-            return sig ? std::unique_ptr<int>(new int(sig)) :
-                         std::unique_ptr<int>();
+            return instance().sig_.exchange(0);
         }
     };
 
