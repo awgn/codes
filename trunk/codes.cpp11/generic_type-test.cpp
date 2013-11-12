@@ -13,7 +13,7 @@
 
 #include "generic_type.hpp"
 
-GENERIC_TYPE ( Test, 
+GENERIC_TYPE ( Test, (Single),
                      (Simple, int),
                      (Pair,   int, std::string)
              )
@@ -28,15 +28,19 @@ main(int argc, char *argv[])
 
     switch(x.type())
     {
+    case Test::Single:
+        {
+            std::cout << "-> Single"  << std::endl;
+        }
     case Test::Simple:
         {
-            auto &x = x.arg_as<int>();
-            std::cout << "Simple argument: " << std::get<0>(x) << std::endl;
+            auto & xs = x.arg_as<int>();
+            std::cout << "-> Simple argument: " << std::get<0>(xs) << std::endl;
         } break;
     case Test::Pair:
         {
             auto &xs = x.arg_as<int, std::string>();
-            std::cout << "Pair arguments: " << std::get<0>(xs) << ", " << std::get<1>(xs) << std::endl;
+            std::cout << "-> Pair arguments: " << std::get<0>(xs) << ", " << std::get<1>(xs) << std::endl;
         } break;
     case Test::unknown:
         throw std::runtime_error("Unknown");
