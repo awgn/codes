@@ -21,30 +21,44 @@ GENERIC_TYPE ( Test, (Single),
 int
 main(int argc, char *argv[])
 {
-    Test x;
+    Test x[2];
 
-    std::cin  >> x;
-    std::cout << x << std::endl;
+    std::cin  >> x[0] >> x[1];
+    std::cout << x[0] << ' ' << x[1] << std::endl;
 
-    switch(x.type())
+    for(auto i = 0; i < 2; ++i)
     {
-    case Test::Single:
+        switch(x[i].type())
         {
-            std::cout << "-> Single"  << std::endl;
+        case Test::Single:
+            {
+                std::cout << "-> Single"  << std::endl;
+
+            } break;
+        case Test::Simple:
+            {
+                auto & xs = x[i].data_as<int>();
+                std::cout << "-> Simple " << std::get<0>(xs) << std::endl;
+
+            } break;
+        case Test::Pair:
+            {
+                auto &xs = x[i].data_as<int, std::string>();
+                std::cout << "-> Pair " << std::get<0>(xs) << ", " << std::get<1>(xs) << std::endl;
+
+            } break;
+        case Test::unknown:
+            {
+                throw std::runtime_error("Unknown");
+            } break;
         }
-    case Test::Simple:
-        {
-            auto & xs = x.arg_as<int>();
-            std::cout << "-> Simple argument: " << std::get<0>(xs) << std::endl;
-        } break;
-    case Test::Pair:
-        {
-            auto &xs = x.arg_as<int, std::string>();
-            std::cout << "-> Pair arguments: " << std::get<0>(xs) << ", " << std::get<1>(xs) << std::endl;
-        } break;
-    case Test::unknown:
-        throw std::runtime_error("Unknown");
-        break;
+    }
+
+    Test const &y = x[0];
+    if (y.type() == Test::Simple)
+    {
+        auto & xs = y.data_as<int>();
+        std::cout << "-> const Simple " << std::get<0>(xs) << std::endl;
     }
 
     return 0;
