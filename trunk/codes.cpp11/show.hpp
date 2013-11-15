@@ -190,7 +190,7 @@ inline namespace more_show {
 
     
     ///////////////////////////////////////
-    // with header:
+    // show with additional header/type:
     //
 
     template <typename Tp>
@@ -200,7 +200,7 @@ inline namespace more_show {
         auto hdr = n == nullptr ? "" :
                    n[0] == '\0' ? details::demangle(typeid(Tp).name()) : n;
         
-        return std::move(hdr) + ' ' + ::show(std::forward<Tp>(type));
+        return std::move(hdr) + ' ' + show(std::forward<Tp>(type));
     }
 
     ///////////////////////////////////////

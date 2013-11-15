@@ -26,7 +26,7 @@ namespace example
     using ::show;
     
     inline std::string
-    show(const test &t, const char * = nullptr)
+    show(const test &t)
     {
         return "test " + show(t.value);    
     }
@@ -109,6 +109,7 @@ main(int, char *[])
     
     std::cout << show(c_array, "C_array") << std::endl;
     std::cout << show(42, "Integer:") << std::endl;
+    std::cout << show(example::test{"abc"}, "Custom:" ) << std::endl;
     
     std::cout << "\n--- with hex format:\n\n";
 
