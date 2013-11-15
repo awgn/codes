@@ -33,7 +33,6 @@ namespace example
 }
 
 
-
 int 
 main(int, char *[])
 {
@@ -118,7 +117,10 @@ main(int, char *[])
     std::cout << show(value) << std::endl;
     std::cout << show(hex(value)) << std::endl;
     
+    std::cout << "\n--- with oct format:\n\n";
+    
     value = 01234;
+    std::cout << show(value) << std::endl;
     std::cout << show(oct(value)) << std::endl;
     
     
@@ -129,7 +131,6 @@ main(int, char *[])
     std::cout << show((void *)0xdeadbeef) << std::endl; 
     std::cout << show( std::unique_ptr<int>(new int(0)) ) << std::endl;
     std::cout << show( std::shared_ptr<int>(new int(42)) ) << std::endl;
-
 
     return 0;
 }
