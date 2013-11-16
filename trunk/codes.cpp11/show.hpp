@@ -341,9 +341,9 @@ inline namespace more_show {
     inline std::string
     show(std::tuple<Ts...> const &t)
     {
-        std::string out("{ ");
+        std::string out("( ");
         details::show_on<std::tuple<Ts...>, sizeof...(Ts)>::apply(out,t);
-        return std::move(out) + '}';
+        return std::move(out) + ')';
     }                                              
 
     ////////////////////////////////////////////////////////
@@ -375,12 +375,12 @@ inline namespace more_show {
     std::string>::type 
     show(const T &v)
     {
-        std::string out("{ ");
+        std::string out("[ ");
         for(auto const & e : v)
         {
             out += show(e) + ' ';
         }
-        return std::move(out) + '}';
+        return std::move(out) + ']';
     }
 
 } // namespace more_show
