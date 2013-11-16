@@ -138,14 +138,10 @@ namespace generic {
     
     template <typename Tp>
     inline std::string
-    show(const base_type<Tp> &opt, const char * n = nullptr)
+    show(const base_type<Tp> &opt)
     {
-        std::string s;
-        if (n) {
-            s += std::string(n) + ' ';
-        }
         std::ostringstream ss; ss << opt;
-        return s + ss.str();
+        return ss.str();
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
