@@ -189,7 +189,23 @@ inline namespace more_read {
     //
     // specializations for specific types...
     //
-    
+
+    template <typename CharT, typename Traits>
+    bool 
+    read(tag<bool>, std::basic_istream<CharT,Traits>&in)
+    {
+        bool ret;
+        in >> std::noboolalpha;
+
+        if (!(in >> ret)) {
+            in.clear();
+            if (!(in >> std::boolalpha >> ret))
+                throw std::runtime_error(details::error<bool>("parse error"));
+        }
+        
+        return ret;
+    }
+
     // pair<T1,T2>:
     //
     

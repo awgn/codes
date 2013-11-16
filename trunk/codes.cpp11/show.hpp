@@ -67,6 +67,9 @@ inline namespace more_show {
     show(char c);
     
     inline std::string 
+    show(bool);
+
+    inline std::string 
     show(const char *v);
 
     inline std::string 
@@ -210,6 +213,15 @@ inline namespace more_show {
     show(char c)
     {
         return std::string(1, c);
+    }
+    
+    ///////////////////////////////////////
+    // show for bool 
+
+    inline std::string
+    show(bool v)
+    {
+        return v ? "true" : "false";
     }
     
     ///////////////////////////////////////
