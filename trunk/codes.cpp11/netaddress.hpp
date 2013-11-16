@@ -234,10 +234,9 @@ namespace net {
         }
 
         auto pos = addr.find('/');
-        auto it  = std::begin(addr);
 
-        it = pos == std::string::npos ? std::end(addr) :
-                                        std::next(it, pos);
+        auto it  = pos == std::string::npos ? std::end(addr) : 
+                                              std::next(std::begin(addr), pos);
 
         in_addr a, m; 
 
