@@ -81,7 +81,7 @@ Context(maybe_test)
 
     Test(copy_constructor_extra)
     {
-        Assert(q.just() == 0);
+        Assert(q.fromJust() == 0);
         Assert(q == Just(0));
         Assert(q != Just(1));
         Assert(q != Nothing);
@@ -147,11 +147,24 @@ Context(maybe_test)
         std::cout << std::endl;
     }
 
+    Test(fmap)
+    {
+        auto x = Just (41);
+
+        auto y = x.fmap([](int n) { return n+1; });
+
+        Maybe<int> q = Nothing;
+        auto z = q.fmap([](int n) { return n+1; });
+
+        std::cout << y << std::endl;
+        std::cout << z << std::endl;
+    }
 }
 
 int
 main(int argc, char *argv[])
 {
+
     return yats::run(argc, argv);
 }
 

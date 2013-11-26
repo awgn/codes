@@ -17,6 +17,8 @@
 
 #include <iostream>
 
+#include <cxxabi.h>
+
 namespace details 
 {
     struct Nothing {};
@@ -60,6 +62,17 @@ namespace details
         static bool less(const std::pair<Nothing,bool>, const std::pair<Nothing,bool>)
         { return false; }
     };
+        
+    inline std::string
+    demangle(const char * name)
+    {
+        int status;
+        std::unique_ptr<char, void(*)(void *)> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
+        if (status < 0) {
+            return std::string(1,'?');
+        }
+        return std::string(ret.get());
+    }
 }
 
 
@@ -88,8 +101,8 @@ public:
     template <typename T>
     bool operator==(const Maybe<T> &other) const
     {
-        return details::maybe_helper<Tp,T>::equal(std::make_pair(just(), state()), 
-                                                  std::make_pair(other.just(), other.state())); 
+        return details::maybe_helper<Tp,T>::equal(std::make_pair(unsafeJust(), isJust()), 
+                                                  std::make_pair(other.unsafeJust(), other.isJust())); 
     }
     template <typename T>
     bool operator!=(const Maybe<T> &other) const
@@ -100,8 +113,8 @@ public:
     template <typename T>
     bool operator<(const Maybe<T> &other) const
     {
-        return details::maybe_helper<Tp,T>::less(std::make_pair(just(), state()), 
-                                                  std::make_pair(other.just(), other.state())); 
+        return details::maybe_helper<Tp,T>::less(std::make_pair(unsafeJust(), isJust()), 
+                                                  std::make_pair(other.unsafeJust(), other.isJust())); 
     }             
     template <typename T>
     bool operator<=(const Maybe<T> &other) const
@@ -118,30 +131,60 @@ public:
     {
         return other < *this;
     }
-
-    explicit operator Tp()
-    {
-        if (!m_state)
-            throw std::runtime_error("Maybe<>: Nothing");
-        return m_value;
-    }
-
+    
     explicit operator bool() = delete;
 
-    Tp just() const
+    explicit operator Tp() 
+    {
+        return fromJust();
+    }
+
+    bool isJust() const
+    {
+        return m_state == true;
+    }
+
+    bool isNothing() const
+    {
+        return m_state == false;
+    }
+
+    Tp fromJust() const
     { 
+        if (!m_state)
+            throw std::runtime_error("Maybe<" + details::demangle(typeid(Tp).name()) + ">: Nothing");
         return m_value;
     }
 
-    bool state() const
+    Tp unsafeJust() const
     {
-        return m_state;
+        return m_state ? m_value : Tp();
     }
+    
+    template <typename Fn>
+    auto fmap(Fn fun) -> decltype(Maybe<decltype(fun(std::declval<Tp>()))>(fun(this->fromJust())));
 
 private:
     Tp   m_value;
     bool m_state;
 };
+
+
+namespace 
+{
+    Maybe<details::Nothing> Nothing = Maybe<details::Nothing>();
+}
+
+
+template <typename Fn,  typename Tp>
+inline
+Maybe<Tp> maybe(Tp b, Fn f, Maybe<Tp> const &a)
+{
+    if (a == Nothing)
+        return b;
+    else 
+        return Just(f(a.fromJust()));
+}
 
 
 template <typename Tp>
@@ -150,12 +193,17 @@ inline Maybe<typename std::remove_reference<Tp>::type> Just(Tp && value)
     return Maybe<typename std::remove_reference<Tp>::type
                     >(std::forward<Tp>(value));
 }
-
-namespace 
+    
+template <typename Tp>
+template <typename Fn>
+auto
+Maybe<Tp>::fmap(Fn fun) -> decltype(Maybe<decltype(fun(std::declval<Tp>()))>(fun(this->fromJust())))
 {
-    Maybe<details::Nothing> Nothing = Maybe<details::Nothing>();
+    if (isNothing())
+        return Nothing; 
+    else
+        return Just<decltype(fun(std::declval<Tp>()))>(fun(fromJust()));
 }
-
 
 template <typename CharT, typename Traits>
 typename std::basic_ostream<CharT, Traits> &
@@ -167,8 +215,7 @@ template <typename CharT, typename Traits, typename T>
 typename std::basic_ostream<CharT, Traits> &
 operator<<(std::basic_ostream<CharT,Traits> &out, const Maybe<T>& other)
 {
-      return (other.state() == false) ? 
-               (out << "Nothing") : (out << "Just " << other.just());
+      return (other.isNothing()) ?  (out << "Nothing") : (out << "Just " << other.fromJust());
 }
 
 template <typename CharT, typename Traits, typename T>
