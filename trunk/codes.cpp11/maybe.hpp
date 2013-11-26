@@ -27,8 +27,9 @@ namespace details
     struct maybe_helper
     {
         static bool equal(const std::pair<T1, bool>& lhs, const std::pair<T2, bool>& rhs)
-        { return (lhs.first == rhs.first && lhs.second && rhs.second) ||
-            (!lhs.second && !rhs.second);
+        { 
+            return (lhs.first == rhs.first && lhs.second && rhs.second) ||
+                   (!lhs.second && !rhs.second);
         }    
         static bool less(const std::pair<T1, bool>& lhs, const std::pair<T2, bool>& rhs)
         {
@@ -39,28 +40,40 @@ namespace details
     struct maybe_helper<T1, Nothing>
     {
         static bool equal(const std::pair<T1,bool> &lhs, std::pair<Nothing,bool>) 
-        { return !lhs.second; }
+        { 
+            return !lhs.second; 
+        }
         
         static bool less(const std::pair<T1,bool>, std::pair<Nothing,bool>) 
-        { return false; }
+        { 
+            return false; 
+        }
     };
     template <typename T2>
     struct maybe_helper<Nothing, T2>
     {
         static bool equal(std::pair<Nothing,bool>, const std::pair<T2,bool> &rhs)
-        { return !rhs.second; }
+        { 
+            return !rhs.second; 
+        }
         
         static bool less(std::pair<Nothing,bool>, const std::pair<T2,bool> &rhs)
-        { return rhs.second; }
+        { 
+            return rhs.second; 
+        }
     };
     template <>
     struct maybe_helper<Nothing, Nothing>
     {
         static bool equal(const std::pair<Nothing,bool>, const std::pair<Nothing,bool>)
-        { return true; }
+        { 
+            return true; 
+        }
 
         static bool less(const std::pair<Nothing,bool>, const std::pair<Nothing,bool>)
-        { return false; }
+        { 
+            return false; 
+        }
     };
         
     inline std::string
