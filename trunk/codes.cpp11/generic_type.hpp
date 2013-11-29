@@ -263,12 +263,12 @@ namespace generic {
     }; \
     \
     template <typename Tp> \
-    struct crtp_ctors \
+    struct T ## _ctors \
     {  \
        FOR_EACH(GENERIC_MAKE_CTOR, __VA_ARGS__) \
        \
     }; \
-    struct T : generic::base_type<T ## _type>, crtp_ctors<T> \
+    struct T : generic::base_type<T ## _type>, T ## _ctors<T> \
     { \
         enum type_ctor { unknown, FOR_EACH_COMMA(GENERIC_GET_CTOR,__VA_ARGS__) }; \
         \
