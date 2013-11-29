@@ -21,45 +21,53 @@ GENERIC_TYPE ( Test, (Single),
 int
 main(int argc, char *argv[])
 {
-    Test x[2];
+    Test x;
 
-    std::cin  >> x[0] >> x[1];
-    std::cout << x[0] << ' ' << x[1] << std::endl;
+    std::cout << "reading a Test object from stdin..." << std::endl;
 
-    for(auto i = 0; i < 2; ++i)
+    std::cin  >> x;
+    std::cout << x << std::endl;
+
+    switch(x.type())
     {
-        switch(x[i].type())
+    case Test::Single:
         {
-        case Test::Single:
-            {
-                std::cout << "-> Single"  << std::endl;
+            std::cout << "-> Single"  << std::endl;
 
-            } break;
-        case Test::Simple:
-            {
-                auto & xs = x[i].data_as<int>();
-                std::cout << "-> Simple " << std::get<0>(xs) << std::endl;
+        } break;
+    case Test::Simple:
+        {
+            auto & xs = x.data_as<int>();
+            std::cout << "-> Simple " << std::get<0>(xs) << std::endl;
 
-            } break;
-        case Test::Pair:
-            {
-                auto &xs = x[i].data_as<int, std::string>();
-                std::cout << "-> Pair " << std::get<0>(xs) << ", " << std::get<1>(xs) << std::endl;
+        } break;
+    case Test::Pair:
+        {
+            auto &xs = x.data_as<int, std::string>();
+            std::cout << "-> Pair " << std::get<0>(xs) << ", " << std::get<1>(xs) << std::endl;
 
-            } break;
-        case Test::unknown:
-            {
-                throw std::runtime_error("Unknown");
-            } break;
-        }
+        } break;
+    case Test::unknown:
+        {
+            throw std::runtime_error("Unknown");
+        } break;
     }
 
-    Test const &y = x[0];
+    Test const &y = x;
+
     if (y.type() == Test::Simple)
     {
         auto & xs = y.data_as<int>();
         std::cout << "-> const Simple " << std::get<0>(xs) << std::endl;
     }
+
+    auto a = Test::make_Single();
+    auto b = Test::make_Simple(10);
+    auto c = Test::make_Pair(10, std::string("hello"));
+
+    std::cout << "-> " << a << " " << a.type() << std::endl;
+    std::cout << "-> " << b << " " << b.type() << std::endl;
+    std::cout << "-> " << c << " " << c.type() << std::endl;
 
     return 0;
 }
