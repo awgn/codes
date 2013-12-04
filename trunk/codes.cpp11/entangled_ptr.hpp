@@ -41,7 +41,7 @@ namespace more {
                 m_ptr->m_remove_entangled_for(this);
         }
 
-        entangled_ptr(entangled_ptr &&rhs)
+        entangled_ptr(entangled_ptr &&rhs) noexcept
         : m_ptr(rhs.m_ptr)
         {
             rhs.m_ptr = nullptr;
@@ -178,7 +178,7 @@ namespace more {
             m_ref.erase(std::remove(m_ref.begin(), m_ref.end(), ptr), m_ref.end());
         }
 
-        void m_replace_entangled_for(entangled_ptr<Tp> *ptr_old, entangled_ptr<Tp> *ptr_new)
+        void m_replace_entangled_for(entangled_ptr<Tp> *ptr_old, entangled_ptr<Tp> *ptr_new) noexcept
         {                                                    
             std::replace(m_ref.begin(), m_ref.end(), ptr_old, ptr_new);
         }

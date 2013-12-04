@@ -31,14 +31,14 @@ namespace more {
     {
     public:
 
-        generic_socket(generic_socket&& rhs)
+        generic_socket(generic_socket&& rhs) noexcept
         : m_fd(rhs.m_fd)
         {
             rhs.m_fd = -1;
         }
 
         generic_socket &
-        operator=(generic_socket&& rhs)
+        operator=(generic_socket&& rhs) noexcept 
         {
             if (this != &rhs) 
             {
@@ -285,12 +285,12 @@ namespace more {
         : generic_socket<F>(type,protocol) 
         {}
 
-        socket(socket&& rhs)
+        socket(socket&& rhs) noexcept
         : generic_socket<F>(std::move(rhs))
         {}
 
         socket& 
-        operator=(socket&& rhs)
+        operator=(socket&& rhs) noexcept
         {
             generic_socket<F>::operator=(std::move(rhs));
             return *this;
@@ -320,12 +320,12 @@ namespace more {
             }
         }
 
-        socket(socket&& rhs)
+        socket(socket&& rhs) noexcept
         : generic_socket<PF_UNIX>(std::move(rhs))
         {}
 
         socket& 
-        operator=(socket&& rhs)
+        operator=(socket&& rhs) noexcept
         {
             generic_socket<PF_UNIX>::operator=(std::move(rhs));
             return *this;

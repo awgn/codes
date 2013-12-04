@@ -63,13 +63,13 @@ namespace more {
         persistent(const persistent &) = delete;
         persistent& operator=(const persistent &) = delete;
 
-        persistent(persistent &&other)
+        persistent(persistent &&other) noexcept
         : stream_(std::move(other.stream_))
         , value_(std::move(other.value_))
         {
         }
 
-        persistent& operator=(persistent &&other)
+        persistent& operator=(persistent &&other) noexcept
         {
             if (this != &other)
             {

@@ -256,13 +256,14 @@ namespace more { namespace pcap {
         }
 
     public:
-        pcap_base(pcap_base &&other)
-        : m_errbuf(), m_handle(std::move(other.m_handle))
+        pcap_base(pcap_base &&other) noexcept
+        : m_errbuf()
+        , m_handle(std::move(other.m_handle))
         {
             other.m_handle = nullptr;
         }
 
-        pcap_base& operator=(pcap_base &&other)
+        pcap_base& operator=(pcap_base &&other) noexcept
         {
             if (this != &other)
             {
@@ -627,15 +628,15 @@ namespace more { namespace pcap {
         // moveability...
         //
 
-        pcap_live(pcap_live &&other)
-        : pcap_base(std::move(other)),
-          m_device(std::move(other.m_device)),
-          m_snaplen(std::move(other.m_snaplen)),
-          m_promisc(std::move(other.m_promisc)),
-          m_to_ms(std::move(other.m_to_ms))
+        pcap_live(pcap_live &&other)   noexcept
+        : pcap_base(std::move(other))
+        , m_device(std::move(other.m_device))
+        , m_snaplen(std::move(other.m_snaplen))
+        , m_promisc(std::move(other.m_promisc))
+        , m_to_ms(std::move(other.m_to_ms))
         {}
 
-        pcap_live& operator=(pcap_live &&other)
+        pcap_live& operator=(pcap_live &&other) noexcept
         {
             if (this != &other)
             {
@@ -714,13 +715,13 @@ namespace more { namespace pcap {
         // moveability...
         //
 
-        pcap_dead(pcap_dead &&other)
-        : pcap_base(std::move(other)),
-          m_linktype(std::move(other.m_linktype)),
-          m_snaplen(std::move(other.m_snaplen))
+        pcap_dead(pcap_dead &&other)  noexcept
+        : pcap_base(std::move(other))
+        , m_linktype(std::move(other.m_linktype))
+        , m_snaplen(std::move(other.m_snaplen))
         {}
 
-        pcap_dead& operator=(pcap_dead &&other)
+        pcap_dead& operator=(pcap_dead &&other) noexcept
         {
             if (this != &other)
             {
@@ -772,12 +773,12 @@ namespace more { namespace pcap {
         // moveability...
         //
         
-        pcap_offline(pcap_offline &&other)
-        : pcap_base(std::move(other)),
-          m_device(std::move(other.m_device))
+        pcap_offline(pcap_offline &&other) noexcept
+        : pcap_base(std::move(other))
+        , m_device(std::move(other.m_device))
         {}
 
-        pcap_offline& operator=(pcap_offline &&other)
+        pcap_offline& operator=(pcap_offline &&other) noexcept
         {
             if (this != &other)
             {
