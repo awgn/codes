@@ -30,20 +30,20 @@ using namespace more;
 Context(currying_test)
 {
 
-void f0(int a, std::string b, char c, bool q)
-{
-    std::cout << std::boolalpha << a << ' ' << b << ' ' << c << ' ' << q << '!' << std::endl;
-}
+    void f0(int a, std::string b, char c, bool q)
+    {
+        std::cout << std::boolalpha << a << ' ' << b << ' ' << c << ' ' << q << '!' << std::endl;
+    }
 
-int negate(int a)
-{
-    return -a;
-}
+    int negate(int a)
+    {
+        return -a;
+    }
 
-int add(int a, int  b)
-{
-    return a+b;
-}
+    int add(int a, int  b)
+    {
+        return a+b;
+    }
     
     Test(basic_curry)
     {

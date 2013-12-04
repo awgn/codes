@@ -103,10 +103,10 @@ namespace more { namespace pcap {
         sockaddr dstaddr;    
  
         explicit address(pcap_addr_t *p)
-        : addr(p->addr),
-          netmask(p->netmask),
-          broadaddr(p->broadaddr),
-          dstaddr(p->dstaddr)
+        : addr(p->addr)
+        , netmask(p->netmask)
+        , broadaddr(p->broadaddr)
+        , dstaddr(p->dstaddr)
         {} 
    };
 
@@ -137,9 +137,9 @@ namespace more { namespace pcap {
         unsigned int flags;   
 
         explicit interface(pcap_if_t * i)
-        : name(i->name),
-          description(i->description ? i->description : ""),
-          flags(i->flags)
+        : name(i->name)
+        , description(i->description ? i->description : "")
+        , flags(i->flags)
         {
             for(pcap_addr_t * addr = i->addresses; addr; addr = addr->next) {
                 addresses.push_back(address(addr));
@@ -164,10 +164,10 @@ namespace more { namespace pcap {
     {
     public:
         bpf_prog(std::string str, bool optimize = true, bpf_u_int32 netmask = 0)
-        : m_prog(), 
-          m_str(std::move(str)),
-          m_opt(optimize),
-          m_netmask(netmask)
+        : m_prog()
+        , m_str(std::move(str))
+        , m_opt(optimize)
+        , m_netmask(netmask)
         {}
 
         bpf_prog(const bpf_prog &) = delete;
@@ -233,8 +233,8 @@ namespace more { namespace pcap {
         }
 
         pcap_base()
-        : m_errbuf(),
-          m_handle()
+        : m_errbuf()
+        , m_handle()
         {} 
 
         pcap_base(const pcap_base &) = delete;
@@ -609,11 +609,11 @@ namespace more { namespace pcap {
     {   
     public:     
         pcap_live(std::string dev, int snaplen, bool promisc, int to_ms)
-        : pcap_base(),
-          m_device(std::move(dev)),
-          m_snaplen(snaplen),
-          m_promisc(promisc),
-          m_to_ms(to_ms)
+        : pcap_base()
+        , m_device(std::move(dev))
+        , m_snaplen(snaplen)
+        , m_promisc(promisc)
+        , m_to_ms(to_ms)
         {
             this->clear_errbuf();
 
@@ -698,9 +698,9 @@ namespace more { namespace pcap {
     {   
     public:            
         pcap_dead(int linktype, int snaplen)
-        : pcap_base(),
-          m_linktype(linktype),
-          m_snaplen(snaplen)
+        : pcap_base()
+        , m_linktype(linktype)
+        , m_snaplen(snaplen)
         {
             this->clear_errbuf();
 
@@ -758,8 +758,8 @@ namespace more { namespace pcap {
     {   
     public:          
         explicit pcap_offline(std::string fname)        
-        : pcap_base(),
-          m_device(std::move(fname))
+        : pcap_base()
+        , m_device(std::move(fname))
         {
             clear_errbuf();
             m_handle = pcap_open_offline(m_device.c_str(), m_errbuf);
