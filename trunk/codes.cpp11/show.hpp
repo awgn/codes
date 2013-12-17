@@ -21,6 +21,7 @@
 #include <memory>
 #include <cstdint>
 #include <type_traits>
+#include <initializer_list>
 
 #include <iostream>
 #include <algorithm>
@@ -374,6 +375,18 @@ inline namespace more_show {
     show(std::chrono::time_point<Clock, Dur> const &r)
     {    
         return show(r.time_since_epoch());
+    }
+
+    template <typename T>
+    inline std::string
+    show(std::initializer_list<T> const &init)
+    {
+        std::string out("{ ");
+        for(auto const & e : init)
+        {
+            out += show(e) + ' ';
+        }
+        return std::move(out) + '}';
     }
 
     ///////////////////////////////////////

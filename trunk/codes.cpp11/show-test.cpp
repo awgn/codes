@@ -124,6 +124,9 @@ main(int, char *[])
     std::cout << show(value) << std::endl;
     std::cout << show(oct(value)) << std::endl;
     
+    std::cout << "\n--- initializer_list:\n\n";
+
+    std::cout << show ({1,2,3}) << std::endl;
     
     std::cout << "\n--- pointers:\n\n";
 
