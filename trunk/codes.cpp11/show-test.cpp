@@ -23,13 +23,19 @@ namespace example
         std::string value;
     };
 
-    using ::show;
-    
-    inline std::string
-    show(const test &t)
+    MAKE_SHOW(test, value);
+
+
+    template <typename T>
+    struct template_test
     {
-        return "test " + show(t.value);    
-    }
+        int a;
+        T   b;
+    };
+
+    template <typename T>
+    MAKE_SHOW(template_test<T>, a, b);
+
 }
 
 
@@ -95,6 +101,7 @@ main(int, char *[])
     std::cout << show(std::chrono::system_clock::now()) << std::endl;
     std::cout << show(std::chrono::milliseconds(10)) << std::endl;
     std::cout << show(example::test{"abc"}) << std::endl;
+    std::cout << show(example::template_test<std::string>{42, "test"}) << std::endl;
 
     int c_array[3] = {1,2,3};
     

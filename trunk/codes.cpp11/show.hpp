@@ -8,10 +8,11 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef MORE_SHOW
-#define MORE_SHOW
+#ifndef __MORE_SHOW__
+#define __MORE_SHOW__
 
 #include <type_traits.hpp>  // more!
+#include <macro.hpp>        // more!
 
 #include <ios>
 #include <iomanip>
@@ -31,6 +32,18 @@
 
 #include <cxxabi.h>
 
+
+#define MAKE_SHOW_PAIR(a, b) std::make_pair(std::string(#b), &a::b)            
+
+#define MAKE_GENERIC_SHOW(type, ...) make_generic_show<type>(FOR2_EACH_COMMA(MAKE_SHOW_PAIR, type, __VA_ARGS__))
+
+#define MAKE_SHOW(type, ...) \
+inline std::string \
+show(type const &t) \
+{ \
+    static auto _show = MAKE_GENERIC_SHOW(type, __VA_ARGS__); \
+    return _show(t); \
+}
 
 inline namespace more_show {
 
@@ -72,7 +85,6 @@ inline namespace more_show {
     {
         return _bin<T>{value};
     }
-
 
     // forward declarations:
     //
@@ -195,6 +207,31 @@ inline namespace more_show {
         {
             static inline
             void apply(std::string&, const T &)
+            {}
+        };
+
+        // generic_show_on...
+        //
+        
+        template <typename T, typename Tp, int N>
+        struct generic_show_on
+        {
+            static inline
+            void apply(std::string &out, const T &tupl, const Tp &value)
+            {
+                auto p = std::get< std::tuple_size<T>::value - N>(tupl);
+
+                out += p.first + " = " +  show (value.*p.second);
+                if (N > 1) 
+                    out += ", ";
+                generic_show_on<T, Tp, N-1>::apply(out,tupl, value);
+            }
+        }; 
+        template <typename T, typename Tp>
+        struct generic_show_on<T, Tp, 0>
+        {
+            static inline
+            void apply(std::string&, const T &, const Tp &)
             {}
         };
 
@@ -452,8 +489,40 @@ inline namespace more_show {
         }
         return std::move(out) + ']';
     }
+    
+    //////////////////////////////////////////
+    // generic_show for user defined types...
+    
+    template <typename Tp, typename ...Ps>
+    struct generic_show
+    {
+        template <typename ...Ts>
+        generic_show(Ts && ...args)
+        : data_(std::forward<Ts>(args)...)
+        {}
+
+        std::string
+        operator()(Tp const &value)
+        {
+            auto out = details::demangle(typeid(Tp).name()) + "{";
+        
+            details::generic_show_on<std::tuple<Ps...>, Tp, sizeof...(Ps)>::apply(out, data_, value); 
+
+            return out + "}"; 
+        }
+
+        std::tuple<Ps...> data_;
+    };
+    
+    template <typename Tp, typename ...Ts>
+    generic_show<Tp, Ts...>
+    make_generic_show(Ts && ... args)
+    {
+        return generic_show<Tp, Ts...>(std::forward<Ts>(args)...);
+    }
+
 
 } // namespace more_show
 
 
-#endif /* SHOW_HPP */
+#endif /* __MORE_SHOW__ */
