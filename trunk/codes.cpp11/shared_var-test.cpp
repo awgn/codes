@@ -20,16 +20,32 @@ main(int argc, char *argv[])
     
     auto done = std::async(std::launch::async, [&]() 
     {
-        for(int i = 0; i < 16; i++)
+        auto ptr = n.get();
+
+        for(int i = 1; i <= 15; i++)
         {
-            n.put(i);                       
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            auto np = n.safe_put(ptr, i);
+            if (np.first)
+            {
+                ptr = np.second;                       
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+            else
+            {
+                throw std::runtime_error("internal error");
+            }
         }
     });
 
-    while (done.wait_for(std::chrono::milliseconds(1)) != std::future_status::ready)
+    auto p = n.get();
+    while (done.wait_for(std::chrono::microseconds(500)) != std::future_status::ready)
     {
-        std::cout << n.get() << std::endl;
+        auto q = n.get();
+        if (q != p)
+        {
+            p = q;
+            std::cout << *q << std::endl;
+        }
     }
 
     return 0;
