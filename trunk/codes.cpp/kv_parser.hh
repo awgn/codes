@@ -196,7 +196,7 @@ namespace more { namespace kv {
          template <typename K, int n>
          typename std::tr1::add_reference<typename more::TM::get<K, T>::type>::type
          __get(int2type<n>) 
-         { return m_map.__get<K>(int2type<n-1>()); }
+         { return m_map.template __get<K>(int2type<n-1>()); }
 
          template <typename K>
          typename std::tr1::add_reference<value_type>::type

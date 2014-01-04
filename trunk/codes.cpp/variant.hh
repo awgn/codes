@@ -279,12 +279,12 @@ namespace more {
         {
             switch(rhs.m_type) 
             {
-                case 0: this->store( rhs.get<T0>() ); break;
-                case 1: this->store( rhs.get<T1>() ); break;
-                case 2: this->store( rhs.get<T2>() ); break;
-                case 3: this->store( rhs.get<T3>() ); break;
-                case 4: this->store( rhs.get<T4>() ); break;
-                case 5: this->store( rhs.get<T5>() ); break;
+                case 0: this->store( rhs.template get<T0>() ); break;
+                case 1: this->store( rhs.template get<T1>() ); break;
+                case 2: this->store( rhs.template get<T2>() ); break;
+                case 3: this->store( rhs.template get<T3>() ); break;
+                case 4: this->store( rhs.template get<T4>() ); break;
+                case 5: this->store( rhs.template get<T5>() ); break;
             }
 
             m_type = rhs.m_type;
