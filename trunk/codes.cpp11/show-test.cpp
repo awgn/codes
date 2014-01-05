@@ -29,8 +29,18 @@ namespace example
     template <typename T, typename V>
     struct template_test
     {
+        template_test(T _a, V _b)
+        : a(_a)
+        , b_(_b)
+        {}
+
         T a;
-        V b;
+        V b() const
+        {
+            return b_;
+        }
+    private:
+        V b_;
     };
 
     template <typename T, typename V>

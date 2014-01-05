@@ -221,7 +221,7 @@ inline namespace more_show {
             {
                 auto p = std::get< std::tuple_size<T>::value - N>(tupl);
 
-                out += p.first + " = " +  show (value.*p.second);
+                out += p.first + " = " +  show (std::bind(p.second, value)());
                 if (N > 1) 
                     out += ", ";
                 generic_show_on<T, Tp, N-1>::apply(out,tupl, value);
