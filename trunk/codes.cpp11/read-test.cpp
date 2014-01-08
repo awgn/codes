@@ -10,7 +10,9 @@ main(int argc, char *argv[])
 {
     auto a = read<int>("10");
 
-    auto b = read<std::pair<int,std::string>>("( 10 10)");
+    auto b  = read<std::pair<int,std::string>>("( 10 10)");
+    auto b2 = read<std::pair<int,std::string>>("( 10 10)");
+    auto b3 = read<std::pair<int,std::string>>("( 10 10)");
 
     auto c = read<std::array<int, 3>>("[1 2 3]");
 
@@ -41,6 +43,7 @@ main(int argc, char *argv[])
     std::cout << show(i) << std::endl;
 
     std::cout << show(j) << std::endl;
+
     return 0;
 }
 
