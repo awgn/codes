@@ -285,7 +285,10 @@ inline namespace more_show {
     inline std::string
     show(const char *v)
     {
-        return '"' + std::string(v) + '"';
+        if (v != nullptr)
+            return '"' + std::string(v) + '"';
+        else
+            return "\"nullptr\"";
     }
 
     ///////////////////////////////////////
