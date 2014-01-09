@@ -303,7 +303,7 @@ inline namespace more_read {
         std::array<T, N> ret;
 
         if (!details::consume('[', in))
-            throw std::runtime_error(details::error<std::array<T,3>>("parse error"));
+            throw std::runtime_error(details::error<std::array<T,N>>("parse error"));
 
         for(auto & e : ret)
         {
@@ -311,7 +311,7 @@ inline namespace more_read {
         }
 
         if (!details::consume(']', in))
-            throw std::runtime_error(details::error<std::array<T,3>>("parse error"));
+            throw std::runtime_error(details::error<std::array<T,N>>("parse error"));
 
         return ret;
     }
@@ -334,19 +334,19 @@ inline namespace more_read {
             return std::chrono::duration_cast<Duration>(std::chrono::nanoseconds(value));
 
         if (unit.compare("us") == 0)
-            return std::chrono::microseconds(value);
+            return std::chrono::duration_cast<Duration>(std::chrono::microseconds(value));
         
         if (unit.compare("ms") == 0)
-            return std::chrono::milliseconds(value);
+            return std::chrono::duration_cast<Duration>(std::chrono::milliseconds(value));
 
         if (unit.compare("s") == 0)
-            return std::chrono::seconds(value);
+            return std::chrono::duration_cast<Duration>(std::chrono::seconds(value));
         
         if (unit.compare("m") == 0)
-            return std::chrono::minutes(value);
+            return std::chrono::duration_cast<Duration>(std::chrono::minutes(value));
 
         if (unit.compare("h") == 0)
-            return std::chrono::hours(value);
+            return std::chrono::duration_cast<Duration>(std::chrono::hours(value));
 
         throw std::runtime_error(details::error<std::chrono::duration<Rep, Period>>("parse error"));
     }
