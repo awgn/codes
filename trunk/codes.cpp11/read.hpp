@@ -526,10 +526,23 @@ inline namespace more_read {
             return false;
         }
     }
+
+    template <typename T, typename CharT, typename Traits>
     inline 
     T read(std::basic_istream<CharT,Traits>&in)
     {
-        return read(read_tag<typename details::decay<T>::type>(), in);
+        auto pos = in.tellg();
+        try
+        {
+            return read(read_tag<typename details::decay<T>::type>(), in);
+        }
+        catch(...)
+        {
+            in.clear();
+            if (!in.seekg(pos))
+                std::runtime_error("try_read: seekg");
+            throw;
+        }
     }
 
     template <typename T>
