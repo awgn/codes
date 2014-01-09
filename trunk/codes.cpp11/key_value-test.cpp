@@ -37,7 +37,7 @@ namespace key
 
 using namespace more::key_value;
 
-typedef parser<
+typedef document<
 
     options<true, '#', '='>,
 
@@ -47,7 +47,7 @@ typedef parser<
    > int_pair;
 
 
-typedef parser<
+typedef document<
 
     options<false, '#', '='>,
 
@@ -67,19 +67,19 @@ typedef parser<
     pair<key::block,        std::vector<int_pair>>,
     pair<key::v_int_string, more::variant<int, std::string>>
 
-    > this_parser;
+    > this_document;
 
 
 template <typename K, typename Par>
-void show_value(Par const &par)
+void show_value(Par const &doc)
     {
-        std::cout << "-> " << K::str() << " = " << show (par.template get<K>()) << std::endl;
+        std::cout << "-> " << K::str() << " = " << show (doc.template get<K>()) << std::endl;
     }
 
 template <typename K, typename Par>
-void show_pointer(Par const &par)
+void show_pointer(Par const &doc)
     {
-        auto &p = par.template get<K>();
+        auto &p = doc.template get<K>();
 
         std::cout << "-> " << K::str() << " = ";
         if (p)
@@ -91,29 +91,29 @@ void show_pointer(Par const &par)
 int
 main(int argc, char *argv[])
 {
-    this_parser par;
+    this_document doc;
 
-    if (!parse("key_value_test.txt", par))
+    if (!parse("key_value_test.txt", doc))
         exit(1);
 
-    show_value<key::unsigned_int>(par);
-    show_value<key::integers>(par);
-    show_value<key::booleans>(par);
-    show_value<key::strings>(par);
-    show_value<key::simple_pair>(par);
-    show_value<key::simple_tuple>(par);
-    show_value<key::associative>(par);
-    show_value<key::intset>(par);
-    show_value<key::lit_string>(par);
-    show_value<key::int_matrix>(par);
+    show_value<key::unsigned_int>(doc);
+    show_value<key::integers>(doc);
+    show_value<key::booleans>(doc);
+    show_value<key::strings>(doc);
+    show_value<key::simple_pair>(doc);
+    show_value<key::simple_tuple>(doc);
+    show_value<key::associative>(doc);
+    show_value<key::intset>(doc);
+    show_value<key::lit_string>(doc);
+    show_value<key::int_matrix>(doc);
 
-    show_value<key::v_int_string>(par);
+    show_value<key::v_int_string>(doc);
 
-    show_value<key::block>(par);
+    show_value<key::block>(doc);
 
-    show_pointer<key::ptr_int>(par);
-    show_pointer<key::shared_int>(par);
-    show_pointer<key::unique_int>(par);
+    show_pointer<key::ptr_int>(doc);
+    show_pointer<key::shared_int>(doc);
+    show_pointer<key::unique_int>(doc);
 
     return 0;
 }
