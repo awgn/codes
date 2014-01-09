@@ -74,16 +74,14 @@ namespace more {
         template <template <typename> class F>
         struct max<F>
         {
-            static constexpr size_t head  = 0;
-            static constexpr size_t tail  = 0;
             static constexpr size_t value = 0;
         };
         template <template <typename> class F, typename T, typename ...Ts>
         struct max<F, T, Ts...>
         {
-            static constexpr size_t head  = F<T>::value;
-            static constexpr size_t tail  = max<F, Ts...>::value;
-            static constexpr size_t value = head > tail ? head : tail;
+            static constexpr size_t _head  = F<T>::value;
+            static constexpr size_t _tail  = max<F, Ts...>::value;
+            static constexpr size_t value = _head > _tail ? _head : _tail;
         };
 
         ///////////////////////////////////////////// type index 
