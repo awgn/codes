@@ -50,6 +50,12 @@ namespace more {
         {
             typedef typename F<T>::type type;
         };
+        
+        template <template <typename> class F>
+        struct for_each<F>
+        {
+            typedef void type;
+        };
 
         ///////////////////////////////////////////// max - sizeof
          
