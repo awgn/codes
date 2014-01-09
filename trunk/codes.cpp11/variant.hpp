@@ -51,13 +51,11 @@ namespace more {
         {
             typedef typename F<T>::type type;
         };
-        
         template <template <typename> class F, typename T, typename ...Ts>
         struct for_each<F, T, Ts...> : for_each <F, Ts...>
         {
             typedef typename F<T>::type type;
         };
-        
         template <template <typename> class F>
         struct for_each<F>
         {
@@ -190,9 +188,6 @@ namespace more {
             {
                 if (n == var1.which() && n == var2.which()) 
                 {
-                    // std::cout << T(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>())) << " " 
-                    //           << T(move_if<std::is_rvalue_reference<V2 &&>::value>(var2.template get<T>())) << std::endl;
-
                     return fun(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>()), 
                                move_if<std::is_rvalue_reference<V2 &&>::value>(var2.template get<T>()));
                 }
@@ -220,9 +215,6 @@ namespace more {
             {
                 if (n == var1.which() && n == var2.which()) 
                 {           
-                    // std::cout << T(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>())) << " " 
-                    //           << T(move_if<std::is_rvalue_reference<V2 &&>::value>(var2.template get<T>())) << std::endl;
-                    
                     return fun(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>()), 
                                move_if<std::is_rvalue_reference<V2 &&>::value>(var2.template get<T>()));
                 }
