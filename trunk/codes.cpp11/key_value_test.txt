@@ -2,45 +2,59 @@
 # key_value file example
 #
 
+
 unsigned_int = 42
  
-associative = [ goofy ->  1  
-                mickey  -> 2  
-                (minnie 3)
+integers = [ 20 ]      
+
+# strings: use quotation " to include spaces, use \" to include
+#          quotation
+
+  strings =  [ hello 
+            hello\ world
+           "hello world!"
+           "\"Hello, world!\"" 
+          ]
+
+booleans = [ false 1 ]  
+
+simple_pair = ( 0.2 2.3 )
+
+simple_tuple = (true 2 3.5 "hello!" )
+
+
+associative = [ ( goofy  1 )  
+                 mickey -> 2   
+                 [ minnie -> 3 ]
               ]
 
-integers = [ 20 ]      
- 
  
 intset  = [2 3 4]
   
-  # strings: use quotation " to include spaces, use \" to include
-  #          quotation
-  
-    strings =  [ hello 
-              hello\ world
-             "hello world!"
-             "\"Hello, world!\"" 
-            ]
-  
-booleans = [ false 1 ]  
-simple_pair = ( 0.2 2.3)
+ptr_int   = 10
 
-simple_tuple = (true 2 3.5 "hello!" )
- 
+shared_int = 42
+
+unique_int = 13
+
+
+lit_string = string_literal
+
+
+int_matrix = [[1 2] 
+              [3 4]]
+
+
+v_int_string = "ciao"
+
+
 block = [ 
-             { first = 12 second = 42 }  -> true 
+             { int_first = 12 int_second = 42 }
         ]
  
-raw_double = 13.2
- 
-shared_int = 42
- 
-literal = "string_literal"
-
-
-matrix = [[1 2] 
-          [3 4]]
+#  
+# 
+# 
 
 unknown = key  # ignored in non-strict mode 
 
@@ -48,6 +62,7 @@ unknown = key  # ignored in non-strict mode
 unknown_on_multiple_lines = [ 1
                              2
                              3 ]
+
 unknown_vector = [ 1 2 3 4 ]
 
 unknown_pair = (1 2)
@@ -59,3 +74,4 @@ unknown_tuple_on_multiple_lines = (
                                     2 
                                     3 
                                   )
+
