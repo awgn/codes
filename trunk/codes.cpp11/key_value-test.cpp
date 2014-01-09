@@ -51,7 +51,7 @@ typedef document<
 
     options<false, '#', '='>,
 
-    pair<key::unsigned_int, int>,
+    pair<key::unsigned_int, unsigned int>,
     pair<key::integers,     std::vector<int>>,
     pair<key::booleans,     std::vector<bool>>,
     pair<key::strings,      std::list<std::string>>,

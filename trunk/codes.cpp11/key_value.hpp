@@ -349,8 +349,8 @@ namespace more {
             {
                 bracket = true;
             }
-            
-            document<Opt, Ps...> doc;
+
+            document<Opt, Ps...> doc{};
 
             while(in)
             {
