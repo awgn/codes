@@ -504,8 +504,28 @@ inline namespace more_read {
     //
     // interfaces...
     //
+    // try_read: work with file and string streams:
     
     template <typename T, typename CharT, typename Traits>
+    inline bool try_read(std::basic_istream<CharT,Traits>&in)
+    {
+        auto p = in.tellg();
+        try 
+        {
+            read<T>(in);
+            in.clear();
+            if (!in.seekg(p))
+                std::runtime_error("try_read: seekg");
+            return true;
+        }
+        catch(...)
+        {
+            in.clear();
+            if (!in.seekg(p))
+                std::runtime_error("try_read: seekg");
+            return false;
+        }
+    }
     inline 
     T read(std::basic_istream<CharT,Traits>&in)
     {
