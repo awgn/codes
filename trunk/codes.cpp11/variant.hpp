@@ -8,7 +8,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#pragma once 
+#ifndef MORE_VARIANT_HPP
+#define MORE_VARIANT_HPP
 
 #include <typeinfo>
 #include <stdexcept>
@@ -16,6 +17,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <functional>
+#include <sstream>
 
 // Yet another boost tribute: the variant class.
 //
@@ -491,7 +493,7 @@ namespace more {
         storage_type storage_;
         int type_;
     };
-
+         
 
     template <typename CharT, typename Traits, typename ...Ts>
     typename std::basic_ostream<CharT, Traits> &
@@ -499,6 +501,14 @@ namespace more {
     {
         return variant_details::visitor<Ts...>::apply(
             variant_details::stream_on<decltype(out)>(out), that), out;
+    }
+
+    template <typename ...Ts>
+    inline std::string
+    show(variant<Ts...> const &var)
+    {
+        std::ostringstream out; out << var;
+        return out.str();
     }
 
     template <typename Fun, typename ...Ts>
@@ -541,4 +551,5 @@ namespace std
     };
 }
 
+#endif /* MORE_VARIANT_HPP */
 

@@ -8,7 +8,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <show.hpp> // !more
+#include <variant.hpp>  // !more
+#include <show.hpp>     // !more
 
 #include <vector>
 #include <list>
@@ -143,7 +144,7 @@ main(int, char *[])
     
     std::cout << "\n--- initializer_list:\n\n";
 
-    std::cout << show ({1,2,3}) << std::endl;
+    std::cout << show ( {1,2,3} ) << std::endl;
     
     std::cout << "\n--- pointers:\n\n";
 
@@ -153,5 +154,8 @@ main(int, char *[])
     std::cout << show( std::unique_ptr<int>(new int(0)) ) << std::endl;
     std::cout << show( std::shared_ptr<int>(new int(42)) ) << std::endl;
 
+    // variant
+    //
+    std::cout << show( more::variant<int, std::string>(std::string("hello world")) ) << std::endl;
     return 0;
 }
