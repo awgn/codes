@@ -25,7 +25,14 @@
 namespace more { 
 
     namespace variant_details {
-        
+
+        constexpr unsigned int 
+        next_pow2(unsigned int v, unsigned int power = 1)
+        {
+            return (power >= v) ? power : 
+                                  next_pow2(v, power * 2);
+        }
+       
         template <typename T>
         struct assert_is_nothrow_move_constructible
         {
@@ -246,7 +253,7 @@ namespace more {
         static constexpr size_t storage_len   = variant_details::max<variant_details::size_of, Ts...>::value;
         static constexpr size_t storage_align = variant_details::max<std::alignment_of, Ts...>::value;
 
-        typedef typename std::aligned_storage<storage_len, storage_align>::type storage_type;
+        typedef typename std::aligned_storage<storage_len, variant_details::next_pow2(storage_align)>::type storage_type;
 
     public:
         
