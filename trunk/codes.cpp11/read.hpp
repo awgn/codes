@@ -381,6 +381,45 @@ inline namespace more_read {
         return ret;
     }
 
+#ifdef MORE_VARIANT_HPP
+    template <typename ...Ts> struct read_variant;
+    template <typename T0, typename ...Ts>
+    struct read_variant<T0, Ts...>
+    {
+        template <typename ...Ti, typename CharT, typename Traits>
+        static more::variant<Ti...>
+        run(std::basic_istream<CharT, Traits> &in)
+        {
+            try
+            {
+                auto v = read<T0>(in);
+                return more::variant<Ti...>(v);
+            }
+            catch(...)
+            {
+                return read_variant<Ts...>::template run<Ti...>(in);
+            }
+        }
+    };
+    template <>
+    struct read_variant<>
+    {
+        template <typename ...Ti, typename CharT, typename Traits>
+        static more::variant<Ti...>
+        run(std::basic_istream<CharT, Traits> &in)
+        {
+            throw std::runtime_error(details::error<more::variant<Ti...>>("parse error")); 
+        }
+    };
+
+    template <typename ...Ts, typename CharT, typename Traits>
+    more::variant<Ts...> 
+    read(read_tag<more::variant<Ts...>>, std::basic_istream<CharT,Traits>&in)
+    {
+        return read_variant<Ts...>::template run<Ts...>(in);
+    }
+#endif
+
     // std::string:
     //
 
@@ -504,6 +543,7 @@ inline namespace more_read {
     //
     // interfaces...
     //
+
     // try_read: work with file and string streams:
     
     template <typename T, typename CharT, typename Traits>

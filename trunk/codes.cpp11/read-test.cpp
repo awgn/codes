@@ -1,3 +1,4 @@
+#include <variant.hpp>
 #include <read.hpp>
 #include <show.hpp>
 
@@ -43,6 +44,18 @@ main(int argc, char *argv[])
     std::cout << show(i) << std::endl;
 
     std::cout << show(j) << std::endl;
+
+    auto z = read<more::variant<int, std::string>>("world");
+
+    std::cout << show(z) <<  std::endl;
+
+    // {
+    //     std::istringstream in(std::string("10"));
+    //     std::cout << try_read<std::chrono::seconds>(in) << std::endl;
+    //     std::cout << try_read<int>(in) << std::endl;
+    //     std::cout << try_read<double>(in) << std::endl;
+    //     std::cout << try_read<std::string>(in) << std::endl;
+    // }
 
     return 0;
 }
