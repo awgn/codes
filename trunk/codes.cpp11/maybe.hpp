@@ -155,7 +155,7 @@ public:
     Tp fromJust() const
     { 
         if (!m_state)
-            throw std::runtime_error("Maybe<" + details::demangle(typeid(Tp).name()) + ">: Nothing");
+            throw std::runtime_error("Maybe<" + demangle(typeid(Tp).name()) + ">: Nothing");
         return m_value;
     }
 

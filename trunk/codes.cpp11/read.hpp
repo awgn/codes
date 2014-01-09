@@ -406,7 +406,7 @@ inline namespace more_read {
     {
         template <typename ...Ti, typename CharT, typename Traits>
         static more::variant<Ti...>
-        run(std::basic_istream<CharT, Traits> &in)
+        run(std::basic_istream<CharT, Traits> &)
         {
             throw std::runtime_error(details::error<more::variant<Ti...>>("parse error")); 
         }
@@ -445,8 +445,9 @@ inline namespace more_read {
         bool stop = false, quoted = false; 
 
         while (!stop)
-        {
+        {     
             c = static_cast<traits_type::char_type>(in.peek());
+            
             if (c == traits_type::eof())
                 break;
 
@@ -572,6 +573,7 @@ inline namespace more_read {
     T read(std::basic_istream<CharT,Traits>&in)
     {
         auto pos = in.tellg();
+
         try
         {
             return read(read_tag<typename details::decay<T>::type>(), in);
@@ -580,7 +582,7 @@ inline namespace more_read {
         {
             in.clear();
             if (!in.seekg(pos))
-                std::runtime_error("try_read: seekg");
+                std::runtime_error("read: seekg");
             throw;
         }
     }
