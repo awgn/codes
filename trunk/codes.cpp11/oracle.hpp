@@ -11,6 +11,8 @@
 #ifndef _ORACLE_HPP_
 #define _ORACLE_HPP_ 
 
+#include <cxxabi.hpp> // more!
+
 #include <iostream>
 #include <typeinfo>
 #include <sstream>
@@ -18,7 +20,6 @@
 #include <memory>
 #include <mutex>
  
-#include <cxxabi.h>
 
 // simple c++0x Oracle
 //
@@ -44,21 +45,6 @@ struct O
         }
     }
 
-    static std::string
-    cxa_demangle(const char *name)
-    {
-#ifdef _REENTRANT 
-        static std::mutex _S_mutex;
-        std::lock_guard<std::mutex> _L_(_S_mutex);
-#endif
-        int status;
-        std::shared_ptr<char> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
-        if (status < 0) {
-            return std::string("?");
-        }
-        return std::string(ret.get());
-    }
-
     O()                         { print_compat(std::cout," O()"); } 
     O(const O &)                { print_compat(std::cout," O(const O&)"); } 
     O &operator=(const O &)     { print_compat(std::cout," op=(const O&)"); return *this; } 
@@ -67,7 +53,7 @@ struct O
     O &operator=(O &&)          { print_compat(std::cout," op=(O&&)"); return *this; } 
     
     template <typename T> O(T)  
-    { std::ostringstream ss; ss << " O(" << cxa_demangle(typeid(T).name()) << ")";
+    { std::ostringstream ss; ss << " O(" << demangle(typeid(T).name()) << ")";
         print_compat(std::cout,ss.str()); } 
 
     void swap(O &rhs)           { print_compat(std::cout," swap(O,O)"); }

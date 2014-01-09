@@ -13,7 +13,7 @@
 #include <cassert>
 
 #include <typelist.hpp>
-#include <cxa_demangle.hpp>
+#include <cxxabi.hpp>
 #include <yats.hpp>
 
 using namespace yats;
@@ -76,9 +76,9 @@ Context(more_typelist_test)
     Test(output)
     { 
         std::cout << "{*} at...\n";
-        std::cout << "    " << 0 << ":" << more::cxa_demangle(typeid(at<list3,0>::type).name()) << std::endl;
-        std::cout << "    " << 1 << ":" << more::cxa_demangle(typeid(at<list3,1>::type).name()) << std::endl;
-        std::cout << "    " << 2 << ":" << more::cxa_demangle(typeid(at<list3,2>::type).name()) << std::endl;
+        std::cout << "    " << 0 << ":" << demangle(typeid(at<list3,0>::type).name()) << std::endl;
+        std::cout << "    " << 1 << ":" << demangle(typeid(at<list3,1>::type).name()) << std::endl;
+        std::cout << "    " << 2 << ":" << demangle(typeid(at<list3,2>::type).name()) << std::endl;
     }
 
     typedef for_each<list3, metafunction >::type list3_;
@@ -86,9 +86,9 @@ Context(more_typelist_test)
     Test(for_each)
     {
         std::cout << "{*} for_each...\n";
-        std::cout << "    " << 0 << ":" << more::cxa_demangle(typeid(at<list3_,0>::type).name()) << std::endl;
-        std::cout << "    " << 1 << ":" << more::cxa_demangle(typeid(at<list3_,1>::type).name()) << std::endl;
-        std::cout << "    " << 2 << ":" << more::cxa_demangle(typeid(at<list3_,2>::type).name()) << std::endl;
+        std::cout << "    " << 0 << ":" << demangle(typeid(at<list3_,0>::type).name()) << std::endl;
+        std::cout << "    " << 1 << ":" << demangle(typeid(at<list3_,1>::type).name()) << std::endl;
+        std::cout << "    " << 2 << ":" << demangle(typeid(at<list3_,2>::type).name()) << std::endl;
     }    
 }
 
