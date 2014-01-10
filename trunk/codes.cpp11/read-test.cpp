@@ -6,6 +6,29 @@
 #include <list>
 #include <map>
 
+namespace my
+{
+    struct test
+    {
+        int value;
+    };
+
+    inline std::string
+    show(test const&  value)
+    {
+        return std::to_string(value.value); 
+    }
+
+    template <typename CharT, typename Traits>
+    void 
+    read(test &ret, std::basic_istream<CharT,Traits>&in)
+    {
+        if (!(in >> ret.value)) 
+            throw std::runtime_error("read<test>: parse error");
+    }
+}
+
+
 int
 main(int, char *[])
 {
@@ -27,6 +50,8 @@ main(int, char *[])
     auto h = read<std::chrono::nanoseconds>  ("1_ns");
     auto i = read<std::chrono::system_clock::time_point>("1_h");
 
+    auto k = read<my::test>("42");
+
     auto j = read<bool>("true");
 
     std::cout << show(a) << std::endl;
@@ -41,6 +66,7 @@ main(int, char *[])
     std::cout << show(g) << std::endl;
 
     std::cout << show(h) << std::endl;
+    std::cout << show(k) << std::endl;
     std::cout << show(i) << std::endl;
 
     std::cout << show(j) << std::endl;
