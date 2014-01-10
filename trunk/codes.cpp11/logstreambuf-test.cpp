@@ -23,23 +23,23 @@ main(int, char *[])
     // default_priority() set the default priority for the stream
     //
 
-    more::default_priority(std::clog, more::logstreambuf::ERR);
+    default_priority(std::clog, more::logstreambuf::ERR);
 
     // more::priority() set a temporary priority for the current ostream until a std::endl is streamed 
     //
 
-    more::priority(std::clog, more::logstreambuf::EMERG)   << __FUNCTION__ << ": LOG_EMERG  : hello world!" << std::endl; 
-    more::priority(std::clog, more::logstreambuf::ALERT)   << __FUNCTION__ << ": LOG_ALERT  : hello world!" << std::endl;
-    more::priority(std::clog, more::logstreambuf::CRIT )   << __FUNCTION__ << ": LOG_CRIT   : hello world!" << std::endl;
-    more::priority(std::clog, more::logstreambuf::ERR  )   << __FUNCTION__ << ": LOG_ERR    : hello world!" << std::endl;
-    more::priority(std::clog, more::logstreambuf::WARNING) << __FUNCTION__ << ": LOG_WARNING: hello world!" << std::endl;
-    more::priority(std::clog, more::logstreambuf::NOTICE)  << __FUNCTION__ << ": LOG_NOTICE : hello world!" << std::endl;
-    more::priority(std::clog, more::logstreambuf::INFO)    << __FUNCTION__ << ": LOG_INFO   : hello world!" << std::endl;
-    more::priority(std::clog, more::logstreambuf::DEBUG)   << __FUNCTION__ << ": LOG_DEBUG  : hello world!" << std::endl;
+    priority(std::clog, more::logstreambuf::EMERG)   << __FUNCTION__ << ": LOG_EMERG  : hello world!" << std::endl; 
+    priority(std::clog, more::logstreambuf::ALERT)   << __FUNCTION__ << ": LOG_ALERT  : hello world!" << std::endl;
+    priority(std::clog, more::logstreambuf::CRIT )   << __FUNCTION__ << ": LOG_CRIT   : hello world!" << std::endl;
+    priority(std::clog, more::logstreambuf::ERR  )   << __FUNCTION__ << ": LOG_ERR    : hello world!" << std::endl;
+    priority(std::clog, more::logstreambuf::WARNING) << __FUNCTION__ << ": LOG_WARNING: hello world!" << std::endl;
+    priority(std::clog, more::logstreambuf::NOTICE)  << __FUNCTION__ << ": LOG_NOTICE : hello world!" << std::endl;
+    priority(std::clog, more::logstreambuf::INFO)    << __FUNCTION__ << ": LOG_INFO   : hello world!" << std::endl;
+    priority(std::clog, more::logstreambuf::DEBUG)   << __FUNCTION__ << ": LOG_DEBUG  : hello world!" << std::endl;
 
     std::clog << __FUNCTION__ << ": default priority (ERR)" << std::endl;
 
-    more::default_priority(std::clog, more::logstreambuf::DEBUG);
+    default_priority(std::clog, more::logstreambuf::DEBUG);
 
     std::clog << __FUNCTION__ << ": default level (DEBUG) " << std::endl;    // with log->loglevel() set to ERR this message won't be displayed
 

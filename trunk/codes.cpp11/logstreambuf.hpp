@@ -99,9 +99,6 @@ namespace more {
         std::streambuf *m_out;
     };
 
-    std::ostream &priority(std::ostream &out, int n);
-    std::ostream &default_priority(std::ostream &out, int n);
-
 } // namespace more
 
 #endif /* _LOGSTREAMBUF_HPP_ */
