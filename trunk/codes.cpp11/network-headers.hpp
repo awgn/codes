@@ -742,9 +742,9 @@ namespace more { namespace net {
         MORE_NET_READER(uint32_t, ack_seq);
         MORE_NET_WRITER(uint32_t, ack_seq);
 
-        MORE_NET_READER(uint16_t,doff);
+        MORE_NET_READER(uint16_t, doff);
     private:
-        MORE_NET_WRITER(uint16_t,doff);  // the size, in case, is set during construction
+        MORE_NET_WRITER(uint16_t, doff);  // the size is set during construction
     public:
 
         MORE_NET_READER(uint16_t, res1);
