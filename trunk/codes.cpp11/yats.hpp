@@ -231,17 +231,18 @@ inline namespace yats
     {
         explicit yats_error(const std::string &msg)
         : std::runtime_error(msg)
-        {}
+        { } 
         
         virtual ~yats_error() throw() 
-        {}
+        { }
     };
     
     ////////////////////////////////////////////// nothing and anything: 
 
     struct nothing
     {
-        static constexpr const char * what() {
+        static constexpr const char * what() 
+        {
             return "nothing";
         }
     };
@@ -254,7 +255,8 @@ inline namespace yats
     
     struct anything
     {
-        static constexpr const char * what() {
+        static constexpr const char * what() 
+        {
             return "anything";
         }
     };
@@ -423,10 +425,19 @@ inline namespace yats
   
     ////////////////////////////////////////////// run tests: 
    
+    uint32_t &
+    assert_counter()
+    {
+        static uint32_t c;
+        return c;
+    }
+
     static int run(int argc = 0, char *argv[] = nullptr)
     {
-        bool exit_immediatly = false, err = false, verbose = false;
-        int  repeat_run = 1000;
+        bool exit_immediatly = false, 
+             err             = false, 
+             verbose         = false;
+        int  repeat_run      = 1000;
 
         std::set<std::string> run_ctx, run_test;
 
@@ -504,7 +515,7 @@ inline namespace yats
         
         for(auto & c : context::instance()) 
         {
-            if (!run_ctx.empty() &&
+            if (!run_ctx.empty() && 
                 run_ctx.find(c.first) == run_ctx.end())
                 continue;
 
@@ -538,7 +549,6 @@ inline namespace yats
                 try
                 {    
                     // run the test here
-                    //
                     
                     t.first.operator()(repeat_run);
                     ok++;  
@@ -572,7 +582,7 @@ inline namespace yats
             }
         }
 
-        std::cerr << (run-ok) << " out of " << run  << " tests failed." << std::endl;
+        std::cerr << (run-ok) << " out of " << run  << " tests failed. " << assert_counter() << " assertions passed." << std::endl;
         return ok == run ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
@@ -905,8 +915,10 @@ inline namespace yats
         if (!pred(value)) 
         {
             throw yats_error(make_string(YATS_HEADER(ctx, name, file, line), 
-                                        "    -> predicate ", pred.str(), " failed: got ", pretty_value(value)));
+                             "    -> predicate ", pred.str(), " failed: got ", pretty_value(value)));
         }
+
+        assert_counter()++;
     }
 
     template <typename T, typename E>
@@ -920,27 +932,40 @@ inline namespace yats
         {
             if (std::string(e.what()).compare(obj.what())) 
                 throw yats_error(make_string(YATS_HEADER(ctx, test, file, line), 
-                                             "    -> ", yats::type_name(obj), " exception caught with reason \"", e.what(), "\" != \"", obj.what(), "\"!"));
+                                             "    -> ", yats::type_name(obj), 
+                                             " exception caught with reason \"", 
+                                             e.what(), 
+                                             "\" != \"", obj.what(), "\"!"));
+            assert_counter()++;
             return;
         }
         catch(std::exception &e)
         {
             if (!std::is_same<T,anything>::value)
                 throw yats_error(make_string(YATS_HEADER(ctx, test, file, line), 
-                                            "    -> ", yats::type_name(obj), " exception expected. Got ", yats::type_name(e), " (\"", e.what(), "\")!"));
+                                            "    -> ", yats::type_name(obj), 
+                                            " exception expected. Got ", 
+                                            yats::type_name(e), 
+                                            " (\"", e.what(), "\")!"));
+            assert_counter()++;
             return;
         }
         catch(...)
         {
             if (!std::is_same<T,anything>::value)
                 throw yats_error(make_string(YATS_HEADER(ctx, test, file, line), 
-                                            "    -> ", yats::type_name(obj), " exception expected: got unknown exception!")); 
+                                            "    -> ", yats::type_name(obj), 
+                                            " exception expected: got unknown exception!")); 
+            assert_counter()++;
             return;
         }
 
         if (!std::is_same<T, nothing>::value)
             throw yats_error(make_string(YATS_HEADER(ctx, test, file, line), 
-                                        "    -> ", yats::type_name(obj), " exception expected!"));  
+                                        "    -> ", yats::type_name(obj), 
+                                        " exception expected!"));  
+            
+        assert_counter()++;
     }
 
 }
