@@ -99,10 +99,11 @@ const dirmap_type static_queries =
  { "all"        , _reserved    },
  { "ifndef_else", _ifndef_else }};
  
-int
+
+unsigned int
 get_class_type(const dir_type &d)
 {
-    return std::get<0>(d) + (std::get<1>(d) ? 1 : 0);
+    return static_cast<unsigned int>(std::get<0>(d)) + (std::get<1>(d) ? 1 : 0);
 }
 
 std::vector<std::pair<dir_type, info_type>>

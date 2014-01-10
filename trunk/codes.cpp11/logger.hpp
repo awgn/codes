@@ -237,16 +237,17 @@ namespace more
 
         //// log message: ratelimit
         
-        template <size_t N>
+        template <int N>
         std::pair<bool, int> ratelimit(std::chrono::system_clock::time_point now)
         {
             struct ratelimit
             {
                 std::chrono::system_clock::time_point tp;
-                uint32_t rate;
+                int32_t rate;
             };
 
             static __thread ratelimit *rt;
+
             if (!rt) rt = new ratelimit{ std::chrono::system_clock::time_point(), 0 };
 
             int delta = 0;

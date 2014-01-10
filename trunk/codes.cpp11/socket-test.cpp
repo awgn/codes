@@ -25,7 +25,7 @@ void client(std::string host, unsigned short port)
 
     const char hello_world[] = "hello world!";
 
-    auto len = htonl(static_cast<int>(sizeof(hello_world)));  // this include '\0'
+    auto len = htonl(sizeof(hello_world));  // this include '\0'
 
     sock.send_atomic(more::const_buffer(reinterpret_cast<const char *>(&len), sizeof(len)), 0);
     sock.send_atomic(more::const_buffer(hello_world, sizeof(hello_world)), 0);
