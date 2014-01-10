@@ -20,10 +20,13 @@ namespace more
     template <size_t N>
     struct byte_string
     {
-        char value[N];
+    private:
+        char value_[N];
+
+    public:
 
         byte_string()
-        : value()
+        : value_()
         {}
 
         byte_string(const char *s)
@@ -37,46 +40,75 @@ namespace more
         }
 
         ~byte_string() = default;
-        
-        byte_string(const byte_string &) = default; 
-        byte_string& operator=(const byte_string &) = default; 
+       
+        template <size_t M>
+        byte_string(byte_string<M> const &rhs)
+        {
+            if (rhs.length() > capacity()) 
+                throw std::runtime_error("byte_string: overflow");
+            strcpy(value_, rhs.data());
+        }
+
+        template <size_t M>
+        byte_string
+        operator=(const byte_string<M> &other)
+        {
+            if (other.size() > capacity())
+                throw std::runtime_error("byte_string: overflow");
+
+            strcpy(value_, other.data());
+            return *this;
+        }
         
         byte_string
         operator=(const char *s)
         {
-#ifndef NDEBUG
-            if (strlen(s) > (N-1))
-                std::cerr << "byte_string: overflow for " << s << std::endl;
-#endif
+            if (strlen(s) > capacity())
+                throw std::runtime_error("byte_string: overflow");
 
-            strncpy(value, s, N);
-            value[N-1] = 0;
-            
+            strcpy(value_, s);
             return *this;
         }
         
         byte_string
         operator=(const std::string &s)
         {
-#ifndef NDEBUG
-            if (s.length() > (N-1))
-                std::cerr << "byte_string: overflow for " << s << std::endl;
-#endif
-            
-            strncpy(value, s.c_str(), N);
-            value[N-1] = 0;
-            
+            if (s.length() > capacity())
+                throw std::runtime_error("byte_string: overflow"); 
+
+            strcpy(value_, s.c_str());
             return *this;
         }
-        
+
+        bool empty() const
+        {
+            return !static_cast<bool>(*this);
+        }
+
         explicit operator bool() const
         {
-            return static_cast<bool>(value[0]);
+            return static_cast<bool>(value_[0]);
         }
 
         size_t length() const
         {
-            return strlen(value);
+            return strlen(value_);
+        }
+        
+        size_t size() const
+        {
+            return strlen(value_);
+        }
+
+        size_t capacity() const
+        {
+            return N-1;
+        }
+
+        const char *
+        data() const
+        {
+            return value_;
         }
     };
 
@@ -87,33 +119,33 @@ namespace more
     inline bool
     operator==(const byte_string<N> &lhs, const byte_string<M> &rhs)
     {
-        return strcmp(lhs.value, rhs.value) == 0;
+        return std::strcmp(lhs.data(), rhs.data()) == 0;
     }
     
     template <size_t N>
     inline bool
     operator==(const byte_string<N> &lhs, const std::string &rhs)
     {
-        return strcmp(lhs.value, rhs.c_str()) == 0;
+        return std::strcmp(lhs.data(), rhs.c_str()) == 0;
     }
     template <size_t M>
     inline bool
     operator==(const std::string &lhs, const byte_string<M> &rhs)
     {
-        return strcmp(lhs.c_str(), rhs.value) == 0;
+        return std::strcmp(lhs.c_str(), rhs.data()) == 0;
     }
     
     template <size_t N>
     inline bool
     operator==(const byte_string<N> &lhs, const char *rhs)
     {
-        return strcmp(lhs.value, rhs) == 0;
+        return std::strcmp(lhs.data(), rhs) == 0;
     }
     template <size_t M>
     inline bool
     operator==(const char *lhs, const byte_string<M> &rhs)
     {
-        return strcmp(lhs, rhs.value) == 0;
+        return std::strcmp(lhs, rhs.data()) == 0;
     }
     
     template <size_t N, size_t M>
@@ -155,7 +187,7 @@ namespace more
     inline bool
     operator<(byte_string<N> const&  lhs, byte_string<M> const&  rhs)
     {
-        return strcmp(lhs.value,rhs.value) < 0;
+        return std::strcmp(lhs.data(),rhs.data()) < 0;
         /* implementation */
     }
 
@@ -186,7 +218,7 @@ namespace more
     operator<<(std::basic_ostream<CharT,Traits> &out, const byte_string<N> & instance)
     {
         if (instance)
-            out << '"' << instance.value << '"';
+            out << '"' << instance.data() << '"';
         else
             out << "\"\"";
 
@@ -210,7 +242,7 @@ namespace more
                 return in;
             }
             
-            strcpy(instance.value, std::string(s.begin() + 1, s.end() - 1).c_str());
+            strcpy(instance.data(), std::string(s.begin() + 1, s.end() - 1).c_str());
         }
         return in;
     }
@@ -220,7 +252,7 @@ namespace more
     show(const byte_string<N> &bs)
     {
         if (bs)
-            return '"' + std::string(bs.value) + '"';
+            return '"' + std::string(bs.data()) + '"';
         else
             return "\"\"";
     }
@@ -247,7 +279,7 @@ namespace std
 
         size_t operator()(const more::byte_string<N>& x) const
         {
-            return fnv_hash(x.value, x.length());
+            return fnv_hash(x.data(), x.length());
         }
     };
 }
