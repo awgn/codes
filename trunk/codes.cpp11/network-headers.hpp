@@ -333,13 +333,13 @@ namespace more { namespace net {
         }
 
         const Tp * 
-        operator->()
+        operator->() const
         {
             return &m_header;
         }
 
         const Tp &
-        operator *()
+        operator *() const
         {
             return m_header;
         }
