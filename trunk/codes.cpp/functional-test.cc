@@ -14,7 +14,7 @@
 #include <tr1/memory>
 #include <functional.hh>
 
-using namespace std::placeholders;
+using namespace std::tr1::placeholders;
 
 struct test
 {

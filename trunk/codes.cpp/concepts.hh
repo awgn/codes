@@ -54,7 +54,7 @@ namespace more { namespace basic_concepts {
         T x;
         void constraints()
         {
-            x = x;
+            (x = x);
         };
     };
 
@@ -95,8 +95,8 @@ namespace more { namespace basic_concepts {
         T a, b;
         void constraints()
         {
-            a == b;
-            a != b;
+            (a == b);
+            (a != b);
         }
     };
 
@@ -106,7 +106,7 @@ namespace more { namespace basic_concepts {
         T a, b;
         void constraints()
         {
-            a < b;
+            (a < b);
         }
     };
 
@@ -116,7 +116,7 @@ namespace more { namespace basic_concepts {
         T a, b;
         void constraints()
         {
-            a <= b;
+            (a <= b);
         }
     };
 
@@ -126,7 +126,7 @@ namespace more { namespace basic_concepts {
         T a, b;
         void constraints()
         {
-            a > b;
+            (a > b);
         }
     };
 
@@ -136,7 +136,7 @@ namespace more { namespace basic_concepts {
         T a, b;
         void constraints()
         {
-            a >= b;
+            (a >= b);
         }
     };
 

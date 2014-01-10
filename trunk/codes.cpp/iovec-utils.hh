@@ -28,8 +28,8 @@ namespace more {
         struct address_of {
 
             template <typename T>
-            static typename more::mtp::enable_if< std::is_integral<T>,
-                typename std::add_const<T>::type *>::type 
+            static typename more::mtp::enable_if< std::tr1::is_integral<T>,
+                typename std::tr1::add_const<T>::type *>::type 
             value(const T &elem)
             {
                 return &elem;
@@ -47,7 +47,7 @@ namespace more {
         struct size_of {
 
             template <typename T>
-            static typename more::mtp::enable_if< std::is_integral<T>, size_t>::type 
+            static typename more::mtp::enable_if< std::tr1::is_integral<T>, size_t>::type 
             value(T)
             {
                 return sizeof(T);
@@ -95,7 +95,7 @@ namespace more {
     }    
 
     template <typename Iterator>
-    typename more::mtp::enable_if< std::is_integral< typename std::iterator_traits<Iterator>::value_type >,
+    typename more::mtp::enable_if< std::tr1::is_integral< typename std::iterator_traits<Iterator>::value_type >,
                 std::vector<iovec> >::type
     get_iovec(Iterator __it, Iterator __end, std::random_access_iterator_tag)
     {

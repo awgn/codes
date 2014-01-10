@@ -42,7 +42,7 @@ int g;/*****
    }
 
 int
-main(int, char *[])
+main(int argc, char *argv[])
 {
     std::copy(argv,argv+argc, std::ostream_iterator<std::string>(std::cout, " "));
     std::cout << std::endl;
