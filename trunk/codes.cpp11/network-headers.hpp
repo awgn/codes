@@ -742,16 +742,41 @@ namespace more { namespace net {
         MORE_NET_READER(uint32_t, ack_seq);
         MORE_NET_WRITER(uint32_t, ack_seq);
 
-        MORE_NET_READER(uint16_t, doff);
+        MORE_NET_READER_RAW(uint16_t, doff);
     private:
-        MORE_NET_WRITER(uint16_t, doff);  // the size is set during construction
+        MORE_NET_WRITER_RAW(uint16_t, doff);  // the size is set during construction
     public:
 
-        MORE_NET_READER(uint16_t, res1);
-        MORE_NET_WRITER(uint16_t, res1);
+        MORE_NET_READER_RAW(uint16_t, res1);
+        MORE_NET_WRITER_RAW(uint16_t, res1);
+        
+        MORE_NET_READER_RAW(uint16_t, res2);
+        MORE_NET_WRITER_RAW(uint16_t, res2);
+        
+        MORE_NET_READER_RAW(bool, urg);
+        MORE_NET_WRITER_RAW(bool, urg);
 
-        MORE_NET_READER(uint16_t, res2);
-        MORE_NET_WRITER(uint16_t, res2);
+        MORE_NET_READER_RAW(bool, ack);
+        MORE_NET_WRITER_RAW(bool, ack);
+
+        MORE_NET_READER_RAW(bool, psh);
+        MORE_NET_WRITER_RAW(bool, psh);
+
+        MORE_NET_READER_RAW(bool, rst);
+        MORE_NET_WRITER_RAW(bool, rst);
+
+        MORE_NET_READER_RAW(bool, syn);
+        MORE_NET_WRITER_RAW(bool, syn);
+
+        MORE_NET_READER_RAW(bool, fin);
+        MORE_NET_WRITER_RAW(bool, fin);
+
+        MORE_NET_READER(uint16_t, window);
+        MORE_NET_WRITER(uint16_t, window);
+
+        MORE_NET_READER(uint16_t, check);
+        MORE_NET_WRITER(uint16_t, check);
+
 
         bool 
         cwr() const
@@ -777,24 +802,6 @@ namespace more { namespace net {
             m_header->res2 = static_cast<uint16_t>((m_header->res2 & 1) | (value <<1));
         } 
 
-        MORE_NET_READER_RAW(bool, urg);
-        MORE_NET_WRITER_RAW(bool, urg);
-
-        MORE_NET_READER_RAW(bool, ack);
-        MORE_NET_WRITER_RAW(bool, ack);
-
-        MORE_NET_READER_RAW(bool, psh);
-        MORE_NET_WRITER_RAW(bool, psh);
-
-        MORE_NET_READER_RAW(bool, rst);
-        MORE_NET_WRITER_RAW(bool, rst);
-
-        MORE_NET_READER_RAW(bool, syn);
-        MORE_NET_WRITER_RAW(bool, syn);
-
-        MORE_NET_READER_RAW(bool, fin);
-        MORE_NET_WRITER_RAW(bool, fin);
-
         void
         flags_reset() 
         {
@@ -806,12 +813,6 @@ namespace more { namespace net {
         {
             return *(reinterpret_cast<unsigned char *>(m_header) + 13);
         }
-
-        MORE_NET_READER(uint16_t, window);
-        MORE_NET_WRITER(uint16_t, window);
-
-        MORE_NET_READER(uint16_t, check);
-        MORE_NET_WRITER(uint16_t, check);
 
         void 
         chksum_update(const ipv4 & ip, ssize_t data_len) 
