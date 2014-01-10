@@ -13,7 +13,7 @@
 #include <signal.hpp>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::signal_handler::init(
     {

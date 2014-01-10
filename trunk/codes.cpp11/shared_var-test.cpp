@@ -14,7 +14,7 @@
 #include <iostream>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     more::shared_var<int> n(0);
     

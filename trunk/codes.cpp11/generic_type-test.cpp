@@ -19,7 +19,7 @@ GENERIC_TYPE ( Test, (Single),
              )
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     Test x;
 

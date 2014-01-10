@@ -7,7 +7,7 @@
 #include <map>
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     auto a = read<int>("10");
 

@@ -89,7 +89,7 @@ void show_pointer(Par const &doc)
     }
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     this_document doc;
 

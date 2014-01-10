@@ -24,7 +24,7 @@ struct function
 
 
 int
-main(int argc, char *argv[])
+main(int, char *[])
 {
     static_if<true>().then_<function>(42)
                      .else_<function>("hello world");
