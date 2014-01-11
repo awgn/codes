@@ -91,7 +91,9 @@ void show_pointer(Par const &doc)
 int
 main(int, char *[])
 {
-    this_document doc;
+    this_document doc(
+                        make_key<key::unsigned_int>(12U)
+                     );
 
     if (!parse("key_value_test.txt", doc))
         exit(1);

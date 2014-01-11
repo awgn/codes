@@ -214,6 +214,14 @@ namespace more {
             Value   value;
         };
 
+        template <typename Key, typename Tp>
+        key_pair<Key, Tp>
+        make_key(Tp && v)
+        {
+            return key_pair<Key, Tp> { std::forward<Tp>(v) };
+        }
+
+
         template <typename Key, typename Value>
         inline
         std::string show(key_pair<Key,Value> const& p)
@@ -270,6 +278,22 @@ namespace more {
         struct document
         {
             static_assert(std::is_base_of<options_base, Opt>::value, "invalid options");
+
+            template <typename ...Ks>
+            document(Ks && ... args)
+            {
+                this->set(std::forward<Ks>(args)...);
+            }
+
+            template <typename K, typename ...Ks>
+            void set(K && k, Ks && ... ks)
+            {
+                std::get< key_index<typename K::key_type, Ps...>::value >(tuple_).value = k.value;   
+                set (std::forward<Ks>(ks)...);
+            }
+            
+            void set()
+            { }
 
             template <typename K>
             typename key_mapped_type<K, Ps...>::type const &
