@@ -191,8 +191,6 @@ namespace more {
 
         ///////////////////////////////////////////////////////////////////////////////////////////
 
-        // key_value pair:
-
         template <typename Tp>
         struct key_base 
         { 
@@ -206,18 +204,19 @@ namespace more {
 #define DECLARE_KEY(k) struct k : more::key_value::key_base<k> { }
 
         template <typename Key, typename Value>
-        struct pair
+        struct key_pair
         {
+            static_assert(std::is_base_of<key_base<Key>, Key>::value, "invalid key type (DECLARE_KEY)");
+            
             typedef Key     key_type;
             typedef Value   value_type;
 
-            static_assert(std::is_base_of<key_base<Key>, Key>::value, "invalid key type (DECLARE_KEY)");
             Value   value;
         };
 
         template <typename Key, typename Value>
         inline
-        std::string show(pair<Key,Value> const& p)
+        std::string show(key_pair<Key,Value> const& p)
         {
             std::string ret = details::type_name<Key>();
             ret += ("= " + ::show(p.value));
@@ -242,7 +241,7 @@ namespace more {
         
         template <typename K, typename ...Ts> struct key_index;
         template <typename K, typename V, typename ...Ts>
-        struct key_index<K, pair<K, V>, Ts...>
+        struct key_index<K, key_pair<K, V>, Ts...>
         {
             enum { value = 0 };
         };
@@ -254,7 +253,7 @@ namespace more {
 
         template <typename K, typename ...Ts> struct key_mapped_type;
         template <typename K, typename V, typename ...Ts>
-        struct key_mapped_type<K, pair<K, V>, Ts...>
+        struct key_mapped_type<K, key_pair<K, V>, Ts...>
         {
             typedef V type;
         };
