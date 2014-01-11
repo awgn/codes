@@ -47,7 +47,7 @@ namespace more {
         : m_base(rhs.m_base ? rhs.m_base->clone() : nullptr)
         {}
 
-        any(any &&rhs)
+        any(any &&rhs) noexcept
         : m_base(rhs.m_base)
         {
             rhs.m_base = nullptr;

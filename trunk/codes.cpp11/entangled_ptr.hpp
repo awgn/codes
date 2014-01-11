@@ -68,7 +68,7 @@ namespace more {
         }
 
         entangled_ptr &
-        operator=(entangled_ptr &&rhs)
+        operator=(entangled_ptr &&rhs) noexcept 
         {
             if(m_ptr)
                 m_ptr->m_remove_entangled_for(this);
