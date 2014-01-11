@@ -27,7 +27,7 @@ namespace key
     DECLARE_KEY(lit_string);
     DECLARE_KEY(int_matrix);
 
-    DECLARE_KEY(block);
+    DECLARE_KEY(doc);
 
     DECLARE_KEY(int_first);
     DECLARE_KEY(int_second);
@@ -41,8 +41,8 @@ typedef document<
 
     options<true, '#', '='>,
 
-    pair<key::int_first,  int>,
-    pair<key::int_second, int>
+    key_pair<key::int_first,  int>,
+    key_pair<key::int_second, int>
 
    > int_pair;
 
@@ -51,21 +51,21 @@ typedef document<
 
     options<false, '#', '='>,
 
-    pair<key::unsigned_int, unsigned int>,
-    pair<key::integers,     std::vector<int>>,
-    pair<key::booleans,     std::vector<bool>>,
-    pair<key::strings,      std::list<std::string>>,
-    pair<key::simple_pair,  std::pair<double, double>>,
-    pair<key::simple_tuple, std::tuple<bool, int, double, std::string>>,
-    pair<key::associative,  std::map<std::string, int>>,
-    pair<key::intset,       std::set<int>>,
-    pair<key::ptr_int,      int *>,
-    pair<key::shared_int,   std::shared_ptr<int>>,
-    pair<key::unique_int,   std::unique_ptr<int>>,
-    pair<key::lit_string,   const char *>,
-    pair<key::int_matrix,   std::vector<std::vector<int>>>,
-    pair<key::block,        std::vector<int_pair>>,
-    pair<key::v_int_string, more::variant<int, std::string>>
+    key_pair<key::unsigned_int, unsigned int>,
+    key_pair<key::integers,     std::vector<int>>,
+    key_pair<key::booleans,     std::vector<bool>>,
+    key_pair<key::strings,      std::list<std::string>>,
+    key_pair<key::simple_pair,  std::pair<double, double>>,
+    key_pair<key::simple_tuple, std::tuple<bool, int, double, std::string>>,
+    key_pair<key::associative,  std::map<std::string, int>>,
+    key_pair<key::intset,       std::set<int>>,
+    key_pair<key::ptr_int,      int *>,
+    key_pair<key::shared_int,   std::shared_ptr<int>>,
+    key_pair<key::unique_int,   std::unique_ptr<int>>,
+    key_pair<key::lit_string,   const char *>,
+    key_pair<key::int_matrix,   std::vector<std::vector<int>>>,
+    key_pair<key::doc,          std::vector<int_pair>>,
+    key_pair<key::v_int_string, more::variant<int, std::string>>
 
     > this_document;
 
@@ -109,7 +109,7 @@ main(int, char *[])
 
     show_value<key::v_int_string>(doc);
 
-    show_value<key::block>(doc);
+    show_value<key::doc>(doc);
 
     show_pointer<key::ptr_int>(doc);
     show_pointer<key::shared_int>(doc);

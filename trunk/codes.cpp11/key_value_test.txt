@@ -48,7 +48,7 @@ int_matrix = [[1 2]
 v_int_string = "ciao"
 
 
-block = [ 
+doc = [ 
              { int_first = 12 int_second = 42 }
         ]
  
