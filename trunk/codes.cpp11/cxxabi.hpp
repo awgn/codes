@@ -70,6 +70,4 @@ inline namespace more_cxxabi
     {
         return __type_of<T>(std::forward<T>(arg));
     }
-
-
 }
