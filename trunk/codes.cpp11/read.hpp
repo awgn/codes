@@ -37,6 +37,13 @@ inline namespace more_read {
     template <typename T>
     std::pair<T, std::string> read(std::string const &ref);
 
+    template <typename T, typename CharT, typename Traits>
+    inline bool try_read(std::basic_istream<CharT,Traits>&in);
+
+    template <typename T, typename CharT, typename Traits>
+    inline 
+    void fill(T &ret, std::basic_istream<CharT,Traits>&in);
+    
     namespace details
     {
         // consume a specified char, return true or false 
@@ -534,17 +541,16 @@ inline namespace more_read {
         }
     }
 
+
     template <typename T, typename CharT, typename Traits>
     inline 
-    T read(std::basic_istream<CharT,Traits>&in)
+    void fill(T &ret, std::basic_istream<CharT,Traits>&in)
     {
         auto pos = in.tellg();
 
         try
         {
-            typename details::decay<T>::type ret{};
             read(ret, in);
-            return ret;
         }
         catch(...)
         {
@@ -555,8 +561,20 @@ inline namespace more_read {
         }
     }
 
+
+    template <typename T, typename CharT, typename Traits>
+    inline 
+    T read(std::basic_istream<CharT,Traits>&in)
+    {
+        typename details::decay<T>::type ret {};
+        fill(ret, in);
+        return ret;
+    }
+
+
     template <typename T>
-    std::pair<T, std::string> read(std::string const &ref)
+    std::pair<T, std::string> 
+    read(std::string const &ref)
     {
         std::istringstream in(ref);
 

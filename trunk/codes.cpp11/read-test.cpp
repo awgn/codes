@@ -52,6 +52,8 @@ main(int, char *[])
 
     auto k = read<my::test>("42");
 
+    auto u = read<std::unique_ptr<int>>("11");
+
     auto j = read<bool>("true");
 
     std::cout << show(a) << std::endl;
@@ -71,8 +73,9 @@ main(int, char *[])
 
     std::cout << show(j) << std::endl;
 
-    auto z = read<more::variant<int, std::string>>("world");
+    std::cout << show(u) << std::endl;
 
+    auto z = read<more::variant<int, std::string>>("world");
     std::cout << show(z) <<  std::endl;
 
     // {
