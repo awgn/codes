@@ -455,7 +455,7 @@ namespace more {
         {
             try
             {
-                doc = ::read<document<Opt, Ps...>>(in);
+                fill<document<Opt, Ps...>>(doc,in);
             }
             catch(std::exception &e)
             {
