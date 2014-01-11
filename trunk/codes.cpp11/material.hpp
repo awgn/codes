@@ -7,6 +7,8 @@
  * ----------------------------------------------------------------------------
  */
 
+#pragma once 
+
 #include <read.hpp>     // more!
 #include <show.hpp>     // more!
 #include <cxxabi.hpp>   // more!
@@ -20,7 +22,7 @@
 
 namespace more {
     
-    namespace key_value
+    namespace material
     {
         namespace details
         {       
@@ -42,24 +44,16 @@ namespace more {
             template <typename CharT, typename Traits>
             bool read_char(std::basic_istream<CharT, Traits> & in, typename std::basic_istream<CharT, Traits>::int_type c)
             {
-                decltype(c) _c;
+                decltype(c) c_;
 
                 if(!(in >> std::ws)) 
                     return false;
                 
-                _c = in.peek();
+                c_ = in.peek();
                 if (!in) 
                     return false;
 
-                if (c == _c) 
-                {
-                    in.get();
-                    return true;
-                }
-                else 
-                {
-                    return false;
-                }
+                return (c == c_) ? in.get(), true : false;
             }
 
             class streambuf : public std::streambuf 
@@ -79,8 +73,7 @@ namespace more {
                 , m_commkey(commkey)
                 , m_state(state::none)
                 {
-                    if (m_commkey == '\'' ||
-                        m_commkey == '"')
+                    if (m_commkey == '\'' || m_commkey == '"')
                         throw std::runtime_error("streambuf: invalid comment-key");
                 }
  
@@ -201,10 +194,10 @@ namespace more {
             }
         };
 
-#define DECLARE_KEY(k) struct k : more::key_value::key_base<k> { }
+#define DECLARE_KEY(k) struct k : more::material::key_base<k> { }
 
         template <typename Key, typename Value>
-        struct key_pair
+        struct key_value
         {
             static_assert(std::is_base_of<key_base<Key>, Key>::value, "invalid key type (DECLARE_KEY)");
             
@@ -215,16 +208,15 @@ namespace more {
         };
 
         template <typename Key, typename Tp>
-        key_pair<Key, Tp>
+        key_value<Key, Tp>
         make_key(Tp && v)
         {
-            return key_pair<Key, Tp> { std::forward<Tp>(v) };
+            return key_value<Key, Tp> { std::forward<Tp>(v) };
         }
-
 
         template <typename Key, typename Value>
         inline
-        std::string show(key_pair<Key,Value> const& p)
+        std::string show(key_value<Key,Value> const& p)
         {
             std::string ret = details::type_name<Key>();
             ret += ("= " + ::show(p.value));
@@ -249,7 +241,7 @@ namespace more {
         
         template <typename K, typename ...Ts> struct key_index;
         template <typename K, typename V, typename ...Ts>
-        struct key_index<K, key_pair<K, V>, Ts...>
+        struct key_index<K, key_value<K, V>, Ts...>
         {
             enum { value = 0 };
         };
@@ -261,7 +253,7 @@ namespace more {
 
         template <typename K, typename ...Ts> struct key_mapped_type;
         template <typename K, typename V, typename ...Ts>
-        struct key_mapped_type<K, key_pair<K, V>, Ts...>
+        struct key_mapped_type<K, key_value<K, V>, Ts...>
         {
             typedef V type;
         };
@@ -488,7 +480,7 @@ namespace more {
             return true;
         }
 
-    } // namespace key_value
+    } // namespace material
 
 } // namespace more
 

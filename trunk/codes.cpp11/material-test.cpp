@@ -1,6 +1,6 @@
 #include <variant.hpp>
 #include <show.hpp>
-#include <key_value.hpp>
+#include <material.hpp>
 
 #include <list>
 #include <string>
@@ -35,14 +35,14 @@ namespace key
     DECLARE_KEY(v_int_string);
 }
 
-using namespace more::key_value;
+using namespace more::material;
 
 typedef document<
 
     options<true, '#', '='>,
 
-    key_pair<key::int_first,  int>,
-    key_pair<key::int_second, int>
+    key_value<key::int_first,  int>,
+    key_value<key::int_second, int>
 
    > int_pair;
 
@@ -51,21 +51,21 @@ typedef document<
 
     options<false, '#', '='>,
 
-    key_pair<key::unsigned_int, unsigned int>,
-    key_pair<key::integers,     std::vector<int>>,
-    key_pair<key::booleans,     std::vector<bool>>,
-    key_pair<key::strings,      std::list<std::string>>,
-    key_pair<key::simple_pair,  std::pair<double, double>>,
-    key_pair<key::simple_tuple, std::tuple<bool, int, double, std::string>>,
-    key_pair<key::associative,  std::map<std::string, int>>,
-    key_pair<key::intset,       std::set<int>>,
-    key_pair<key::ptr_int,      int *>,
-    key_pair<key::shared_int,   std::shared_ptr<int>>,
-    key_pair<key::unique_int,   std::unique_ptr<int>>,
-    key_pair<key::lit_string,   const char *>,
-    key_pair<key::int_matrix,   std::vector<std::vector<int>>>,
-    key_pair<key::doc,          std::vector<int_pair>>,
-    key_pair<key::v_int_string, more::variant<int, std::string>>
+    key_value<key::unsigned_int, unsigned int>,
+    key_value<key::integers,     std::vector<int>>,
+    key_value<key::booleans,     std::vector<bool>>,
+    key_value<key::strings,      std::list<std::string>>,
+    key_value<key::simple_pair,  std::pair<double, double>>,
+    key_value<key::simple_tuple, std::tuple<bool, int, double, std::string>>,
+    key_value<key::associative,  std::map<std::string, int>>,
+    key_value<key::intset,       std::set<int>>,
+    key_value<key::ptr_int,      int *>,
+    key_value<key::shared_int,   std::shared_ptr<int>>,
+    key_value<key::unique_int,   std::unique_ptr<int>>,
+    key_value<key::lit_string,   const char *>,
+    key_value<key::int_matrix,   std::vector<std::vector<int>>>,
+    key_value<key::doc,          std::vector<int_pair>>,
+    key_value<key::v_int_string, more::variant<int, std::string>>
 
     > this_document;
 
@@ -95,7 +95,7 @@ main(int, char *[])
                         make_key<key::unsigned_int>(12U)
                      );
 
-    if (!parse("key_value_test.txt", doc))
+    if (!parse("material_test.txt", doc))
         exit(1);
 
     show_value<key::unsigned_int>(doc);
