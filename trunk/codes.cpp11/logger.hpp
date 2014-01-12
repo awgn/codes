@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include <exception>
 #include <thread>
@@ -450,9 +451,13 @@ namespace more
         {
             if (run_)
             {
-                log_.sync([this](std::ostream &o)
+                std::ostringstream out;
+                tuple_for_each(refs_,stream_on(out));                           
+                    
+                auto const & str = out.str();
+                log_.sync([str, this](std::ostream &o)
                 {
-                    tuple_for_each(refs_,stream_on(o));                           
+                    o << str;
                 });
             }
         }
