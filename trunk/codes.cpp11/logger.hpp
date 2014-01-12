@@ -413,6 +413,7 @@ namespace more
     //// more::lazy_ostream a temporary stream that log synchronously at its
     //// descrution point.
 
+    struct log_async_t {} log_async = log_async_t {};
 
     template <typename ...Ts>
     struct lazy_ostream
@@ -432,17 +433,28 @@ namespace more
             std::ostream &out_;
         };
 
-        lazy_ostream(logger &l)
-        : refs_()
-        , run_(true)
-        , log_(l)
+        lazy_ostream(logger &l, bool as = false)
+        : refs_ ()
+        , run_  (true)
+        , async_(as)
+        , log_  (l)
         {}
+
+        lazy_ostream(const lazy_ostream &other)
+        : refs_ (other.refs_)
+        , run_  (true)
+        , async_(other.async_)
+        , log_  (other.log_)
+        {
+            other.run_ = false;
+        }
 
         template <typename ... Tx, typename T>
         lazy_ostream(lazy_ostream<Tx...> const &l, const T &data)
-        : refs_(std::tuple_cat(l.refs_, std::tie(data)))
-        , run_(true)
-        , log_(l.log_)
+        : refs_ (std::tuple_cat(l.refs_, std::tie(data)))
+        , run_  (true)
+        , async_(l.async_)
+        , log_  (l.log_)
         {
             l.run_ = false;
         }
@@ -451,19 +463,30 @@ namespace more
         {
             if (run_)
             {
-                std::ostringstream out;
-                tuple_for_each(refs_,stream_on(out));                           
-                    
-                auto const & str = out.str();
-                log_.sync([str, this](std::ostream &o)
+                if (async_)
                 {
-                    o << str;
-                });
+                    std::ostringstream out;
+                    tuple_for_each(refs_,stream_on(out));                           
+                    auto const & str = out.str();
+
+                    log_.async([str](std::ostream &o) 
+                               { 
+                                  o << str; 
+                               });
+                }
+                else
+                {
+                    log_.sync([this](std::ostream &o) 
+                              { 
+                                  tuple_for_each(refs_, stream_on(o));
+                              });
+                }
             }
         }
 
         std::tuple<Ts...> refs_;
         mutable bool run_;
+        mutable bool async_;
         logger &log_;
     };
 
@@ -481,6 +504,13 @@ namespace more
     operator<<(lazy_ostream<Ts...> const &l, manip_t & m)
     {
         return lazy_ostream<Ts..., manip_t &>(l, m);
+    }
+
+    template <typename ...Ts>
+    inline lazy_ostream<Ts...> 
+    operator<<(lazy_ostream<Ts...> const &l, const log_async_t &)
+    {
+        return l.async_ = true, lazy_ostream<Ts...>(l);
     }
 
     template <typename ...Ts, typename T>
@@ -504,6 +534,12 @@ namespace more
     operator<<(logger &l, const T &data)
     {
         return lazy_ostream<>(l) << data;
+    }
+    
+    inline lazy_ostream<> 
+    operator<<(logger &l, const log_async_t &)
+    {
+        return lazy_ostream<>(l, true);
     }
     
 }

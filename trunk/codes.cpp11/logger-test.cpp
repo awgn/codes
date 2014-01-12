@@ -24,19 +24,21 @@ main(int, char *[])
     out.async([](std::ostream &o)
              {
                 std::this_thread::sleep_for(std::chrono::seconds(1));
-                o << "Hello world!" << std::endl;
+                o << "This is a log message..." << std::endl;
              });
 
 
     out.sync([=](std::ostream &o)
              {
-                o << 'a' << ' ' << 'b' << ' ' << 'c' << '!' << std::endl;
+                o << 1 << ' ' << 2 << ' ' << 3 << '!' << std::endl;
              });
 
     // using operator<< log is synchronous through the temporary lazy_ostream ...
     //
 
-    out << "Hello" << " world " << 42 << '!' << std::endl;
+    out << more::log_async << "Hello" << " world" << '!' <<  " (async)" << std::endl;
+    
+    out << "Hello" << " world" << '!' << " (sync)" << std::endl;
 
 }
 
