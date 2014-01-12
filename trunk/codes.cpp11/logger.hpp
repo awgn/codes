@@ -230,6 +230,7 @@ namespace more
             sync_(t, fun);
         }
 
+        //// log message: sync_ratelimit
 
         template <size_t N, typename Fun>
         void sync_ratelimit(std::chrono::system_clock::time_point now, Fun const &fun)
@@ -237,13 +238,18 @@ namespace more
             auto r = ratelimit_<N>(now);
             if (r.first)
             {
-                this->sync(fun);
+                sync(fun);
             }
             else if (r.second)
             {
-                this->sync([=](std::ostream &out){ out << std::to_string(r.second) + " message suppressed." << std::endl; });
+                sync([=](std::ostream &out)
+                { 
+                    out << r.second << " message suppressed." << std::endl; 
+                });
             }
         }
+        
+        //// log message: sync_ratelimit
 
         template <size_t N, typename Fun>
         void async_ratelimit(std::chrono::system_clock::time_point now, Fun const &fun)
@@ -251,11 +257,14 @@ namespace more
             auto r = ratelimit_<N>(now);
             if (r.first)
             {
-                this->sync(fun);
+                async(fun);
             }
             else if (r.second)
             {
-                this->async([=](std::ostream &out){ out << std::to_string(r.second) + " message suppressed." << std::endl; });
+                async([=](std::ostream &out)
+                { 
+                    out << r.second << " message suppressed." << std::endl; 
+                });
             }
         }
 
@@ -276,7 +285,6 @@ namespace more
             return static_cast<size_t>(n);
         }
         
-
         //// rotate the log file 
 
         void rotate(int level = 3)
