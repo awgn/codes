@@ -409,12 +409,12 @@ namespace more
         unsigned long done_;
     };
 
-    //// more::lazy_stream a temporary stream that log synchronously at its
+    //// more::lazy_ostream a temporary stream that log synchronously at its
     //// descrution point.
 
 
     template <typename ...Ts>
-    struct lazy_stream
+    struct lazy_ostream
     {
         struct stream_on
         {
@@ -431,14 +431,14 @@ namespace more
             std::ostream &out_;
         };
 
-        lazy_stream(logger &l)
+        lazy_ostream(logger &l)
         : refs_()
         , run_(true)
         , log_(l)
         {}
 
         template <typename ... Tx, typename T>
-        lazy_stream(lazy_stream<Tx...> const &l, const T &data)
+        lazy_ostream(lazy_ostream<Tx...> const &l, const T &data)
         : refs_(std::tuple_cat(l.refs_, std::tie(data)))
         , run_(true)
         , log_(l.log_)
@@ -446,8 +446,7 @@ namespace more
             l.run_ = false;
         }
 
- 
-        ~lazy_stream()
+        ~lazy_ostream()
         {
             if (run_)
             {
@@ -469,37 +468,37 @@ namespace more
     
     typedef std::ostream& (manip_t)(std::ostream&);
 
-    // lazy_stream<Ts...> << data
+    // lazy_ostream<Ts...> << data
     //
 
     template <typename ...Ts>
-    inline lazy_stream<Ts..., manip_t &>
-    operator<<(lazy_stream<Ts...> const &l, manip_t & m)
+    inline lazy_ostream<Ts..., manip_t &>
+    operator<<(lazy_ostream<Ts...> const &l, manip_t & m)
     {
-        return lazy_stream<Ts..., manip_t &>(l, m);
+        return lazy_ostream<Ts..., manip_t &>(l, m);
     }
 
     template <typename ...Ts, typename T>
-    inline lazy_stream<Ts..., const T &>
-    operator<<(lazy_stream<Ts...> const &l, const T &data)
+    inline lazy_ostream<Ts..., const T &>
+    operator<<(lazy_ostream<Ts...> const &l, const T &data)
     {
-        return lazy_stream<Ts..., const T &>(l, data);
+        return lazy_ostream<Ts..., const T &>(l, data);
     }
 
     // more::logger << data
     //
 
-    inline lazy_stream<manip_t &>
+    inline lazy_ostream<manip_t &>
     operator<<(logger &l, manip_t &m)
     {
-        return lazy_stream<>(l) << m;
+        return lazy_ostream<>(l) << m;
     }
 
     template <typename T>
-    inline lazy_stream<const T &>
+    inline lazy_ostream<const T &>
     operator<<(logger &l, const T &data)
     {
-        return lazy_stream<>(l) << data;
+        return lazy_ostream<>(l) << data;
     }
     
 }
