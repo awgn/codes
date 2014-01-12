@@ -167,16 +167,16 @@ namespace more
         void
         name(std::string filename, std::ios_base::openmode mode)  
         {
+            std::lock_guard<std::mutex> lock(mutex_);
             file_.close();
             file_.open(filename, mode);
-
             log_.rdbuf(file_.rdbuf());
         }
         
-
         void
         rdbuf(std::streambuf *sb) 
         {
+            std::lock_guard<std::mutex> lock(mutex_);
             file_.close();
             log_.rdbuf(sb);
         }
@@ -187,7 +187,6 @@ namespace more
             return log_.rdbuf();
         }
 
-        
         void timestamp(bool value)
         {
             timestamp_ = value;
