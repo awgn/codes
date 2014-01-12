@@ -304,10 +304,28 @@ namespace more
                 
                 fb->close();
 
-                rotate_file(name, level);
+                bool rot = true;
+                try
+                {
+                    rotate_file(name, level);
+                }
+                catch(...)
+                {
+                    rot = false;
+                }
 
                 if (!fb->open(name, std::ios::out))
-                    throw std::runtime_error( "logger: rotate " + name);
+                {
+                    throw std::system_error(errno, std::generic_category(), "filebuf: open");      
+                }
+
+                if (!rot)
+                {
+                    sync([=](std::ostream &out)
+                    { 
+                        out << "error while rotating file!" << std::endl; 
+                    });
+                }
 
             }).detach();
         }
