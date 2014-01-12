@@ -47,7 +47,7 @@ namespace more
         {
             auto ext = [](int n) -> std::string 
             { 
-                return n > 0 ? ("." + std::to_string(n)) : ""; 
+                return n > 0 ? ('.' + std::to_string(n)) : ""; 
             };
 
             for(int i = level-1; i >= 0; i--)
@@ -61,7 +61,7 @@ namespace more
         }
     }
 
-    //// an ofstream that remember its filename
+    //// the ofstream with a name (used for log rotation)
 
     template <typename CharT, typename Traits = std::char_traits<CharT> >
     struct named_ofstream : public std::basic_ofstream<CharT, Traits>
@@ -113,8 +113,9 @@ namespace more
         std::string filename_;
     };
 
-    typedef named_ofstream<char>    onfstream;
-    typedef named_ofstream<wchar_t> wonfstream;
+
+    using nofstream  = named_ofstream<char>;
+    using nwofstream = named_ofstream<wchar_t>;
 
 
     /////////////////////////   more::logger
@@ -154,12 +155,8 @@ namespace more
         , done_()
         {
         }
-
-
-        ~logger()
-        {
-        }
-
+        
+        ~logger() = default;
 
         std::string
         name() const
@@ -219,7 +216,7 @@ namespace more
             {
                 sync([fun](std::ostream &out) 
                 {
-                    out << "exception: thread could not be started!" << std::endl;
+                    out << "exception: log thread could not be started!" << std::endl;
                     fun(out);
                 });
             }
@@ -356,7 +353,7 @@ namespace more
             }
             catch(std::exception &e)
             {
-                log_ << "logger exception: " << e.what() << std::endl;
+                log_ << "Exception: " << e.what() << std::endl;
             }
 
             done_++;
@@ -366,17 +363,18 @@ namespace more
         static std::string
         make_timestamp_()
         {
-            auto now_c = std::chrono::system_clock::to_time_t(
+            auto now_c = std::chrono::system_clock::to_time_t
+                         (
                             std::chrono::system_clock::now()
                          );
+
             struct tm tm_c;
             return put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
         }   
 
-        onfstream file_;
+        nofstream file_;
 
         std::ostream log_;
-        
         mutable std::mutex mutex_;
         std::condition_variable cond_;
 
@@ -386,8 +384,8 @@ namespace more
         unsigned long done_;
     };
 
-
-    /////////////////////////   more::lazy_stream
+    //// more::lazy_stream a temporary stream that log synchronously at its
+    //// descrution point.
 
 
     template <typename ...Ts>
