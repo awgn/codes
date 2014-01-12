@@ -15,37 +15,29 @@ main(int, char *[])
 {
     more::logger out;
 
-    out.async([](std::ostream &){
-
+    out.async([](std::ostream &)
+             {
                 std::this_thread::sleep_for(std::chrono::seconds(2));
-
-                throw std::runtime_error("log user disaster!");
-
+                throw std::runtime_error("exception thrown in the log closure!");
              });
 
-    out.async([](std::ostream &o){
-
+    out.async([](std::ostream &o)
+             {
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 o << "Hello world!" << std::endl;
-
              });
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    out.sync([=](std::ostream &o){
-
+    out.sync([=](std::ostream &o)
+             {
                 o << 'a' << ' ' << 'b' << ' ' << 'c' << '!' << std::endl;
-
              });
 
+    // using operator<< log synch...
+    //
 
-    out << "bye!" << std::endl;
+    out << "Hello" << " world " << 42 << '!' << std::endl;
 
-    std::cout << "log size: " << out.size() << std::endl;
-
-    out.rotate();
-
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
  
