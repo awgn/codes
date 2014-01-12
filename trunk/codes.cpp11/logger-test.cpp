@@ -33,7 +33,7 @@ main(int, char *[])
                 o << 'a' << ' ' << 'b' << ' ' << 'c' << '!' << std::endl;
              });
 
-    // using operator<< log synch...
+    // using operator<< log is synchronous through the temporary lazy_ostream ...
     //
 
     out << "Hello" << " world " << 42 << '!' << std::endl;
