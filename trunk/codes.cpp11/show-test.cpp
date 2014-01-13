@@ -154,8 +154,19 @@ main(int, char *[])
     std::cout << show( std::unique_ptr<int>(new int(0)) ) << std::endl;
     std::cout << show( std::shared_ptr<int>(new int(42)) ) << std::endl;
 
+    // integral_constant:
+    
+    std::cout << "\n--- integral_constant:\n\n";
+
+    std::cout << show ( std::true_type{} ) << std::endl;
+    std::cout << show ( std::false_type{} ) << std::endl;
+
+    std::cout << show ( std::integral_constant<int, 2>{} ) << std::endl;
+
     // variant
     //
+    std::cout << "\n--- variant:\n\n";
+
     std::cout << show( more::variant<int, std::string>(std::string("hello world")) ) << std::endl;
     return 0;
 }

@@ -163,6 +163,22 @@ inline namespace more_show {
     inline std::string
     show(std::chrono::time_point<Clock, Dur> const &r);
 
+    // initializer list
+    
+    template <typename T>
+    inline std::string
+    show(std::initializer_list<T> const &);
+
+    // integral_constant
+
+    template <typename Tp, Tp Value>
+    inline std::string
+    show(std::integral_constant<Tp,Value>);
+    
+    template <bool Value>
+    inline std::string
+    show(std::integral_constant<bool,Value>);
+
     // containers
    
     template <typename T>
@@ -448,6 +464,8 @@ inline namespace more_show {
         return show(r.time_since_epoch());
     }
 
+    // initializer list
+    
     template <typename T>
     inline std::string
     show(std::initializer_list<T> const &init)
@@ -458,6 +476,26 @@ inline namespace more_show {
             out += show(e) + ' ';
         }
         return std::move(out) + '}';
+    }
+    
+    // integral_constant
+
+    template <typename Tp, Tp Value>
+    inline std::string
+    show(std::integral_constant<Tp,Value>)
+    {
+        std::string out(std::to_string(Value));
+
+        return out + "_" + type_name<Tp>();
+    }
+
+    template <bool Value>
+    inline std::string
+    show(std::integral_constant<bool,Value>)
+    {
+        std::string out(Value ? "true" : "false");
+
+        return std::string(Value ? "true" : "false") + "_type";
     }
 
     ///////////////////////////////////////
