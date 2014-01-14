@@ -13,7 +13,9 @@
 int
 main(int, char *[])
 {
-    more::logger out;
+    more::logger x;
+
+    more::logger out(std::move(x));
 
     out.async([](std::ostream &)
              {

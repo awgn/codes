@@ -67,69 +67,105 @@ namespace more
 
     class logger
     {
+        // delegating constructors are missing in g++-4.6.x
+        //
+
+        struct data_base
+        {
+            data_base(std::streambuf *fb, bool timestamp)
+            : fname ()
+            , fbuf  ()
+            , out   (fb)
+            , mutex ()
+            , cond  ()
+            , tstamp(timestamp)
+            , ticket(0)
+            , done  (0)
+            {}
+
+            data_base(const char *name, bool timestamp)
+            : fname (name)
+            , fbuf  (new std::filebuf())
+            , out   (nullptr)
+            , mutex ()
+            , cond  ()
+            , tstamp(timestamp)
+            , ticket(0)
+            , done  (0)
+            {
+                if(!fbuf->open(name, std::ios_base::out|std::ios_base::trunc))
+                    throw std::system_error(errno, std::generic_category(), "filebuf: open");        
+                
+                out.rdbuf(fbuf.get());
+            }
+
+            std::string                     fname;
+            std::unique_ptr<std::filebuf>   fbuf;
+            std::ostream                    out;
+
+            mutable std::mutex mutex;
+            std::condition_variable cond;
+
+            bool tstamp;
+            
+            std::atomic_ulong ticket;
+            unsigned long done;
+        };
+
+        struct data : data_base
+        {
+            data(bool timestamp)
+            : data_base(std::cout.rdbuf(), timestamp)
+            {}
+
+            data(std::streambuf *fb, bool timestamp)
+            : data_base(fb, timestamp)
+            {}
+
+            data(const char *name, bool timestamp)
+            : data_base(name,timestamp) 
+            {}
+        };
+
     public:
 
         logger(bool timestamp = true)
-        : fname_() 
-        , fbuf_()
-        , out_(new std::ostream(std::cout.rdbuf()))
-        , mutex_()
-        , timestamp_(timestamp)
-        , ticket_(0)
-        , done_()
-        {
-        }
+        : data_(new data(timestamp))
+        { }
 
         explicit
         logger(std::streambuf *sb, bool timestamp = true)
-        : fname_()
-        , fbuf_()
-        , out_(new std::ostream(sb))
-        , mutex_()
-        , timestamp_(timestamp)
-        , ticket_(0)
-        , done_()
-        {
-        }
+        : data_(new data(sb, timestamp))
+        { }
         
         explicit
         logger(const char *filename, bool timestamp = true)
-        : fname_(filename)
-        , fbuf_(new std::filebuf())
-        , out_()
-        , mutex_()
-        , timestamp_(timestamp)
-        , ticket_(0)
-        , done_()
-        {
-            if(!fbuf_->open(filename, std::ios_base::out|std::ios_base::trunc))
-                throw std::system_error(errno, std::generic_category(), "filebuf: open");        
-                
-            out_.reset(new std::ostream(fbuf_.get()));
-        }
-        
+        : data_(new data(filename, timestamp))
+        { }
+
+        logger(logger&&) noexcept = default;
+
         ~logger() = default;
-        
-        
+
         std::string 
         name() const
         {
-            return fname_;
+            return data_->fname;
         }
         
         void
         open(std::string filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)  
         {
-            std::lock_guard<std::mutex> lock(mutex_);
+            std::lock_guard<std::mutex> lock(data_->mutex);
 
-            fbuf_.reset(new std::filebuf());
+            data_->fbuf.reset(new std::filebuf());
 
-            if (!fbuf_->open(filename, mode))
+            if (!data_->fbuf->open(filename, mode))
                 throw std::system_error(errno, std::generic_category(), "filebuf: open");        
 
-            fname_ = std::move(filename);
+            data_->fname = std::move(filename);
 
-            out_->rdbuf(fbuf_.get());
+            data_->out.rdbuf(data_->fbuf.get());
         }
         
         void
@@ -141,26 +177,26 @@ namespace more
         void
         rdbuf(std::streambuf *sb) 
         {
-            std::lock_guard<std::mutex> lock(mutex_);
-            fbuf_.reset(nullptr);
-            fname_.clear();
-            out_->rdbuf(sb);
+            std::lock_guard<std::mutex> lock(data_->mutex);
+            data_->fbuf.reset(nullptr);
+            data_->fname.clear();
+            data_->out.rdbuf(sb);
         }
 
         std::streambuf *
         rdbuf() const
         {
-            return out_->rdbuf();
+            return data_->out.rdbuf();
         }
 
         void timestamp(bool value)
         {
-            timestamp_ = value;
+            data_->tstamp = value;
         }
         
         bool timestamp() const
         {
-            return timestamp_;
+            return data_->tstamp;
         }
 
         //// log message synchronously
@@ -178,7 +214,7 @@ namespace more
         {
             try
             {
-                auto t = this->ticket_++;
+                auto t = data_->ticket++;
                 std::thread([this, fun, t]() 
                 {    
                     sync_(std::make_pair(true, t), fun); 
@@ -201,7 +237,7 @@ namespace more
         size_t
         size() const
         {
-            std::lock_guard<std::mutex> lock(mutex_);
+            std::lock_guard<std::mutex> lock(data_->mutex);
             return size_();
         }
         
@@ -209,9 +245,9 @@ namespace more
 
         void rotate(int depth = 3, size_t max_size = 0)
         {
-            std::lock_guard<std::mutex> lock(mutex_);
+            std::lock_guard<std::mutex> lock(data_->mutex);
             
-            if (fname_.empty())
+            if (data_->fname.empty())
                 return;
             
             if (size_() > max_size)
@@ -222,16 +258,16 @@ namespace more
 
         void rotate_async(int depth = 3, size_t max_size = 0)
         {
-            std::lock_guard<std::mutex> lock(mutex_);
+            std::lock_guard<std::mutex> lock(data_->mutex);
             
-            if (fname_.empty())
+            if (data_->fname.empty())
                 return;
             
             if (size_() > max_size)
             {
                 std::thread([this, depth]() 
                 {
-                    std::lock_guard<std::mutex> lock(mutex_);
+                    std::lock_guard<std::mutex> lock(data_->mutex);
                     this->rotate_(depth);
 
                 }).detach();
@@ -243,7 +279,7 @@ namespace more
         size_t
         size_() const
         {
-            auto fb = dynamic_cast<std::filebuf *>(out_->rdbuf());
+            auto fb = dynamic_cast<std::filebuf *>(data_->out.rdbuf());
             if (fb == nullptr) 
                 return 0;
 
@@ -253,7 +289,7 @@ namespace more
         void 
         rotate_(int depth = 3)
         {
-            std::filebuf * fb = dynamic_cast<std::filebuf *>(out_->rdbuf());
+            std::filebuf * fb = dynamic_cast<std::filebuf *>(data_->out.rdbuf());
             if (fb == nullptr) 
                 return; 
             
@@ -262,14 +298,14 @@ namespace more
             bool rot = true;
             try
             {
-                details::rotate_file(fname_, depth);
+                details::rotate_file(data_->fname, depth);
             }
             catch(...)
             {
                 rot = false;
             }
 
-            if (!fb->open(fname_, std::ios::out))
+            if (!fb->open(data_->fname, std::ios::out))
                 throw std::system_error(errno, std::generic_category(), "filebuf: open");      
 
             if (!rot)
@@ -284,29 +320,29 @@ namespace more
         template <typename Fun>
         void sync_(std::pair<bool, unsigned long> ticket, Fun const &fun)
         {
-            std::unique_lock<std::mutex> lock(mutex_);
+            std::unique_lock<std::mutex> lock(data_->mutex);
 
             if (ticket.first)
             {
-                cond_.wait(lock, [&]() { return ticket.second == done_; });
+                data_->cond.wait(lock, [&]() { return ticket.second == data_->done; });
             }
 
             try
             {
-                if (timestamp_)
-                    *out_ << make_timestamp_();
+                if (data_->tstamp)
+                    data_->out << make_timestamp_();
 
-                fun(*out_);
+                fun(data_->out);
             }
             catch(std::exception &e)
             {
-                *out_ << "Exception: " << e.what() << std::endl;
+                data_->out << "Exception: " << e.what() << std::endl;
             }
 
             if (ticket.first)
             {
-                done_++;
-                cond_.notify_all();
+                data_->done++;
+                data_->cond.notify_all();
             }
         }
 
@@ -322,17 +358,8 @@ namespace more
             return details::put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
         }   
 
-        std::string                     fname_;
-        std::unique_ptr<std::filebuf>   fbuf_;
-        std::unique_ptr<std::ostream>   out_;
+        std::unique_ptr<data>   data_;
 
-        mutable std::mutex mutex_;
-        std::condition_variable cond_;
-
-        bool timestamp_;
-        
-        std::atomic_ulong ticket_;
-        unsigned long done_;
     };
 
 
