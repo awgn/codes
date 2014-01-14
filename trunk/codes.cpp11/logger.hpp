@@ -105,7 +105,7 @@ namespace more
             if(!fbuf_->open(filename, std::ios_base::out|std::ios_base::trunc))
                 throw std::system_error(errno, std::generic_category(), "filebuf: open");        
                 
-            out_->rdbuf(fbuf_.get());
+            out_.reset(new std::ostream(fbuf_.get()));
         }
         
         ~logger() = default;
@@ -122,7 +122,7 @@ namespace more
         {
             std::lock_guard<std::mutex> lock(mutex_);
 
-            fbuf_->close();
+            fbuf_.reset(new std::filebuf());
 
             if (!fbuf_->open(filename, mode))
                 throw std::system_error(errno, std::generic_category(), "filebuf: open");        
@@ -142,7 +142,7 @@ namespace more
         rdbuf(std::streambuf *sb) 
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            fbuf_->close();
+            fbuf_.reset(nullptr);
             fname_.clear();
             out_->rdbuf(sb);
         }
@@ -412,7 +412,7 @@ namespace more
         }
 
         std::tuple<Ts...> refs_;
-        mutable bool run_;
+        mutable bool enable_;
         mutable bool async_;
         logger &log_;
     };
