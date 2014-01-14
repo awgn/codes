@@ -231,42 +231,6 @@ namespace more
             sync_(t, fun);
         }
 
-        //// log message: sync_ratelimit
-
-        template <size_t N, typename Fun>
-        void sync_ratelimit(std::chrono::system_clock::time_point now, Fun const &fun)
-        {
-            auto r = ratelimit_<N>(now);
-            if (r.first)
-            {
-                sync(fun);
-            }
-            else if (r.second)
-            {
-                sync([=](std::ostream &out)
-                { 
-                    out << r.second << " message suppressed." << std::endl; 
-                });
-            }
-        }
-        
-        //// log message: sync_ratelimit
-
-        template <size_t N, typename Fun>
-        void async_ratelimit(std::chrono::system_clock::time_point now, Fun const &fun)
-        {
-            auto r = ratelimit_<N>(now);
-            if (r.first)
-            {
-                async(fun);
-            }
-            else if (r.second)
-            {
-                async([=](std::ostream &out)
-                { 
-                    out << r.second << " message suppressed." << std::endl; 
-                });
-            }
         }
 
         //// return the size of the log file
@@ -333,36 +297,10 @@ namespace more
 
     private:
         
-        template <int N>
-        std::pair<bool, int> ratelimit_(std::chrono::system_clock::time_point now)
         {
-            struct ratelimit
+
             {
-                std::chrono::system_clock::time_point tp;
-                int32_t rate;
-            };
-
-            static __thread ratelimit *rt;
-
-            if (!rt) 
-                rt = new ratelimit{ std::chrono::system_clock::time_point(), 0 };
-
-            int delta = 0;
-
-            if (std::chrono::system_clock::to_time_t(rt->tp) !=
-                std::chrono::system_clock::to_time_t(now))
-            {
-                rt->tp = now;
-                delta = (rt->rate > 2*N ? (rt->rate - N) : (rt->rate > N ? N : rt->rate));
-                rt->rate -= delta;
             }
-            else 
-            {
-                rt->rate++;
-            }
-
-            return std::make_pair(rt->rate < N, delta);
-        }
 
 
         template <typename Fun>
