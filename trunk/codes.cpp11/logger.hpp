@@ -144,7 +144,7 @@ namespace more
         : data_(new data(filename, timestamp))
         { }
 
-        logger(logger&&) noexcept = default;
+        logger(logger&&) = default;
 
         ~logger() = default;
 
