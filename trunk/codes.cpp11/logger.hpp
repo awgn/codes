@@ -239,64 +239,86 @@ namespace more
         size() const
         {
             std::lock_guard<std::mutex> lock(mutex_);
-
-            auto fb = dynamic_cast<std::filebuf *>(out_.rdbuf());
-            if (fb == nullptr) 
-                return 0;
-
-            auto n = fb->pubseekoff(0, std::ios_base::cur);
-            assert(n >= 0);
-
-            return static_cast<size_t>(n);
+            return size_();
         }
         
         //// rotate the log file 
 
-        void rotate(int level = 3)
+        void rotate_sync(int depth = 3, size_t max_size = 0)
         {
-            auto name = file_.name();
+            std::lock_guard<std::mutex> lock(mutex_);
             
-            if (name.empty())
+            if (file_.name().empty())
                 return;
+            
+            if (size_() > max_size)
+                rotate_(depth);
+        }
 
-            std::thread([=]() {
-                
-                std::lock_guard<std::mutex> lock(mutex_);
 
-                std::filebuf * fb = dynamic_cast<std::filebuf *>(out_.rdbuf());
-                if (fb == nullptr) 
-                    return; 
-                
-                fb->close();
-
-                bool rot = true;
-                try
+        void rotate_async(int depth = 3, size_t max_size = 0)
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            
+            if (file_.name().empty())
+                return;
+            
+            if (size_() > max_size)
+            {
+                std::thread([this, depth]() 
                 {
-                    rotate_file(name, level);
-                }
-                catch(...)
-                {
-                    rot = false;
-                }
+                    std::lock_guard<std::mutex> lock(mutex_);
+                    this->rotate_(depth);
 
-                if (!fb->open(name, std::ios::out))
-                {
-                    throw std::system_error(errno, std::generic_category(), "filebuf: open");      
-                }
-
-                if (!rot)
-                {
-                    sync([=](std::ostream &out)
-                    { 
-                        out << "error while rotating file!" << std::endl; 
-                    });
-                }
-
-            }).detach();
+                }).detach();
+            }
         }
 
     private:
         
+        size_t
+        size_() const
+        {
+            auto fb = dynamic_cast<std::filebuf *>(out_.rdbuf());
+            if (fb == nullptr) 
+                return 0;
+
+            return static_cast<size_t>(fb->pubseekoff(0, std::ios_base::cur));
+        }
+
+        void 
+        rotate_(int depth = 3)
+        {
+            std::filebuf * fb = dynamic_cast<std::filebuf *>(out_.rdbuf());
+            if (fb == nullptr) 
+                return; 
+            
+            fb->close();
+
+            bool rot = true;
+            try
+            {
+                rotate_file(file_.name(), depth);
+            }
+            catch(...)
+            {
+                rot = false;
+            }
+
+            if (!fb->open(file_.name(), std::ios::out))
+            {
+                throw std::system_error(errno, std::generic_category(), "filebuf: open");      
+            }
+
+            if (!rot)
+            {
+                sync([=](std::ostream &out)
+                { 
+                    out << "error while rotating file!" << std::endl; 
+                });
+            }
+        }
+
         template <typename Fun>
         void sync_(std::pair<bool, unsigned long> ticket, Fun const &fun)
         {
@@ -304,10 +326,7 @@ namespace more
 
             if (ticket.first)
             {
-                cond_.wait(lock, [&]() -> bool 
-                           { 
-                                return ticket.second == done_; 
-                           });
+                cond_.wait(lock, [&]() { return ticket.second == done_; });
             }
 
             try
