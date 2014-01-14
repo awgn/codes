@@ -34,7 +34,7 @@ namespace more
     { 
         //////////// std::put_time is missing in g++ up to 4.7.x
         
-        std::string 
+        inline std::string 
         put_time(const struct tm *tmb, const char *fmt)
         {
             char buf [64];
@@ -45,7 +45,8 @@ namespace more
         
         //////////// rotate_file function
         
-        void rotate_file(const std::string &name, int depth)
+        inline void 
+        rotate_file(const std::string &name, int depth)
         {
             auto ext = [](int n) -> std::string 
             { 
@@ -366,7 +367,10 @@ namespace more
     //// more::lazy_logger a temporary stream that logs at its
     //// descrution point.
 
-    struct log_async_t {} log_async = log_async_t {};
+    namespace 
+    {
+        struct log_async_t {} log_async = log_async_t {};
+    }
 
     template <typename ...Ts>
     struct lazy_logger
