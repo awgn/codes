@@ -337,13 +337,13 @@ namespace more
     };
 
 
-    //// more::lazy_ostream a temporary stream that logs at its
+    //// more::lazy_logger a temporary stream that logs at its
     //// descrution point.
 
     struct log_async_t {} log_async = log_async_t {};
 
     template <typename ...Ts>
-    struct lazy_ostream
+    struct lazy_logger
     {
         struct stream_on
         {
@@ -360,14 +360,14 @@ namespace more
             std::ostream &out_;
         };
 
-        lazy_ostream(logger &l, bool as = false)
+        lazy_logger(logger &l, bool as = false)
         : refs_ ()
         , run_  (true)
         , async_(as)
         , log_  (l)
         {}
 
-        lazy_ostream(const lazy_ostream &other)
+        lazy_logger(const lazy_logger &other)
         : refs_ (other.refs_)
         , run_  (true)
         , async_(other.async_)
@@ -377,7 +377,7 @@ namespace more
         }
 
         template <typename ... Tx, typename T>
-        lazy_ostream(lazy_ostream<Tx...> const &l, const T &data)
+        lazy_logger(lazy_logger<Tx...> const &l, const T &data)
         : refs_ (std::tuple_cat(l.refs_, std::tie(data)))
         , run_  (true)
         , async_(l.async_)
@@ -386,7 +386,7 @@ namespace more
             l.run_ = false;
         }
 
-        ~lazy_ostream()
+        ~lazy_logger()
         {
             if (run_)
             {
@@ -423,50 +423,50 @@ namespace more
     
     typedef std::ostream& (manip_t)(std::ostream&);
 
-    // lazy_ostream<Ts...> << data
+    // lazy_logger<Ts...> << data
     //
 
     template <typename ...Ts>
-    inline lazy_ostream<Ts..., manip_t &>
-    operator<<(lazy_ostream<Ts...> const &l, manip_t & m)
+    inline lazy_logger<Ts..., manip_t &>
+    operator<<(lazy_logger<Ts...> const &l, manip_t & m)
     {
-        return lazy_ostream<Ts..., manip_t &>(l, m);
+        return lazy_logger<Ts..., manip_t &>(l, m);
     }
 
     template <typename ...Ts>
-    inline lazy_ostream<Ts...> 
-    operator<<(lazy_ostream<Ts...> const &l, const log_async_t &)
+    inline lazy_logger<Ts...> 
+    operator<<(lazy_logger<Ts...> const &l, const log_async_t &)
     {
-        return l.async_ = true, lazy_ostream<Ts...>(l);
+        return l.async_ = true, lazy_logger<Ts...>(l);
     }
 
     template <typename ...Ts, typename T>
-    inline lazy_ostream<Ts..., const T &>
-    operator<<(lazy_ostream<Ts...> const &l, const T &data)
+    inline lazy_logger<Ts..., const T &>
+    operator<<(lazy_logger<Ts...> const &l, const T &data)
     {
-        return lazy_ostream<Ts..., const T &>(l, data);
+        return lazy_logger<Ts..., const T &>(l, data);
     }
 
     // more::logger << data
     //
 
-    inline lazy_ostream<manip_t &>
+    inline lazy_logger<manip_t &>
     operator<<(logger &l, manip_t &m)
     {
-        return lazy_ostream<>(l) << m;
+        return lazy_logger<>(l) << m;
     }
 
     template <typename T>
-    inline lazy_ostream<const T &>
+    inline lazy_logger<const T &>
     operator<<(logger &l, const T &data)
     {
-        return lazy_ostream<>(l) << data;
+        return lazy_logger<>(l) << data;
     }
     
-    inline lazy_ostream<> 
+    inline lazy_logger<> 
     operator<<(logger &l, const log_async_t &)
     {
-        return lazy_ostream<>(l, true);
+        return lazy_logger<>(l, true);
     }
     
 }
