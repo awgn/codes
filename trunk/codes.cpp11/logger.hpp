@@ -8,8 +8,8 @@
  * ----------------------------------------------------------------------------
  */
  
-#ifndef _LOGGER_HPP_
-#define _LOGGER_HPP_
+#ifndef _MORE_LOGGER_HPP_
+#define _MORE_LOGGER_HPP_
 
 #include <iostream>
 #include <fstream>
@@ -110,10 +110,7 @@ namespace more
         
         ~logger() = default;
         
-        logger(logger &&) = default;
-        logger& operator=(logger &&) = default;
-
-
+        
         std::string 
         name() const
         {
@@ -166,7 +163,15 @@ namespace more
             return timestamp_;
         }
 
-        //// log message: async
+        //// log message synchronously
+        
+        template <typename Fun>
+        void sync(Fun const &fun)
+        {
+            sync_(std::make_pair(false, 0), fun);
+        }
+
+        //// log message asynchronously
 
         template <typename Fun>
         void async(Fun const &fun)
@@ -191,14 +196,6 @@ namespace more
             }
         }
 
-        //// log message: sync
-        
-        template <typename Fun>
-        void sync(Fun const &fun)
-        {
-            sync_(std::make_pair(false, 0), fun);
-        }
-
         //// return the size of the log file
         
         size_t
@@ -220,6 +217,8 @@ namespace more
             if (size_() > max_size)
                 rotate_(depth);
         }
+        
+        //// rotate the log file asynchronously 
 
         void rotate_async(int depth = 3, size_t max_size = 0)
         {
@@ -360,35 +359,36 @@ namespace more
             std::ostream &out_;
         };
 
+
         lazy_logger(logger &l, bool as = false)
-        : refs_ ()
-        , run_  (true)
-        , async_(as)
-        , log_  (l)
+        : refs_  ()
+        , enable_(true)
+        , async_ (as)
+        , log_   (l)
         {}
 
         lazy_logger(const lazy_logger &other)
-        : refs_ (other.refs_)
-        , run_  (true)
-        , async_(other.async_)
-        , log_  (other.log_)
+        : refs_  (other.refs_)
+        , enable_(true)
+        , async_ (other.async_)
+        , log_   (other.log_)
         {
-            other.run_ = false;
+            other.enable_ = false;
         }
 
         template <typename ... Tx, typename T>
-        lazy_logger(lazy_logger<Tx...> const &l, const T &data)
-        : refs_ (std::tuple_cat(l.refs_, std::tie(data)))
-        , run_  (true)
-        , async_(l.async_)
-        , log_  (l.log_)
+        lazy_logger(lazy_logger<Tx...> const &log, const T &data)
+        : refs_  (std::tuple_cat(log.refs_, std::tie(data)))
+        , enable_(true)
+        , async_ (log.async_)
+        , log_   (log.log_)
         {
-            l.run_ = false;
+            log.enable_ = false;
         }
 
         ~lazy_logger()
         {
-            if (run_)
+            if (enable_)
             {
                 if (async_)
                 {
@@ -471,4 +471,4 @@ namespace more
     
 }
 
-#endif /* _LOGGER_HPP_ */
+#endif /* _MORE_LOGGER_HPP_ */
