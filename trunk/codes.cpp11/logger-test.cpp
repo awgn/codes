@@ -18,13 +18,13 @@ main(int, char *[])
     out.async([](std::ostream &)
              {
                 std::this_thread::sleep_for(std::chrono::seconds(2));
-                throw std::runtime_error("exception thrown in the log closure!");
+                throw std::runtime_error("ASYNC_1: throw in the log closure!");
              });
 
     out.async([](std::ostream &o)
              {
                 std::this_thread::sleep_for(std::chrono::seconds(1));
-                o << "This is a log message..." << std::endl;
+                o << "ASYNC_2: this is a log message..." << std::endl;
              });
 
 
@@ -36,10 +36,11 @@ main(int, char *[])
     // using operator<< log is synchronous through the temporary lazy_ostream ...
     //
 
-    out << more::log_async << "Hello" << " world" << '!' <<  " (async)" << std::endl;
+    out << more::log_async << "ASYNC_3:" << " Hello" << " world" << '!' <<  " (async)" << std::endl;
     
-    out << "Hello" << " world" << '!' << " (sync)" << std::endl;
+    out << "Hello" << " world" << '!' << std::endl;
 
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
  
