@@ -65,7 +65,6 @@ namespace more
 
     /////////////////////////   more::logger
 
-
     class logger
     {
     public:
@@ -115,7 +114,7 @@ namespace more
         logger& operator=(logger &&) = default;
 
 
-        std::string const &
+        std::string 
         name() const
         {
             return fname_;
@@ -132,16 +131,14 @@ namespace more
                 throw std::system_error(errno, std::generic_category(), "filebuf: open");        
 
             fname_ = std::move(filename);
+
             out_->rdbuf(fbuf_.get());
         }
         
         void
         close()
         {
-            std::lock_guard<std::mutex> lock(mutex_);
-            fbuf_->close();
-            fname_.clear();
-            out_->rdbuf(nullptr);
+            rdbuf(nullptr);
         }
 
         void
@@ -274,15 +271,13 @@ namespace more
             }
 
             if (!fb->open(fname_, std::ios::out))
-            {
                 throw std::system_error(errno, std::generic_category(), "filebuf: open");      
-            }
 
             if (!rot)
             {
                 sync([=](std::ostream &out)
                 { 
-                    out << "error while rotating file!" << std::endl; 
+                    out << "rotate: error while rotating files!" << std::endl; 
                 });
             }
         }
