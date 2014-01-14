@@ -19,6 +19,7 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
+#include <memory>
 #include <condition_variable>
 #include <ctime>
 #include <cerrno>
@@ -29,7 +30,7 @@
 
 namespace more
 {
-    namespace 
+    namespace details 
     { 
         //////////// std::put_time is missing in g++ up to 4.7.x
         
@@ -64,13 +65,15 @@ namespace more
 
     /////////////////////////   more::logger
 
+
     class logger
     {
     public:
 
         logger(bool timestamp = true)
-        : file_()
-        , out_(std::cout.rdbuf())
+        : fname_() 
+        , fbuf_()
+        , out_(new std::ostream(std::cout.rdbuf()))
         , mutex_()
         , timestamp_(timestamp)
         , ticket_(0)
@@ -80,8 +83,9 @@ namespace more
 
         explicit
         logger(std::streambuf *sb, bool timestamp = true)
-        : file_()
-        , out_(sb)
+        : fname_()
+        , fbuf_()
+        , out_(new std::ostream(sb))
         , mutex_()
         , timestamp_(timestamp)
         , ticket_(0)
@@ -91,52 +95,68 @@ namespace more
         
         explicit
         logger(const char *filename, bool timestamp = true)
-        : file_(filename)
-        , out_(file_.rdbuf())
+        : fname_(filename)
+        , fbuf_(new std::filebuf())
+        , out_()
         , mutex_()
         , timestamp_(timestamp)
         , ticket_(0)
         , done_()
         {
+            if(!fbuf_->open(filename, std::ios_base::out|std::ios_base::trunc))
+                throw std::system_error(errno, std::generic_category(), "filebuf: open");        
+                
+            out_->rdbuf(fbuf_.get());
         }
         
         ~logger() = default;
+        
+        logger(logger &&) = default;
+        logger& operator=(logger &&) = default;
+
 
         std::string const &
         name() const
         {
-            return file_.name();
+            return fname_;
         }
         
         void
         open(std::string filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)  
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            file_.close();
-            file_.open(std::move(filename), mode);
-            out_.rdbuf(file_.rdbuf());
+
+            fbuf_->close();
+
+            if (!fbuf_->open(filename, mode))
+                throw std::system_error(errno, std::generic_category(), "filebuf: open");        
+
+            fname_ = std::move(filename);
+            out_->rdbuf(fbuf_.get());
         }
         
         void
         close()
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            file_.close();
-            out_.rdbuf(nullptr);
+            fbuf_->close();
+            fname_.clear();
+            out_->rdbuf(nullptr);
         }
 
         void
         rdbuf(std::streambuf *sb) 
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            file_.close();
-            out_.rdbuf(sb);
+            fbuf_->close();
+            fname_.clear();
+            out_->rdbuf(sb);
         }
 
         std::streambuf *
         rdbuf() const
         {
-            return out_.rdbuf();
+            return out_->rdbuf();
         }
 
         void timestamp(bool value)
@@ -193,23 +213,22 @@ namespace more
         
         //// rotate the log file 
 
-        void rotate_sync(int depth = 3, size_t max_size = 0)
+        void rotate(int depth = 3, size_t max_size = 0)
         {
             std::lock_guard<std::mutex> lock(mutex_);
             
-            if (file_.name().empty())
+            if (fname_.empty())
                 return;
             
             if (size_() > max_size)
                 rotate_(depth);
         }
 
-
         void rotate_async(int depth = 3, size_t max_size = 0)
         {
             std::lock_guard<std::mutex> lock(mutex_);
             
-            if (file_.name().empty())
+            if (fname_.empty())
                 return;
             
             if (size_() > max_size)
@@ -228,7 +247,7 @@ namespace more
         size_t
         size_() const
         {
-            auto fb = dynamic_cast<std::filebuf *>(out_.rdbuf());
+            auto fb = dynamic_cast<std::filebuf *>(out_->rdbuf());
             if (fb == nullptr) 
                 return 0;
 
@@ -238,7 +257,7 @@ namespace more
         void 
         rotate_(int depth = 3)
         {
-            std::filebuf * fb = dynamic_cast<std::filebuf *>(out_.rdbuf());
+            std::filebuf * fb = dynamic_cast<std::filebuf *>(out_->rdbuf());
             if (fb == nullptr) 
                 return; 
             
@@ -247,14 +266,14 @@ namespace more
             bool rot = true;
             try
             {
-                rotate_file(file_.name(), depth);
+                details::rotate_file(fname_, depth);
             }
             catch(...)
             {
                 rot = false;
             }
 
-            if (!fb->open(file_.name(), std::ios::out))
+            if (!fb->open(fname_, std::ios::out))
             {
                 throw std::system_error(errno, std::generic_category(), "filebuf: open");      
             }
@@ -281,13 +300,13 @@ namespace more
             try
             {
                 if (timestamp_)
-                    out_ << make_timestamp_();
+                    *out_ << make_timestamp_();
 
-                fun(out_);
+                fun(*out_);
             }
             catch(std::exception &e)
             {
-                out_ << "Exception: " << e.what() << std::endl;
+                *out_ << "Exception: " << e.what() << std::endl;
             }
 
             if (ticket.first)
@@ -306,11 +325,12 @@ namespace more
                          );
 
             struct tm tm_c;
-            return put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
+            return details::put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
         }   
 
-        nofstream    file_;
-        std::ostream out_;
+        std::string                     fname_;
+        std::unique_ptr<std::filebuf>   fbuf_;
+        std::unique_ptr<std::ostream>   out_;
 
         mutable std::mutex mutex_;
         std::condition_variable cond_;
