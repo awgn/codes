@@ -62,57 +62,6 @@ namespace more
         }
     }
 
-    //// the ofstream with a name (used for log rotation)
-
-    template <typename CharT, typename Traits = std::char_traits<CharT> >
-    struct named_ofstream : public std::basic_ofstream<CharT, Traits>
-    {
-        named_ofstream()
-        : std::basic_ofstream<CharT, Traits>()
-        , filename_()
-        {}
-
-        explicit
-        named_ofstream(const char *s,
-                       std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)
-        : std::basic_ofstream<CharT, Traits>(s, mode)
-        , filename_(s)
-        {}
-
-        explicit
-        named_ofstream(const std::string &s,
-                       std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)
-        : std::basic_ofstream<CharT, Traits>(s, mode)
-        , filename_(s)
-        {}
-
-        std::string const &
-        name() const
-        {
-            return filename_;
-        }
-
-        void open(std::string filename, std::ios_base::openmode mode = std::ios_base::out)
-        {
-            std::basic_ofstream<CharT, Traits>::open(filename, mode);
-            filename_ = std::move(filename);
-        }
-
-        void close()
-        {
-            std::basic_ofstream<CharT, Traits>::close();
-            filename_.clear();
-        }
-
-    private:
-        std::string filename_;
-    };
-
-
-    using nofstream  = named_ofstream<char>;
-    using nwofstream = named_ofstream<wchar_t>;
-
-
     /////////////////////////   more::logger
 
     class logger
