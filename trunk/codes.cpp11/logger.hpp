@@ -130,7 +130,7 @@ namespace more
         , log_(std::cout.rdbuf())
         , mutex_()
         , timestamp_(timestamp)
-        , ticket_()
+        , ticket_(0)
         , done_()
         {
         }
@@ -205,10 +205,10 @@ namespace more
         {
             try
             {
-                std::thread([this, fun]() 
-                { 
-                    auto t = this->ticket_++;
-                    sync_(t, fun); 
+                auto t = this->ticket_++;
+                std::thread([this, fun, t]() 
+                {    
+                    sync_(std::make_pair(t, true), fun); 
                 
                 }).detach();
             }
@@ -216,9 +216,10 @@ namespace more
             {
                 sync([fun](std::ostream &out) 
                 {
-                    out << "exception: log thread could not be started!" << std::endl;
-                    fun(out);
+                    out << "exception: could not start log thread!" << std::endl;
                 });
+                
+                sync(fun);
             }
         }
 
@@ -227,10 +228,7 @@ namespace more
         template <typename Fun>
         void sync(Fun const &fun)
         {
-            auto t = ticket_++;
-            sync_(t, fun);
-        }
-
+            sync_(std::make_pair(0,false), fun);
         }
 
         //// return the size of the log file
@@ -297,17 +295,19 @@ namespace more
 
     private:
         
-        {
-
-            {
-            }
-
-
         template <typename Fun>
-        void sync_(unsigned long t, Fun const &fun)
+        void sync_(std::pair<unsigned long, bool> ticket, Fun const &fun)
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            cond_.wait(lock, [&]() -> bool { return t == done_; });
+
+            if (ticket.second)
+            {
+                cond_.wait(lock, [&]() -> bool 
+                           { 
+                                return ticket.first == done_; 
+                           });
+            }
+
             try
             {
                 if (timestamp_)
@@ -320,8 +320,11 @@ namespace more
                 log_ << "Exception: " << e.what() << std::endl;
             }
 
-            done_++;
-            cond_.notify_all();
+            if (ticket.second)
+            {
+                done_++;
+                cond_.notify_all();
+            }
         }
 
         static std::string
