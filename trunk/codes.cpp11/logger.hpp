@@ -161,7 +161,7 @@ namespace more
             data_->fbuf.reset(new std::filebuf());
 
             if (!data_->fbuf->open(filename, mode))
-                throw std::system_error(errno, std::generic_category(), "filebuf: open");        
+                throw std::system_error(errno, std::generic_category(), "filebuf: could not open " + filename);        
 
             data_->fname = std::move(filename);
 
