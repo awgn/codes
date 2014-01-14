@@ -36,7 +36,7 @@ main(int, char *[])
     // using operator<< log is synchronous through the temporary lazy_ostream ...
     //
 
-    out << more::log_async << "ASYNC_3:" << " Hello" << " world" << '!' <<  " (async)" << std::endl;
+    out << more::log_async << "ASYNC_3:" << " Hello" << " world" << '!' << std::endl;
     
     out << "Hello" << " world" << '!' << std::endl;
 

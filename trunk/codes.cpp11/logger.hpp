@@ -44,14 +44,14 @@ namespace more
         
         //////////// rotate_file function
         
-        void rotate_file(const std::string &name, int level)
+        void rotate_file(const std::string &name, int depth)
         {
             auto ext = [](int n) -> std::string 
             { 
                 return n > 0 ? ('.' + std::to_string(n)) : ""; 
             };
 
-            for(int i = level-1; i >= 0; i--)
+            for(int i = depth-1; i >= 0; i--)
             {
                 if(std::rename((name + ext(i)).c_str(), (name + ext(i+1)).c_str()) != 0)
                     if (errno != ENOENT)
@@ -86,22 +86,16 @@ namespace more
         , filename_(s)
         {}
 
-        std::string
+        std::string const &
         name() const
         {
             return filename_;
         }
 
-        void open(const char *filename, std::ios_base::openmode mode = std::ios_base::out)
+        void open(std::string filename, std::ios_base::openmode mode = std::ios_base::out)
         {
             std::basic_ofstream<CharT, Traits>::open(filename, mode);
-            filename_.assign(filename);
-        }
-
-        void open(const std::string &filename, std::ios_base::openmode mode = std::ios_base::out)
-        {
-            std::basic_ofstream<CharT, Traits>::open(filename, mode);
-            filename_.assign(filename);
+            filename_ = std::move(filename);
         }
 
         void close()
@@ -127,7 +121,7 @@ namespace more
 
         logger(bool timestamp = true)
         : file_()
-        , log_(std::cout.rdbuf())
+        , out_(std::cout.rdbuf())
         , mutex_()
         , timestamp_(timestamp)
         , ticket_(0)
@@ -138,7 +132,7 @@ namespace more
         explicit
         logger(std::streambuf *sb, bool timestamp = true)
         : file_()
-        , log_(sb)
+        , out_(sb)
         , mutex_()
         , timestamp_(timestamp)
         , ticket_(0)
@@ -149,7 +143,7 @@ namespace more
         explicit
         logger(const char *filename, bool timestamp = true)
         : file_(filename)
-        , log_(file_.rdbuf())
+        , out_(file_.rdbuf())
         , mutex_()
         , timestamp_(timestamp)
         , ticket_(0)
@@ -159,33 +153,41 @@ namespace more
         
         ~logger() = default;
 
-        std::string
+        std::string const &
         name() const
         {
             return file_.name();
         }
         
         void
-        name(std::string filename, std::ios_base::openmode mode)  
+        open(std::string filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)  
         {
             std::lock_guard<std::mutex> lock(mutex_);
             file_.close();
-            file_.open(filename, mode);
-            log_.rdbuf(file_.rdbuf());
+            file_.open(std::move(filename), mode);
+            out_.rdbuf(file_.rdbuf());
         }
         
+        void
+        close()
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            file_.close();
+            out_.rdbuf(nullptr);
+        }
+
         void
         rdbuf(std::streambuf *sb) 
         {
             std::lock_guard<std::mutex> lock(mutex_);
             file_.close();
-            log_.rdbuf(sb);
+            out_.rdbuf(sb);
         }
 
         std::streambuf *
         rdbuf() const
         {
-            return log_.rdbuf();
+            return out_.rdbuf();
         }
 
         void timestamp(bool value)
@@ -208,13 +210,13 @@ namespace more
                 auto t = this->ticket_++;
                 std::thread([this, fun, t]() 
                 {    
-                    sync_(std::make_pair(t, true), fun); 
+                    sync_(std::make_pair(true, t), fun); 
                 
                 }).detach();
             }
             catch(...)
             {
-                sync([fun](std::ostream &out) 
+                sync([](std::ostream &out) 
                 {
                     out << "exception: could not start log thread!" << std::endl;
                 });
@@ -228,7 +230,7 @@ namespace more
         template <typename Fun>
         void sync(Fun const &fun)
         {
-            sync_(std::make_pair(0,false), fun);
+            sync_(std::make_pair(false, 0), fun);
         }
 
         //// return the size of the log file
@@ -238,7 +240,7 @@ namespace more
         {
             std::lock_guard<std::mutex> lock(mutex_);
 
-            auto fb = dynamic_cast<std::filebuf *>(log_.rdbuf());
+            auto fb = dynamic_cast<std::filebuf *>(out_.rdbuf());
             if (fb == nullptr) 
                 return 0;
 
@@ -261,7 +263,7 @@ namespace more
                 
                 std::lock_guard<std::mutex> lock(mutex_);
 
-                std::filebuf * fb = dynamic_cast<std::filebuf *>(log_.rdbuf());
+                std::filebuf * fb = dynamic_cast<std::filebuf *>(out_.rdbuf());
                 if (fb == nullptr) 
                     return; 
                 
@@ -296,31 +298,31 @@ namespace more
     private:
         
         template <typename Fun>
-        void sync_(std::pair<unsigned long, bool> ticket, Fun const &fun)
+        void sync_(std::pair<bool, unsigned long> ticket, Fun const &fun)
         {
             std::unique_lock<std::mutex> lock(mutex_);
 
-            if (ticket.second)
+            if (ticket.first)
             {
                 cond_.wait(lock, [&]() -> bool 
                            { 
-                                return ticket.first == done_; 
+                                return ticket.second == done_; 
                            });
             }
 
             try
             {
                 if (timestamp_)
-                    log_ << make_timestamp_();
+                    out_ << make_timestamp_();
 
-                fun(log_);
+                fun(out_);
             }
             catch(std::exception &e)
             {
-                log_ << "Exception: " << e.what() << std::endl;
+                out_ << "Exception: " << e.what() << std::endl;
             }
 
-            if (ticket.second)
+            if (ticket.first)
             {
                 done_++;
                 cond_.notify_all();
@@ -339,9 +341,9 @@ namespace more
             return put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
         }   
 
-        nofstream file_;
+        nofstream    file_;
+        std::ostream out_;
 
-        std::ostream log_;
         mutable std::mutex mutex_;
         std::condition_variable cond_;
 
@@ -351,7 +353,8 @@ namespace more
         unsigned long done_;
     };
 
-    //// more::lazy_ostream a temporary stream that log synchronously at its
+
+    //// more::lazy_ostream a temporary stream that logs at its
     //// descrution point.
 
     struct log_async_t {} log_async = log_async_t {};
