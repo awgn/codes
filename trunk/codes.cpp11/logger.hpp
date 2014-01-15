@@ -30,37 +30,34 @@
 
 namespace more
 {
-    namespace details 
-    { 
-        //////////// std::put_time is missing in g++ up to 4.7.x
-        
-        inline std::string 
-        put_time(const struct tm *tmb, const char *fmt)
-        {
-            char buf [64];
-            if (!std::strftime(buf, 63, fmt, tmb))
-                throw std::runtime_error("put_time: strftime");
-            return buf;
-        }
-        
-        //////////// rotate_file function
-        
-        inline void 
-        rotate_file(const std::string &name, int depth)
-        {
-            auto ext = [](int n) -> std::string 
-            { 
-                return n > 0 ? ('.' + std::to_string(n)) : ""; 
-            };
+    //////////// std::put_time is missing in g++ up to 4.7.x
+    
+    inline std::string 
+    put_time(const struct tm *tmb, const char *fmt)
+    {
+        char buf [64];
+        if (!std::strftime(buf, 63, fmt, tmb))
+            throw std::runtime_error("put_time: strftime");
+        return buf;
+    }
+    
+    //////////// rotate_file function
+    
+    inline void 
+    rotate_file(const std::string &name, int depth)
+    {
+        auto ext = [](int n) -> std::string 
+        { 
+            return n > 0 ? ('.' + std::to_string(n)) : ""; 
+        };
 
-            for(int i = depth-1; i >= 0; i--)
-            {
-                if(std::rename((name + ext(i)).c_str(), (name + ext(i+1)).c_str()) != 0)
-                    if (errno != ENOENT)
-                    {
-                        throw std::system_error(errno, std::generic_category(), "std::rename");        
-                    }
-            }
+        for(int i = depth-1; i >= 0; i--)
+        {
+            if(std::rename((name + ext(i)).c_str(), (name + ext(i+1)).c_str()) != 0)
+                if (errno != ENOENT)
+                {
+                    throw std::system_error(errno, std::generic_category(), "std::rename");        
+                }
         }
     }
 
@@ -299,7 +296,7 @@ namespace more
             bool rot = true;
             try
             {
-                details::rotate_file(data_->fname, depth);
+                rotate_file(data_->fname, depth);
             }
             catch(...)
             {
@@ -356,7 +353,7 @@ namespace more
                          );
 
             struct tm tm_c;
-            return details::put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
+            return put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
         }   
 
         std::unique_ptr<data>   data_;
