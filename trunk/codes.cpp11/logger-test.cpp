@@ -9,7 +9,7 @@
  */
 
 #include <logger.hpp>
-    
+
 more::logger<> out;
 // more::logger<std::mutex> out;
 // more::logger<std::recursive_mutex> out;
@@ -17,6 +17,9 @@ more::logger<> out;
 int
 main(int, char *[])
 {
+    out.add_header(more::decorator::timestamp);
+    out.add_header(more::decorator::thread_id);
+
     out.async([](std::ostream &)
              {
                 std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -36,7 +39,7 @@ main(int, char *[])
                 //
                 //       2) use a std::recursive_mutex which prevents dead-lock at a higher cost.
                 //
-                out << "This message potentially causes a dead-lock!" << std::endl;
+                // out << "This message potentially causes a dead-lock!" << std::endl;
              });
 
 
@@ -49,10 +52,10 @@ main(int, char *[])
     //
 
     out << more::log_async << "ASYNC_3:" << " Hello" << " world" << '!' << std::endl;
-    
+
     out << "Hello" << " world" << '!' << std::endl;
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
- 
+

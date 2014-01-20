@@ -31,13 +31,37 @@ namespace more
 {
     //////////// std::put_time is missing in g++ up to 4.7.x
 
-    inline std::string
-    put_time(const struct tm *tmb, const char *fmt)
+
+    namespace decorator
     {
-        char buf [64];
-        if (!std::strftime(buf, 63, fmt, tmb))
-            throw std::runtime_error("put_time: strftime");
-        return buf;
+        inline std::string
+        put_time(const struct tm *tmb, const char *fmt)
+        {
+            char buf [64];
+            if (!std::strftime(buf, 63, fmt, tmb))
+                throw std::runtime_error("put_time: strftime");
+            return buf;
+        }
+
+        inline std::string
+        timestamp()
+        {
+            auto now_c = std::chrono::system_clock::to_time_t
+                         (
+                            std::chrono::system_clock::now()
+                         );
+
+            struct tm tm_c;
+            return put_time(localtime_r(&now_c, &tm_c), "[%F %T]");
+        }
+
+        inline std::string
+        thread_id()
+        {
+            std::ostringstream out;
+            out << '[' << std::this_thread::get_id() << ']';
+            return out.str();
+        }
     }
 
     //////////// rotate_file function
@@ -112,24 +136,22 @@ namespace more
 
         struct data_base
         {
-            data_base(std::streambuf *fb, bool timestamp)
+            data_base(std::streambuf *fb)
             : fname ()
             , fbuf  ()
             , out   (fb)
             , mutex ()
             , cond  ()
-            , tstamp(timestamp)
             , ticket(0)
             , done  (0)
             {}
 
-            data_base(const char *name, bool timestamp)
+            data_base(const char *name)
             : fname (name)
             , fbuf  (new std::filebuf())
             , out   (nullptr)
             , mutex ()
             , cond  ()
-            , tstamp(timestamp)
             , ticket(0)
             , done  (0)
             {
@@ -146,41 +168,41 @@ namespace more
             mutable Mutex mutex;
             std::condition_variable_any cond;
 
-            bool tstamp;
-
             std::atomic_ulong ticket;
             unsigned long done;
+
+            std::vector<std::function<std::string()>> headers;
         };
 
         struct data : data_base
         {
-            data(bool timestamp)
-            : data_base(std::cout.rdbuf(), timestamp)
+            data()
+            : data_base(std::cout.rdbuf())
             {}
 
-            data(std::streambuf *fb, bool timestamp)
-            : data_base(fb, timestamp)
+            data(std::streambuf *fb)
+            : data_base(fb)
             {}
 
-            data(const char *name, bool timestamp)
-            : data_base(name,timestamp)
+            data(const char *name)
+            : data_base(name)
             {}
         };
 
     public:
 
-        logger(bool timestamp = true)
-        : data_(new data(timestamp))
+        logger()
+        : data_(new data())
         { }
 
         explicit
-        logger(std::streambuf *sb, bool timestamp = true)
-        : data_(new data(sb, timestamp))
+        logger(std::streambuf *sb)
+        : data_(new data(sb))
         { }
 
         explicit
-        logger(const char *filename, bool timestamp = true)
-        : data_(new data(filename, timestamp))
+        logger(const char *filename)
+        : data_(new data(filename))
         { }
 
         logger(logger&&) = default;
@@ -229,14 +251,10 @@ namespace more
             return data_->out.rdbuf();
         }
 
-        void timestamp(bool value)
+        template <typename Fun>
+        void add_header(Fun fun)
         {
-            data_->tstamp = value;
-        }
-
-        bool timestamp() const
-        {
-            return data_->tstamp;
+            data_->headers.emplace_back(fun);
         }
 
         //// log message synchronously
@@ -369,8 +387,8 @@ namespace more
 
             try
             {
-                if (data_->tstamp)
-                    data_->out << make_timestamp_();
+                for(auto &fun : data_->headers)
+                    data_->out << fun() << ' ';
 
                 fun(data_->out);
             }
@@ -384,18 +402,6 @@ namespace more
                 data_->done++;
                 data_->cond.notify_all();
             }
-        }
-
-        static std::string
-        make_timestamp_()
-        {
-            auto now_c = std::chrono::system_clock::to_time_t
-                         (
-                            std::chrono::system_clock::now()
-                         );
-
-            struct tm tm_c;
-            return put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");
         }
 
         std::unique_ptr<data>   data_;
