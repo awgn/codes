@@ -24,6 +24,7 @@
 #include <ctime>
 #include <cerrno>
 #include <system_error>
+#include <initializer_list>
 
 #include <tuple_ext.hpp>   // !more
 
@@ -249,6 +250,11 @@ namespace more
         rdbuf() const
         {
             return data_->out.rdbuf();
+        }
+
+        void headers(std::initializer_list<std::function<std::string()>> init)
+        {
+            data_->headers = decltype(data_->headers)(init);
         }
 
         template <typename Fun>

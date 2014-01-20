@@ -17,8 +17,7 @@ more::logger<> out;
 int
 main(int, char *[])
 {
-    out.add_header(more::decorator::timestamp);
-    out.add_header(more::decorator::thread_id);
+    out.headers({ more::decorator::timestamp, more::decorator::thread_id });
 
     out.async([](std::ostream &)
              {
