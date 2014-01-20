@@ -14,16 +14,15 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <memory>
 
 #include <exception>
 #include <thread>
 #include <atomic>
 #include <mutex>
-#include <memory>
 #include <condition_variable>
 #include <ctime>
 #include <cerrno>
-#include <cassert>
 #include <system_error>
 
 #include <tuple_ext.hpp>   // !more
@@ -60,9 +59,52 @@ namespace more
                 }
         }
     }
+    
+    /////////////////////////   more::safe_mutex: detect dead-locks at runtime.
+
+    struct safe_mutex
+    {
+        void lock()
+        {
+            if (!mutex_.try_lock())
+            {
+                if (id_.load(std::memory_order_relaxed) == std::this_thread::get_id())
+                    throw std::runtime_error("safe_mutex: deadlock detected");
+                mutex_.lock();
+            }
+            id_.store(std::this_thread::get_id(), std::memory_order_relaxed);
+            return;
+        }
+
+        bool try_lock()
+        {
+            if (!mutex_.try_lock())
+            {
+                if (id_.load(std::memory_order_relaxed) == std::this_thread::get_id())
+                    throw std::runtime_error("safe_mutex: deadlock detected");
+                return false;
+            }
+            else
+            {
+                id_.store(std::this_thread::get_id(), std::memory_order_relaxed);
+                return true;
+            }
+        }
+    
+        void unlock()
+        {
+            id_.store(std::thread::id(), std::memory_order_relaxed);
+            mutex_.unlock();
+        }
+
+    private:
+        std::mutex      mutex_;
+        std::atomic<std::thread::id> id_;
+    };
 
     /////////////////////////   more::logger
 
+    template <typename Mutex = safe_mutex>
     class logger
     {
         // delegating constructors are missing in g++-4.6.x
@@ -101,8 +143,8 @@ namespace more
             std::unique_ptr<std::filebuf>   fbuf;
             std::ostream                    out;
 
-            mutable std::mutex mutex;
-            std::condition_variable cond;
+            mutable Mutex mutex;
+            std::condition_variable_any cond;
 
             bool tstamp;
             
@@ -154,7 +196,7 @@ namespace more
         void
         open(std::string filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)  
         {
-            std::lock_guard<std::mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
 
             data_->fbuf.reset(new std::filebuf());
 
@@ -175,7 +217,7 @@ namespace more
         void
         rdbuf(std::streambuf *sb) 
         {
-            std::lock_guard<std::mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             data_->fbuf.reset(nullptr);
             data_->fname.clear();
             data_->out.rdbuf(sb);
@@ -235,7 +277,7 @@ namespace more
         size_t
         size() const
         {
-            std::lock_guard<std::mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             return size_();
         }
         
@@ -243,7 +285,7 @@ namespace more
 
         void rotate(int depth = 3, size_t max_size = 0)
         {
-            std::lock_guard<std::mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             
             if (data_->fname.empty())
                 return;
@@ -256,7 +298,7 @@ namespace more
 
         void rotate_async(int depth = 3, size_t max_size = 0)
         {
-            std::lock_guard<std::mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             
             if (data_->fname.empty())
                 return;
@@ -265,7 +307,7 @@ namespace more
             {
                 std::thread([this, depth]() 
                 {
-                    std::lock_guard<std::mutex> lock(data_->mutex);
+                    std::lock_guard<Mutex> lock(data_->mutex);
                     this->rotate_(depth);
 
                 }).detach();
@@ -303,7 +345,7 @@ namespace more
                 rot = false;
             }
 
-            if (!fb->open(data_->fname, std::ios::out|std:::ios|app))
+            if (!fb->open(data_->fname, std::ios_base::out |std::ios_base::app))
                 throw std::system_error(errno, std::generic_category(), "filebuf: open");      
 
             if (!rot)
@@ -318,7 +360,7 @@ namespace more
         template <typename Fun>
         void sync_(std::pair<bool, unsigned long> ticket, Fun const &fun)
         {
-            std::unique_lock<std::mutex> lock(data_->mutex);
+            std::unique_lock<Mutex> lock(data_->mutex);
 
             if (ticket.first)
             {
@@ -369,7 +411,7 @@ namespace more
         struct log_async_t {} log_async = log_async_t {};
     }
 
-    template <typename ...Ts>
+    template <typename Mutex, typename ...Ts>
     struct lazy_logger
     {
         struct stream_on
@@ -387,8 +429,7 @@ namespace more
             std::ostream &out_;
         };
 
-
-        lazy_logger(logger &l, bool as = false)
+        lazy_logger(logger<Mutex> &l, bool as = false)
         : refs_  ()
         , enable_(true)
         , async_ (as)
@@ -405,7 +446,7 @@ namespace more
         }
 
         template <typename ... Tx, typename T>
-        lazy_logger(lazy_logger<Tx...> const &log, const T &data)
+        lazy_logger(lazy_logger<Mutex, Tx...> const &log, const T &data)
         : refs_  (std::tuple_cat(log.refs_, std::tie(data)))
         , enable_(true)
         , async_ (log.async_)
@@ -442,7 +483,7 @@ namespace more
         std::tuple<Ts...> refs_;
         mutable bool enable_;
         mutable bool async_;
-        logger &log_;
+        logger<Mutex> &log_;
     };
 
     // manipulator are function template (unresolved function types) which cannot be
@@ -454,47 +495,49 @@ namespace more
     // lazy_logger<Ts...> << data
     //
 
-    template <typename ...Ts>
-    inline lazy_logger<Ts..., manip_t &>
-    operator<<(lazy_logger<Ts...> const &l, manip_t & m)
+    template <typename Mut, typename ...Ts>
+    inline lazy_logger<Mut, Ts..., manip_t &>
+    operator<<(lazy_logger<Mut, Ts...> const &l, manip_t & m)
     {
-        return lazy_logger<Ts..., manip_t &>(l, m);
+        return lazy_logger<Mut, Ts..., manip_t &>(l, m);
     }
 
-    template <typename ...Ts>
-    inline lazy_logger<Ts...> 
-    operator<<(lazy_logger<Ts...> const &l, const log_async_t &)
+    template <typename Mut, typename ...Ts>
+    inline lazy_logger<Mut, Ts...> 
+    operator<<(lazy_logger<Mut, Ts...> const &l, const log_async_t &)
     {
-        return l.async_ = true, lazy_logger<Ts...>(l);
+        return l.async_ = true, lazy_logger<Mut, Ts...>(l);
     }
 
-    template <typename ...Ts, typename T>
-    inline lazy_logger<Ts..., const T &>
-    operator<<(lazy_logger<Ts...> const &l, const T &data)
+    template <typename Mut, typename ...Ts, typename T>
+    inline lazy_logger<Mut, Ts..., const T &>
+    operator<<(lazy_logger<Mut, Ts...> const &l, const T &data)
     {
-        return lazy_logger<Ts..., const T &>(l, data);
+        return lazy_logger<Mut, Ts..., const T &>(l, data);
     }
 
     // more::logger << data
     //
 
-    inline lazy_logger<manip_t &>
-    operator<<(logger &l, manip_t &m)
+    template <typename Mut>
+    inline lazy_logger<Mut,manip_t &>
+    operator<<(logger<Mut> &l, manip_t &m)
     {
-        return lazy_logger<>(l) << m;
+        return lazy_logger<Mut>(l) << m;
     }
 
-    template <typename T>
-    inline lazy_logger<const T &>
-    operator<<(logger &l, const T &data)
+    template <typename Mut, typename T>
+    inline lazy_logger<Mut,const T &>
+    operator<<(logger<Mut> &l, const T &data)
     {
-        return lazy_logger<>(l) << data;
+        return lazy_logger<Mut>(l) << data;
     }
     
-    inline lazy_logger<> 
-    operator<<(logger &l, const log_async_t &)
+    template <typename Mut>
+    inline lazy_logger<Mut> 
+    operator<<(logger<Mut> &l, const log_async_t &)
     {
-        return lazy_logger<>(l, true);
+        return lazy_logger<Mut>(l, true);
     }
     
 }

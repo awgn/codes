@@ -9,14 +9,14 @@
  */
 
 #include <logger.hpp>
+    
+more::logger<> out;
+// more::logger<std::mutex> out;
+// more::logger<std::recursive_mutex> out;
 
 int
 main(int, char *[])
 {
-    more::logger x;
-
-    more::logger out(std::move(x));
-
     out.async([](std::ostream &)
              {
                 std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -27,6 +27,16 @@ main(int, char *[])
              {
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 o << "ASYNC_2: this is a log message..." << std::endl;
+
+                // NOTE: within a sync() or async() closure you should avoid using
+                //       the logger object because it causes a dead-lock. Instead you can:
+                //
+                //       1) Use a more::safe_mutex (the default one) which detects deadlocks throwing exceptions:
+                //          This helps you to fix your code, then you can fall back using the std::mutex.
+                //
+                //       2) use a std::recursive_mutex which prevents dead-lock at a higher cost.
+                //
+                out << "This message potentially causes a dead-lock!" << std::endl;
              });
 
 
