@@ -7,7 +7,7 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
+
 #ifndef _MORE_LOGGER_HPP_
 #define _MORE_LOGGER_HPP_
 
@@ -30,8 +30,8 @@
 namespace more
 {
     //////////// std::put_time is missing in g++ up to 4.7.x
-    
-    inline std::string 
+
+    inline std::string
     put_time(const struct tm *tmb, const char *fmt)
     {
         char buf [64];
@@ -39,15 +39,15 @@ namespace more
             throw std::runtime_error("put_time: strftime");
         return buf;
     }
-    
+
     //////////// rotate_file function
-    
-    inline void 
+
+    inline void
     rotate_file(const std::string &name, int depth)
     {
-        auto ext = [](int n) -> std::string 
-        { 
-            return n > 0 ? ('.' + std::to_string(n)) : ""; 
+        auto ext = [](int n) -> std::string
+        {
+            return n > 0 ? ('.' + std::to_string(n)) : "";
         };
 
         for(int i = depth-1; i >= 0; i--)
@@ -55,11 +55,11 @@ namespace more
             if(std::rename((name + ext(i)).c_str(), (name + ext(i+1)).c_str()) != 0)
                 if (errno != ENOENT)
                 {
-                    throw std::system_error(errno, std::generic_category(), "std::rename");        
+                    throw std::system_error(errno, std::generic_category(), "std::rename");
                 }
         }
     }
-    
+
     /////////////////////////   more::safe_mutex: detect dead-locks at runtime.
 
     struct safe_mutex
@@ -90,7 +90,7 @@ namespace more
                 return true;
             }
         }
-    
+
         void unlock()
         {
             id_.store(std::thread::id(), std::memory_order_relaxed);
@@ -134,8 +134,8 @@ namespace more
             , done  (0)
             {
                 if(!fbuf->open(name, std::ios_base::out|std::ios_base::app))
-                    throw std::system_error(errno, std::generic_category(), "filebuf: open");        
-                
+                    throw std::system_error(errno, std::generic_category(), "filebuf: open");
+
                 out.rdbuf(fbuf.get());
             }
 
@@ -147,7 +147,7 @@ namespace more
             std::condition_variable_any cond;
 
             bool tstamp;
-            
+
             std::atomic_ulong ticket;
             unsigned long done;
         };
@@ -163,7 +163,7 @@ namespace more
             {}
 
             data(const char *name, bool timestamp)
-            : data_base(name,timestamp) 
+            : data_base(name,timestamp)
             {}
         };
 
@@ -177,7 +177,7 @@ namespace more
         logger(std::streambuf *sb, bool timestamp = true)
         : data_(new data(sb, timestamp))
         { }
-        
+
         explicit
         logger(const char *filename, bool timestamp = true)
         : data_(new data(filename, timestamp))
@@ -187,27 +187,27 @@ namespace more
 
         ~logger() = default;
 
-        std::string 
+        std::string
         name() const
         {
             return data_->fname;
         }
-        
+
         void
-        open(std::string filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)  
+        open(std::string filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)
         {
             std::lock_guard<Mutex> lock(data_->mutex);
 
             data_->fbuf.reset(new std::filebuf());
 
             if (!data_->fbuf->open(filename, std::ios_base::out | mode))
-                throw std::system_error(errno, std::generic_category(), "filebuf: could not open " + filename);        
+                throw std::system_error(errno, std::generic_category(), "filebuf: could not open " + filename);
 
             data_->fname = std::move(filename);
 
             data_->out.rdbuf(data_->fbuf.get());
         }
-        
+
         void
         close()
         {
@@ -215,7 +215,7 @@ namespace more
         }
 
         void
-        rdbuf(std::streambuf *sb) 
+        rdbuf(std::streambuf *sb)
         {
             std::lock_guard<Mutex> lock(data_->mutex);
             data_->fbuf.reset(nullptr);
@@ -233,14 +233,14 @@ namespace more
         {
             data_->tstamp = value;
         }
-        
+
         bool timestamp() const
         {
             return data_->tstamp;
         }
 
         //// log message synchronously
-        
+
         template <typename Fun>
         void sync(Fun const &fun)
         {
@@ -255,57 +255,57 @@ namespace more
             try
             {
                 auto t = data_->ticket++;
-                std::thread([this, fun, t]() 
-                {    
-                    sync_(std::make_pair(true, t), fun); 
-                
+                std::thread([this, fun, t]()
+                {
+                    sync_(std::make_pair(true, t), fun);
+
                 }).detach();
             }
             catch(...)
             {
-                sync([](std::ostream &out) 
+                sync([](std::ostream &out)
                 {
                     out << "exception: could not start log thread!" << std::endl;
                 });
-                
+
                 sync(fun);
             }
         }
 
         //// return the size of the log file
-        
+
         size_t
         size() const
         {
             std::lock_guard<Mutex> lock(data_->mutex);
             return size_();
         }
-        
-        //// rotate the log file 
+
+        //// rotate the log file
 
         void rotate(int depth = 3, size_t max_size = 0)
         {
             std::lock_guard<Mutex> lock(data_->mutex);
-            
+
             if (data_->fname.empty())
                 return;
-            
+
             if (size_() > max_size)
                 rotate_(depth);
         }
-        
-        //// rotate the log file asynchronously 
+
+        //// rotate the log file asynchronously
 
         void rotate_async(int depth = 3, size_t max_size = 0)
         {
             std::lock_guard<Mutex> lock(data_->mutex);
-            
+
             if (data_->fname.empty())
                 return;
-            
+
             if (size_() > max_size)
             {
-                std::thread([this, depth]() 
+                std::thread([this, depth]()
                 {
                     std::lock_guard<Mutex> lock(data_->mutex);
                     this->rotate_(depth);
@@ -315,24 +315,24 @@ namespace more
         }
 
     private:
-        
+
         size_t
         size_() const
         {
             auto fb = dynamic_cast<std::filebuf *>(data_->out.rdbuf());
-            if (fb == nullptr) 
+            if (fb == nullptr)
                 return 0;
 
             return static_cast<size_t>(fb->pubseekoff(0, std::ios_base::cur));
         }
 
-        void 
+        void
         rotate_(int depth = 3)
         {
             std::filebuf * fb = dynamic_cast<std::filebuf *>(data_->out.rdbuf());
-            if (fb == nullptr) 
-                return; 
-            
+            if (fb == nullptr)
+                return;
+
             fb->close();
 
             bool rot = true;
@@ -346,13 +346,13 @@ namespace more
             }
 
             if (!fb->open(data_->fname, std::ios_base::out |std::ios_base::app))
-                throw std::system_error(errno, std::generic_category(), "filebuf: open");      
+                throw std::system_error(errno, std::generic_category(), "filebuf: open");
 
             if (!rot)
             {
                 sync([=](std::ostream &out)
-                { 
-                    out << "rotate: error while rotating files!" << std::endl; 
+                {
+                    out << "rotate: error while rotating files!" << std::endl;
                 });
             }
         }
@@ -395,8 +395,8 @@ namespace more
                          );
 
             struct tm tm_c;
-            return put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");                    
-        }   
+            return put_time(localtime_r(&now_c, &tm_c), "[ %F %T ] ");
+        }
 
         std::unique_ptr<data>   data_;
 
@@ -406,7 +406,7 @@ namespace more
     //// more::lazy_logger a temporary stream that logs at its
     //// descrution point.
 
-    namespace 
+    namespace
     {
         struct log_async_t {} log_async = log_async_t {};
     }
@@ -419,7 +419,7 @@ namespace more
             stream_on(std::ostream &out)
             : out_(out)
             {}
-            
+
             template <typename T>
             void operator()(const T &ref)
             {
@@ -462,18 +462,18 @@ namespace more
                 if (async_)
                 {
                     std::ostringstream out;
-                    tuple_for_each(refs_,stream_on(out));                           
+                    tuple_for_each(refs_,stream_on(out));
                     auto const & str = out.str();
 
-                    log_.async([str](std::ostream &o) 
-                               { 
-                                  o << str; 
+                    log_.async([str](std::ostream &o)
+                               {
+                                  o << str;
                                });
                 }
                 else
                 {
-                    log_.sync([this](std::ostream &o) 
-                              { 
+                    log_.sync([this](std::ostream &o)
+                              {
                                   tuple_for_each(refs_, stream_on(o));
                               });
                 }
@@ -489,7 +489,7 @@ namespace more
     // manipulator are function template (unresolved function types) which cannot be
     // deduced by the template machinery
     //
-    
+
     typedef std::ostream& (manip_t)(std::ostream&);
 
     // lazy_logger<Ts...> << data
@@ -503,7 +503,7 @@ namespace more
     }
 
     template <typename Mut, typename ...Ts>
-    inline lazy_logger<Mut, Ts...> 
+    inline lazy_logger<Mut, Ts...>
     operator<<(lazy_logger<Mut, Ts...> const &l, const log_async_t &)
     {
         return l.async_ = true, lazy_logger<Mut, Ts...>(l);
@@ -532,14 +532,14 @@ namespace more
     {
         return lazy_logger<Mut>(l) << data;
     }
-    
+
     template <typename Mut>
-    inline lazy_logger<Mut> 
+    inline lazy_logger<Mut>
     operator<<(logger<Mut> &l, const log_async_t &)
     {
         return lazy_logger<Mut>(l, true);
     }
-    
+
 }
 
 #endif /* _MORE_LOGGER_HPP_ */
