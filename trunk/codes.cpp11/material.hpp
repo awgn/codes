@@ -3,11 +3,11 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
-#pragma once 
+#pragma once
 
 #include <read.hpp>     // more!
 #include <show.hpp>     // more!
@@ -21,11 +21,11 @@
 
 
 namespace more {
-    
+
     namespace material
     {
         namespace details
-        {       
+        {
             template <typename T>
             inline std::string
             type_name()
@@ -40,30 +40,30 @@ namespace more {
             }
 
             // ensure the given char is read from the stream...
-           
+
             template <typename CharT, typename Traits>
             bool read_char(std::basic_istream<CharT, Traits> & in, typename std::basic_istream<CharT, Traits>::int_type c)
             {
                 decltype(c) c_;
 
-                if(!(in >> std::ws)) 
+                if(!(in >> std::ws))
                     return false;
-                
+
                 c_ = in.peek();
-                if (!in) 
+                if (!in)
                     return false;
 
                 return (c == c_) ? in.get(), true : false;
             }
 
-            class streambuf : public std::streambuf 
+            class streambuf : public std::streambuf
             {
                 typedef std::streambuf::pos_type    pos_type;
                 typedef std::streambuf::off_type    off_type;
 
-                enum class state 
+                enum class state
                 {
-                    none, string1, string2, comment, backslash 
+                    none, string1, string2, comment, backslash
                 };
 
             public:
@@ -76,15 +76,15 @@ namespace more {
                     if (m_commkey == '\'' || m_commkey == '"')
                         throw std::runtime_error("streambuf: invalid comment-key");
                 }
- 
+
                 virtual pos_type seekoff(off_type off, std::ios_base::seekdir way,
                                          std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
                 {
-                    return m_in->pubseekoff(off, way, which); 
+                    return m_in->pubseekoff(off, way, which);
                 }
-    
-                
-                virtual pos_type seekpos(pos_type sp, 
+
+
+                virtual pos_type seekpos(pos_type sp,
                                          std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
                 {
                     return m_in->pubseekpos(sp, which);
@@ -111,7 +111,7 @@ namespace more {
                     if (c == '\n')
                         m_line++;
 
-                    auto prev = m_state; 
+                    auto prev = m_state;
                     m_state = next_(c);
                     m_prev  = prev;
 
@@ -120,8 +120,8 @@ namespace more {
                 }
 
                 int line() const
-                { 
-                    return m_line; 
+                {
+                    return m_line;
                 }
 
             private:
@@ -133,11 +133,11 @@ namespace more {
                     case state::none:
                         return  c == '\''   ? state::string1   :
                         c == '"'            ? state::string2   :
-                        c == m_commkey      ? state::comment   : 
+                        c == m_commkey      ? state::comment   :
                         c == '\\'           ? state::backslash : state::none;
 
                     case state::string1:
-                        return  c == '\''   ? state::none      : 
+                        return  c == '\''   ? state::none      :
                         c == '\\'           ? state::backslash : state::string1;
 
                     case state::string2:
@@ -145,7 +145,7 @@ namespace more {
                         c == '\\'           ? state::backslash : state::string2;
 
                     case state::comment:
-                        return  c == '\n'   ? state::none      : 
+                        return  c == '\n'   ? state::none      :
                         c == '\\'           ? state::backslash : state::comment;
 
                     case state::backslash:
@@ -165,7 +165,7 @@ namespace more {
             inline int line_number(std::basic_istream<CharT,Traits> &in)
             {
                 streambuf * ln = dynamic_cast<streambuf *>(in.rdbuf());
-                if (ln) 
+                if (ln)
                     return ln->line();
 
                 return -1;
@@ -185,8 +185,8 @@ namespace more {
         ///////////////////////////////////////////////////////////////////////////////////////////
 
         template <typename Tp>
-        struct key_base 
-        { 
+        struct key_base
+        {
             static std::string
             str()
             {
@@ -200,7 +200,7 @@ namespace more {
         struct key_value
         {
             static_assert(std::is_base_of<key_base<Key>, Key>::value, "invalid key type (DECLARE_KEY)");
-            
+
             typedef Key     key_type;
             typedef Value   value_type;
 
@@ -229,7 +229,7 @@ namespace more {
         struct options_base { };
 
         template <bool s, char cm, char sep>
-        struct options : options_base 
+        struct options : options_base
         {
             static constexpr bool strict    = s;
             static constexpr char comment   = cm;
@@ -238,7 +238,7 @@ namespace more {
 
 
         // metafunctions:
-        
+
         template <typename K, typename ...Ts> struct key_index;
         template <typename K, typename V, typename ...Ts>
         struct key_index<K, key_value<K, V>, Ts...>
@@ -280,10 +280,10 @@ namespace more {
             template <typename K, typename ...Ks>
             void set(K && k, Ks && ... ks)
             {
-                std::get< key_index<typename K::key_type, Ps...>::value >(tuple_).value = k.value;   
+                std::get< key_index<typename K::key_type, Ps...>::value >(tuple_).value = k.value;
                 set (std::forward<Ks>(ks)...);
             }
-            
+
             void set()
             { }
 
@@ -296,14 +296,14 @@ namespace more {
 
             template <typename K>
             typename key_mapped_type<K, Ps...>::type &
-            get() 
+            get()
             {
                 return std::get< key_index<K, Ps...>::value >(tuple_).value;
             }
 
             std::tuple<Ps...>  tuple_;
         };
-        
+
         template <typename Opt, typename ...Ps>
         inline
         std::string show(document<Opt, Ps...> const& doc)
@@ -315,17 +315,17 @@ namespace more {
 
 
         // read_key:
-        
+
         template <typename CharT, typename Traits, typename Opt, typename ...Ps> struct read_key;
         template <typename CharT, typename Traits, typename Opt, typename P0, typename ...Ps>
         struct read_key<CharT, Traits, Opt, P0, Ps...>
         {
             template <typename Par>
-            static bool 
+            static bool
             run(std::string const &key, Par &doc, std::basic_istream<CharT, Traits> &in)
             {
                 auto name = details::type_name<typename P0::key_type>();
-                
+
                 if (key == name)
                 {
                     auto & value = doc.template get<typename P0::key_type>();
@@ -353,7 +353,7 @@ namespace more {
         };
 
         // read for document type:
-        
+
         template <typename CharT, typename Traits, typename Opt, typename ...Ps>
         void
         read(document<Opt, Ps...> &doc, std::basic_istream<CharT,Traits>&in)
@@ -368,14 +368,14 @@ namespace more {
             while(in)
             {
                 in >> std::noskipws >> std::ws;
-                
+
                 // parse the key...
-                
-                std::string key; key.reserve(16);   
+
+                std::string key; key.reserve(16);
 
                 std::string::traits_type::char_type c = '\0';
 
-                while ((in >> c) && !isspace(c) && c != Opt::separator) 
+                while ((in >> c) && !isspace(c) && c != Opt::separator)
                 {
                     key.push_back(c);
                 }
@@ -392,32 +392,32 @@ namespace more {
                 in >> std::skipws;
 
                 // parse separator:
-                
-                if (c != Opt::separator) 
+
+                if (c != Opt::separator)
                 {
                     in >> c;
                     if (c != Opt::separator)
                         throw std::runtime_error("missing separator");
                 }
-                
+
                 // parse the value for this key...
-                
+
                 if (!read_key<CharT, Traits, Opt, Ps...>::run(key, doc, in))
                 {
                     int level = 0;
-                
+
                     in >> std::ws;
 
                     do {
                         c = static_cast<std::string::traits_type::char_type>(in.peek());
-                        if (!in) 
+                        if (!in)
                             throw std::runtime_error("missing brackets");
 
                         if ( c == '[' || c == '(') {
                             level++;
                         }
                         else if ( c == ']' || c == ')') {
-                            if (--level < 0) 
+                            if (--level < 0)
                                 throw std::runtime_error("unbalanced brackets");
                         }
                     }
@@ -438,7 +438,7 @@ namespace more {
         // parse: from string...
 
         template <typename Opt, typename ... Ps>
-        bool parse(std::string content, document<Opt, Ps...> &doc) 
+        bool parse(std::string content, document<Opt, Ps...> &doc)
         {
             std::istringstream in(content);
             return parse(in, doc, "");
@@ -458,15 +458,15 @@ namespace more {
             }
 
             details::streambuf sb(ifs.rdbuf(), Opt::comment);
-            std::istream in(&sb);    
+            std::istream in(&sb);
             return parse(in, doc, filename);
         }
-       
+
 
         // parse: from input stream...
-        
+
         template <typename CharT, typename Traits, typename Opt, typename ... Ps>
-        bool parse(std::basic_istream<CharT, Traits> &in, document<Opt, Ps...> &doc, const char *filename) 
+        bool parse(std::basic_istream<CharT, Traits> &in, document<Opt, Ps...> &doc, const char *filename)
         {
             try
             {
