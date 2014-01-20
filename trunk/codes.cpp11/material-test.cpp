@@ -27,7 +27,7 @@ namespace key
     DECLARE_KEY(lit_string);
     DECLARE_KEY(int_matrix);
 
-    DECLARE_KEY(doc);
+    DECLARE_KEY(docs);
 
     DECLARE_KEY(int_first);
     DECLARE_KEY(int_second);
@@ -64,7 +64,7 @@ typedef document<
     key_value<key::unique_int,   std::unique_ptr<int>>,
     key_value<key::lit_string,   const char *>,
     key_value<key::int_matrix,   std::vector<std::vector<int>>>,
-    key_value<key::doc,          std::vector<int_pair>>,
+    key_value<key::docs,         std::vector<int_pair>>,
     key_value<key::v_int_string, more::variant<int, std::string>>
 
     > this_document;
@@ -84,7 +84,7 @@ void show_pointer(Par const &doc)
         std::cout << "-> " << K::str() << " = ";
         if (p)
             std::cout << show (*p) << '(' << show(p) << ')'<< std::endl;
-        else 
+        else
             std::cout << "nullptr" << std::endl;
     }
 
@@ -111,7 +111,7 @@ main(int, char *[])
 
     show_value<key::v_int_string>(doc);
 
-    show_value<key::doc>(doc);
+    show_value<key::docs>(doc);
 
     show_pointer<key::ptr_int>(doc);
     show_pointer<key::shared_int>(doc);
