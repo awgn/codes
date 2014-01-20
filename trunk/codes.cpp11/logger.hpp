@@ -147,7 +147,7 @@ namespace more
             , done  (0)
             {}
 
-            data_base(const char *name)
+            data_base(const char *name, std::ios_base::openmode mode)
             : fname (name)
             , fbuf  (new std::filebuf())
             , out   (nullptr)
@@ -156,7 +156,7 @@ namespace more
             , ticket(0)
             , done  (0)
             {
-                if(!fbuf->open(name, std::ios_base::out|std::ios_base::app))
+                if(!fbuf->open(name, mode))
                     throw std::system_error(errno, std::generic_category(), "filebuf: open");
 
                 out.rdbuf(fbuf.get());
@@ -185,8 +185,8 @@ namespace more
             : data_base(fb)
             {}
 
-            data(const char *name)
-            : data_base(name)
+            data(const char *name, std::ios_base::openmode mode)
+            : data_base(name, mode)
             {}
         };
 
@@ -202,8 +202,8 @@ namespace more
         { }
 
         explicit
-        logger(const char *filename)
-        : data_(new data(filename))
+        logger(const char *filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::truc)
+        : data_(new data(filename, mode))
         { }
 
         logger(logger&&) = default;
