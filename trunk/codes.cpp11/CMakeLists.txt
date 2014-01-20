@@ -16,7 +16,7 @@ include_directories(.)
 
 add_definitions(-D_GLIBCXX_USE_NANOSLEEP -D_GLIBCXX_USE_SCHED_YIELD)
 
-list(APPEND CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -Wsign-conversion")
+list(APPEND CMAKE_CXX_FLAGS "-g2 -O0 -std=c++11  -Wall -Wextra -Wsign-conversion")
  
 file(GLOB testfiles "*.cpp" )
 

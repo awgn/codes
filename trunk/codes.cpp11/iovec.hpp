@@ -9,7 +9,7 @@
  */
 
 #ifndef _MORE_IOVEC_HPP_
-#define _MORE_IOVEC_HPP_ 
+#define _MORE_IOVEC_HPP_
 
 #include <vector>
 #include <iterator>
@@ -20,7 +20,7 @@
 
 #include <sys/uio.h>
 
-namespace more 
+namespace more
 {
     namespace iovec_detail {
 
@@ -31,11 +31,11 @@ namespace more
             return const_cast<typename std::remove_const<Tp>::type *>(ptr);
         }
 
-        struct address_of 
+        struct address_of
         {
             template <typename T>
             static typename std::enable_if<std::is_integral<T>::value,
-                            typename std::add_const<T>::type *>::type 
+                            typename std::add_const<T>::type *>::type
             value(const T &elem)
             {
                 return &elem;
@@ -49,10 +49,10 @@ namespace more
         };
 
         template <typename Iter>
-        struct size_of 
+        struct size_of
         {
             template <typename T>
-            static typename std::enable_if<std::is_integral<T>::value, size_t>::type 
+            static typename std::enable_if<std::is_integral<T>::value, size_t>::type
             value(T)
             {
                 return sizeof(T);
@@ -77,7 +77,7 @@ namespace more
             if ( __it == __end )
                 return ret;
 
-            auto base = address_of::value(*__it); 
+            auto base = address_of::value(*__it);
             size_t len = 0;
 
             for(auto ptr = base; __it != __end;  len += size_of<Iterator>::value(*__it++), ++ptr )
@@ -94,7 +94,7 @@ namespace more
             iovec iov = { static_cast<void *>(drop_const(base)), len };
             ret.push_back(iov);
             return ret;
-        }    
+        }
 
         template <typename Iterator>
         typename std::enable_if<
@@ -104,9 +104,9 @@ namespace more
         {
             auto n = std::distance(__it,__end);
 
-            if ( n && n == (&*__end - &*__it) ) 
+            if ( n && n == (&*__end - &*__it) )
             {
-                iovec iov = { static_cast<void *>(& *__it), 
+                iovec iov = { static_cast<void *>(& *__it),
                     static_cast<size_t>(n) * sizeof(typename std::iterator_traits<Iterator>::value_type) };
                 return std::vector<iovec>(1, iov);
             }
@@ -122,9 +122,9 @@ namespace more
     std::vector<iovec>
     get_iovec(Iterator __it, Iterator __end)
     {
-        return iovec_detail::get_iovec(__it,__end, 
+        return iovec_detail::get_iovec(__it,__end,
                typename std::iterator_traits<Iterator>::iterator_category());
-    } 
+    }
 
     // iovec_iterator: iterate over the iovec descriptor of T objects (usually T is char).
     //
@@ -141,7 +141,7 @@ namespace more
         iovec_iterator()
         : m_iovec_p(0), m_iterator(0), m_slot(0)
         {}
-    
+
         iovec_iterator(std::vector<iovec> &iov)
         : m_iovec_p(&iov), m_iterator(0),  m_slot(0)
         {
@@ -174,9 +174,9 @@ namespace more
                 return *this;
 
             ++m_iterator;
-            
-            if (reinterpret_cast<char *>(m_iterator) >= 
-                    (static_cast<char *>(m_iovec_p->at(m_slot).iov_base) + 
+
+            if (reinterpret_cast<char *>(m_iterator) >=
+                    (static_cast<char *>(m_iovec_p->at(m_slot).iov_base) +
                                          m_iovec_p->at(m_slot).iov_len))
             {
                 if(++m_slot >= m_iovec_p->size())
@@ -192,7 +192,7 @@ namespace more
             return *this;
         }
 
-        iovec_iterator 
+        iovec_iterator
         operator++(int)
         {
             iovec_iterator c(*this);
@@ -203,7 +203,7 @@ namespace more
         bool operator==(const iovec_iterator &rhs)
         {
             return m_iterator == rhs.m_iterator;
-        }    
+        }
 
         bool operator!=(const iovec_iterator &rhs)
         {
@@ -213,7 +213,7 @@ namespace more
 
     // return begin/end iterators of a std::vector<iovec>
     //
-    
+
     template <typename T>
     inline iovec_iterator<T>
     get_iovec_iterator(std::vector<iovec> &iov)
@@ -230,7 +230,7 @@ namespace more
 
 } // nnamespace more
 
-namespace std 
+namespace std
 {
     template <typename CharT, typename Traits>
     inline std::basic_ostream<CharT, Traits> &

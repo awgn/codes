@@ -26,12 +26,12 @@ main(int, char *[])
     // auto c2 = more::range_iterator(const_buffer, const_buffer+4);        // error: ok
     auto c3 = more::range_const_iterator(buffer, buffer+4);                 // ok, cctor of CV-qualified type
     auto c4 = more::range_const_iterator(const_buffer, const_buffer+4);     // ok, cctor of CV-qualified type
-    
+
     auto c5 = more::range_iterator(vec.begin(), vec.end());
     // auto c6 = more::range_iterator(vec.cbegin(), vec.cend());               // error: ok
 
     auto c7 = more::range_const_iterator(vec.begin(), vec.end());
-    auto c8 = more::range_const_iterator(vec.cbegin(), vec.cend());        
+    auto c8 = more::range_const_iterator(vec.cbegin(), vec.cend());
 
     * c1++ = 'a';
     * c1++ = 'b';
@@ -45,7 +45,7 @@ main(int, char *[])
     std::cout << "*c3++ = " << * c3++ << std::endl;
     std::cout << "*c3++ = " << * c3++ << std::endl;
 
-#ifdef __clang__    
+#ifdef __clang__
     std::vector<int> vec2;
     vec2.push_back(1);
     vec2.push_back(2);
@@ -55,11 +55,11 @@ main(int, char *[])
 #endif
 
     auto il = more::range_iterator(vec2.begin(), vec2.end());
-    
+
     std::copy(il, il.end(), std::ostream_iterator<int>(std::cout, " "));
     std::cout << std::endl;
 
     std::cout << "done." << std::endl;
     return 0;
 }
- 
+

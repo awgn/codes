@@ -9,7 +9,7 @@
  */
 
 #ifndef _OBSERVER_HPP_
-#define _OBSERVER_HPP_ 
+#define _OBSERVER_HPP_
 
 #include <algorithm>
 #include <vector>
@@ -20,13 +20,13 @@
 #include <memory>
 #include <mutex>
 
-namespace more { 
+namespace more {
 
     ////////////////////////// observer
-    
+
     template <typename ...Ti>
     class observer
-    { 
+    {
     public:
         observer()
         {}
@@ -41,14 +41,14 @@ namespace more {
         }
 
     protected:
-        virtual void update(Ti ...args) = 0; 
+        virtual void update(Ti ...args) = 0;
     };
 
     ////////////////////////// subject
 
     template <typename ...Ti>
-    class subject 
-    { 
+    class subject
+    {
         struct null_deleter
         {
             void operator()(void *) {}
@@ -96,7 +96,7 @@ namespace more {
             detach(std::shared_ptr<observer<Ti...>>(rp, null_deleter()));
         }
 
-    private:  
+    private:
         std::vector<std::shared_ptr<observer<Ti...>>>  m_observers;
         std::mutex m_mutex;
     };

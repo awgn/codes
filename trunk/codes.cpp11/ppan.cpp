@@ -7,7 +7,7 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
+
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -26,54 +26,54 @@
 
 #include <token.hpp>   // more!
 
-namespace cpp 
+namespace cpp
 {
     struct identifier
     {
         template <typename int_type>
         bool operator()(int_type c)
         {
-            return std::isalnum(c) || c == '_';    
+            return std::isalnum(c) || c == '_';
         }
     };
 }
- 
-enum dir_class { 
-    _define, _undef, _include, 
-    _if, _if_else, _else, 
-    _elif, _elif_else, _endif, 
-    _ifdef, _ifdef_else, 
-    _ifndef, _ifndef_else, 
+
+enum dir_class {
+    _define, _undef, _include,
+    _if, _if_else, _else,
+    _elif, _elif_else, _endif,
+    _ifdef, _ifdef_else,
+    _ifndef, _ifndef_else,
     _reserved,
-    _sizeof_dir_class }; 
+    _sizeof_dir_class };
 
 const std::vector<std::string> static_dirname =
 {
-    "define", "undef", "include", 
-    "if", "if_else", "else", 
-    "elif", "elif_else", "endif", 
-    "ifdef", "ifdef_else", 
-    "ifndef", "ifndef_else", 
-    "reserved", "" 
+    "define", "undef", "include",
+    "if", "if_else", "else",
+    "elif", "elif_else", "endif",
+    "ifdef", "ifdef_else",
+    "ifndef", "ifndef_else",
+    "reserved", ""
 };
 
 typedef std::tuple< dir_class,   /* directive class */
-                    bool,        /* else statement */ 
+                    bool,        /* else statement */
                     std::string  /* id */
                     > dir_type;
 
 typedef std::tuple< std::string, /* source code */
-                    int          /* line */ 
+                    int          /* line */
                     > info_type;
 
 typedef std::map<dir_type,std::list<info_type>> map_type;
 
-typedef std::map<std::string, dir_class> dirmap_type; 
+typedef std::map<std::string, dir_class> dirmap_type;
 
-const dirmap_type static_dirmap = 
+const dirmap_type static_dirmap =
 {{ "include"    , _include     },
  { "define"     , _define      },
- { "undef"      , _undef       }, 
+ { "undef"      , _undef       },
  { "if"         , _if          },
  { "if_else"    , _if_else     },
  { "else"       , _else        },
@@ -85,10 +85,10 @@ const dirmap_type static_dirmap =
  { "ifndef"     , _ifndef      },
  { "ifndef_else", _ifndef_else }};
 
-const dirmap_type static_queries = 
+const dirmap_type static_queries =
 {{ "include"    , _include     },
  { "define"     , _define      },
- { "undef"      , _undef       }, 
+ { "undef"      , _undef       },
  { "if"         , _if          },
  { "if_else"    , _if_else     },
  { "elif"       , _elif        },
@@ -98,7 +98,7 @@ const dirmap_type static_queries =
  { "ifndef"     , _ifndef      },
  { "all"        , _reserved    },
  { "ifndef_else", _ifndef_else }};
- 
+
 
 unsigned int
 get_class_type(const dir_type &d)
@@ -124,15 +124,15 @@ parse_source(const std::string &name)
         ss >> token;
 
         if (token[0] != '#')   // skip non-preprocessor directive
-            continue; 
+            continue;
 
         token.erase(0,1);   // erase '#' char
         if (token.empty()) {
             ss >> token;
             if (token.empty()){
                 std::ostringstream error;
-                error << "parse error at " << name << ':' << c; 
-                throw std::runtime_error(error.str()); 
+                error << "parse error at " << name << ':' << c;
+                throw std::runtime_error(error.str());
             }
         }
         auto it = static_dirmap.find(token);
@@ -160,16 +160,16 @@ parse_source(const std::string &name)
             case _else:
                 if (tmp.empty()) {
                     std::ostringstream error;
-                    error << "parse error at " << name << ':' << c; 
-                    throw std::runtime_error(error.str()); 
+                    error << "parse error at " << name << ':' << c;
+                    throw std::runtime_error(error.str());
                 }
                 std::get<1>(tmp.top().first) = true;
                 break;
             case _elif:
                 if (tmp.empty()) {
                     std::ostringstream error;
-                    error << "parse error at " << name << ':' << c; 
-                    throw std::runtime_error(error.str()); 
+                    error << "parse error at " << name << ':' << c;
+                    throw std::runtime_error(error.str());
                 }
                 std::get<1>(tmp.top().first) = true;
                 tmp.push(std::make_pair(std::make_tuple(it->second, false, ss.str()),
@@ -178,8 +178,8 @@ parse_source(const std::string &name)
             case _endif:
                 if (tmp.empty()) {
                     std::ostringstream error;
-                    error << "parse error at " << name << ':' << c; 
-                    throw std::runtime_error(error.str()); 
+                    error << "parse error at " << name << ':' << c;
+                    throw std::runtime_error(error.str());
                 }
                 ret.push_back(tmp.top());
                 tmp.pop();
@@ -199,15 +199,15 @@ struct dump_query {
     {}
 
     void operator()(const map_type::value_type &elem) const
-    {    
+    {
         const dir_type &d = elem.first;
 
-        if (m_gcc) 
+        if (m_gcc)
         {
             std::cout << "-D" << std::get<2>(d) << std::endl;
             return;
-        } 
-        
+        }
+
         std::cout << std::left << std::setw(16) << static_dirname[get_class_type(d)] << ": " << std::get<2>(d);
         if (!m_verbose) {
             std::cout << std::endl;
@@ -223,7 +223,7 @@ struct dump_query {
         }
         std::cout << ")\n";
     }
-    
+
     bool m_verbose;
     bool m_gcc;
 };
@@ -241,8 +241,8 @@ struct query_predicate
         return m_plus[get_class_type(d)] && !m_minus[get_class_type(d)];
     }
 
-    const std::vector<bool> &m_plus; 
-    const std::vector<bool> &m_minus; 
+    const std::vector<bool> &m_plus;
+    const std::vector<bool> &m_minus;
 };
 
 
@@ -263,18 +263,18 @@ struct map_pusher
 void usage()
 {
     std::cerr << "usage: ppan [opts] sources...\n";
-    std::cerr << 
+    std::cerr <<
     "queries:   \n"
-    "  -+include\n"    
-    "  -+define\n"     
-    "  -+undef\n"      
-    "  -+if\n"         
-    "  -+if_else\n"    
-    "  -+elif\n"       
-    "  -+elif_else\n"  
-    "  -+ifdef\n"      
-    "  -+ifdef_else\n" 
-    "  -+ifndef\n"     
+    "  -+include\n"
+    "  -+define\n"
+    "  -+undef\n"
+    "  -+if\n"
+    "  -+if_else\n"
+    "  -+elif\n"
+    "  -+elif_else\n"
+    "  -+ifdef\n"
+    "  -+ifdef_else\n"
+    "  -+ifndef\n"
     "  -+ifndef_else\n"
     "  -+all\n"
     "options:\n"
@@ -302,12 +302,12 @@ main(int argc, char *argv[])
     auto opt_end = args.end();
 
     for(; opt != opt_end; ++opt)
-    {   
+    {
         int v = ((opt->at(0) == '-') * -1 +
                  (opt->at(0) == '+') *  1);
 
         if (v == 0)
-            break; 
+            break;
 
         std::string token(opt->data() + 1);  // skip +/-
         auto it = static_queries.find(token);
@@ -328,7 +328,7 @@ main(int argc, char *argv[])
             if (*opt == "-v" || *opt == "--verbose")
             {
                 verbose = true; continue;
-            }             
+            }
             if (*opt == "-g" || *opt == "--gcc")
             {
                 minus_opt[_include] = true;
@@ -340,7 +340,7 @@ main(int argc, char *argv[])
             }
             std::cerr << *opt << ": unknow option!" << std::endl;
             exit(1);
-        } 
+        }
     }
 
     if ( opt == opt_end )
@@ -360,9 +360,9 @@ main(int argc, char *argv[])
 
     map_type result;
     std::copy_if(macro.begin(), macro.end(),
-                 std::inserter(result, result.begin()), 
+                 std::inserter(result, result.begin()),
                  query_predicate(plus_opt, minus_opt));
- 
+
     std::for_each(result.begin(), result.end(), dump_query(verbose,gcc));
     return 0;
 }

@@ -69,7 +69,7 @@ main(int, char *[])
     std::cout << "is_automedia: " << dev.is_automedia() << std::endl;
 
     auto drvinfo = dev.drvinfo();
-    
+
     std::cout << "driver      : " << drvinfo->driver << std::endl;
     std::cout << "version     : " << drvinfo->version << std::endl;
     std::cout << "bus_info    : " << drvinfo->bus_info << std::endl;
@@ -78,7 +78,7 @@ main(int, char *[])
 
     std::cout << "speed       : " << cmd->speed << std::endl;
     std::cout << "link        : " << dev.link() << std::endl;
-    
+
    return 0;
 }
- 
+

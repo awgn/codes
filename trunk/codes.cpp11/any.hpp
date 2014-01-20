@@ -9,17 +9,17 @@
  */
 
 #ifndef _MORE_ANY_HPP_
-#define _MORE_ANY_HPP_ 
+#define _MORE_ANY_HPP_
 
 #include <string>
 #include <typeinfo>
 #include <algorithm>
-#include <type_traits>   
+#include <type_traits>
 
 // Yet another boost tribute: the class any.
 //
 
-namespace more { 
+namespace more {
 
     class bad_any_cast : public std::bad_cast
     {
@@ -41,7 +41,7 @@ namespace more {
         template <typename T>
         any(const T &value)
         : m_base(new storage<T>(value))
-        {} 
+        {}
 
         any(const any &rhs)
         : m_base(rhs.m_base ? rhs.m_base->clone() : nullptr)
@@ -59,8 +59,8 @@ namespace more {
     public:
 
         bool empty() const
-        { 
-            return m_base == nullptr; 
+        {
+            return m_base == nullptr;
         }
 
         const std::type_info &
@@ -69,7 +69,7 @@ namespace more {
             return m_base ? m_base->type() : typeid(void);
         }
 
-        any & 
+        any &
         swap(any & rhs)
         {
             std::swap(m_base, rhs.m_base);
@@ -113,7 +113,7 @@ namespace more {
             storage *
             clone() const
             {
-               return new storage(m_value); 
+               return new storage(m_value);
             }
 
             const std::type_info &
@@ -131,13 +131,13 @@ namespace more {
     template <typename T>
     inline T * any_cast(any *rhs_p)
     {
-        return ( rhs_p ?  
-                    (dynamic_cast< any::storage<T> *>(rhs_p->m_base) ? 
-                        & static_cast<any::storage<T> *>(rhs_p->m_base)->m_value 
-                        : 
-                        nullptr) 
-                     : 
-                     nullptr 
+        return ( rhs_p ?
+                    (dynamic_cast< any::storage<T> *>(rhs_p->m_base) ?
+                        & static_cast<any::storage<T> *>(rhs_p->m_base)->m_value
+                        :
+                        nullptr)
+                     :
+                     nullptr
                );
     }
     template <typename T>
@@ -196,7 +196,7 @@ namespace more {
         any_out& operator=(any_out rhs)
         {
             rhs.swap(*this);
-            return *this;    
+            return *this;
         }
 
         ~any_out()
@@ -220,7 +220,7 @@ namespace more {
         }
 
         any &
-        get() 
+        get()
         { return m_value; }
 
         const any &
@@ -236,7 +236,7 @@ namespace more {
             virtual ~streamer() {}
         };
 
-        template <typename T> struct streamer_impl : public streamer 
+        template <typename T> struct streamer_impl : public streamer
         {
             virtual void printon(std::ostream &out, const any &arg)
             {

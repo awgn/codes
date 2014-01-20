@@ -4,21 +4,21 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
 #ifndef _MORE_FUNCTIONAL_HPP_
-#define _MORE_FUNCTIONAL_HPP_ 
+#define _MORE_FUNCTIONAL_HPP_
 
-#include <functional>    
+#include <functional>
 #include <algorithm>
 #include <iterator>
 #include <vector>
 #include <string>
 #include <tuple>
 
-namespace more { 
+namespace more {
 
     // logical_xor
     //
@@ -28,7 +28,7 @@ namespace more {
     logical_xor(const T1 &a, const T2 &b)
     {
         return static_cast<bool>(a) ^ static_cast<bool>(b);
-    } 
+    }
 
     // chop
     //
@@ -49,9 +49,9 @@ namespace more {
         T m_max;
     };
 
-    // flipflop predicate 
+    // flipflop predicate
     //
- 
+
     template <typename Arg>
     struct flipflop : public std::unary_function<Arg, bool>
     {
@@ -85,7 +85,7 @@ namespace more {
         operator()(const Arg &value) const
         {
             return m_state = m_state ? logical_xor(m_state, m_pred2(value)) :
-                                         logical_xor(m_state, m_pred1(value)) ; 
+                                         logical_xor(m_state, m_pred1(value)) ;
         }
 
         mutable bool m_state;
@@ -95,7 +95,7 @@ namespace more {
     };
 
     // norm (valid for signed and unsigned types)
-    
+
     template <typename Tp>
     struct norm : public std::binary_function<Tp, Tp, Tp>
     {
@@ -104,7 +104,7 @@ namespace more {
         {
             return std::max(x,y)-std::min(x,y);
         }
-    }; 
+    };
 
     // identity functor
     //
@@ -112,18 +112,18 @@ namespace more {
     template <typename Tp>
     struct identity : public std::unary_function<Tp,Tp>
     {
-        Tp& 
+        Tp&
         operator()(Tp& n) const
-        { 
-            return n; 
-        }        
-        
-        const Tp& 
-        operator()(const Tp& n) const
-        { 
-            return n; 
+        {
+            return n;
         }
- 
+
+        const Tp&
+        operator()(const Tp& n) const
+        {
+            return n;
+        }
+
     };
 
     // select1st, select2nd non-standard functor
@@ -132,20 +132,20 @@ namespace more {
     template <typename Tp>
     struct select1st : public std::unary_function<Tp, typename Tp::first_type>
     {
-        typename Tp::first_type 
+        typename Tp::first_type
         operator()(Tp n) const
         {
-            return n.first; 
+            return n.first;
         }
     };
 
     template <typename Tp>
     struct select2nd : public std::unary_function<Tp, typename Tp::second_type>
     {
-        typename Tp::second_type 
+        typename Tp::second_type
         operator()(Tp n) const
         {
-            return n.second; 
+            return n.second;
         }
     };
 
@@ -154,7 +154,7 @@ namespace more {
     struct get_th : public std::unary_function<Tp, typename std::tuple_element<N,Tp>::type>
     {
         typename std::tuple_element<N,Tp>::type
-        operator()(const Tp &n) const 
+        operator()(const Tp &n) const
         {
             return std::get<N>(n);
         }
@@ -164,8 +164,8 @@ namespace more {
     //
 
     template <typename Callable>
-    struct unary_callable_if 
-    : public std::binary_function<bool, typename Callable::argument_type, 
+    struct unary_callable_if
+    : public std::binary_function<bool, typename Callable::argument_type,
                                         typename Callable::result_type>
     {
         unary_callable_if(Callable f)

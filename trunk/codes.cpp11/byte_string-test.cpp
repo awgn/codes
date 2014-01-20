@@ -7,7 +7,7 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
+
 #include "yats.hpp"
 #include "byte_string.hpp"
 
@@ -36,7 +36,7 @@ Context(ByteString)
         Assert( x.size  (), is_equal_to(5));
         Assert( x.capacity(), is_equal_to(7));
     }
-    
+
     Test(ctor3)
     {
         byte_string<8> x(std::string("hello"));
@@ -57,7 +57,7 @@ Context(ByteString)
         byte_string<8> x("hello");
         byte_string<6> y;
         byte_string<4> z;
-                             
+
         AssertNothrow  ( y = x );
         AssertThrow    ( z = x );
 
@@ -72,7 +72,7 @@ Context(ByteString)
         Assert(x == x);
         Assert(x == y);
         Assert(y == x);
-        
+
         Assert(x == "hello");
         Assert("hello" == x);
         Assert(x == std::string("hello"));
@@ -87,13 +87,13 @@ Context(ByteString)
         Assert(!(x != x));
         Assert(!(x != y));
         Assert(!(y != x));
-        
+
         Assert(!(x != "hello"));
         Assert(!("hello" != x));
         Assert(!(x != std::string("hello")));
         Assert(!(std::string("hello") != x));
     }
-    
+
     Test(operLess)
     {
         byte_string<8> x("hello");

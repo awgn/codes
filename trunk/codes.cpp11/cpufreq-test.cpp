@@ -42,7 +42,7 @@ main(int, char *[])
 
     cpu0.set_policy_governor("performance");
     std::cout << "freq_kernel: " << cpu0.freq_kernel() << std::endl;
-    
+
     return 0;
 }
- 
+

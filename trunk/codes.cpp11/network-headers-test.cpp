@@ -66,7 +66,7 @@ main(int, char *[])
 
         std::cout << "tcp: " << h_tcp->size() << " bytes " << *h_tcp << std::endl;
 
-        std::cout << "tcp_checksum: " << h_tcp->chksum_verify(*h_ip, cur.capacity()) << std::endl;  
+        std::cout << "tcp_checksum: " << h_tcp->chksum_verify(*h_ip, cur.capacity()) << std::endl;
         std::cout << "payload: " << cur.capacity() << " bytes" << ", offset: " << cur.size() << std::endl;
     }
 

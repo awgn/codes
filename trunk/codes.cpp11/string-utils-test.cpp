@@ -17,7 +17,7 @@ int
 main(int, char *[])
 {
     std::cout << "\n////////////////////// string ///////////////////\n" << std::endl;
-    
+
     {
         std::string s0("aB Ab");
         std::string s1("   aB Ab");
@@ -126,7 +126,7 @@ main(int, char *[])
         std::cout << "capitalize: [" << more::capitalize_copy(s2) << ']'<< std::endl;
         std::cout << "capitalize: [" << more::capitalize_copy(s3) << ']'<< std::endl;
 
-        std::cout << "capitalize! [" << more::capitalize(s0) << ']'<< std::endl; // in-place version... 
+        std::cout << "capitalize! [" << more::capitalize(s0) << ']'<< std::endl; // in-place version...
         std::cout << "capitalize! [" << more::capitalize(s1) << ']'<< std::endl;
         std::cout << "capitalize! [" << more::capitalize(s2) << ']'<< std::endl;
         std::cout << "capitalize! [" << more::capitalize(s3) << ']'<< std::endl;
@@ -148,13 +148,13 @@ main(int, char *[])
 
     {
         std::string abc("1 2 3");
-   
+
         std::cout << std::endl;
         std::cout << "orig  [" << abc << "]" << std::endl;
         std::cout << "repl: [" << more::repl(abc, std::string(" "), std::string("  "))  << "]" << std::endl;
         more::repl(abc, std::string(" ") , std::string("__"));
         std::cout << "repl_ [" << abc << "]" << std::endl;
-    }    
+    }
 
     // split test
     //
@@ -165,26 +165,26 @@ main(int, char *[])
 
         std::cout << std::endl;
         std::cout << "split: [";
-       
-        more::split(abc, std::back_inserter(vec), std::string(" ,")); 
+
+        more::split(abc, std::back_inserter(vec), std::string(" ,"));
 
         std::copy(vec.begin(), vec.end(), std::ostream_iterator<std::string>(std::cout, " "));
         std::cout << "]" << std::endl;
-    }    
+    }
 
 
-    // join test 
+    // join test
     //
     {
         std::vector<std::string> abc;
         abc.push_back("1");
         abc.push_back("2");
         abc.push_back("3");
-        
+
         std::cout << std::endl;
         std::cout << "join: [" << more::join(abc.begin(), abc.end(), std::string()) << "]" << std::endl;
         std::cout << "join: [" << more::join(abc.begin(), abc.end(), std::string("_")) << "]" << std::endl;
-    }    
+    }
 
     // extending getline...
     //
@@ -195,7 +195,7 @@ main(int, char *[])
         std::cout << std::endl;
 
         std::string l;
-        while ( more::getline(sstr, l, std::string("\n: ") ) ) 
+        while ( more::getline(sstr, l, std::string("\n: ") ) )
         {
             std::cout << "getline: [" << l << "]" << std::endl;
         }
@@ -212,7 +212,7 @@ main(int, char *[])
         std::cout << std::endl;
 
         std::string l;
-        while ( more::getline(sstr, l, std::string("\n: "), more::string_utils::escape_enabled ) ) 
+        while ( more::getline(sstr, l, std::string("\n: "), more::string_utils::escape_enabled ) )
         {
             std::cout << "getline_esc: [" << l << "]" << std::endl;
         }
@@ -225,9 +225,9 @@ main(int, char *[])
     // more::upcase(more::trim(str));              // not allowed!
     // more::upcase_copy(more::trim(str));         // ok! making an upcase copy of the trimmed str.
     // more::upcase(more::trim_copy(str));         // not allowed: upcase() on temporary!
-    // more::upcase_copy(more::trim_copy(str));    // ok! 
+    // more::upcase_copy(more::trim_copy(str));    // ok!
 
-    
+
     std::cout << "\n////////////////////// wstring ///////////////////\n" << std::endl;
 
     {
@@ -337,7 +337,7 @@ main(int, char *[])
         std::wcout << "capitalize: [" << more::capitalize_copy(s2) << ']'<< std::endl;
         std::wcout << "capitalize: [" << more::capitalize_copy(s3) << ']'<< std::endl;
 
-        std::wcout << "capitalize! [" << more::capitalize(s0) << ']'<< std::endl; // in-place version... 
+        std::wcout << "capitalize! [" << more::capitalize(s0) << ']'<< std::endl; // in-place version...
         std::wcout << "capitalize! [" << more::capitalize(s1) << ']'<< std::endl;
         std::wcout << "capitalize! [" << more::capitalize(s2) << ']'<< std::endl;
         std::wcout << "capitalize! [" << more::capitalize(s3) << ']'<< std::endl;
@@ -364,38 +364,38 @@ main(int, char *[])
 
         std::wcout << std::endl;
         std::wcout << L"split: [";
-       
-        more::split(abc, std::back_inserter(vec), std::wstring(L" ,")); 
+
+        more::split(abc, std::back_inserter(vec), std::wstring(L" ,"));
 
         std::copy(vec.begin(), vec.end(), std::ostream_iterator<std::wstring, wchar_t>(std::wcout, L" "));
         std::wcout << L"]" << std::endl;
-    }    
+    }
 
-    // join test 
+    // join test
     //
     {
         std::vector<std::wstring> abc;
         abc.push_back(L"1");
         abc.push_back(L"2");
         abc.push_back(L"3");
-        
+
         std::wcout << std::endl;
         std::wcout << "join: [" << more::join(abc.begin(), abc.end(), std::wstring()) << "]" << std::endl;
         std::wcout << "join: [" << more::join(abc.begin(), abc.end(), std::wstring(L"_")) << "]" << std::endl;
-    }    
+    }
 
     // replace test
     //
 
     {
         std::wstring abc(L"1 2 3");
-   
+
         std::wcout << std::endl;
         std::wcout << "orig  [" << abc << "]" << std::endl;
         std::wcout << "repl: [" << more::repl(abc, std::wstring(L" "), std::wstring(L"  "))  << "]" << std::endl;
         more::repl(abc, std::wstring(L" ") , std::wstring(L"__"));
         std::wcout << "repl_ [" << abc << "]" << std::endl;
-    }    
+    }
 
     // extending getline...
     //
@@ -406,7 +406,7 @@ main(int, char *[])
         std::wcout << std::endl;
 
         std::wstring l;
-        while ( more::getline(sstr, l, std::wstring(L"\n: ") ) ) 
+        while ( more::getline(sstr, l, std::wstring(L"\n: ") ) )
         {
             std::wcout << L"getline: [" << l << L"]" << std::endl;
         }
@@ -423,7 +423,7 @@ main(int, char *[])
         std::cout << std::endl;
 
         std::wstring l;
-        while ( more::getline(sstr, l, std::wstring(L"\n: "), more::string_utils::escape_enabled ) ) 
+        while ( more::getline(sstr, l, std::wstring(L"\n: "), more::string_utils::escape_enabled ) )
         {
             std::wcout << L"getline_esc: [" << l << L"]" << std::endl;
         }
@@ -431,4 +431,4 @@ main(int, char *[])
 
     return 0;
 }
- 
+

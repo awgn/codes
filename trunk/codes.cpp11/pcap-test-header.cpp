@@ -33,12 +33,12 @@ public:
         more::net::const_header<ipv4> ip_h(cur);
         more::net::const_header<tcp> tcp_h(cur);
 
-        std::cout << *h << "\n    " <<  *eth_h << 
-                           "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->chksum_verify() << 
+        std::cout << *h << "\n    " <<  *eth_h <<
+                           "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->chksum_verify() <<
                            "\n    " <<  *tcp_h << " csum_correct:" << std::boolalpha << tcp_h->chksum_verify(*ip_h, cur.size()) << std::endl;
 
-        // std::cout << *h << "\n    " <<  *eth_h << 
-        //                   "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check(net::verify()) << 
+        // std::cout << *h << "\n    " <<  *eth_h <<
+        //                   "\n    " << *ip_h   << " csum_correct:" << std::boolalpha << ip_h->check(net::verify()) <<
         //                   "\n    " <<  *icmp_h << std::endl;
     }
 };
@@ -73,7 +73,7 @@ main(int, char *[])
     // std::cout << "lookup device: " << dev << std::endl;
 
     mycap handle;
-    
+
     std::cout << "device: " << handle.device() << std::endl;
     std::cout << "errbuf: [" << handle.errbuf() << "]" << std::endl;
 
@@ -106,8 +106,8 @@ main(int, char *[])
 
     std::cout << "dumping 5 tcp-segments to cout..." << std::endl;
 
-    handle.loop(5);        
- 
+    handle.loop(5);
+
     std::cout << "dumping 5 tcp-segments to file..." << std::endl;
     {
         more::pcap::pcap_dumper test(handle, "test.pcap");
@@ -123,4 +123,4 @@ main(int, char *[])
 
     return 0;
 }
- 
+

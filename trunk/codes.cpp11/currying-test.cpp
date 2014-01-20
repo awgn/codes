@@ -20,7 +20,7 @@ using namespace yats;
 
 using namespace more;
 
-    
+
 // err: closure with callable that takes
 //      arg by non-const l-value reference...
 // auto x = closure(incr, n);
@@ -44,7 +44,7 @@ Context(currying_test)
     {
         return a+b;
     }
-    
+
     Test(basic_curry)
     {
         auto val = curry(negate,1);
@@ -58,12 +58,12 @@ Context(currying_test)
         Assert(add_(2), is_equal_to(3));
     }
 
-    
+
     Test(mixed_curry)
     {
-        auto f1 = curry(f0, 42, "hello");    
+        auto f1 = curry(f0, 42, "hello");
         auto f2 = curry(f1, 'x');
-        f2(true); 
+        f2(true);
     }
 
 
@@ -73,7 +73,7 @@ Context(currying_test)
         Assert(add_(), is_equal_to(3));
     }
 
-    
+
     Test(basic_closure)
     {
         auto val = closure(negate,1);
@@ -145,7 +145,7 @@ struct moveable
         other.count = 0;
     }
 
-    moveable& 
+    moveable&
     operator=(moveable &&other)
     {
         count = other.count+1;
@@ -163,11 +163,11 @@ int take(moveable &&m)
 }
 
     Test(moveable_curry)
-    {    
+    {
         moveable m;
         auto z = curry(&take, std::move(m));
         auto x = z();
-        
+
         Assert(x, is_equal_to(1));
     }
 }

@@ -20,7 +20,7 @@ using namespace more::expr;
 // example: _false and _true integral type.
 //
 
-namespace 
+namespace
 {
     expr_integral<int, 0> __0 = expr_integral<int, 0>();
     expr_integral<int, 1> __1 = expr_integral<int, 1>();
@@ -31,11 +31,11 @@ namespace
     expr_integral<int, 6> __6 = expr_integral<int, 6>();
     expr_integral<int, 7> __7 = expr_integral<int, 7>();
     expr_integral<int, 8> __8 = expr_integral<int, 8>();
-}                           
+}
 
 Context(expression_template_tests)
 {
-    
+
     Test(boolean)
     {
         Assert( eval( ( !_false ^ _true ) == _false ), is_true());

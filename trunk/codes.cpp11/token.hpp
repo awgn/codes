@@ -7,14 +7,14 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
+
 #ifndef _TOKEN_HPP_
-#define _TOKEN_HPP_ 
+#define _TOKEN_HPP_
 
 #include <cctype>
 #include <string>
 
-namespace more { 
+namespace more {
 
     template <typename Pred>
     struct basic_token
@@ -26,20 +26,20 @@ namespace more {
         }
 
         std::string &
-        str() 
+        str()
         {
             return m_str;
         }
 
         template <typename CharT, typename Traits>
-        friend inline std::basic_istream<CharT, Traits> & 
+        friend inline std::basic_istream<CharT, Traits> &
         operator>>(std::basic_istream<CharT,Traits> &in, basic_token &rhs)
-        {   
+        {
             typedef typename std::basic_istream<CharT,Traits>::int_type int_type;
             typedef typename std::basic_istream<CharT,Traits>::ios_base ios_base;
 
             const int_type eof = Traits::eof();
-            typename ios_base::iostate err = ios_base::goodbit; 
+            typename ios_base::iostate err = ios_base::goodbit;
 
             rhs.m_str.erase();
 
@@ -50,16 +50,16 @@ namespace more {
             while( !Traits::eq_int_type(c, eof) && !is_token(c) )
             {
                 c = in.rdbuf()->snextc();
-            } 
+            }
 
             if ( Traits::eq_int_type(c, eof) ) {
                 err |= ios_base::failbit;
                 in.setstate(err);
                 return in;
-            } 
+            }
 
             rhs.m_str.append(1,Traits::to_char_type(c));
-            while ( !(c = in.rdbuf()->snextc(), Traits::eq_int_type(c,eof))  && 
+            while ( !(c = in.rdbuf()->snextc(), Traits::eq_int_type(c,eof))  &&
                     is_token(c) )
             {
                 rhs.m_str.append(1,Traits::to_char_type(c));
@@ -68,13 +68,13 @@ namespace more {
             if ( Traits::eq_int_type(c,eof) ) {
                 err |= ios_base::eofbit;
                 in.width(0);
-                in.setstate(err);            
+                in.setstate(err);
             }
             return in;
         }
 
     private:
-        std::string m_str;    
+        std::string m_str;
     };
 
 } // namespace more

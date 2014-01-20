@@ -16,9 +16,9 @@ void client(std::string host, unsigned short port)
 {
     // simple echo server
     std::cout << "connecting to " << host << ':' << port << std::endl;
-    
+
     more::sockaddress<AF_INET> addr(host, port);
-    
+
     more::socket<AF_INET> sock(SOCK_STREAM);
 
     sock.connect(addr);
@@ -31,14 +31,14 @@ void client(std::string host, unsigned short port)
     sock.send_atomic(more::const_buffer(hello_world, sizeof(hello_world)), 0);
 
     /// recv echo
-    
+
     sock.recv_atomic(more::mutable_buffer(reinterpret_cast<char *>(&len), sizeof(len)), 0);
 
     auto size = ntohl(len);
-            
+
     std::unique_ptr<char[]> buffer(new char[size]);
 
-    sock.recv_atomic(more::mutable_buffer(buffer.get(), size), 0); 
+    sock.recv_atomic(more::mutable_buffer(buffer.get(), size), 0);
 
     std::cout << buffer.get() << std::endl;
 }
@@ -57,8 +57,8 @@ void server(std::string host, unsigned short port)
     local.bind(addr);
     local.listen(1);
 
-    for(;;) 
-    {  
+    for(;;)
+    {
         try
         {
             std::cout << "waiting for a client... ";
@@ -68,20 +68,20 @@ void server(std::string host, unsigned short port)
 
             local.accept(peer, remote);
 
-            std::cout << "[" << peer.host() << ":" << peer.port() << "]" << std::endl; 
+            std::cout << "[" << peer.host() << ":" << peer.port() << "]" << std::endl;
 
             unsigned int s;
 
             remote.recv_atomic(more::mutable_buffer(reinterpret_cast<char *>(&s), sizeof(int)), 0);
-             
+
             auto size = ntohl(s);
-            
+
             std::unique_ptr<char[]> buffer(new char[size]);
 
             remote.recv_atomic(more::mutable_buffer(reinterpret_cast<char *>(buffer.get()), size), 0);
 
-            /// send echo 
-            
+            /// send echo
+
             remote.send_atomic(more::const_buffer(reinterpret_cast<const char *>(&s), sizeof(int)), 0);
             remote.send_atomic(more::const_buffer(buffer.get(), size), 0);
 
@@ -89,7 +89,7 @@ void server(std::string host, unsigned short port)
         catch(std::exception &e)
         {
             std::cerr << "error: " << e.what() << std::endl;
-        }    
+        }
     }
 }
 

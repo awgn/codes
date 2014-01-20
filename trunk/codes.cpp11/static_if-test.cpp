@@ -28,7 +28,7 @@ main(int, char *[])
 {
     static_if<true>().then_<function>(42)
                      .else_<function>("hello world");
-    
+
     static_if<false>().then_<function>(42)
                       .else_<function>("hello world");
 

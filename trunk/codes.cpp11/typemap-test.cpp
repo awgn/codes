@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -28,7 +28,7 @@ using namespace more::type;
 
 Context(more_typemap_test)
 {
-    typedef typemap< std::pair<name, std::string>, std::pair<age, int>, std::pair<address, std::string> > map0; 
+    typedef typemap< std::pair<name, std::string>, std::pair<age, int>, std::pair<address, std::string> > map0;
 
     Test(size)
     {
@@ -45,7 +45,7 @@ Context(more_typemap_test)
         get<map1, nickname>::type _nick = "awgn";
         Assert( static_cast<int>(size<map1>::value), is_equal_to(4));
     }
-     
+
 
     Test(index_of)
     {
@@ -54,7 +54,7 @@ Context(more_typemap_test)
         Assert( static_cast<int>(index_of<map0, address>::value ) , is_equal_to(2) );
         Assert( static_cast<int>(index_of<map1, nickname>::value) , is_equal_to(3) );
     }
- 
+
 }
 int
 main(int argc, char *argv[])

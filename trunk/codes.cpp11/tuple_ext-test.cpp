@@ -39,7 +39,7 @@ Context(tuple_extended)
 
     Test(apply_forward)
     {
-        auto mistery = [](int &a, int b) -> int { 
+        auto mistery = [](int &a, int b) -> int {
                 a = 10;
             return a+b; };
 
@@ -50,24 +50,24 @@ Context(tuple_extended)
     }
 
 
-    template <typename T> 
-    void test(T &v) 
+    template <typename T>
+    void test(T &v)
     {
         long int sum = 0;
         more::tuple_for_each(v, [&](typename std::tuple_element<0, T>::type n) {
                                 sum += n;
                              });
     }
-              
+
     Test(for_each)
     {
         std::tuple<int,int,int> v {1,2,3};
         std::tuple<long, long> q {1,2};
-        
+
         test(v);
         test(q);
     }
-    
+
     Test(for_each_const)
     {
         std::tuple<int,int,int> const v {1,2,3};
@@ -79,7 +79,7 @@ Context(tuple_extended)
 
         Assert(sum, is_equal_to(6));
     }
-    
+
     Test(for_each_forward)
     {
         int a = 1, b = 2, c = 3;
@@ -102,7 +102,7 @@ Context(tuple_extended)
 
         Assert(len, is_equal_to(size_t(10)));
     }
-    
+
     Test(map_const)
     {
         auto const t = std::make_tuple("hello", "world");
@@ -123,5 +123,5 @@ main(int argc, char *argv[])
 {
     return yats::run(argc, argv);
 }
- 
+
 

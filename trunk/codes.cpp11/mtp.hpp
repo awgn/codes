@@ -8,18 +8,18 @@
  * ----------------------------------------------------------------------------
  */
 
-// metaprogramming: generic metafunctions 
+// metaprogramming: generic metafunctions
 //
 
 #ifndef _MTP_HPP_
-#define _MTP_HPP_ 
+#define _MTP_HPP_
 
 namespace more { namespace mtp {
- 
+
     ////////////////////////////
     // Loki's heritage
     ////////////////////////////
- 
+
     class null {};
     struct empty {};
 
@@ -45,15 +45,15 @@ namespace more { namespace mtp {
     struct type2type
     {
         typedef T type;
-    }; 
+    };
 
     template <bool v, typename U, typename V>
-    struct select 
+    struct select
     {
         typedef U type;
     };
     template <typename U, typename V>
-    struct select<false, U, V> 
+    struct select<false, U, V>
     {
         typedef V type;
     };
@@ -66,7 +66,7 @@ namespace more { namespace mtp {
     // to be used on return type or additional paramenter
     //
     template <bool B, class T = void>
-    struct enable_if_c 
+    struct enable_if_c
     {
         typedef T type;
     };
@@ -74,7 +74,7 @@ namespace more { namespace mtp {
     struct enable_if_c<false, T> {};
 
     template <bool B, class T = void>
-    struct disable_if_c 
+    struct disable_if_c
     {
         typedef T type;
     };
@@ -85,12 +85,12 @@ namespace more { namespace mtp {
     // to be used on return type or additional paramenter
     //
     template <typename B, class T = void>
-    struct enable_if : public enable_if_c<B::value,T> {}; 
+    struct enable_if : public enable_if_c<B::value,T> {};
 
     template <typename B, class T = void>
     struct disable_if : public disable_if_c<B::value,T> {};
 
-    // if_ and eval_if (same as Loki select) 
+    // if_ and eval_if (same as Loki select)
     //
 
     template <bool Cond, typename TrueType, typename FalseType>
@@ -99,7 +99,7 @@ namespace more { namespace mtp {
         typedef TrueType type;
     };
     template <typename TrueType, typename FalseType>
-    struct if_<false,TrueType, FalseType> 
+    struct if_<false,TrueType, FalseType>
     {
         typedef FalseType type;
     };
@@ -110,7 +110,7 @@ namespace more { namespace mtp {
         typedef typename TrueType::type type;
     };
     template <typename TrueType, typename FalseType>
-    struct eval_if<false,TrueType, FalseType> 
+    struct eval_if<false,TrueType, FalseType>
     {
         typedef typename FalseType::type type;
     };

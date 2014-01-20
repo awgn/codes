@@ -4,11 +4,11 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
-#pragma once 
+#pragma once
 
 #include <stdexcept>
 #include <csignal>
@@ -23,14 +23,14 @@ namespace more {
 
     // unix_signal exception...
     //
-    
+
     class unix_signal : public std::runtime_error
     {
         int sig_;
 
     public:
 
-        explicit 
+        explicit
         unix_signal(int sig)
         : std::runtime_error("unix signal " + std::to_string(sig))
         , sig_(sig)
@@ -44,10 +44,10 @@ namespace more {
             return sig_;
         }
     };
-    
+
     // signal handler...
     //
-    
+
     class signal_handler {
 
     private:
@@ -57,7 +57,7 @@ namespace more {
         std::atomic_int sig_;
         sigset_t set_;
 
-        signal_handler() 
+        signal_handler()
         : handler_()
         , timeout_(std::chrono::seconds(1))
         , sig_()
@@ -73,13 +73,13 @@ namespace more {
         {
             // setup timeout...
             //
-            
+
             timeout_ = std::move(t);
-            
+
             // block signals for the calling thread/process...
             //
-            
-            sigfillset(&set_); 
+
+            sigfillset(&set_);
 
             // except for the following ones:
             //
@@ -88,14 +88,14 @@ namespace more {
             sigdelset(&set_, SIGFPE);
             sigdelset(&set_, SIGILL);
             sigdelset(&set_, SIGSEGV);
-            
+
             sigprocmask(SIG_BLOCK, &set_, nullptr);
 
             // start signal handler thread...
             //
 
             std::thread([this](){
-       
+
                 int sig;
                 for(;;)
                 {
@@ -109,7 +109,7 @@ namespace more {
                     else
                     {
                         int expected = 0, n = 0;
-                        
+
                         auto start = std::chrono::system_clock::now();
 
                         while(!sig_.compare_exchange_weak(expected, sig))
@@ -125,7 +125,7 @@ namespace more {
                         }
                     }
                 }
-                        
+
             }).detach();
         }
 
@@ -133,10 +133,10 @@ namespace more {
 
         signal_handler(signal_handler const&  other) = delete;
 
-        signal_handler& 
+        signal_handler&
         operator=(signal_handler const&  other) = delete;
 
-        static signal_handler& 
+        static signal_handler&
         instance()
         {
             static signal_handler one;

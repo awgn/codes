@@ -7,7 +7,7 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
-   
+
 #include <print.hpp>
 #include <thread>
 #include <cstdio>
@@ -42,11 +42,11 @@ main(int, char *[])
         more::sprint("%1 %2 %3\n", "hello", xxx, 19230983);
         // boost::format("%1% %2% %3%\n") % "hello" % xxx % 19230983;
     }
-    
+
     auto diff = std::chrono::system_clock::now() - tstart;
-    
+
     std::cout << static_cast<double>(static_cast<std::chrono::microseconds>(diff).count())/1000000 << " sec." << std::endl;
 #endif
     return 0;
 }
- 
+

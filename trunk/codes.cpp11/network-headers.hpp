@@ -9,9 +9,9 @@
  */
 
 #ifndef _NETWORK_HEADERS_HPP_
-#define _NETWORK_HEADERS_HPP_ 
+#define _NETWORK_HEADERS_HPP_
 
-#include <netinet/ether.h>      // ethernet 
+#include <netinet/ether.h>      // ethernet
 #include <netinet/ip.h>         // iphdr
 #include <netinet/udp.h>        // updhdr
 #include <netinet/tcp.h>        // tcphdr
@@ -64,7 +64,7 @@ _member(const _type value)\
     m_header->_member = hton(value); \
 }
 
-namespace more { namespace net { 
+namespace more { namespace net {
 
     // extra basic headers...
     //
@@ -72,10 +72,10 @@ namespace more { namespace net {
     struct vlan_header
     {
         uint16_t vlan_tag;
-        uint16_t ether_type;	
+        uint16_t ether_type;
     };
 
-    namespace 
+    namespace
     {
         struct host_byte_order_t {};     // to read value in host order
         struct network_byte_order_t {};  // to read value in host order
@@ -86,11 +86,11 @@ namespace more { namespace net {
 
     namespace details
     {
-        //  slightly modified version cksum from TCP/IP Illustrated Vol. 2(1995) 
-        //  by Gary R. Wright and W. Richard Stevens.  
+        //  slightly modified version cksum from TCP/IP Illustrated Vol. 2(1995)
+        //  by Gary R. Wright and W. Richard Stevens.
 
         static inline
-        uint32_t csum_partial(void *buf, size_t len, uint32_t sum) 
+        uint32_t csum_partial(void *buf, size_t len, uint32_t sum)
         {
             uint16_t *p = static_cast<uint16_t *>(buf);
 
@@ -190,7 +190,7 @@ namespace more { namespace net {
     };
     template <>
     struct header_traits<ipv4>
-    {  
+    {
         static const int static_size = 0;                           // dynamic size
         static const int min_size = sizeof(iphdr);                  // min size
         static inline const char *name() { return "ipv4"; }
@@ -230,7 +230,7 @@ namespace more { namespace net {
         {
             if (it.capacity() < N)
                 throw std::range_error(std::string(header_traits<typename std::remove_cv<Tp>::type>::name()).append("::static_size"));
-            it += N; 
+            it += N;
         }
 
         template <typename I, int N>
@@ -268,18 +268,18 @@ namespace more { namespace net {
         header(more::range_iterator_adapter<It> &it)
         : m_header(&(*it))
         {
-            static_assert(sizeof(typename more::range_iterator_adapter<It>::value_type) == 1, "invalid range_iterator"); 
-            check(it, std::integral_constant<int, header_traits<typename std::remove_cv<Tp>::type>::static_size>());  
+            static_assert(sizeof(typename more::range_iterator_adapter<It>::value_type) == 1, "invalid range_iterator");
+            check(it, std::integral_constant<int, header_traits<typename std::remove_cv<Tp>::type>::static_size>());
         }
         template <typename It>
         header(more::range_iterator_adapter<It> &it, size_t s /* set the header size */)
         : m_header(&(*it))
         {
-            static_assert(sizeof(typename more::range_iterator_adapter<It>::value_type) == 1, "invalid range_iterator"); 
-            check(it, s, std::integral_constant<int, header_traits<typename std::remove_cv<Tp>::type>::static_size>());  
+            static_assert(sizeof(typename more::range_iterator_adapter<It>::value_type) == 1, "invalid range_iterator");
+            check(it, s, std::integral_constant<int, header_traits<typename std::remove_cv<Tp>::type>::static_size>());
         }
 
-        Tp * 
+        Tp *
         operator->()
         {
             return &m_header;
@@ -304,7 +304,7 @@ namespace more { namespace net {
         {
             if (it.capacity() < N)
                 throw std::range_error(std::string(header_traits<typename std::remove_cv<Tp>::type>::name()).append("::static_size"));
-            it += N; 
+            it += N;
         }
 
         // dynamic size headers...
@@ -328,11 +328,11 @@ namespace more { namespace net {
                             >::type
                    >::type >(&*it))
         {
-            static_assert(sizeof(typename more::range_const_iterator_adapter<It>::value_type) == 1, "invalid range_iterator"); 
-            check(it, std::integral_constant<int, header_traits<typename std::remove_cv<Tp>::type>::static_size>());  
+            static_assert(sizeof(typename more::range_const_iterator_adapter<It>::value_type) == 1, "invalid range_iterator");
+            check(it, std::integral_constant<int, header_traits<typename std::remove_cv<Tp>::type>::static_size>());
         }
 
-        const Tp * 
+        const Tp *
         operator->() const
         {
             return &m_header;
@@ -357,7 +357,7 @@ namespace more { namespace net {
 
     class ethernet
     {
-        ether_header *m_header;            
+        ether_header *m_header;
 
     private:
         friend class header<ethernet>;
@@ -368,11 +368,11 @@ namespace more { namespace net {
             return size();
         }
 
-        size_t size(ssize_t, size_t) = delete; 
+        size_t size(ssize_t, size_t) = delete;
 
     public:
         static const uint16_t type_8021q = 0x8100;
-        
+
         ethernet(void *h)
         : m_header(static_cast<ether_header *>(h))
         {}
@@ -387,7 +387,7 @@ namespace more { namespace net {
         {
             char buf[24];
             ether_ntoa_r(reinterpret_cast<struct ether_addr *>(m_header->ether_dhost), buf);
-            return std::string(buf); 
+            return std::string(buf);
         }
 
         const uint8_t *
@@ -408,7 +408,7 @@ namespace more { namespace net {
         {
             char buf[24];
             ether_ntoa_r(reinterpret_cast<struct ether_addr *>(m_header->ether_shost), buf);
-            return std::string(buf); 
+            return std::string(buf);
         }
 
         const uint8_t *
@@ -441,20 +441,20 @@ namespace more { namespace net {
     inline std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT, Traits> &out, const ethernet& h)
     {
-        return out << "[dhost=" << h.dhost() << 
-        " shost=" << h.shost() << 
+        return out << "[dhost=" << h.dhost() <<
+        " shost=" << h.shost() <<
         " type="  << std::hex << h.ether_type() << std::dec <<  "]";
     }
 
     //////////////////////////////////////////////////////////
     // ethernet 802.1q
 
-    class eth802_1q 
+    class eth802_1q
     {
         struct vlan_header
         {
             uint16_t vlan_tag;
-            uint16_t ether_type;	
+            uint16_t ether_type;
         };
 
         vlan_header * m_header;
@@ -467,14 +467,14 @@ namespace more { namespace net {
         {
             return size();
         }
-        
-        size_t size(ssize_t, size_t) = delete; 
+
+        size_t size(ssize_t, size_t) = delete;
 
     public:
 
         eth802_1q(void *h)
         : m_header(static_cast<vlan_header *>(h))
-        {} 
+        {}
 
         size_t size() const
         {
@@ -511,7 +511,7 @@ namespace more { namespace net {
     inline std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT, Traits> &out, const eth802_1q & h)
     {
-        return out << "[vlan_tag=" << std::hex << h.vlan_tag() << 
+        return out << "[vlan_tag=" << std::hex << h.vlan_tag() <<
         " ether_type="  << h.ether_type() << std::dec <<  "]";
     }
 
@@ -541,12 +541,12 @@ namespace more { namespace net {
                 throw std::range_error("ip::size(): bad lenght");
             this->ihl(static_cast<uint8_t>(size>>2));
             return static_cast<size_t>(this->ihl()<<2);
-        } 
+        }
 
     public:
         ipv4(void *h)
         : m_header(static_cast<iphdr *>(h))
-        {} 
+        {}
 
         size_t size() const
         {
@@ -585,7 +585,7 @@ namespace more { namespace net {
         chksum_update()
         {
             m_header->check = 0;
-            m_header->check = details::csum_fold(details::csum_partial((uint16_t *)m_header, this->size(),0)); 
+            m_header->check = details::csum_fold(details::csum_partial((uint16_t *)m_header, this->size(),0));
         }
 
         bool
@@ -628,7 +628,7 @@ namespace more { namespace net {
 
         std::string
         daddr() const
-        {            
+        {
             char buf[16];
             inet_ntop(AF_INET, &m_header->daddr, buf, sizeof(buf));
             return std::string(buf);
@@ -663,17 +663,17 @@ namespace more { namespace net {
     inline std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT, Traits> &out, const ipv4 & h)
     {
-        return out << std::hex << 
-        "[ihl="      << h.ihl() << 
+        return out << std::hex <<
+        "[ihl="      << h.ihl() <<
         " ver:"      << h.version() <<
-        " tos="      << static_cast<uint16_t>(h.tos()) << std::dec << 
-        " tot_len="  << h.tot_len() << std::hex << 
-        " id="       << h.id() << std::dec << 
+        " tos="      << static_cast<uint16_t>(h.tos()) << std::dec <<
+        " tot_len="  << h.tot_len() << std::hex <<
+        " id="       << h.id() << std::dec <<
         " frag_off=" << h.frag_off() <<
-        " ttl="      << static_cast<uint16_t>(h.ttl()) << std::hex << 
-        " proto="    << static_cast<uint16_t>(h.protocol()) << 
+        " ttl="      << static_cast<uint16_t>(h.ttl()) << std::hex <<
+        " proto="    << static_cast<uint16_t>(h.protocol()) <<
         " csum="     << h.check() <<
-        " saddr="    << h.saddr() << 
+        " saddr="    << h.saddr() <<
         " daddr="    << h.daddr() << "]" << std::dec;
     }
 
@@ -696,7 +696,7 @@ namespace more { namespace net {
 
             return size();
         }
-        
+
         size_t size(ssize_t cap, size_t size)
         {
             // throw if there are no sufficient bytes to set this size
@@ -705,11 +705,11 @@ namespace more { namespace net {
 
             if (size < 20 || size > 60 || size % 4)
                 throw std::range_error("tcp::size(): bad lenght");
-            
+
             this->doff(static_cast<uint16_t>(size>>2));
 
             return static_cast<size_t>(this->doff()<<2);
-        } 
+        }
 
     public:
         struct pseudo_header
@@ -723,7 +723,7 @@ namespace more { namespace net {
 
         tcp(void *h)
         : m_header(static_cast<tcphdr *>(h))
-        {} 
+        {}
 
         size_t size() const
         {
@@ -749,10 +749,10 @@ namespace more { namespace net {
 
         MORE_NET_READER_RAW(uint16_t, res1);
         MORE_NET_WRITER_RAW(uint16_t, res1);
-        
+
         MORE_NET_READER_RAW(uint16_t, res2);
         MORE_NET_WRITER_RAW(uint16_t, res2);
-        
+
         MORE_NET_READER_RAW(bool, urg);
         MORE_NET_WRITER_RAW(bool, urg);
 
@@ -778,7 +778,7 @@ namespace more { namespace net {
         MORE_NET_WRITER(uint16_t, check);
 
 
-        bool 
+        bool
         cwr() const
         {
             return m_header->res2 & 1;
@@ -788,9 +788,9 @@ namespace more { namespace net {
         cwr(bool value)
         {
             m_header->res2 = static_cast<uint16_t>((m_header->res2 & 2) | value);
-        } 
+        }
 
-        bool 
+        bool
         ece() const
         {
             return m_header->res2 & 2;
@@ -800,22 +800,22 @@ namespace more { namespace net {
         ece(bool value)
         {
             m_header->res2 = static_cast<uint16_t>((m_header->res2 & 1) | (value <<1));
-        } 
+        }
 
         void
-        flags_reset() 
+        flags_reset()
         {
             *(reinterpret_cast<char *>(m_header) + 13) = '\0';
         }
 
-        uint8_t 
-        flags() const 
+        uint8_t
+        flags() const
         {
             return *(reinterpret_cast<unsigned char *>(m_header) + 13);
         }
 
-        void 
-        chksum_update(const ipv4 & ip, ssize_t data_len) 
+        void
+        chksum_update(const ipv4 & ip, ssize_t data_len)
         {
             auto tcp_data_len = static_cast<ssize_t>(ip.tot_len() - ip.size() - this->size());
             if (tcp_data_len < 0)
@@ -824,10 +824,10 @@ namespace more { namespace net {
             if (data_len < tcp_data_len)
                 throw std::runtime_error("tcp::checksum: missing bytes");
 
-            chksum_update(ip.saddr(host_byte_order), ip.daddr(host_byte_order), static_cast<uint16_t>(tcp_data_len)); 
+            chksum_update(ip.saddr(host_byte_order), ip.daddr(host_byte_order), static_cast<uint16_t>(tcp_data_len));
         }
 
-        bool 
+        bool
         chksum_verify(const ipv4 & ip, ssize_t data_len) const
         {
             auto tcp_data_len = static_cast<ssize_t>(ip.tot_len() - ip.size() - this->size());
@@ -837,7 +837,7 @@ namespace more { namespace net {
             if (data_len < tcp_data_len)
                 std::clog << "tcp::checksum: missing bytes, checksum unverifiable" << std::endl;
 
-            return chksum_verify(ip.saddr(host_byte_order), ip.daddr(host_byte_order), static_cast<uint16_t>(std::min(data_len,tcp_data_len))); 
+            return chksum_verify(ip.saddr(host_byte_order), ip.daddr(host_byte_order), static_cast<uint16_t>(std::min(data_len,tcp_data_len)));
         }
 
     private:
@@ -850,12 +850,12 @@ namespace more { namespace net {
             ph.daddr = htonl(dst);
             ph.zero  = 0;
             ph.protocol = IPPROTO_TCP;
-            ph.length = htons(static_cast<uint16_t>(this->size() + tcp_data_len)); // tcp header + tcp_data 
+            ph.length = htons(static_cast<uint16_t>(this->size() + tcp_data_len)); // tcp header + tcp_data
 
-            uint32_t sum = details::csum_partial((uint16_t *)& ph, sizeof(pseudo_header), 0); 
+            uint32_t sum = details::csum_partial((uint16_t *)& ph, sizeof(pseudo_header), 0);
 
             m_header->check = 0;
-            m_header->check = details::csum_fold(details::csum_partial((uint16_t *)m_header, this->size() + tcp_data_len, sum) ); 
+            m_header->check = details::csum_fold(details::csum_partial((uint16_t *)m_header, this->size() + tcp_data_len, sum) );
         }
 
 
@@ -868,10 +868,10 @@ namespace more { namespace net {
             ph.daddr = htonl(dst);
             ph.zero  = 0;
             ph.protocol = IPPROTO_TCP;
-            ph.length = htons(static_cast<uint16_t>(this->size() + tcp_data_len)); // tcp header + tcp_data 
+            ph.length = htons(static_cast<uint16_t>(this->size() + tcp_data_len)); // tcp header + tcp_data
 
-            uint32_t sum = details::csum_partial((uint16_t *)& ph, sizeof(pseudo_header), 0); 
-            return details::csum_fold(details::csum_partial((uint16_t *)m_header, this->size() + tcp_data_len, sum) ) == 0; 
+            uint32_t sum = details::csum_partial((uint16_t *)& ph, sizeof(pseudo_header), 0);
+            return details::csum_fold(details::csum_partial((uint16_t *)m_header, this->size() + tcp_data_len, sum) ) == 0;
         }
 
     public:
@@ -884,10 +884,10 @@ namespace more { namespace net {
     inline std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT, Traits> &out, const tcp & h)
     {
-        return out << "[source=" << h.source() << 
-        " dest=" << h.dest() << 
-        " seq=" << h.seq() << 
-        " ack_seq=" << h.ack_seq() << 
+        return out << "[source=" << h.source() <<
+        " dest=" << h.dest() <<
+        " seq=" << h.seq() <<
+        " ack_seq=" << h.ack_seq() <<
         " doff=" << h.doff() <<
         " flags=" << ( h.cwr() ? "W" : "" ) <<
         ( h.ece() ? "E" : "" ) <<
@@ -898,8 +898,8 @@ namespace more { namespace net {
         ( h.syn() ? "S" : "" ) <<
         ( h.fin() ? "F" : "" ) <<
 
-        " window="  << h.window() << 
-        " csum="    << std::hex << h.check() << std::dec << 
+        " window="  << h.window() <<
+        " csum="    << std::hex << h.check() << std::dec <<
         " urg=" << h.urg_ptr() << "]";
     }
 
@@ -919,12 +919,12 @@ namespace more { namespace net {
             return size();
         }
 
-        size_t size(ssize_t, size_t) = delete; 
+        size_t size(ssize_t, size_t) = delete;
 
     public:
         udp(void *h)
         : m_header(static_cast<udphdr *>(h))
-        {} 
+        {}
 
         size_t size() const
         {
@@ -948,16 +948,16 @@ namespace more { namespace net {
     inline std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT, Traits> &out, const udp & h)
     {
-        return out << "[source=" << h.source() << 
-        " dest="  << h.dest() << 
-        " len="   << h.len() <<  
+        return out << "[source=" << h.source() <<
+        " dest="  << h.dest() <<
+        " len="   << h.len() <<
         " csum="  << std::hex << h.check() << std::dec << "]";
     }
 
     //////////////////////////////////////////////////////////
     // basic icmp header
 
-    class basic_icmp 
+    class basic_icmp
     {
         icmphdr * m_header;
 
@@ -969,13 +969,13 @@ namespace more { namespace net {
         {
             return size();
         }
-        
-        size_t size(ssize_t, size_t) = delete; 
+
+        size_t size(ssize_t, size_t) = delete;
 
     public:
         basic_icmp(void *h)
         : m_header(static_cast<icmphdr *>(h))
-        {} 
+        {}
 
         size_t size() const
         {
@@ -999,16 +999,16 @@ namespace more { namespace net {
     inline std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT, Traits> &out, const basic_icmp & h)
     {
-        return out << std::hex << 
-        "[type=" << static_cast<int>(h.type()) << 
-        " code=" << static_cast<int>(h.code()) << 
+        return out << std::hex <<
+        "[type=" << static_cast<int>(h.type()) <<
+        " code=" << static_cast<int>(h.code()) <<
         " csum=" << h.checksum() << std::dec << "]";
     }
 
 } // namespace net
 } // namespace more
 
-#undef MORE_NET_READER_RAW 
+#undef MORE_NET_READER_RAW
 #undef MORE_NET_READER
 #undef MORE_NET_WRITER_RAW
 #undef MORE_NET_WRITER

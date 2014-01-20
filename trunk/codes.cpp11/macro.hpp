@@ -4,11 +4,11 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
-#pragma once 
+#pragma once
 
 #ifndef PP_NARG
 #define PP_NARG(...) \
@@ -31,7 +31,7 @@
          39,38,37,36,35,34,33,32,31,30, \
          29,28,27,26,25,24,23,22,21,20, \
          19,18,17,16,15,14,13,12,11,10, \
-         9,8,7,6,5,4,3,2,1,0 
+         9,8,7,6,5,4,3,2,1,0
 #endif
 
 #ifndef PASTE

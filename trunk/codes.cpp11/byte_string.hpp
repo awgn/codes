@@ -7,8 +7,8 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
-#pragma once 
+
+#pragma once
 
 #include <iostream>
 #include <cstring>
@@ -33,18 +33,18 @@ namespace more
         {
             *this = s;
         }
-        
+
         byte_string(const std::string &s)
         {
             *this = s;
         }
 
         ~byte_string() = default;
-       
+
         template <size_t M>
         byte_string(byte_string<M> const &rhs)
         {
-            if (rhs.length() > capacity()) 
+            if (rhs.length() > capacity())
                 throw std::runtime_error("byte_string: overflow");
             strcpy(value_, rhs.data());
         }
@@ -59,7 +59,7 @@ namespace more
             strcpy(value_, other.data());
             return *this;
         }
-        
+
         byte_string
         operator=(const char *s)
         {
@@ -69,12 +69,12 @@ namespace more
             strcpy(value_, s);
             return *this;
         }
-        
+
         byte_string
         operator=(const std::string &s)
         {
             if (s.length() > capacity())
-                throw std::runtime_error("byte_string: overflow"); 
+                throw std::runtime_error("byte_string: overflow");
 
             strcpy(value_, s.c_str());
             return *this;
@@ -94,7 +94,7 @@ namespace more
         {
             return strlen(value_);
         }
-        
+
         size_t size() const
         {
             return strlen(value_);
@@ -121,7 +121,7 @@ namespace more
     {
         return std::strcmp(lhs.data(), rhs.data()) == 0;
     }
-    
+
     template <size_t N>
     inline bool
     operator==(const byte_string<N> &lhs, const std::string &rhs)
@@ -134,7 +134,7 @@ namespace more
     {
         return std::strcmp(lhs.c_str(), rhs.data()) == 0;
     }
-    
+
     template <size_t N>
     inline bool
     operator==(const byte_string<N> &lhs, const char *rhs)
@@ -147,14 +147,14 @@ namespace more
     {
         return std::strcmp(lhs, rhs.data()) == 0;
     }
-    
+
     template <size_t N, size_t M>
     inline bool
     operator!=(const byte_string<N> &lhs, const byte_string<M> &rhs)
     {
         return !(lhs == rhs);
     }
-    
+
     template <size_t N>
     inline bool
     operator!=(const byte_string<N> &lhs, const std::string &rhs)
@@ -167,7 +167,7 @@ namespace more
     {
         return !(lhs == rhs);
     }
-    
+
     template <size_t N>
     inline bool
     operator!=(const byte_string<N> &lhs, const char *rhs)
@@ -230,10 +230,10 @@ namespace more
     operator>>(std::basic_istream<CharT,Traits>& in, byte_string<N> & instance)
     {
         std::string s;
-        if (in >> s) 
+        if (in >> s)
         {
             auto const size = s.length() - 2;
-            
+
             if (s.front() != '"' ||
                 s.back()  != '"' ||
                 size > (N-1))
@@ -241,7 +241,7 @@ namespace more
                 in.setstate(std::ios::failbit);
                 return in;
             }
-            
+
             strcpy(instance.data(), std::string(s.begin() + 1, s.end() - 1).c_str());
         }
         return in;
@@ -261,11 +261,11 @@ namespace more
 
 
 namespace std
-{    
+{
     template <size_t N>
     struct hash<more::byte_string<N>>
     {
-        static 
+        static
         unsigned fnv_hash (const char *key, int len)
         {
             unsigned const char *p = reinterpret_cast<unsigned const char *>(key);

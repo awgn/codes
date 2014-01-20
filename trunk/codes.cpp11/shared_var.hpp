@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#pragma once 
+#pragma once
 
 #include <atomic>
 #include <memory>
@@ -42,19 +42,19 @@ namespace more {
         shared_var& operator=(shared_var &&) = delete;
 
 
-        /* multiple threads can access to the read-only shared object. 
+        /* multiple threads can access to the read-only shared object.
          * promise: this reference is used for a short period ( < of that of the update frequency ) */
 
         Tp const *
-        get() const 
+        get() const
         {
             return current_.load(std::memory_order_acquire);
         }
 
 
-        /* update the value of var: this method is supposed to be 
+        /* update the value of var: this method is supposed to be
          * called with a reasonably low frequency: the garbage must stay alive
-         * for a grace period time */ 
+         * for a grace period time */
 
         template <typename ... Ts>
         void put(Ts && ... value)
@@ -62,13 +62,13 @@ namespace more {
             auto nptr = reinterpret_cast<Tp const *>(new Tp(std::move(std::forward<Ts>(value)...)));
             auto cur  = current_.exchange(nptr, std::memory_order_release);
             this->collect(cur);
-        }                               
-        
+        }
+
         void put(Tp const * nptr)
         {
             auto cur  = current_.exchange(nptr, std::memory_order_release);
             this->collect(cur);
-        }                               
+        }
 
         /* perform a compare and exchange operation: required when multiple threads attempt to update the shared var.
          * As for put, the garbage must stay alive for a grace period time */
@@ -114,7 +114,7 @@ namespace more {
         }
 
     private:
-        
+
         void collect(Tp const *ptr)
         {
             std::lock_guard<std::mutex> lock(mutex_);

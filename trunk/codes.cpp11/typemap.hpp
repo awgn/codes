@@ -4,12 +4,12 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
 #ifndef _TYPEMAP_HPP_
-#define _TYPEMAP_HPP_ 
+#define _TYPEMAP_HPP_
 
 #include <utility>
 #include <type_traits>
@@ -20,7 +20,7 @@ namespace more { namespace type {
 
     // get<key, typemap>::type
     //
-    template <typename Tm, typename K, typename E = void> struct get; 
+    template <typename Tm, typename K, typename E = void> struct get;
     template <typename K, typename K0, typename V0, typename ...Ki, typename ...Vi>
     struct get<typemap<std::pair<K0, V0>, std::pair<Ki,Vi>...>, K, typename std::enable_if<!std::is_same<K,K0>::value>::type>
     {

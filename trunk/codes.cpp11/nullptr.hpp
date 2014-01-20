@@ -9,7 +9,7 @@
  */
 
 #ifndef _MORE_NULLPTR_HPP_
-#define _MORE_NULLPTR_HPP_ 
+#define _MORE_NULLPTR_HPP_
 
 #if defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 6) && !defined(__clang__)
 
@@ -31,7 +31,7 @@ namespace
         {
             return 0;
         }
-    } 
+    }
     const nullptr = {};
 
     template <typename T>

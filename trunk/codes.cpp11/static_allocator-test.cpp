@@ -73,13 +73,13 @@ Context(more_static_allocator)
 #else
         std::vector<int, more::static_allocator<int> > abc({1,2,3,4}, more::static_allocator<int>(buffer,16) );
 #endif
-        
+
         int out[] = { 1, 2, 3, 4 };
         Assert( (std::equal(abc.begin(), abc.end(), out)), is_true() );
     }
 
 }
- 
+
 int
 main(int argc, char *argv[])
 {

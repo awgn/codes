@@ -19,7 +19,7 @@ using namespace yats;
 
 
 template <typename T>
-struct false_container 
+struct false_container
 {
     typedef T value_type;
 };
@@ -52,7 +52,7 @@ Context(more_typetraits_test)
     }
 
     typedef std::tuple<long long int, long int, short int> mytuple;
-    
+
     Test(is_a_tuple)
     {
         Assert( more::traits::is_tuple< int >::value , is_false());
@@ -69,8 +69,8 @@ Context(more_typetraits_test)
 
     Test(has_insertion_operator)
     {
-        Assert( more::traits::has_insertion_operator<int>::value, is_true()); 
-        Assert( more::traits::has_insertion_operator<xxx>::value, is_false()); 
+        Assert( more::traits::has_insertion_operator<int>::value, is_true());
+        Assert( more::traits::has_insertion_operator<xxx>::value, is_false());
     }
 
     Test(is_callable)
@@ -109,4 +109,4 @@ main(int argc, char *argv[])
 {
     return yats::run(argc, argv);
 }
- 
+

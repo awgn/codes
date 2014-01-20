@@ -9,7 +9,7 @@
 */
 
 #ifndef _NETDEV_HPP_
-#define _NETDEV_HPP_ 
+#define _NETDEV_HPP_
 
 #include <token.hpp>        // more!
 
@@ -76,13 +76,13 @@ namespace more { namespace netdev
     inline typename std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT,Traits> &out, const stat &rhs)
     {
-        return out << rhs.bytes << ' ' << rhs.packets << ' ' << rhs.errs << ' ' 
-                << rhs.drop << ' ' << rhs.fifo << ' ' 
+        return out << rhs.bytes << ' ' << rhs.packets << ' ' << rhs.errs << ' '
+                << rhs.drop << ' ' << rhs.fifo << ' '
                  << rhs.frame << ' ' << rhs.compressed << ' ' << rhs.multicast;
     }
 
     ////////////////////////////////////
-    /// get information of a net device 
+    /// get information of a net device
 
     class ifr
     {
@@ -101,14 +101,14 @@ namespace more { namespace netdev
             }
             int fd;
         };
-        
+
     public:
         ifr(const char * dev)
-        : m_ifreq_io(), m_dev(dev), m_sock(new socket) 
+        : m_ifreq_io(), m_dev(dev), m_sock(new socket)
         {
             strncpy(m_ifreq_io.ifr_name, dev, IFNAMSIZ);
-        }        
-        
+        }
+
         ~ifr()
         {}
 
@@ -121,7 +121,7 @@ namespace more { namespace netdev
         }
 
         static std::vector<ifr>
-        enumerate() 
+        enumerate()
         {
             std::vector<ifr> vec;
             std::ifstream proc("/proc/net/dev"); assert(proc);
@@ -129,7 +129,7 @@ namespace more { namespace netdev
             // skip the first couple of lines:
             proc.ignore(std::numeric_limits<std::streamsize>::max(), proc.widen('\n'));
             proc.ignore(std::numeric_limits<std::streamsize>::max(), proc.widen('\n'));
-            
+
             devname_t dev;
             while(proc >> dev)
             {
@@ -159,10 +159,10 @@ namespace more { namespace netdev
 
         std::string if_addr() const
         { return inet_addr<SIOCGIFADDR>(); }
-        
+
         std::string if_dstaddr() const
         { return inet_addr<SIOCGIFDSTADDR>(); }
-        
+
         std::string broadcast() const
         { return inet_addr<SIOCGIFBRDADDR>(); }
 
@@ -170,7 +170,7 @@ namespace more { namespace netdev
         { return inet_addr<SIOCGIFNETMASK>(); }
 
         std::string
-        hwaddr() const 
+        hwaddr() const
         {
             if (ioctl(m_sock->fd, SIOCGIFHWADDR, &m_ifreq_io) == -1 ) {
                 throw std::runtime_error("ioctl: SIOCGIFHWADDR");
@@ -179,7 +179,7 @@ namespace more { namespace netdev
             return ether_ntoa(eth_addr);
         }
 
-        int 
+        int
         mtu() const
         {
             if (ioctl(m_sock->fd, SIOCGIFMTU, &m_ifreq_io) == -1 ) {
@@ -188,7 +188,7 @@ namespace more { namespace netdev
             return m_ifreq_io.ifr_mtu;
         }
 
-        int 
+        int
         metric() const
         {
             if (ioctl(m_sock->fd, SIOCGIFMETRIC, &m_ifreq_io) == -1 ) {
@@ -228,12 +228,12 @@ namespace more { namespace netdev
 
             if (ioctl(m_sock->fd, SIOCETHTOOL, &m_ifreq_io) == -1) {
                 throw std::runtime_error("SIOCETHTOOL");
-            } 
-           
-            return drvinfo;          
+            }
+
+            return drvinfo;
         }
 
-        std::shared_ptr<ethtool_cmd> 
+        std::shared_ptr<ethtool_cmd>
         command() const
         {
             std::shared_ptr<ethtool_cmd> ecmd = std::make_shared<ethtool_cmd>();
@@ -243,12 +243,12 @@ namespace more { namespace netdev
 
             if (ioctl(m_sock->fd, SIOCETHTOOL, &m_ifreq_io) == -1) {
                 throw std::runtime_error("SIOCETHTOOL");
-            } 
-            return ecmd;   
+            }
+            return ecmd;
         }
 
         bool
-        link() const 
+        link() const
         {
             struct ethtool_value edata;
             edata.cmd = ETHTOOL_GLINK;
@@ -257,8 +257,8 @@ namespace more { namespace netdev
             if (ioctl(m_sock->fd, SIOCETHTOOL, &m_ifreq_io) == -1) {
                 throw std::runtime_error("SIOCETHTOOL");
             }
-            return edata.data;    
-        }                 
+            return edata.data;
+        }
 
         /// stats...
 
@@ -270,7 +270,7 @@ namespace more { namespace netdev
             // skip the first couple of lines:
             proc.ignore(std::numeric_limits<std::streamsize>::max(), proc.widen('\n'));
             proc.ignore(std::numeric_limits<std::streamsize>::max(), proc.widen('\n'));
-            
+
             devname_t dev;
             stat receive, transmit;
             while(proc >> dev)
@@ -293,7 +293,7 @@ namespace more { namespace netdev
             return stats().first;
         }
 
-        stat 
+        stat
         transmit_stat() const
         {
             return stats().second;
@@ -321,18 +321,18 @@ namespace more { namespace netdev
             str() const
             {
                 const char *if_flags[]= {
-                    "UP", "BROADCAST", "DEBUG", "LOOPBACK", "PTP", "NOTRL", "RUNNING", "NOARP", 
+                    "UP", "BROADCAST", "DEBUG", "LOOPBACK", "PTP", "NOTRL", "RUNNING", "NOARP",
                     "PROMIS", "ALLMULTI", "MASTER", "SLAVE", "MULTICAST", "PORTSEL", "AUTOMEDIA" };
 
                 std::stringstream ret;
-                for (int i=1;i<16;i++) 
-                    if (m_value & bit(i)) 
+                for (int i=1;i<16;i++)
+                    if (m_value & bit(i))
                         ret << if_flags[i-1] << ' ';
-                return ret.str(); 
+                return ret.str();
             }
 
             short int value() const
-            { 
+            {
                 return m_value;
             }
 
@@ -341,7 +341,7 @@ namespace more { namespace netdev
         };
 
         flags_t
-        flags() const 
+        flags() const
         {
             if (ioctl(m_sock->fd, SIOCGIFFLAGS, &m_ifreq_io) < 0)
                 throw std::runtime_error("SIOCGIFFLAGS");
@@ -358,10 +358,10 @@ namespace more { namespace netdev
 
         bool is_debug() const
         { return flags().is_set<3>(); }
-        
+
         bool is_loopback() const
         { return flags().is_set<4>(); }
-                          
+
         bool is_ptp() const
         { return flags().is_set<5>(); }
 
@@ -376,25 +376,25 @@ namespace more { namespace netdev
 
         bool is_promisc() const
         { return flags().is_set<9>(); }
-        
+
         bool is_allmulti() const
         { return flags().is_set<10>(); }
-        
+
         bool is_master() const
         { return flags().is_set<11>(); }
-        
+
         bool is_slave() const
         { return flags().is_set<12>(); }
-        
+
         bool is_multicast() const
         { return flags().is_set<13>(); }
-        
+
         bool is_portsel() const
-        { return flags().is_set<14>(); }  
-        
+        { return flags().is_set<14>(); }
+
         bool is_automedia() const
         { return flags().is_set<15>(); }
-        
+
     private:
         mutable struct ifreq m_ifreq_io;
         std::string m_dev;

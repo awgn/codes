@@ -17,8 +17,8 @@ int
 main(int, char *[])
 {
     more::shared_var<int> n(0);
-    
-    auto done = std::async(std::launch::async, [&]() 
+
+    auto done = std::async(std::launch::async, [&]()
     {
         auto ptr = n.get();
 
@@ -27,7 +27,7 @@ main(int, char *[])
             auto np = n.safe_put(ptr, i);
             if (np.first)
             {
-                ptr = np.second;                       
+                ptr = np.second;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
             else

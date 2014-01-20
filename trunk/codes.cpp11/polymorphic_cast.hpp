@@ -1,12 +1,12 @@
 #ifndef _POLYMORPHIC_CAST_HH_
-#define _POLYMORPHIC_CAST_HH_ 
+#define _POLYMORPHIC_CAST_HH_
 
-#include <memory>    
+#include <memory>
 
 #include <cassert>
 #include <stdexcept>
 
-namespace more { 
+namespace more {
 
     ///////////////////////////////////////////////////////////////////
     // polymorphic_cast (better dynamic_cast for pointers) ala boost...
@@ -16,7 +16,7 @@ namespace more {
     {
         R ret = dynamic_cast<R>(p);
         if ( ret == 0 ) throw std::bad_cast();
-        return ret; 
+        return ret;
     }
 
     /////////////////////////////////////

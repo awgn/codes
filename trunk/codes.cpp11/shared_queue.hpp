@@ -17,29 +17,29 @@
 #include <array>
 #include <atomic>
 
-namespace more 
+namespace more
 {
     namespace details {
 
         template <typename T>
-        struct cacheline 
-        { 
+        struct cacheline
+        {
             cacheline()
             : value()
             {}
-            
+
             T value;
 
         } __attribute__((aligned(64)));
 
 
-        template <int N, typename Lock>    
+        template <int N, typename Lock>
         struct shared_queue_lock_traits
         {
             typedef Lock lock_type;
         };
 
-        template <typename Lock> 
+        template <typename Lock>
         struct shared_queue_lock_traits<0,Lock>;
 
         template <typename Lock>
@@ -59,32 +59,32 @@ namespace more
                 }
             };
 
-            typedef null_lock lock_type; 
+            typedef null_lock lock_type;
         };
     }
 
     struct single_producer
     {
-        enum { producer_value = 1 };    
+        enum { producer_value = 1 };
     };
     struct multiple_producer
     {
-        enum { producer_value = 2 };    
+        enum { producer_value = 2 };
     };
     struct single_consumer
     {
-        enum { consumer_value = 1 };    
+        enum { consumer_value = 1 };
     };
     struct multiple_consumer
     {
-        enum { consumer_value = 2 };    
+        enum { consumer_value = 2 };
     };
 
-    template <typename T, unsigned int N = 1024, 
-              typename Producer = single_producer, 
-              typename Consumer = single_consumer, 
-              typename Lock = std::mutex > 
-    class shared_queue  
+    template <typename T, unsigned int N = 1024,
+              typename Producer = single_producer,
+              typename Consumer = single_consumer,
+              typename Lock = std::mutex >
+    class shared_queue
     {
         public:
             typedef typename std::array<T,N>::size_type  size_type;
@@ -92,9 +92,9 @@ namespace more
 
             typedef typename details::shared_queue_lock_traits<Producer::producer_value,Lock>::lock_type head_lock_type;
             typedef typename details::shared_queue_lock_traits<Consumer::consumer_value,Lock>::lock_type tail_lock_type;
-            
+
             typedef unsigned int unsigned_type;
-            
+
             typedef struct _h { _h() : index(0), lock() {}; std::atomic<unsigned_type> index; head_lock_type lock; } head_cache_type;
             typedef struct _t { _t() : index(0), lock() {}; std::atomic<unsigned_type> index; tail_lock_type lock; } tail_cache_type;
 
@@ -104,28 +104,28 @@ namespace more
             details::cacheline<head_cache_type> m_head;
             details::cacheline<tail_cache_type> m_tail;
 
-            static unsigned_type 
+            static unsigned_type
             _S_mod(unsigned_type n)
             {
                 return n & (N-1);
             }
-        
+
         public:
-            shared_queue() 
-            : m_storage(), m_head(), m_tail() 
+            shared_queue()
+            : m_storage(), m_head(), m_tail()
             {
-                static_assert((N & (N-1)) == 0, "N not a power of two"); 
+                static_assert((N & (N-1)) == 0, "N not a power of two");
             }
 
-            ~shared_queue() 
+            ~shared_queue()
             {}
 
-            bool 
-            pop_front(T& ret) 
+            bool
+            pop_front(T& ret)
             {
                 std::lock_guard<tail_lock_type> _lock_(m_tail.value.lock);
                 auto tail = m_tail.value.index.load(std::memory_order_acquire);
-                if (tail == m_head.value.index.load(std::memory_order_acquire)) 
+                if (tail == m_head.value.index.load(std::memory_order_acquire))
                     return false;
 
                 ret = std::move(m_storage[tail]);
@@ -133,14 +133,14 @@ namespace more
                 return true;
             }
 
-            bool 
-            push_back(const T& elem)  
+            bool
+            push_back(const T& elem)
             {
                 std::lock_guard<head_lock_type> _lock_(m_head.value.lock);
                 auto head = m_head.value.index.load(std::memory_order_acquire);
                 auto next = _S_mod(head+1);
 
-                if (next == m_tail.value.index.load(std::memory_order_acquire)) 
+                if (next == m_tail.value.index.load(std::memory_order_acquire))
                    return false;
 
                 m_storage[head] = elem;
@@ -148,52 +148,52 @@ namespace more
                 return true;
             }
 
-            bool 
-            push_back(T&& elem)  
+            bool
+            push_back(T&& elem)
             {
                 std::lock_guard<head_lock_type> _lock_(m_head.value.lock);
                 auto head = m_head.value.index.load(std::memory_order_acquire);
                 auto next = _S_mod(head+1);
 
-                if (next == m_tail.value.index.load(std::memory_order_acquire)) 
+                if (next == m_tail.value.index.load(std::memory_order_acquire))
                    return false;
-                
+
                 m_storage[head] = elem;
                 m_head.value.index.store(next, std::memory_order_release);
                 return true;
             }
 
-            void 
-            clear() 
-            { 
+            void
+            clear()
+            {
                 std::lock_guard<tail_lock_type> _lock_(m_tail.value.lock);
-                for(auto n = m_tail.value.index.load(std::memory_order_acquire); 
+                for(auto n = m_tail.value.index.load(std::memory_order_acquire);
                       n != m_head.value.index.load(std::memory_order_acquire); ) {
                     m_storage[n] = T();
                     n = _S_mod(n+1);
                 }
 
-                m_tail.value.index.store(m_head.value.index.load(std::memory_order_acquire), 
+                m_tail.value.index.store(m_head.value.index.load(std::memory_order_acquire),
                                           std::memory_order_release);
             }
-            
+
             bool
-            empty() const 
-            { 
-                return m_head.value.index.load(std::memory_order_acquire) == 
-                        m_tail.value.index.load(std::memory_order_acquire); 
-            }
-
-            size_type 
-            max_size() const 
-            { 
-                return N; 
-            }
-
-            size_type 
-            size() const 
+            empty() const
             {
-                int s =  m_head.value.index.load(std::memory_order_acquire) - 
+                return m_head.value.index.load(std::memory_order_acquire) ==
+                        m_tail.value.index.load(std::memory_order_acquire);
+            }
+
+            size_type
+            max_size() const
+            {
+                return N;
+            }
+
+            size_type
+            size() const
+            {
+                int s =  m_head.value.index.load(std::memory_order_acquire) -
                             m_tail.value.index.load(std::memory_order_acquire);
                 return s < 0 ? s + N : s;
             }

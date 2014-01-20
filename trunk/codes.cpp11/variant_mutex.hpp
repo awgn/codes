@@ -4,20 +4,20 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
 #ifndef _VARIANT_MUTEX_HPP_
-#define _VARIANT_MUTEX_HPP_ 
+#define _VARIANT_MUTEX_HPP_
 
 #include <cassert>
 #include <stdexcept>
 #include <functional>
 
-namespace more { 
+namespace more {
 
-    namespace detail 
+    namespace detail
     {
         // template metafunction that returns the max sizeof() of a list of types.
         //
@@ -35,18 +35,18 @@ namespace more {
         {
             enum { value = sizeof(T) };
         };
-        
+
         template <typename Fun, typename ...Tp> struct apply;
         template <typename Fun, typename T, typename ...Tp>
-        struct apply<Fun, T, Tp...> 
+        struct apply<Fun, T, Tp...>
         {
-            static 
-            typename std::result_of<Fun(T*)>::type 
+            static
+            typename std::result_of<Fun(T*)>::type
             on(char *s, unsigned int type, unsigned int t)
             {
-                if (t == type) 
-                { 
-                    return Fun()(reinterpret_cast<T *>(s)); 
+                if (t == type)
+                {
+                    return Fun()(reinterpret_cast<T *>(s));
                 }
                 else
                     return apply<Fun, Tp...>::on(s,type,t+1);
@@ -55,16 +55,16 @@ namespace more {
         template <typename Fun, typename T>
         struct apply<Fun, T>
         {
-            static 
-            typename std::result_of<Fun(T*)>::type 
+            static
+            typename std::result_of<Fun(T*)>::type
             on(char *s, unsigned int, unsigned int)
             {
-                return Fun()(reinterpret_cast<T *>(s)); 
+                return Fun()(reinterpret_cast<T *>(s));
             }
         };
     }
-     
-    // Variant mutex for Lockable object. 
+
+    // Variant mutex for Lockable object.
     // Requirement 30.2.5.3 Draft, Standard for C++ Programming Language
 
     template <typename ...Ts>
@@ -85,7 +85,7 @@ namespace more {
             typedef void result_type;
             template <typename Tx>
             void operator()(Tx *that)
-            {                     
+            {
                 that->~Tx();
             }
         };
@@ -125,7 +125,7 @@ namespace more {
         : m_type(n)
         {
             if (n >= sizeof...(Ts))
-                throw std::runtime_error("variant_mutex: bad index");                
+                throw std::runtime_error("variant_mutex: bad index");
 
             detail::apply<ctor_action, Ts...>::on(m_storage, m_type, 0);
         }

@@ -7,9 +7,9 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
+
 #ifndef _MORE_PRINT_HPP_
-#define _MORE_PRINT_HPP_ 
+#define _MORE_PRINT_HPP_
 
 #include <iostream>
 #include <sstream>
@@ -24,11 +24,11 @@
 // but are just ~5x times faster. Nicola
 //
 
-namespace more { 
-    
+namespace more {
+
     ///////////////////////////////////////////////////////////////////////
     // flags manipulator: example -> flag<std::ios::hex>(42)
-    // 
+    //
 
     template <std::ios_base::fmtflags Fs, typename Tp>
     struct _flags
@@ -47,7 +47,7 @@ namespace more {
         tmp.flags(Fs);
         return tmp << rhs.value;
     }
-    
+
     // helper function...
 
     template <std::ios_base::fmtflags Fs, typename Tp>
@@ -57,20 +57,20 @@ namespace more {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // print: example -> more::print(cout, "%1 %2", std::string("hello"), 
+    // print: example -> more::print(cout, "%1 %2", std::string("hello"),
     //                                              this_thread::get_id());
     //
 
     namespace detail {
 
         template <typename CharT, typename Traits>
-        inline void stream_on(std::basic_ostream<CharT, Traits> &, int, int) 
+        inline void stream_on(std::basic_ostream<CharT, Traits> &, int, int)
         {
             throw std::runtime_error("%format error%");
         }
 
         template <typename CharT, typename Traits, typename T, typename ... Ts>
-        inline void stream_on(std::basic_ostream<CharT, Traits> &out, int n, int x, const T &arg0, const Ts& ...args) 
+        inline void stream_on(std::basic_ostream<CharT, Traits> &out, int n, int x, const T &arg0, const Ts& ...args)
         {
             if (n != x) {
                 stream_on(out, n, x+1, args...);
@@ -89,7 +89,7 @@ namespace more {
     template <typename CharT, typename Traits, typename ... Ts>
     void print(std::basic_ostream<CharT, Traits> &out, const char *fmt, const Ts&... args)
     {
-        enum class state { zero, percent, digit }; 
+        enum class state { zero, percent, digit };
         state s = state::zero;
         int n = 0;
 
@@ -98,12 +98,12 @@ namespace more {
             const char c = *p;
             switch(s)
             {
-            case state::zero: 
+            case state::zero:
                 {
                     if(c != '%') {
                         out.put(c); continue;
                     }
-                    s = state::percent; continue;      
+                    s = state::percent; continue;
                 }
             case state::percent:
                 {
@@ -128,29 +128,29 @@ namespace more {
                         n = 0; s = state::percent; continue;
                     }
                     detail::stream_on(out, n, 1, args...);
-                    out.put(c); 
+                    out.put(c);
                     n = 0; s = state::zero; continue;
                 }
-            }    
+            }
         }
         if (s == state::digit)
             detail::stream_on(out, n, 1, args...);
-        
+
         if (s == state::percent)
             throw std::runtime_error("%format error%");
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
-    // print: example -> more::sprint("%1 %2", std::string("hello"), 
+    // print: example -> more::sprint("%1 %2", std::string("hello"),
     //                                          this_thread::get_id());
     //
- 
+
     template <typename ... Ts>
     inline std::string sprint(const Ts& ... args)
     {
         std::ostringstream out;
         print(out, args...);
-        return out.str();  
+        return out.str();
     }
 
     // portable memory streambuffer
@@ -162,8 +162,8 @@ namespace more {
         {
             this->setp(buffer,buffer+size);
         }
-            
-        char *end() 
+
+        char *end()
         {
             return this->pptr();
         }
@@ -177,7 +177,7 @@ namespace more {
         print(out, args...);
         *sb.end() = '\0';
     }
- 
+
 } // namespace more
 
 #endif /* _MORE_PRINT_HPP_ */

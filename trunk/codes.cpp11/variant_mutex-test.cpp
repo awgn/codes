@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -13,13 +13,13 @@
 #include <iostream>
 #include <mutex>
 
-struct null_mutex  
+struct null_mutex
 {
     null_mutex()
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
-    
+
     ~null_mutex()
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
@@ -48,9 +48,9 @@ main(int, char *[])
 
     for(int i=0; i < 1000000000; i++)
     {
-        std::lock_guard<mutex> lock(x); 
+        std::lock_guard<mutex> lock(x);
     }
 
     return 0;
 }
- 
+

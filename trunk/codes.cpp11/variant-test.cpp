@@ -19,7 +19,7 @@ Context(variant)
     Test(set_get)
     {
         more::variant<int, std::string> x;
-        
+
         x.set(std::string("hello"));
         Assert(x.get<std::string>(), is_equal_to(std::string("hello")));
 
@@ -46,7 +46,7 @@ Context(variant)
         Assert(x.get<std::string>() == y.get<std::string>());
     }
 
-    
+
     Test(move_ctor)
     {
         more::variant<int, std::string> x;
@@ -66,12 +66,12 @@ Context(variant)
         Assert(y.get<std::string>() == std::string("hello world"));
     }
 
-    
+
     Test(universal_ctor)
     {
         more::variant<int, std::string> x(42);
         more::variant<int, std::string> y(std::string("hello world"));
-    
+
         Assert(x.get<int>(), is_equal_to(42));
         Assert(y.get<std::string>(), is_equal_to(std::string("hello world")));
     }
@@ -80,10 +80,10 @@ Context(variant)
     Test(assigment)
     {
         more::variant<int, std::string> x;
-    
+
         x = std::string("hello");
         Assert(x.get<std::string>(), is_equal_to(std::string("hello")));
-        
+
         x = 42;
         Assert(x.get<int>(), is_equal_to(42));
     }
@@ -123,7 +123,7 @@ Context(variant)
         Assert(x.empty(), is_true());
         Assert(y.empty(), is_true());
     }
-    
+
 
     Test(assign_op4)
     {
@@ -171,7 +171,7 @@ Context(variant)
         Assert(x.empty(), is_true());
         Assert(y.get<int>(), is_equal_to(42));
     }
-    
+
 
     Test(move_assign_op3)
     {
@@ -183,7 +183,7 @@ Context(variant)
         Assert(x.empty(), is_true());
         Assert(y.empty(), is_true());
     }
-    
+
 
     Test(move_assign_op4)
     {
@@ -266,15 +266,15 @@ Context(variant)
         more::variant<int, std::string> y(std::string("hello world"));
 
         std::ostringstream out;
-        
+
         out << x;
-    
+
         Assert(out.str(), is_equal_to(std::string("42")));
 
         out.str("");
 
         out << y;
-        
+
         Assert(out.str(), is_equal_to(std::string("hello world")));
     }
 
@@ -294,9 +294,9 @@ Context(variant)
 
         auto ha = std::hash<int>()(a);
         auto hb = std::hash<std::string>()(b);
-        
+
         more::variant<int, std::string> v(a);
-        
+
         auto hv = std::hash<more::variant<int, std::string>>()(v);
 
         Assert( ha, is_equal_to(hv) );
@@ -304,7 +304,7 @@ Context(variant)
         v = b;
 
         hv = std::hash<more::variant<int, std::string>>()(v);
-        
+
         Assert( hb, is_equal_to(hv) );
     }
 }

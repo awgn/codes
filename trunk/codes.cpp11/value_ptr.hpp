@@ -9,14 +9,14 @@
  */
 
 #ifndef _VALUE_PTR_HPP_
-#define _VALUE_PTR_HPP_ 
+#define _VALUE_PTR_HPP_
 
-// this is value_ptr implementation 
+// this is value_ptr implementation
 // inspired to that of Sutter (More Exceptional C++)
 
 #include <algorithm>
 
-namespace more { 
+namespace more {
 
     /////////////////// traits //////////////////////////
 
@@ -70,7 +70,7 @@ namespace more {
         value_ptr(Tp *ptr = 0)
         : m_ptr(ptr)
         {}
-        
+
         ~value_ptr()
         {}
 
@@ -110,14 +110,14 @@ namespace more {
         {
             value_ptr tmp(other);
             tmp.swap(*this);
-            return *this;    
+            return *this;
         }
         template <typename U>
         value_ptr& operator=(value_ptr<U> &other)
         {
             value_ptr tmp(other);
             tmp.swap(*this);
-            return *this;    
+            return *this;
         }
 
         Tp&
@@ -133,9 +133,9 @@ namespace more {
         }
 
         Tp *
-        get() const 
-        { 
-            return m_ptr; 
+        get() const
+        {
+            return m_ptr;
         }
 
         void

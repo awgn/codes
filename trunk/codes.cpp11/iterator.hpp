@@ -2,12 +2,12 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
 #ifndef _ITERATOR_HPP_
-#define _ITERATOR_HPP_ 
+#define _ITERATOR_HPP_
 
 #include <iterator>
 #include <type_traits>
@@ -92,9 +92,9 @@ namespace more {
             return std::get<N>(it_[n]);
         }
 
-        tuple_adapter_iterator & 
+        tuple_adapter_iterator &
         operator+=(int n)
-        { 
+        {
             it_ += n;
             return *this;
         }
@@ -102,9 +102,9 @@ namespace more {
         friend const tuple_adapter_iterator operator+(tuple_adapter_iterator lhs, int n)
         { return lhs+=n; }
 
-        tuple_adapter_iterator & 
+        tuple_adapter_iterator &
         operator-=(int n)
-        { 
+        {
             it_ -= n;
             return *this;
         }
@@ -116,7 +116,7 @@ namespace more {
                                          const tuple_adapter_iterator& rhs)
         {
             return lhs.it_-rhs.it_;
-        } 
+        }
 
         friend bool operator<(const tuple_adapter_iterator& lhs,
                               const tuple_adapter_iterator& rhs)
@@ -149,23 +149,23 @@ namespace more {
     -> tuple_adapter_iterator<Iter,0>
     {
         return tuple_adapter_iterator<Iter,0>(it);
-    }   
+    }
 
     template <typename Iter>
     auto second_iterator(Iter it)
     -> tuple_adapter_iterator<Iter,1>
     {
         return tuple_adapter_iterator<Iter,1>(it);
-    }   
+    }
 
     template <size_t N, typename Iter>
     auto tuple_element_iterator(Iter it)
     -> tuple_adapter_iterator<Iter, N>
     {
         return tuple_adapter_iterator<Iter,N>(it);
-    }   
+    }
 
-    
+
     template <typename Iter>
     struct address_adapter_iterator
     {
@@ -243,9 +243,9 @@ namespace more {
             return &(*it_[n]);
         }
 
-        address_adapter_iterator & 
+        address_adapter_iterator &
         operator+=(int n)
-        { 
+        {
             it_ += n;
             return *this;
         }
@@ -253,9 +253,9 @@ namespace more {
         friend const address_adapter_iterator operator+(address_adapter_iterator lhs, int n)
         { return lhs+=n; }
 
-        address_adapter_iterator & 
+        address_adapter_iterator &
         operator-=(int n)
-        { 
+        {
             it_ -= n;
             return *this;
         }
@@ -267,7 +267,7 @@ namespace more {
                                          const address_adapter_iterator& rhs)
         {
             return lhs.it_ - rhs.it_;
-        } 
+        }
 
         friend bool operator<(const address_adapter_iterator& lhs,
                               const address_adapter_iterator& rhs)
@@ -299,7 +299,7 @@ namespace more {
     -> address_adapter_iterator<Iter>
     {
         return address_adapter_iterator<Iter>(it);
-    }   
+    }
 } // namespace more
 
 

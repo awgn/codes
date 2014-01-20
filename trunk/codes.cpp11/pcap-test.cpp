@@ -106,9 +106,9 @@ main(int, char *[])
 
     std::cout << "dumping 10 icmp to cout..." << std::endl;
 
-    handle[0].loop(10);        
+    handle[0].loop(10);
     // handle[0].loop(10, simple_handler);  // use direct loop
- 
+
     std::cout << "dumping 10 icmp to file..." << std::endl;
     {
         more::pcap::pcap_dumper test(handle[0], "test.pcap");
@@ -124,4 +124,4 @@ main(int, char *[])
 
     return 0;
 }
- 
+

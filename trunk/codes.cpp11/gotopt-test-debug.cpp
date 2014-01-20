@@ -16,7 +16,7 @@
 
 using namespace more::gotopt;
 
-struct option opts[] = 
+struct option opts[] =
 {
     option("Section:"),
     option('h', "hello", 1, "hello option"),
@@ -29,15 +29,15 @@ int
 main(int, char *[])
 {
     std::vector<bool> context(128, false);
-    
+
     context['a'] = true;
     // context['b'] = true;
     context['c'] = true;
 
     std::cout << _a <<  "," << _b << std::endl;
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__ 
-    typeof(_a|_b) r = _a | _b;    
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+    typeof(_a|_b) r = _a | _b;
     typeof(_a & _b) q = _a & _b;
     typeof(_a ^ _b) x = _a ^ _b;
 #else
@@ -57,9 +57,9 @@ main(int, char *[])
     std::cout << "mutex: " << ( _a  % _b ) << " -> " <<  eval( _a  % _b, context ) << std::endl;
 
     more::gotopt::validate_expression( std::make_tuple(_true), context );  // default check...
-    
-    more::gotopt::validate_expression( std::make_tuple( 
-                                       std::make_pair( _a >> (_b|_c), "-a -> -b or -c" ), 
+
+    more::gotopt::validate_expression( std::make_tuple(
+                                       std::make_pair( _a >> (_b|_c), "-a -> -b or -c" ),
                                        std::make_pair( _b % _a , "-b and -a are mutually exclusive")
                                     ), context );
 

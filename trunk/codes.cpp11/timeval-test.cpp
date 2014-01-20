@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -29,17 +29,17 @@ Context(more_timeval_test)
         more::Timeval a = Timeval::now();
         Assert( static_cast<bool>(a), is_true() );
     }
-    
+
     Test(timeval_null)
     {
-        Timeval b;    
+        Timeval b;
         Assert( static_cast<bool>(b), is_false() );
     }
 
     Test(timeval_streamable)
     {
         more::Timeval a = Timeval::now();
-        std::cout <<  a << std::endl;    
+        std::cout <<  a << std::endl;
     }
 
     more::Timeval a;
@@ -65,13 +65,13 @@ Context(more_timeval_test)
         b.update();
         std::this_thread::sleep_for(std::chrono::microseconds(500000));
         c = Timeval::now();
-    
+
         Assert( c == c, is_true() );
-        
+
         Assert( (c > b)  , is_true() );
         Assert( (c >= b) , is_true() );
         Assert( (c >= c) , is_true() );
-        Assert( (c != b) , is_true() );   
+        Assert( (c != b) , is_true() );
         Assert( (b < c ) , is_true() );
         Assert( (b <= c) , is_true() );
         Assert( (b <= b) , is_true() );
@@ -97,7 +97,7 @@ Context(more_timeval_test)
         Assert( c1 == b, is_true() );
     }
 }
- 
+
 int
 main(int argc, char *argv[])
 {

@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -22,7 +22,7 @@ main(int, char *[])
     //
 
     const char * args[] = { "/bin/ls" , "/" , "-la" };
-    // more::exec abc(args, args+3); 
+    // more::exec abc(args, args+3);
 
     more::exec abc {"/bin/ls", "/", "-la" };
 
@@ -30,16 +30,16 @@ main(int, char *[])
 
     int out;
     abc.redirect( exec::redirect_type( more::exec::STDOUT, std::ref(out)) );
-    
+
     // int err;
     // abc.redirect( exec::redirect_type(more::exec::STDERR, std::ref(err) ) );
 
     abc(); // run
-    
+
     // abc(exec::nullprolog());
 
     char buffer[1024+1];
-    
+
     ssize_t c;
     while ( (c = read(out,buffer, 1024)) > 0 ) {
         buffer[c]='\0';
@@ -53,7 +53,7 @@ main(int, char *[])
     }
 
     std::cout << "running group: [" << abc.cmdline() << "] 2 processes..." << std::endl;
-   
+
     more::exec abc1(args, args+3);
     more::exec abc2(args, args+3);
 
@@ -85,4 +85,4 @@ main(int, char *[])
 
     return 0;
 }
- 
+

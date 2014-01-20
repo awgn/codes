@@ -46,7 +46,7 @@ try
         auto it = maptype.find(argv[2]);
         if (it == std::end(maptype))
             throw std::runtime_error(std::string(argv[2]) + ": unknown type");
-         
+
         switch(it->second)
         {
             case 1: {

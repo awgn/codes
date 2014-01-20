@@ -11,7 +11,7 @@
 #include <iostream>
 #include <singleton.hpp>
 
-struct s0: public more::singleton<s0, more::indestructible_singleton_type> 
+struct s0: public more::singleton<s0, more::indestructible_singleton_type>
 {
     s0( base_type::tag )
     {
@@ -24,7 +24,7 @@ struct s0: public more::singleton<s0, more::indestructible_singleton_type>
     }
 };
 
-struct s1: public more::singleton<s1, volatile more::singleton_type> 
+struct s1: public more::singleton<s1, volatile more::singleton_type>
 {
     int m_value;
 
@@ -52,13 +52,13 @@ struct s2: public more::singleton<s2, const more::indestructible_singleton_type>
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
 
-    ~s2() 
+    ~s2()
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
     }
 };
 
-int 
+int
 main(int, char *[])
 {
     s0 & r0 = s0::instance();
@@ -82,7 +82,7 @@ main(int, char *[])
     std::cout << "\ntemplate singleton<T> instance:" << std::endl;
 
 #ifdef ERR_0
-    s1 a;  // <- instances of singleton are not allowed 
+    s1 a;  // <- instances of singleton are not allowed
 #endif
 #ifdef ERR_1
     s1 b ( const_cast<const s1 &>(s1::instance()) ); // <- instances are not copyable

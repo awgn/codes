@@ -4,12 +4,12 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
 #ifndef _MORE_ALGORITHM_HPP_
-#define _MORE_ALGORITHM_HPP_ 
+#define _MORE_ALGORITHM_HPP_
 
 #include <algorithm>
 #include <iterator>
@@ -17,25 +17,25 @@
 #include <string>
 #include <functional>
 
-namespace more { 
+namespace more {
 
     // Levenshtein Distance Algorithm: C++ Implementation
     // a generic rewrite of http://www.merriampark.com/ldcpp.htm
     //
 
-    template <typename It, typename Distance >  
+    template <typename It, typename Distance >
     int levenshtein_distance(It __beg, It __end, It __beg2, It __end2, Distance dist)
     {
         typedef std::vector<std::vector<int>> matrix_type;
-        
+
         size_t n = static_cast<size_t>(std::distance(__beg,  __end));
         size_t m = static_cast<size_t>(std::distance(__beg2, __end2));
-   
+
         if (!(n && m))
            return n ? static_cast<int>(n) : static_cast<int>(m);
 
         matrix_type matrix(n+1, std::vector<int>(m+1));
-   
+
         for (size_t i = 0; i <= n; i++) {
             matrix[i][0] = static_cast<int>(i);
         }
@@ -64,17 +64,17 @@ namespace more {
         return matrix[n][m];
     }
 
-    template <typename It>  
+    template <typename It>
     inline int levenshtein_distance(It __beg, It __end, It __beg2, It __end2)
     {
         return levenshtein_distance(__beg, __end, __beg2, __end2, std::not_equal_to<typename std::iterator_traits<It>::value_type >());
-    } 
+    }
 
     template<typename CharT, typename Traits, typename Alloc>
     inline int levenshtein_distance(const std::basic_string<CharT, Traits, Alloc> &s1,
                              const std::basic_string<CharT, Traits, Alloc> &s2)
     {
-        return levenshtein_distance(s1.begin(), s1.end(), s2.begin(), s2.end(), std::not_equal_to<CharT>()); 
+        return levenshtein_distance(s1.begin(), s1.end(), s2.begin(), s2.end(), std::not_equal_to<CharT>());
     }
 
 } // namespace more

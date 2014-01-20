@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -21,7 +21,7 @@ Context(more_iomanip_test)
     {
         std::ostringstream out;
         out << more::spaces(4);
-        Assert(out.str(), is_equal_to(std::string("    ")));   
+        Assert(out.str(), is_equal_to(std::string("    ")));
     }
 
     Test(string_token)
@@ -31,7 +31,7 @@ Context(more_iomanip_test)
 
         std::vector<std::string> vec = { "one", "two", "three", "four" };
         std::vector<std::string> out;
-        
+
         more::string_token tok("\n: "); // <- string_token
 
         while(in >> tok)
@@ -47,7 +47,7 @@ Context(more_iomanip_test)
 
         std::vector<std::wstring> vec = { L"one", L"two", L"three", L"four" };
         std::vector<std::wstring> out;
-        
+
         more::wstring_token tok(L"\n: "); // <- string_token
 
         while(in >> tok)
@@ -88,7 +88,7 @@ Context(more_iomanip_test)
         Assert((std::equal(out.begin(), out.end(), vec.begin())), is_true());
     }
 }
- 
+
 int
 main(int argc, char *argv[])
 {

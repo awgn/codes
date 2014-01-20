@@ -9,7 +9,7 @@
  */
 
 #ifndef _MORE_STRING_UTILS_HPP_
-#define _MORE_STRING_UTILS_HPP_ 
+#define _MORE_STRING_UTILS_HPP_
 
 #include <fstream>
 #include <sstream>
@@ -19,11 +19,11 @@
 #include <limits>
 #include <cctype>
 
-namespace more { 
+namespace more {
 
-    namespace string_utils 
+    namespace string_utils
     {
-        struct white_space 
+        struct white_space
         {
             static const char *
             value(char)
@@ -48,23 +48,23 @@ namespace more {
     template<typename CharT, typename Traits, typename Alloc>
     inline std::basic_istream<CharT, Traits>&
     getline(std::basic_istream<CharT, Traits>& __in,
-            std::basic_string<CharT, Traits, Alloc>& __str, 
+            std::basic_string<CharT, Traits, Alloc>& __str,
             const std::basic_string<CharT, Traits, Alloc>& __delim, bool do_escape = string_utils::escape_disabled)
     {
         std::ios_base::iostate __err = std::ios_base::goodbit;
-        
+
         const typename std::basic_string<CharT, Traits, Alloc>::size_type n = __str.max_size();
         auto c = static_cast<typename Traits::char_type>(__in.rdbuf()->sgetc());
         auto __eof = static_cast<typename Traits::char_type>(Traits::eof());
-        
+
         unsigned int extracted = 0;
 
         bool esc = false;
-        __str.erase();        
+        __str.erase();
 
-        if (do_escape) {   
+        if (do_escape) {
             while ( extracted < n && !Traits::eq(c,__eof) &&
-                    (__delim.find(static_cast<CharT>(c)) == std::basic_string<CharT,Traits,Alloc>::npos || esc) ) 
+                    (__delim.find(static_cast<CharT>(c)) == std::basic_string<CharT,Traits,Alloc>::npos || esc) )
             {
                 if ( Traits::eq(static_cast<CharT>(c), '\\') && !esc) {
                     esc = true;
@@ -75,7 +75,7 @@ namespace more {
                 if (esc) {
                     esc = false;
                     if (__delim.find(static_cast<CharT>(c)) == std::basic_string<CharT,Traits,Alloc>::npos && !Traits::eq(static_cast<CharT>(c),'\\') ) {
-                        __str += '\\'; 
+                        __str += '\\';
                         ++extracted;
                     }
                 }
@@ -86,7 +86,7 @@ namespace more {
             }
         } else {
             while ( extracted < n && !Traits::eq(c,__eof) &&
-                    __delim.find(static_cast<CharT>(c)) == std::basic_string<CharT,Traits,Alloc>::npos ) 
+                    __delim.find(static_cast<CharT>(c)) == std::basic_string<CharT,Traits,Alloc>::npos )
             {
                 __str += static_cast<CharT>(c);
                 ++extracted;
@@ -98,8 +98,8 @@ namespace more {
                 __delim.find(static_cast<CharT>(c)) != std::basic_string<CharT,Traits,Alloc>::npos )
         {
             ++extracted;
-            c = static_cast<typename Traits::char_type>(__in.rdbuf()->snextc());    
-        }            
+            c = static_cast<typename Traits::char_type>(__in.rdbuf()->snextc());
+        }
 
         if ( Traits::eq(c, __eof) )
             __err |= std::ios_base::eofbit;
@@ -113,30 +113,30 @@ namespace more {
         return __in;
     }
 
-    // split a string into a container 
+    // split a string into a container
     //
 
     template<typename Iter, typename CharT, typename Traits, typename Alloc>
-    inline void 
+    inline void
     __split(const std::basic_string<CharT,Traits,Alloc> &str, Iter out, const std::basic_string<CharT,Traits,Alloc> &sep, char)
     {
         std::stringstream ss(str);
         std::basic_string<CharT,Traits,Alloc> token;
-        while(more::getline(ss, token, sep)) 
+        while(more::getline(ss, token, sep))
             *out ++ = token;
     }
     template<typename Iter, typename CharT, typename Traits, typename Alloc>
-    inline void 
+    inline void
     __split(const std::basic_string<CharT,Traits,Alloc> &str, Iter out, const std::basic_string<CharT,Traits,Alloc> &sep, wchar_t)
     {
         std::wstringstream ss(str);
         std::basic_string<CharT,Traits,Alloc> token;
-        while(more::getline(ss, token, sep)) 
+        while(more::getline(ss, token, sep))
             *out ++ = token;
     }
 
     template<typename Iter, typename CharT, typename Traits, typename Alloc>
-    inline void 
+    inline void
     split(const std::basic_string<CharT,Traits,Alloc> &str, Iter out, const std::basic_string<CharT,Traits,Alloc> &sep)
     {
         __split(str,out,sep,CharT());
@@ -162,14 +162,14 @@ namespace more {
     //
 
     template<typename CharT, typename Traits, typename Alloc>
-    inline const std::basic_string<CharT,Traits,Alloc> & 
+    inline const std::basic_string<CharT,Traits,Alloc> &
     repl(std::basic_string<CharT,Traits,Alloc> &orig, const std::basic_string<CharT,Traits,Alloc> &__old,
          const std::basic_string<CharT,Traits,Alloc> &__new, unsigned int m = std::numeric_limits<unsigned int>::max())
     {
         unsigned int n = 0;
         typename std::basic_string<CharT,Traits,Alloc>::size_type __osize = __old.size(), __nsize = __new.size(), __start = 0;
 
-        for(typename std::basic_string<CharT,Traits,Alloc>::size_type p; n < m 
+        for(typename std::basic_string<CharT,Traits,Alloc>::size_type p; n < m
             && (p=orig.find(__old, __start)) != std::basic_string<CharT,Traits,Alloc>::npos; ++n)
         {
             orig.replace(p, __osize, __new);
@@ -195,9 +195,9 @@ namespace more {
     inline std::basic_string<CharT,Traits,Alloc>
     trim_copy(const std::basic_string<CharT,Traits,Alloc> &s, const CharT *str = string_utils::white_space::value(CharT()), int lr = 0)
     {
-        typename std::basic_string<CharT,Traits,Alloc>::size_type b = lr > 0 ? 
+        typename std::basic_string<CharT,Traits,Alloc>::size_type b = lr > 0 ?
         std::basic_string<CharT,Traits,Alloc>::npos : s.find_first_not_of(str);
-        typename std::basic_string<CharT,Traits,Alloc>::size_type e = lr < 0 ? 
+        typename std::basic_string<CharT,Traits,Alloc>::size_type e = lr < 0 ?
         s.size() : s.find_last_not_of(str);
         b = (b == std::basic_string<CharT,Traits,Alloc>::npos ? 0 : b);
         e = (e == std::basic_string<CharT,Traits,Alloc>::npos ? 0 : e + 1);
@@ -205,7 +205,7 @@ namespace more {
     }
 
     template<typename CharT, typename Traits, typename Alloc>
-    inline std::basic_string<CharT,Traits,Alloc> 
+    inline std::basic_string<CharT,Traits,Alloc>
     left_trim_copy(const std::basic_string<CharT,Traits,Alloc> &s, const CharT *str = string_utils::white_space::value(CharT()))
     {
         return trim_copy(s,str,-1);
@@ -222,7 +222,7 @@ namespace more {
     //
 
     template<typename CharT, typename Traits, typename Alloc>
-    inline const std::basic_string<CharT,Traits,Alloc> & 
+    inline const std::basic_string<CharT,Traits,Alloc> &
     left_trim(typename std::basic_string<CharT,Traits,Alloc> &s, const CharT *str = string_utils::white_space::value(CharT())) // in-place...
     {
         typename std::basic_string<CharT,Traits,Alloc>::size_type b = s.find_first_not_of(str);
@@ -231,7 +231,7 @@ namespace more {
     }
 
     template<typename CharT, typename Traits, typename Alloc>
-    inline const std::basic_string<CharT,Traits,Alloc> & 
+    inline const std::basic_string<CharT,Traits,Alloc> &
     right_trim(typename std::basic_string<CharT,Traits,Alloc> &s, const CharT *str = string_utils::white_space::value(CharT())) // in-place...
     {
         typename std::basic_string<CharT,Traits,Alloc>::size_type e = s.find_last_not_of(str);
@@ -240,7 +240,7 @@ namespace more {
     }
 
     template<typename CharT, typename Traits, typename Alloc>
-    inline const std::basic_string<CharT,Traits,Alloc> & 
+    inline const std::basic_string<CharT,Traits,Alloc> &
     trim(typename std::basic_string<CharT,Traits,Alloc> &s, const CharT *str = string_utils::white_space::value(CharT())) // in-place...
     {
         right_trim(s,str);
@@ -256,15 +256,15 @@ namespace more {
     upcase_copy(const std::basic_string<CharT,Traits,Alloc> &s)
     {
         typename std::basic_string<CharT,Traits,Alloc> ret;
-        std::transform(s.begin(), s.end(), std::back_inserter(ret), ::toupper); 
+        std::transform(s.begin(), s.end(), std::back_inserter(ret), ::toupper);
         return ret;
     }
 
     template<typename CharT, typename Traits, typename Alloc>
-    inline const std::basic_string<CharT,Traits,Alloc> & 
+    inline const std::basic_string<CharT,Traits,Alloc> &
     upcase(std::basic_string<CharT,Traits,Alloc> &s) // in-place...
     {
-        std::transform(s.begin(), s.end(), s.begin(), ::toupper); 
+        std::transform(s.begin(), s.end(), s.begin(), ::toupper);
         return s;
     }
 
@@ -276,7 +276,7 @@ namespace more {
     downcase_copy(const std::basic_string<CharT,Traits,Alloc> &s)
     {
         typename std::basic_string<CharT,Traits,Alloc> ret;
-        std::transform(s.begin(), s.end(), std::back_inserter(ret), ::tolower); 
+        std::transform(s.begin(), s.end(), std::back_inserter(ret), ::tolower);
         return ret;
     }
 
@@ -284,7 +284,7 @@ namespace more {
     inline const std::basic_string<CharT,Traits,Alloc> &
     downcase(std::basic_string<CharT,Traits,Alloc> &s) // in-place...
     {
-        std::transform(s.begin(), s.end(), s.begin(), ::tolower); 
+        std::transform(s.begin(), s.end(), s.begin(), ::tolower);
         return s;
     }
 
@@ -292,14 +292,14 @@ namespace more {
     //
 
     template<typename CharT, typename Traits, typename Alloc>
-    struct swapcase_op : public std::unary_function< typename std::basic_string<CharT,Traits,Alloc>::value_type, 
+    struct swapcase_op : public std::unary_function< typename std::basic_string<CharT,Traits,Alloc>::value_type,
                        typename std::basic_string<CharT,Traits,Alloc>::value_type>
     {
         typename std::basic_string<CharT,Traits,Alloc>::value_type
         operator()(typename std::basic_string<CharT,Traits,Alloc>::value_type c) const
-        { 
-            return ::isupper(c) ? static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::tolower(c)) : 
-                                  static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::toupper(c)); 
+        {
+            return ::isupper(c) ? static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::tolower(c)) :
+                                  static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::toupper(c));
         }
     };
 
@@ -308,15 +308,15 @@ namespace more {
     swapcase_copy(const std::basic_string<CharT,Traits,Alloc> &s)
     {
         std::basic_string<CharT,Traits,Alloc> ret;
-        std::transform(s.begin(), s.end(), std::back_inserter(ret), swapcase_op<CharT,Traits,Alloc>()); 
+        std::transform(s.begin(), s.end(), std::back_inserter(ret), swapcase_op<CharT,Traits,Alloc>());
         return ret;
     }
 
     template<typename CharT, typename Traits, typename Alloc>
-    inline const std::basic_string<CharT,Traits,Alloc> & 
+    inline const std::basic_string<CharT,Traits,Alloc> &
     swapcase(std::basic_string<CharT,Traits,Alloc> &s) // in-place...
     {
-        std::transform(s.begin(), s.end(), s.begin(), swapcase_op<CharT,Traits,Alloc>()); 
+        std::transform(s.begin(), s.end(), s.begin(), swapcase_op<CharT,Traits,Alloc>());
         return s;
     }
 
@@ -324,11 +324,11 @@ namespace more {
     //
 
     template<typename CharT, typename Traits, typename Alloc>
-    struct case_equal_op : public std::binary_function< 
-    typename std::basic_string<CharT,Traits,Alloc>::value_type, 
+    struct case_equal_op : public std::binary_function<
+    typename std::basic_string<CharT,Traits,Alloc>::value_type,
              typename std::basic_string<CharT,Traits,Alloc>::value_type, bool>
     {
-        bool operator()(typename std::basic_string<CharT,Traits,Alloc>::value_type a, 
+        bool operator()(typename std::basic_string<CharT,Traits,Alloc>::value_type a,
                         typename std::basic_string<CharT,Traits,Alloc>::value_type b) const
         {
             return ::toupper(a) == ::toupper(b);
@@ -346,7 +346,7 @@ namespace more {
     //
 
     template<typename CharT, typename Traits, typename Alloc>
-    struct capitalize_op : public std::unary_function<typename std::basic_string<CharT,Traits,Alloc>::value_type, 
+    struct capitalize_op : public std::unary_function<typename std::basic_string<CharT,Traits,Alloc>::value_type,
                          typename std::basic_string<CharT,Traits,Alloc>::value_type>
     {
         capitalize_op()
@@ -360,7 +360,7 @@ namespace more {
                 m_state = 0;
                 return c;
             }
-            return m_state++ ? static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::tolower(c)) : 
+            return m_state++ ? static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::tolower(c)) :
                                static_cast<typename std::basic_string<CharT,Traits,Alloc>::value_type>(std::toupper(c));
         }
 
@@ -372,20 +372,20 @@ namespace more {
     capitalize_copy(const std::basic_string<CharT,Traits,Alloc> &s)
     {
         std::basic_string<CharT,Traits,Alloc> ret;
-        std::transform(s.begin(), s.end(), std::back_inserter(ret), capitalize_op<CharT,Traits,Alloc>() ); 
+        std::transform(s.begin(), s.end(), std::back_inserter(ret), capitalize_op<CharT,Traits,Alloc>() );
         return ret;
     }
 
     template<typename CharT, typename Traits, typename Alloc>
-    inline const typename std::basic_string<CharT,Traits,Alloc> & 
+    inline const typename std::basic_string<CharT,Traits,Alloc> &
     capitalize(std::basic_string<CharT,Traits,Alloc> &s) // in-place...
     {
-        std::transform(s.begin(), s.end(), s.begin(), capitalize_op<CharT,Traits,Alloc>() ); 
+        std::transform(s.begin(), s.end(), s.begin(), capitalize_op<CharT,Traits,Alloc>() );
         return s;
     }
 
     // reverse
-    // 
+    //
 
     template<typename CharT, typename Traits, typename Alloc>
     inline std::basic_string<CharT,Traits,Alloc>
@@ -393,11 +393,11 @@ namespace more {
     {
         std::basic_string<CharT,Traits,Alloc> ret;
         std::reverse_copy(s.begin(), s.end(), std::back_inserter(ret));
-        return ret;      
+        return ret;
     }
 
     template<typename CharT, typename Traits, typename Alloc>
-    inline const std::basic_string<CharT, Traits, Alloc> & 
+    inline const std::basic_string<CharT, Traits, Alloc> &
     reverse(std::basic_string<CharT,Traits,Alloc> &s) // in-place...
     {
         std::reverse(s.begin(), s.end());

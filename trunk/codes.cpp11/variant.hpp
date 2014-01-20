@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -22,17 +22,17 @@
 // Yet another boost tribute: the variant class.
 //
 
-namespace more { 
+namespace more {
 
     namespace variant_details {
 
-        constexpr unsigned int 
+        constexpr unsigned int
         next_pow2(unsigned int v, unsigned int power = 1)
         {
-            return (power >= v) ? power : 
+            return (power >= v) ? power :
                                   next_pow2(v, power * 2);
         }
-       
+
         template <typename T>
         struct assert_is_nothrow_move_constructible
         {
@@ -63,11 +63,11 @@ namespace more {
         };
 
         ///////////////////////////////////////////// max - sizeof
-         
-        template <typename T> 
+
+        template <typename T>
         struct size_of
         {
-            static constexpr size_t value = sizeof(T); 
+            static constexpr size_t value = sizeof(T);
         };
 
         template <template <typename> class F, typename ...Ts> struct max;
@@ -84,7 +84,7 @@ namespace more {
             static constexpr size_t value = _head > _tail ? _head : _tail;
         };
 
-        ///////////////////////////////////////////// type index 
+        ///////////////////////////////////////////// type index
 
         template <int N, typename T, typename ...Ti> struct index_of_;
 
@@ -101,7 +101,7 @@ namespace more {
 
         template <typename T, typename ...Ti> struct index_of
         {
-            enum { value = index_of_<0, T, Ti...>::value };    
+            enum { value = index_of_<0, T, Ti...>::value };
         };
 
         ////////////////////////////////////////////// get n-th type
@@ -121,7 +121,7 @@ namespace more {
         template <int N, typename ...Ti> struct get_type
         {
             typedef typename get_type_<0,N, Ti...>::type type;
-        };  
+        };
 
         ////////////////////////////////////////////// stream_on:
 
@@ -129,7 +129,7 @@ namespace more {
         struct stream_on
         {
             Out &out_;
-            
+
             stream_on(Out &o)
             : out_(o)
             {}
@@ -148,13 +148,13 @@ namespace more {
         template <typename Tp>
         inline Tp move_if(Tp &value, std::true_type)
         { return value; }
-        
+
         template <typename Tp>
         inline Tp & move_if(Tp &value, std::false_type)
         { return value; }
 
         template <bool V, typename Tp>
-        inline auto 
+        inline auto
         move_if(Tp & value)
         -> decltype(move_if(value, std::integral_constant<bool, V>()))
         {
@@ -165,55 +165,55 @@ namespace more {
 
         template <typename ...Tp> struct visitor;
         template <typename T, typename ...Tp>
-        struct visitor<T, Tp...> 
+        struct visitor<T, Tp...>
         {
             template <typename F, typename V>
-            static auto 
+            static auto
             apply(F fun, V &&var, int n = 0)
-            -> decltype(fun(std::declval<T &>())) 
+            -> decltype(fun(std::declval<T &>()))
             {
-                if (n == var.which()) 
+                if (n == var.which())
                 {
                     return fun(move_if<std::is_rvalue_reference<V &&>::value>(var.template get<T>()));
                 }
-                return visitor<Tp...>::apply(fun, std::forward<V>(var), n+1);    
+                return visitor<Tp...>::apply(fun, std::forward<V>(var), n+1);
             }
-            
+
             template <typename F, typename V1, typename V2>
-            static auto 
+            static auto
             apply2(F fun, V1 &&var1, V2 &&var2, int n = 0)
-            -> decltype(fun(std::declval<T &>(), std::declval<T &>())) 
+            -> decltype(fun(std::declval<T &>(), std::declval<T &>()))
             {
-                if (n == var1.which() && n == var2.which()) 
+                if (n == var1.which() && n == var2.which())
                 {
-                    return fun(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>()), 
+                    return fun(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>()),
                                move_if<std::is_rvalue_reference<V2 &&>::value>(var2.template get<T>()));
                 }
-                return visitor<Tp...>::apply2(fun, std::forward<V1>(var1), std::forward<V2>(var2), n+1);    
+                return visitor<Tp...>::apply2(fun, std::forward<V1>(var1), std::forward<V2>(var2), n+1);
             }
         };
         template <typename T>
         struct visitor<T>
         {
             template <typename F, typename V>
-            static auto 
+            static auto
             apply(F fun, V &&var, int n = 0)
             -> decltype(fun(std::declval<T&>()))
             {
-                if (n == var.which()) 
+                if (n == var.which())
                 {
                     return fun(move_if<std::is_rvalue_reference<V &&>::value>(var.template get<T>()));
                 }
                 throw std::runtime_error("variant: internal error");
             }
             template <typename F, typename V1, typename V2>
-            static auto 
+            static auto
             apply2(F fun, V1 &&var1, V2 &&var2, int n = 0)
-            -> decltype(fun(std::declval<T &>(), std::declval<T &>())) 
+            -> decltype(fun(std::declval<T &>(), std::declval<T &>()))
             {
-                if (n == var1.which() && n == var2.which()) 
-                {           
-                    return fun(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>()), 
+                if (n == var1.which() && n == var2.which())
+                {
+                    return fun(move_if<std::is_rvalue_reference<V1 &&>::value>(var1.template get<T>()),
                                move_if<std::is_rvalue_reference<V2 &&>::value>(var2.template get<T>()));
                 }
                 throw std::runtime_error("variant: internal error");
@@ -222,20 +222,20 @@ namespace more {
 
     }  // namespace details
 
-    
+
     ////////////////////////////////////////////// variant class...
-    ////////////////////////////////////////////// 
+    //////////////////////////////////////////////
 
 
-    template <typename ...Ts>  
-    class variant 
+    template <typename ...Ts>
+    class variant
     {
         // ensure the types have nothrow move or the copy constructors:
         //
-        
+
         typedef typename variant_details::for_each<variant_details::assert_is_nothrow_move_constructible, Ts...>::type check;
 
-    public: 
+    public:
 
         // determine the storage_type:
         //
@@ -246,7 +246,7 @@ namespace more {
         typedef typename std::aligned_storage<storage_len, variant_details::next_pow2(storage_align)>::type storage_type;
 
     public:
-        
+
         variant()
         : type_(-1)
         {}
@@ -261,11 +261,11 @@ namespace more {
 
         template <typename T, typename V = typename std::enable_if<!std::is_same<typename std::decay<T>::type,variant>::value, void>::type>
         variant(T && arg)
-        : type_(-1) 
+        : type_(-1)
         {
             set(std::forward<T>(arg));
         }
-        
+
         variant(const variant &rhs)   // copy constructor
         : type_(rhs.type_)
         {
@@ -290,20 +290,20 @@ namespace more {
         {
             if (type_ == rhs.type_)
             {
-                if (type_ != -1)  
+                if (type_ != -1)
                 {
                     variant_details::visitor<Ts...>::apply2(assign_op(), *this, rhs);
                 }
             }
             else
             {
-                if (rhs.type_ != -1) 
+                if (rhs.type_ != -1)
                 {
                     variant tmp(rhs);
-                    
-                    if (type_ != -1) 
+
+                    if (type_ != -1)
                         variant_details::visitor<Ts...>::apply(dtor(), *this);
-                
+
                     type_ = rhs.type_;
 
                     variant_details::visitor<Ts...>::apply2(move_ctor(), *this, std::move(tmp));
@@ -322,7 +322,7 @@ namespace more {
         {
             if (type_ == rhs.type_)
             {
-                if (type_ != -1)  
+                if (type_ != -1)
                 {
                     variant_details::visitor<Ts...>::apply2(move_assign_op(), *this, std::move(rhs));
                     variant_details::visitor<Ts...>::apply(dtor(), rhs);
@@ -331,11 +331,11 @@ namespace more {
             }
             else
             {
-                if (type_ != -1) 
+                if (type_ != -1)
                     variant_details::visitor<Ts...>::apply(dtor(), *this);
-             
+
                 type_ = rhs.type_;
-                
+
                 if (type_ != -1)
                 {
                     variant_details::visitor<Ts...>::apply2(move_ctor(), *this, std::move(rhs));
@@ -345,10 +345,10 @@ namespace more {
             }
             return *this;
         }
-        
+
         // universal assignment operator
         //
-        
+
         template <typename T, typename V = typename std::enable_if<!std::is_same<typename std::decay<T>::value,variant>::value, variant>::type>
         variant &
         operator=(T && arg)
@@ -356,22 +356,22 @@ namespace more {
             set(std::forward<T>(arg));
             return *this;
         }
-        
+
         bool
         empty() const
         {
             return type_ == -1;
         }
 
-        int 
+        int
         which() const
         {
             return type_;
         }
 
-        // get methods: these methods require ref-qualifier which is not 
-        //              yet implemented in common compilers: i.e. g++-4.8 
-        
+        // get methods: these methods require ref-qualifier which is not
+        //              yet implemented in common compilers: i.e. g++-4.8
+
         template <typename T>
         T & get()
         {
@@ -396,15 +396,15 @@ namespace more {
             constexpr auto t = variant_details::index_of<typename std::decay<T>::type, Ts...>::value;
 
             static_assert(t != -1, "T not found in variant");
-            
+
             // destroy the object in the variant...
-            
-            this->~variant();            
+
+            this->~variant();
 
             // move the object to the storage_
-            
+
             new (&storage_) T(std::move(value));
-            
+
             type_  = t;
         }
 
@@ -427,7 +427,7 @@ namespace more {
         }
 
     private:
-        
+
         struct ctor
         {
             template <typename T1, typename T2>
@@ -463,7 +463,7 @@ namespace more {
                 new (&lhs) T(std::move(rhs));
             }
         };
-        
+
         struct assign_op
         {
             template <typename T>
@@ -472,7 +472,7 @@ namespace more {
                 lhs = rhs;
             }
         };
-        
+
         struct move_assign_op
         {
             template <typename T, typename Tp>
@@ -492,11 +492,11 @@ namespace more {
         };
 
     private:
-        
+
         storage_type storage_;
         int type_;
     };
-         
+
 
     template <typename CharT, typename Traits, typename ...Ts>
     typename std::basic_ostream<CharT, Traits> &
@@ -518,14 +518,14 @@ namespace more {
     auto visitor(Fun f, variant<Ts...> &v)
     -> decltype(variant_details::visitor<Ts...>::apply(f, v))
     {
-        return variant_details::visitor<Ts...>::apply(f, v);    
+        return variant_details::visitor<Ts...>::apply(f, v);
     }
 
     template <typename Fun, typename ...Ts>
     auto visitor(Fun f, variant<Ts...> const &v)
     -> decltype(variant_details::visitor<Ts...>::apply(f, v))
     {
-        return variant_details::visitor<Ts...>::apply(f, v);    
+        return variant_details::visitor<Ts...>::apply(f, v);
     }
 
     struct variant_hash
@@ -542,7 +542,7 @@ namespace more {
 
 // Specialization for std::hash...
 //
-namespace std 
+namespace std
 {
     template <typename ...Ts>
     struct hash<more::variant<Ts...>>

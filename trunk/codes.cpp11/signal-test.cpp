@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -25,9 +25,9 @@ main(int, char *[])
     {
         // use signal_handler::get()...
         //
-        
+
         auto sig = more::signal_handler::get();
-                                         
+
         if (sig) {
             std::cout << "signal " << sig << " pending..." << std::endl;
         }
@@ -36,8 +36,8 @@ main(int, char *[])
         }
 
         // or signal_handler::may_throw()... (a unix_signal exception)
-        // 
-        try 
+        //
+        try
         {
             more::signal_handler::may_throw();
         }

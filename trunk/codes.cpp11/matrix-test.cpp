@@ -7,7 +7,7 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
+
 #include <iostream>
 
 #include <matrix.hpp>
@@ -18,7 +18,7 @@ using namespace more;
 
 Context(more_matrix_test)
 {
-    
+
    Test(generic)
    {
         more::matrix<int,2,2> a;
@@ -38,10 +38,10 @@ Context(more_matrix_test)
    }
 
     Test(matrix_stream)
-    { 
+    {
         more::matrix<int,2,2> m;
         Assert( (m == mat<2,2>({0,0,0,0})), is_true() );
-    }        
+    }
 
     Test(operations)
     {
@@ -95,7 +95,7 @@ Context(more_matrix_test)
         Assert( (m * 2 == mat<2,2>({ 2, 4, 6, 8 })), is_true() );
         Assert( (2 * m == mat<2,2>({ 2, 4, 6, 8 })), is_true() );
     }
-    
+
     Test(scalar_division)
     {
         more::matrix<double> m(2,2);
@@ -130,14 +130,14 @@ Context(more_matrix_test)
         Assert( ( tr(m) == mat<3,2>({ 1, 3, 2, 4, 0, 0 })), is_true() );
         Assert( ( tr(tr(m)) == mat<2,3>({ 1, 2, 0, 3, 4, 0 })), is_true() );
     }
-    
+
     Test(is_simmetric)
     {
         more::matrix<double,2,2> m;
 
         m = {1, 2, 3, 4};
         Assert(is_simmetric(m), is_false());
-        
+
         m = {1, 2, 2, 1};
         Assert(is_simmetric(m), is_true());
     }
@@ -149,7 +149,7 @@ Context(more_matrix_test)
 
         m = {1, 2, 3, 4};
         Assert(is_simmetric(m), is_false());
-        
+
         m = {1, 2, 2, 1};
         Assert(is_simmetric(m), is_true());
     }
@@ -158,7 +158,7 @@ Context(more_matrix_test)
     {
         more::matrix<double> m(2,3);
         m = {1, 2, 0, 3, 4, 0};
-         
+
         Assert(m == m,      is_true());
         Assert(m != m,      is_false());
         Assert(m == tr(m),  is_false());
@@ -172,12 +172,12 @@ Context(more_matrix_test)
     }
 
     Test(row_iterator)
-    {        
+    {
         std::vector<int> r1 = {1, 2};
         std::vector<int> r2 = {3, 4};
- 
+
         more::matrix<int,2,2> a = {1, 2, 3, 4};
-        more::matrix<int> b(2,2); 
+        more::matrix<int> b(2,2);
         b = {1, 2, 3, 4 };
 
         Assert( std::equal(a.row_begin(0), a.row_end(0), r1.begin()), is_true() );
@@ -187,10 +187,10 @@ Context(more_matrix_test)
     }
 
     Test(const_col_iterator)
-    {        
+    {
         std::vector<int> r1 = {1, 3};
         std::vector<int> r2 = {2, 4};
- 
+
         more::matrix<int,2,2> a = { 1, 2, 3, 4 };
 
         more::matrix<int,2,2>::const_col_iterator it1_beg = a.col_begin(0);
@@ -203,10 +203,10 @@ Context(more_matrix_test)
     }
 
     Test(const_col_iterator_dyn)
-    {        
+    {
         std::vector<int> r1 = {1, 3};
         std::vector<int> r2 = {2, 4};
- 
+
         more::matrix<int> a(2,2);
         a = { 1, 2, 3, 4 };
 
@@ -218,7 +218,7 @@ Context(more_matrix_test)
         Assert( std::equal(it1_beg, it1_end, r1.begin()) , is_true());
         Assert( std::equal(it2_beg, it2_end, r2.begin()) , is_true());
     }
-    
+
     Test(product_static_static)
     {
         more::matrix<int,2,3> a;
@@ -262,7 +262,7 @@ Context(more_matrix_test)
 
         Assert( a * b, is_equal_to(p));
     }
- 
+
     Test(product_satatic_dyn)
     {
         more::matrix<int,2,3> a;

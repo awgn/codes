@@ -21,7 +21,7 @@
 
 using namespace more;
 
-more::shared_queue<int, 128, multiple_producer, single_consumer> queue;    
+more::shared_queue<int, 128, multiple_producer, single_consumer> queue;
 
 
 std::atomic_bool stop(false);
@@ -50,7 +50,7 @@ void thread_consumer()
         if (!queue.pop_front(n) )
         {
             if (stop)
-                break;   
+                break;
 
             std::this_thread::yield();
             continue;

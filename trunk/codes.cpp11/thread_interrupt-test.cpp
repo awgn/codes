@@ -7,7 +7,7 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
+
 #include <thread>
 #include <iostream>
 #include <functional>
@@ -33,15 +33,15 @@ struct thread_one : public std::unary_function<int, void>
             if ( interrupt_requested() ) {
                 std::cout << "interrupted! " << std::this_thread::get_id() << std::endl;
                 return;
-            }                                        
+            }
         }
     }
 };
 
 ////////////////////////////////////////////////////////
-// flavor two: thread registered by the factory 
+// flavor two: thread registered by the factory
 // make_interruptible_thread().
- 
+
 struct thread_two : public std::binary_function<int, more::thread_interrupt::hook, void>
 {
     void
@@ -52,11 +52,11 @@ struct thread_two : public std::binary_function<int, more::thread_interrupt::hoo
             if ( interrupt_requested() ) {
                 std::cout << "interrupted! " << std::this_thread::get_id() << std::endl;
                 return;
-            }                                        
+            }
         }
     }
 };
- 
+
 
 int
 main(int, char *[])
@@ -70,12 +70,12 @@ main(int, char *[])
     thread_interrupt::interrupt(one.get_id());
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    
+
     thread_interrupt::interrupt(two.get_id());
-    
+
     one.join();
     two.join();
 
     return 0;
 }
- 
+

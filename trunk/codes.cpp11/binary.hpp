@@ -7,8 +7,8 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
-#pragma once 
+
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <iostream>
 
-#include <arpa/inet.h> 
+#include <arpa/inet.h>
 #include <endian.h>
 
 namespace more {
@@ -28,19 +28,19 @@ namespace more {
     inline void encode(uint64_t n, void *out)
     {
         auto p = reinterpret_cast<uint64_t *>(out);
-        * p = htobe64(n); 
+        * p = htobe64(n);
     }
 
     inline void encode(uint32_t n, void *out)
     {
         auto p = reinterpret_cast<uint32_t *>(out);
-        * p = htonl(n); 
+        * p = htonl(n);
     }
 
     inline void encode(uint16_t n, void *out)
     {
         auto p = reinterpret_cast<uint16_t *>(out);
-        * p = htons(n); 
+        * p = htons(n);
     }
 
     inline void encode(std::string const &s, void *out)
@@ -65,18 +65,18 @@ namespace more {
     inline void decode(void const *in, uint32_t &n)
     {
         auto p = reinterpret_cast<uint32_t const *>(in);
-        n = ntohl(*p); 
+        n = ntohl(*p);
     }
 
     inline void decode(void const *in, uint16_t &n)
     {
         auto p = reinterpret_cast<uint16_t const *>(in);
-        n = ntohs(*p); 
+        n = ntohs(*p);
     }
 
     inline void decode(void const *in, std::string &str, size_t s)
     {
-        str = std::string(reinterpret_cast<const char *>(in), s); 
+        str = std::string(reinterpret_cast<const char *>(in), s);
     }
 
     inline void decode(void const *in, char *&p, size_t s)
@@ -89,19 +89,19 @@ namespace more {
     //
 
     template <typename Tp>
-    inline 
+    inline
     size_t size_of(Tp)
     {
         return sizeof(Tp);
     }
 
-    inline 
+    inline
     size_t size_of(std::string const &s)
     {
         return s.size();
     }
 
-    inline 
+    inline
     size_t size_of(const char *s)
     {
         return std::strlen(s);
@@ -184,19 +184,19 @@ namespace more {
         void *
         get_ptr() const
         {
-            return reinterpret_cast<void *>(ptr_);    
+            return reinterpret_cast<void *>(ptr_);
         }
 
         // bytes: consumed since begin
         //
 
-        size_t 
+        size_t
         bytes() const
         {
             return ptr_ - base_;
         }
 
-        // remaining: bytes 
+        // remaining: bytes
         //
 
         size_t
@@ -217,7 +217,7 @@ namespace more {
         // skip: bytes
         //
 
-        void 
+        void
         skip(size_t n)
         {
             push_(n);
@@ -243,7 +243,7 @@ namespace more {
         intptr_t push_(size_t n)
         {
             auto p = ptr_;
-            if ((p + n) > (base_ + size_)) 
+            if ((p + n) > (base_ + size_))
                 throw std::runtime_error("binary: push overflow");
             ptr_ += n;
             return p;
@@ -252,7 +252,7 @@ namespace more {
         intptr_t pop_(size_t n)
         {
             auto p = ptr_;
-            if (intptr_t(ptr_ - n) < base_ ) 
+            if (intptr_t(ptr_ - n) < base_ )
                 throw std::runtime_error("binary: pop underflow");
             ptr_ -= n;
             return p;

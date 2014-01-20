@@ -9,7 +9,7 @@
  */
 
 #ifndef _BUFFER_HPP_
-#define _BUFFER_HPP_ 
+#define _BUFFER_HPP_
 
 #include <vector>
 #include <array>
@@ -21,7 +21,7 @@
 // A buffer class, inspiered to that of boost
 //
 
-namespace more { 
+namespace more {
 
     struct const_buffer;
 
@@ -44,7 +44,7 @@ namespace more {
         : m_addr(reinterpret_cast<char *>(addr))
         , m_size(numb)
         {}
-        
+
         mutable_buffer(const mutable_buffer &other)
         : m_addr(other.m_addr)
         , m_size(other.m_size)
@@ -59,7 +59,7 @@ namespace more {
 
         // constructors from siblings...
         //
-                
+
         template <typename Alloc>
         mutable_buffer(std::vector<char, Alloc> &vec)
         : m_addr(&vec.front())
@@ -119,12 +119,12 @@ namespace more {
 
     private:
         char     *m_addr;
-        size_t    m_size; 
+        size_t    m_size;
     };
 
     ///////////////////////////////////////////////////////
     // const_buffer...
-    
+
     struct const_buffer
     {
         const_buffer() = default;
@@ -139,7 +139,7 @@ namespace more {
         : m_addr(reinterpret_cast<const char *>(addr))
         , m_size(numb)
         {}
-        
+
         const_buffer(const const_buffer &other)
         : m_addr(other.m_addr)
         , m_size(other.m_size)
@@ -151,8 +151,8 @@ namespace more {
             m_size  = other.m_size;
             return *this;
         }
-        
-        
+
+
         const_buffer(mutable_buffer const &other)
         : m_addr(other.addr())
         , m_size(other.size())
@@ -160,7 +160,7 @@ namespace more {
 
         // constructors from siblings...
         //
-        
+
         template <typename Alloc>
         const_buffer(std::vector<char, Alloc> const &v)
         : m_addr(&v.front())
@@ -209,7 +209,7 @@ namespace more {
             memcpy(ptr, m_addr, m_size);
             return std::make_pair(std::unique_ptr<const char[]>(const_cast<const char *>(ptr)), m_size);
         }
-        
+
         std::pair<std::shared_ptr<const char>, size_t>
         clone_shared() const
         {
@@ -220,7 +220,7 @@ namespace more {
 
     private:
         const char *m_addr;
-        size_t      m_size; 
+        size_t      m_size;
     };
 
 

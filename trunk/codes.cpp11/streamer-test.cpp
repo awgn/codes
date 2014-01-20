@@ -15,10 +15,10 @@
 
 #include <iostream>
 
-int 
+int
 main(int, char *[])
 {
-    std::cout << "string                     : " << std::string("hello world") << std::endl; 
+    std::cout << "string                     : " << std::string("hello world") << std::endl;
     std::vector<int> v1;
 
     v1.push_back(0);

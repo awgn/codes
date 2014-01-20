@@ -4,12 +4,12 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
 #ifndef _MORE_FACTORY_HPP_
-#define _MORE_FACTORY_HPP_ 
+#define _MORE_FACTORY_HPP_
 
 #include <type_traits>
 #include <tuple>
@@ -19,12 +19,12 @@
 
 #include <tuple_ext.hpp>
 
-namespace more { 
+namespace more {
 
-    template <typename B>  
+    template <typename B>
     struct factory_base_allocator
     {
-        virtual ~factory_base_allocator() 
+        virtual ~factory_base_allocator()
         {}
 
         template <typename ...Ts>
@@ -37,7 +37,7 @@ namespace more {
         virtual B * xalloc(void *) = 0;
     };
 
-    template <typename B, typename E, typename ... Arg>   // B must be a base class of E 
+    template <typename B, typename E, typename ... Arg>   // B must be a base class of E
     struct factory_allocator : public factory_base_allocator<B>
     {
         static_assert(std::is_base_of<B,E>::value, "base_of relationship broken");
@@ -62,7 +62,7 @@ namespace more {
     template <typename ... Tp>
     struct fac_args {};
 
-    template <typename B  /* Base */,  
+    template <typename B  /* Base */,
               typename E  /* element */
               >
     struct factory_register
@@ -78,7 +78,7 @@ namespace more {
         template <typename F, typename K, typename ... Ti>
         void pack_register(F &f, const K &key, fac_args<Ti...>)
         {
-            f.regist(key, std::unique_ptr<factory_base_allocator<B>>(new typename more::factory_allocator<B, E, Ti...>()));    
+            f.regist(key, std::unique_ptr<factory_base_allocator<B>>(new typename more::factory_allocator<B, E, Ti...>()));
         }
     };
 
@@ -86,27 +86,27 @@ namespace more {
     // factory class: K:key -> B:base_element
 
 
-    template <typename K, typename B> 
+    template <typename K, typename B>
     class factory
     {
     public:
 
         typedef std::map<K, std::unique_ptr<factory_base_allocator<B>>> map_type;
         typedef typename map_type::const_iterator const_iterator;
-        
+
         factory()  = default;
         ~factory() = default;
 
         bool
         regist(const K & key, std::unique_ptr<factory_base_allocator<B>> value)
-        { 
-            return m_map.insert(make_pair(key, std::move(value))).second; 
+        {
+            return m_map.insert(make_pair(key, std::move(value))).second;
         }
-        
+
         bool
         unregist(const K &key)
-        { 
-            return m_map.erase(key) == 1; 
+        {
+            return m_map.erase(key) == 1;
         }
 
         bool
@@ -137,7 +137,7 @@ namespace more {
         {
             return m_map.end();
         }
-        
+
         const_iterator
         cbegin() const
         {

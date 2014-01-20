@@ -1,6 +1,6 @@
-#pragma once 
+#pragma once
 
-#include <arpa/inet.h> 
+#include <arpa/inet.h>
 
 #include <type_traits>
 #include <iostream>
@@ -8,7 +8,7 @@
 #include <string>
 #include <endian.h>
 
-inline namespace more 
+inline namespace more
 {
     typedef int16_t   int16be_t;
     typedef int32_t   int32be_t;
@@ -28,55 +28,55 @@ inline namespace more
 
     namespace endian
     {
-        namespace details 
+        namespace details
         {
             template <typename T>
             inline T hton(T n, std::integral_constant<size_t, 1>)
-            { 
-                return n; 
+            {
+                return n;
             }
 
             template <typename T>
             inline T hton(T n, std::integral_constant<size_t, 2>)
-            { 
-                return static_cast<T>(htons(static_cast<uint16_t>(n))); 
+            {
+                return static_cast<T>(htons(static_cast<uint16_t>(n)));
             }
 
             template <typename T>
-            inline T hton(T n, std::integral_constant<size_t, 4>) 
-            { 
-                return static_cast<T>(htonl(static_cast<uint32_t>(n))); 
+            inline T hton(T n, std::integral_constant<size_t, 4>)
+            {
+                return static_cast<T>(htonl(static_cast<uint32_t>(n)));
             }
 
             template <typename T>
-            inline T hton(T n, std::integral_constant<size_t, 8>) 
-            { 
-                return static_cast<T>(htobe64(n)); 
+            inline T hton(T n, std::integral_constant<size_t, 8>)
+            {
+                return static_cast<T>(htobe64(n));
             }
 
 
             template <typename T>
             inline T ntoh(T n, std::integral_constant<size_t, 1>)
-            { 
-                return n; 
+            {
+                return n;
             }
 
             template <typename T>
             inline T ntoh(T n, std::integral_constant<size_t, 2>)
-            { 
-                return static_cast<T>(ntohs(static_cast<uint16_t>(n))); 
+            {
+                return static_cast<T>(ntohs(static_cast<uint16_t>(n)));
             }
 
             template <typename T>
-            inline T ntoh(T n, std::integral_constant<size_t, 4>) 
-            { 
-                return static_cast<T>(ntohl(static_cast<uint32_t>(n))); 
+            inline T ntoh(T n, std::integral_constant<size_t, 4>)
+            {
+                return static_cast<T>(ntohl(static_cast<uint32_t>(n)));
             }
 
             template <typename T>
-            inline T ntoh(T n, std::integral_constant<size_t, 8>) 
-            { 
-                return static_cast<T>(be64toh(n)); 
+            inline T ntoh(T n, std::integral_constant<size_t, 8>)
+            {
+                return static_cast<T>(be64toh(n));
             }
 
         } // namespace details

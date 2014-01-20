@@ -8,9 +8,9 @@
  * ----------------------------------------------------------------------------
 */
 
-#pragma once 
+#pragma once
 
-#include <arpa/inet.h> 
+#include <arpa/inet.h>
 
 #include <string>
 #include <cstring>
@@ -23,23 +23,23 @@
 inline namespace inline_more
 {
     ///////////////////////////////////////
-    // ipv4_t 
+    // ipv4_t
 
     struct ipv4_t
     {
-        uint32be_t value;    
+        uint32be_t value;
 
         explicit operator bool() const
         {
             return static_cast<bool>(value);
         }
 
-        bool 
+        bool
         operator==(const ipv4_t &other) const
         {
             return value == other.value;
         }
-        bool 
+        bool
         operator!=(const ipv4_t &other) const
         {
             return !(value == other.value);
@@ -53,7 +53,7 @@ inline namespace inline_more
         {
             return value > other.value;
         }
-        
+
         bool operator<=(const ipv4_t &other) const
         {
             return value <= other.value;
@@ -102,7 +102,7 @@ inline namespace inline_more
     }
 
     ///////////////////////////////////////
-    // ipv6_t 
+    // ipv6_t
 
     struct ipv6_t
     {
@@ -114,13 +114,13 @@ inline namespace inline_more
             return addr[0] || addr[1];
         }
 
-        bool 
+        bool
         operator==(const ipv6_t &other) const
         {
             return memcmp(value, other.value, 16) == 0;
         }
 
-        bool 
+        bool
         operator!=(const ipv6_t &other) const
         {
             return !(value == other.value);
@@ -157,7 +157,7 @@ inline namespace inline_more
             for(int i = 0; i < 16; ++i)
             {
                 instance.value[i] = ptr[i];
-            }    
+            }
         }
 
         in.flags(f);

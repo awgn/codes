@@ -16,7 +16,7 @@
 struct hello
 {
     hello(int x)
-    : method(this, &hello::__method), value(x) 
+    : method(this, &hello::__method), value(x)
     {}
 
     more::slot<int(int)> method;
@@ -25,7 +25,7 @@ struct hello
         std::cout << "object:" << value << " arg:" << n << std::endl;
         return n+1;
     }
-    
+
     int value;
 };
 
@@ -50,4 +50,4 @@ main(int, char *[])
 
     return 0;
 }
- 
+

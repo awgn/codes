@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#pragma once 
+#pragma once
 
 #include <utility>
 
@@ -21,10 +21,10 @@ struct static_if
     {
         return F()(std::forward<Ts>(args)...), *this;
     }
-    
+
     template <typename F, typename ...Ts>
-    static_if<V> & 
-    else_(Ts&&...) 
+    static_if<V> &
+    else_(Ts&&...)
     {
         return *this;
     }
@@ -36,14 +36,14 @@ struct static_if<false>
 {
     template <typename F, typename ...Ts>
     static_if<false> &
-    then_(Ts&&...) 
+    then_(Ts&&...)
     {
         return *this;
     }
-    
+
     template <typename F, typename ...Ts>
     static_if<false> &
-    else_(Ts&&... args) 
+    else_(Ts&&... args)
     {
         return F()(std::forward<Ts>(args)...), *this;
     }

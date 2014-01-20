@@ -7,11 +7,11 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  *
- * note: compile with -D_GLIBCXX_USE_NANOSLEEP -D_GLIBCXX_USE_SCHED_YIELD 
+ * note: compile with -D_GLIBCXX_USE_NANOSLEEP -D_GLIBCXX_USE_SCHED_YIELD
  */
 
 #ifndef _SPINLOCK_HPP_
-#define _SPINLOCK_HPP_ 
+#define _SPINLOCK_HPP_
 
 #include <atomic>
 
@@ -24,13 +24,13 @@
 // http://lwn.net/Articles/267968/
 //
 
-namespace more { 
+namespace more {
 
     namespace policy {
 
         ////// spinlock policies
 
-        struct lock_yield 
+        struct lock_yield
         {
             enum { threshold = 0 };
             static void wait(int,int,int)
@@ -40,7 +40,7 @@ namespace more {
         };
 
         template <int N>
-        struct lock_usleep 
+        struct lock_usleep
         {
             enum { threshold = 0 };
             static void wait(int,int,int)
@@ -49,7 +49,7 @@ namespace more {
             }
         };
 
-        struct lock_aggressive 
+        struct lock_aggressive
         {
             enum { threshold = 0 };
             static void wait(int,int,int)
@@ -57,7 +57,7 @@ namespace more {
         };
 
         template <int N = 1024>
-        struct lock_backoff 
+        struct lock_backoff
         {
             enum { threshold = N };
             static void wait(int n, int& t, int)
@@ -71,7 +71,7 @@ namespace more {
         };
 
         template <int N = 1024>
-        struct lock_smart 
+        struct lock_smart
         {
             enum { threshold = N };
             static void wait(int n, int &t, int d)
@@ -89,7 +89,7 @@ namespace more {
     ///////////////////////////  spinlock...
 
     template <typename Policy>
-    struct spinlock 
+    struct spinlock
     {
         spinlock()
         : m_value(0)
@@ -99,11 +99,11 @@ namespace more {
         spinlock& operator=(const spinlock &) = delete;
 
         void lock()
-        {   
+        {
             int t = Policy::threshold;
             unsigned int v = 0;
             for(int n=0; m_value.compare_exchange_strong(v, 1) == false; ++n)
-            { 
+            {
                 v = 0;
                 Policy::wait(n,t,0);
             }
@@ -117,7 +117,7 @@ namespace more {
     private:
         std::atomic_uint m_value;
     };
- 
+
     typedef spinlock<policy::lock_yield>        spinlock_yield;
     typedef spinlock<policy::lock_aggressive>   spinlock_aggressive;
     typedef spinlock<policy::lock_backoff<>>    spinlock_backoff;
@@ -126,21 +126,21 @@ namespace more {
     ///////////////////////////  ticket_spinlock...
 
     template <typename Policy>
-    struct ticket_spinlock 
+    struct ticket_spinlock
     {
         ticket_spinlock()
         : m_ticket(0), m_value(0)
         {}
-        
+
         ticket_spinlock(const ticket_spinlock &) = delete;
         ticket_spinlock& operator=(const ticket_spinlock &) = delete;
 
         void lock()
-        {             
+        {
             const unsigned int my_ticket = m_ticket++;
             int t = Policy::threshold;
-            for(int n = 1, d = 0;; n++) 
-            { 
+            for(int n = 1, d = 0;; n++)
+            {
                 d = static_cast<int>(my_ticket) - static_cast<int>(m_value.load());
                 if (d == 0)
                     break;
@@ -150,26 +150,26 @@ namespace more {
 
         void unlock()
         {
-           ++m_value; 
+           ++m_value;
         }
 
     private:
-        std::atomic_uint m_ticket;        
-        std::atomic_uint m_value;        
+        std::atomic_uint m_ticket;
+        std::atomic_uint m_value;
     };
 
     typedef ticket_spinlock<policy::lock_yield>        ticket_spinlock_yield;
     typedef ticket_spinlock<policy::lock_aggressive>   ticket_spinlock_aggressive;
     typedef ticket_spinlock<policy::lock_backoff<>>    ticket_spinlock_backoff;
     typedef ticket_spinlock<policy::lock_smart<>>      ticket_spinlock_smart;
- 
+
     ///////////////////////////  spinlock_open_recursive...
 
     template <typename Policy>
     class spinlock_open_recursive
     {
     public:
-        
+
         spinlock_open_recursive()
         : m_lock(),
           m_owner()
@@ -194,7 +194,7 @@ namespace more {
         }
 
     private:
-        spinlock<Policy> m_lock; 
+        spinlock<Policy> m_lock;
         std::thread::id m_owner;
     };
 }

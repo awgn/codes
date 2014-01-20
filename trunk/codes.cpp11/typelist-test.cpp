@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -42,7 +42,7 @@ Context(more_typelist_test)
     }
 
     typedef append<list2, short>::type  list3;
-    
+
     Test(append)
     {
         Assert( static_cast<int>(length<list3>::value), is_equal_to(3) );
@@ -53,7 +53,7 @@ Context(more_typelist_test)
     {
         Assert( static_cast<int>(length<list4>::value), is_equal_to(4) );
     }
-    
+
     Test(index_of)
     {
         Assert( static_cast<int>(indexof<list0, int>::value) , is_equal_to(-1) );
@@ -74,7 +74,7 @@ Context(more_typelist_test)
     }
 
     Test(output)
-    { 
+    {
         std::cout << "{*} at...\n";
         std::cout << "    " << 0 << ":" << demangle(typeid(at<list3,0>::type).name()) << std::endl;
         std::cout << "    " << 1 << ":" << demangle(typeid(at<list3,1>::type).name()) << std::endl;
@@ -89,7 +89,7 @@ Context(more_typelist_test)
         std::cout << "    " << 0 << ":" << demangle(typeid(at<list3_,0>::type).name()) << std::endl;
         std::cout << "    " << 1 << ":" << demangle(typeid(at<list3_,1>::type).name()) << std::endl;
         std::cout << "    " << 2 << ":" << demangle(typeid(at<list3_,2>::type).name()) << std::endl;
-    }    
+    }
 }
 
 int

@@ -31,12 +31,12 @@ Context(maybe_test)
     }
 
     Maybe<int> y(1);
-    
+
     Test(just)
     {
         Assert(y != Nothing);
         Assert(Nothing != y);
-        
+
         Assert(y != x);
         Assert(x != y);
 
@@ -51,7 +51,7 @@ Context(maybe_test)
     Test(explicit_conversion)
     {
         Assert(static_cast<int>(y) == 1);  // only explicit conversion..
-    }    
+    }
 
     Test(maybe_assign)
     {
@@ -62,11 +62,11 @@ Context(maybe_test)
     }
 
     Maybe<int> w(Nothing);
-    
+
     Test(copy_constructor)
     {
         Maybe<int> z(x);
-        
+
         Assert( x == z );
         Assert( z == x );
 
@@ -76,7 +76,7 @@ Context(maybe_test)
 
     // Assert(!q);  deleted
     // Assert(q);   deleted
-    
+
     Maybe<int> q(Just(0));
 
     Test(copy_constructor_extra)

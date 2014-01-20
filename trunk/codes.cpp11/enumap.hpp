@@ -4,12 +4,12 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
+
 #ifndef _MORE_ENUMAP_HPP_
-#define _MORE_ENUMAP_HPP_ 
+#define _MORE_ENUMAP_HPP_
 
 #include <iostream>
 #include <map>
@@ -33,14 +33,14 @@
     void _set(more::enumap_tag<__COUNTER__>) \
     { direct[ #s ] = v; reverse[v ] = #s; }
 
-namespace more 
+namespace more
 {
     template <int n>
     struct enumap_tag {};
 
 
-    template <typename Q> 
-    struct enumap 
+    template <typename Q>
+    struct enumap
     {
         typedef std::map<std::string,int> direct_map;
         typedef std::map<int,std::string> reverse_map;
@@ -49,33 +49,33 @@ namespace more
         //                    linker from removing unused enumap objects
 
         static const Q & instance()
-        { static const Q _ref_; 
+        { static const Q _ref_;
             return _ref_; }
 
         static bool has(const std::string &a)
-        { static const Q & r __attribute__((used)) = instance(); 
+        { static const Q & r __attribute__((used)) = instance();
             return direct.find(a) != direct.end(); }
 
         static bool has(const int a)
-        { static const Q & r __attribute__((used)) = instance(); 
+        { static const Q & r __attribute__((used)) = instance();
             return reverse.find(a) != reverse.end(); }
 
         static int eval(const std::string &a)
-        { static const Q & r __attribute__((used)) = instance(); 
+        { static const Q & r __attribute__((used)) = instance();
             auto it = direct.find(a);
             if (it == direct.end()) {
                 std::clog << __PRETTY_FUNCTION__  << ": unknown value (" << a << ")" << std::endl;
-                return int(); 
+                return int();
             }
             return it->second; }
 
-        static std::string 
-        eval(const int a) 
-        { static const Q & r __attribute__((used)) = instance(); 
+        static std::string
+        eval(const int a)
+        { static const Q & r __attribute__((used)) = instance();
             auto it = reverse.find(a);
             if (it == reverse.end()) {
                 std::clog << __PRETTY_FUNCTION__  << ": unknown value [" << a << "]" << std::endl;
-                return std::string(); 
+                return std::string();
             }
             return it->second; }
 
@@ -83,7 +83,7 @@ namespace more
         static const char * get()
         { return Q::_get(more::enumap_tag<K>()); }
 
-            
+
         static direct_map  direct;
         static reverse_map reverse;
     };
@@ -99,7 +99,7 @@ namespace more
     {
         template <typename T>
         static int init(T *that)
-        { that->_set(enumap_tag<a>()); 
+        { that->_set(enumap_tag<a>());
             return enumap_line<a+1,b>::init(that); }
     };
     template <int n>

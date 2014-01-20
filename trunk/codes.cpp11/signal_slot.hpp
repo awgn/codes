@@ -9,7 +9,7 @@
  */
 
 #ifndef _SIGNAL_SLOT_HPP_
-#define _SIGNAL_SLOT_HPP_ 
+#define _SIGNAL_SLOT_HPP_
 
 #include <functional>
 #include <algorithm>
@@ -17,7 +17,7 @@
 
 using namespace std::placeholders;
 
-namespace more { 
+namespace more {
 
     template <int N> struct bind_all;
     template <>
@@ -27,7 +27,7 @@ namespace more {
         static auto
         to(Fn c, T  * that) -> decltype(std::bind(c, that))
         {
-           return std::bind(c, that); 
+           return std::bind(c, that);
         }
     };
     template <>
@@ -37,7 +37,7 @@ namespace more {
         static auto
         to(Fn c, T  * that) -> decltype(std::bind(c, that, _1))
         {
-           return std::bind(c, that, _1); 
+           return std::bind(c, that, _1);
         }
     };
     template <>
@@ -47,7 +47,7 @@ namespace more {
         static auto
         to(Fn c, T  * that) -> decltype(std::bind(c, that, _1, _2))
         {
-           return std::bind(c, that, _1, _2); 
+           return std::bind(c, that, _1, _2);
         }
     };
     template <>
@@ -57,7 +57,7 @@ namespace more {
         static auto
         to(Fn c, T  * that) -> decltype(std::bind(c, that, _1, _2, _3))
         {
-           return std::bind(c, that, _1, _2, _3); 
+           return std::bind(c, that, _1, _2, _3);
         }
     };
     template <>
@@ -67,7 +67,7 @@ namespace more {
         static auto
         to(Fn c, T  * that) -> decltype(std::bind(c, that, _1, _2, _3, _4))
         {
-           return std::bind(c, that, _1, _2, _3, _4); 
+           return std::bind(c, that, _1, _2, _3, _4);
         }
     };
     template <>
@@ -77,7 +77,7 @@ namespace more {
         static auto
         to(Fn c, T  * that) -> decltype(std::bind(c, that, _1, _2, _3, _4, _5))
         {
-           return std::bind(c, that, _1, _2, _3, _4, _5); 
+           return std::bind(c, that, _1, _2, _3, _4, _5);
         }
     };
 
@@ -114,7 +114,7 @@ namespace more {
         {
             m_slots.push_back(&_slot);
         }
-        
+
         void disconnect(slot<R(Ti...)> &_slot)
         {
             m_slots.erase(std::remove(m_slots.begin(), m_slots.end(), &_slot), m_slots.end());

@@ -7,7 +7,7 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
+
 #include "binary.hpp"
 
 #include <iostream>
@@ -19,16 +19,16 @@ namespace my
     {
         char c;
     };
-    
+
     inline void encode(test n, void *out)
     {
         auto p = reinterpret_cast<test *>(out);
-           * p = n; 
+           * p = n;
     }
     inline void decode(const void *in, test &n)
     {
         auto p = reinterpret_cast<test const *>(in);
-        n = *p; 
+        n = *p;
     }
     size_t size_of(test)
     {
@@ -58,7 +58,7 @@ main(int, char *[])
 
     std::unique_ptr<char> p{ bin.get<char *>(5) };
     std::cout << p.get() << std::endl;
-    
+
     std::cout << bin.get<my::test>().c << std::endl;
 
     return 0;

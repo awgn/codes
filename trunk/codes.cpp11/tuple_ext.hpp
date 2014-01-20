@@ -9,7 +9,7 @@
  */
 
 #ifndef _TUPLE_EXT_HPP_
-#define _TUPLE_EXT_HPP_ 
+#define _TUPLE_EXT_HPP_
 
 #include <cstddef>
 #include <tuple>
@@ -17,17 +17,17 @@
 
 #include <iostream>
 
-namespace more { 
- 
+namespace more {
+
     /// Inspired by litb:
     /// http://stackoverflow.com/questions/7858817/unpacking-a-tuple-to-call-a-matching-function-pointer
     ///
-    
+
     /// both gens forward and backward, in Haskell:
     ///
     /// gen_forward 0 xs = xs
     /// gen_forward n xs = gen_forward (n-1) $ (n-1):xs
-    /// 
+    ///
     /// gen_backward x xs = gen_backward' x 0 xs
     ///         where gen_backward' n m xs
     ///                 | n == m = xs
@@ -35,7 +35,7 @@ namespace more {
 
     //////////////////////////////////////////////////////////////
     // numeric sequence utility
-    // 
+    //
 
     template <int ...>
     struct seq { };
@@ -58,8 +58,8 @@ namespace more {
 
     template <int N, int M, int ...Xs>
     struct __gen_backward : __gen_backward<N, M+1, M, Xs...> {};
-    
-    template <int N, int ...Xs> 
+
+    template <int N, int ...Xs>
     struct __gen_backward<N,N,Xs...>
     {
         typedef seq<Xs...> type;
@@ -69,7 +69,7 @@ namespace more {
     struct gen_backward : __gen_backward<N, 0, Xs...> {};
 
     //////////////////////////////////////////////////////////////
-    /// tuple_for_each 
+    /// tuple_for_each
 
     template <typename TupleT, typename Fun>
     void call_for_each(TupleT &&, Fun, seq<>)
@@ -79,20 +79,20 @@ namespace more {
     template <typename TupleT, typename Fun, int ...S>
     void call_for_each(TupleT &&tup, Fun fun, seq<S...>)
     {
-        // 8.5.4: Within the initializer-list of a braced-init-list, the initializer-clauses, 
+        // 8.5.4: Within the initializer-list of a braced-init-list, the initializer-clauses,
         // including any that result from pack expansions (14.5.3), are evaluated in the order in which they appear
         //
-        
+
         auto sink __attribute__((unused)) = { (fun(std::get<S>(tup)),0)... };
     }
 
     template <typename TupleT, typename Fun>
     void tuple_for_each(TupleT &&tup, Fun fun)
     {
-        call_for_each(std::forward<TupleT>(tup), fun, 
+        call_for_each(std::forward<TupleT>(tup), fun,
                       typename gen_forward<std::tuple_size<typename std::decay<TupleT>::type>::value
                       >::type());
-    }   
+    }
 
     //////////////////////////////////////////////////////////////
     /// tuple_for_each2
@@ -102,12 +102,12 @@ namespace more {
     {
         return a < b ? a : b;
     }
-    
+
     template <typename Tuple1, typename Tuple2, typename Fun>
     void call_for_each2(Tuple1 &&, Tuple2 &&, Fun, seq<>)
     {
     }
-    
+
     template <typename Tuple1, typename Tuple2, typename Fun, int ...S>
     void call_for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun, seq<S...>)
     {
@@ -118,16 +118,16 @@ namespace more {
     void tuple_for_each2(Tuple1 &&t1, Tuple2 &&t2, Fun fun)
     {
         call_for_each2(std::forward<Tuple1>(t1),
-                      std::forward<Tuple2>(t2), 
+                      std::forward<Tuple2>(t2),
                       fun, typename gen_forward<
                             min(std::tuple_size<typename std::decay<Tuple1>::type>::value,
-                                std::tuple_size<typename std::decay<Tuple2>::type>::value) 
+                                std::tuple_size<typename std::decay<Tuple2>::type>::value)
                       >::type());
-    }   
+    }
 
     //////////////////////////////////////////////////////////////
     /// tuple_map
-    
+
     template <typename Fun, typename TupleT, int ...S>
     auto call_map(Fun fun, TupleT &&tup, seq<S...>)
     -> decltype(std::make_tuple(fun(std::get<S>(tup))...))
@@ -137,16 +137,16 @@ namespace more {
 
     template <typename Fun, typename TupleT>
     auto tuple_map(Fun fun, TupleT &&tup)
-    -> decltype(call_map(fun, std::forward<TupleT>(tup),                                       
-                        typename gen_forward<                                                   
+    -> decltype(call_map(fun, std::forward<TupleT>(tup),
+                        typename gen_forward<
                           std::tuple_size<typename std::decay<TupleT>::type>::value
-                        >::type()))                                                             
-    {                                               
-        return call_map(fun, std::forward<TupleT>(tup), 
+                        >::type()))
+    {
+        return call_map(fun, std::forward<TupleT>(tup),
                       typename gen_forward<
                         std::tuple_size<typename std::decay<TupleT>::type>::value
                       >::type());
-    }   
+    }
 
     //////////////////////////////////////////////////////////////
     /// tuple_apply
@@ -160,16 +160,16 @@ namespace more {
 
     template <typename Fun, typename TupleT>
     auto tuple_apply(Fun fun, TupleT &&tup)
-        -> decltype(call_apply(fun, std::forward<TupleT>(tup), 
+        -> decltype(call_apply(fun, std::forward<TupleT>(tup),
                       typename gen_forward<
                         std::tuple_size<typename std::decay<TupleT>::type>::value
                       >::type()))
     {
-        return call_apply(fun, std::forward<TupleT>(tup), 
+        return call_apply(fun, std::forward<TupleT>(tup),
                       typename gen_forward<
                         std::tuple_size<typename std::decay<TupleT>::type>::value
                       >::type());
-    }   
+    }
 
 } // namespace more
 

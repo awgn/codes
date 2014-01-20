@@ -20,7 +20,7 @@
 
 using namespace more::gotopt;
 
-struct option opts[] = 
+struct option opts[] =
 {
     option("Section:"),
     option(+'l', "hello", 2, "this option accepts 2 integers"),
@@ -48,21 +48,21 @@ main(int argc, char *argv[])
         {
         case 'a': break;
         case 'b': break;
-        case 'l': 
+        case 'l':
             par.optarg<int>();
             par.optarg<int>();
-            std::cout << "--hello given!" << std::endl; 
+            std::cout << "--hello given!" << std::endl;
             break;
 
-        case 'w': 
+        case 'w':
             std::cout << "--world given!" << std::endl;
             break;
 
-        case 'h': 
+        case 'h':
             std::cout << more::gotopt::usage("Gotpot class test.\nUsage: a.out [OPTION]...", opts, "Done.");
             return 0;
         }
-    
+
     std::cout << "optind = " << par.optind() << std::endl;
 
     std::cout << "left: ";

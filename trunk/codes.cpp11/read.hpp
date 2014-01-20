@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#pragma once 
+#pragma once
 
 #include <string>
 #include <cstring>
@@ -41,12 +41,12 @@ inline namespace more_read {
     inline bool try_read(std::basic_istream<CharT,Traits>&in);
 
     template <typename T, typename CharT, typename Traits>
-    inline 
+    inline
     void fill(T &ret, std::basic_istream<CharT,Traits>&in);
-    
+
     namespace details
     {
-        // consume a specified char, return true or false 
+        // consume a specified char, return true or false
         //
 
         template <typename CharT, typename Traits>
@@ -54,11 +54,11 @@ inline namespace more_read {
         {
             decltype(c) _c;
 
-            if(!(in >> std::ws)) 
+            if(!(in >> std::ws))
                 return false;
 
             _c = in.peek();
-            if (!in) 
+            if (!in)
                 return false;
 
             if (c == _c) {
@@ -70,16 +70,16 @@ inline namespace more_read {
             return false;
         }
 
-        // consume a specified string, throw an exception if not matching 
+        // consume a specified string, throw an exception if not matching
         //
 
         template <typename CharT, typename Traits>
         void consume(const char *s, std::basic_istream<CharT, Traits> &in)
         {
-            std::string _s; 
-            if (!(in >> _s) || _s.compare(s) != 0) 
+            std::string _s;
+            if (!(in >> _s) || _s.compare(s) != 0)
                 throw std::runtime_error("read: " + _s + " (" + s  + ") parse error");
-        }                                                            
+        }
 
         template <typename Tp>
         struct decay
@@ -89,7 +89,7 @@ inline namespace more_read {
         template <typename T1, typename T2>
         struct decay<std::pair<T1,T2>>
         {
-            typedef std::pair<typename std::decay<T1>::type, 
+            typedef std::pair<typename std::decay<T1>::type,
                               typename std::decay<T2>::type> type;
         };
         template <typename ...Ts>
@@ -118,7 +118,7 @@ inline namespace more_read {
 
                 read_on<T,N-1>::apply(tupl, in);
             }
-        }; 
+        };
         template <typename T>
         struct read_on<T, 0>
         {
@@ -127,12 +127,12 @@ inline namespace more_read {
             void apply(T &, std::basic_istream<CharT, Traits> &)
             {}
         };
-        
+
         // enabled for std::vector, std::dequeue, std::list
-        // 
+        //
         template <typename C, typename V>
-        typename std::enable_if<!more::traits::has_key_type<C>::value && 
-                                !more::traits::has_container_type<C>::value, bool>::type 
+        typename std::enable_if<!more::traits::has_key_type<C>::value &&
+                                !more::traits::has_container_type<C>::value, bool>::type
         insert(C &cont, V &&value)
         {
             cont.push_back(std::forward<V>(value));
@@ -140,10 +140,10 @@ inline namespace more_read {
         }
 
         // enabled for std::stack, std::queue, std::priority_queue
-        // 
+        //
         template <typename C, typename V>
-        typename std::enable_if<!more::traits::has_key_type<C>::value && 
-                                more::traits::has_container_type<C>::value, bool>::type 
+        typename std::enable_if<!more::traits::has_key_type<C>::value &&
+                                more::traits::has_container_type<C>::value, bool>::type
         insert(C &cont, V &&value)
         {
             cont.push(std::forward<V>(value));
@@ -152,9 +152,9 @@ inline namespace more_read {
 
         // enabled for std::set, std::multiset, std::unordered_set,
         // std::unordered_multiset
-        // 
+        //
         template <typename C, typename V>
-        typename std::enable_if<more::traits::has_key_type<C>::value, bool>::type 
+        typename std::enable_if<more::traits::has_key_type<C>::value, bool>::type
         insert(C &cont, V && value)
         {
             return cont.insert(std::forward<V>(value)).second;
@@ -162,9 +162,9 @@ inline namespace more_read {
 
         // enabled for std::map, std::multimap, std::unordered_map,
         // std::unordered_multimap
-        // 
+        //
         template <typename C, typename T, typename V>
-        typename std::enable_if<more::traits::has_key_type<C>::value, bool>::type 
+        typename std::enable_if<more::traits::has_key_type<C>::value, bool>::type
         insert(C &cont, std::pair<T,V> && value)
         {
             return cont.insert(std::move(value)).second;
@@ -178,7 +178,7 @@ inline namespace more_read {
     //
 
     template <typename CharT, typename Traits>
-    void 
+    void
     read(bool &ret, std::basic_istream<CharT,Traits>&in)
     {
         in >> std::noboolalpha;
@@ -192,7 +192,7 @@ inline namespace more_read {
 
     // pointers:
     //
-    
+
     template <typename CharT, typename Traits>
     void
     read(const char * &ret, std::basic_istream<CharT,Traits>&in)
@@ -223,7 +223,7 @@ inline namespace more_read {
             delete ptr;
             throw std::runtime_error(details::error<Tp *>("parse error"));
         }
-        
+
         ret = ptr;
     }
 
@@ -233,9 +233,9 @@ inline namespace more_read {
     {
         auto ptr = std::make_shared<Tp>();
 
-        if (!(in >> *ptr)) 
+        if (!(in >> *ptr))
             throw std::runtime_error(details::error<Tp *>("parse error"));
-        
+
         ret = std::move(ptr);
     }
 
@@ -248,20 +248,20 @@ inline namespace more_read {
         if (!(in >> *ptr)) {
             throw std::runtime_error(details::error<Tp *>("parse error"));
         }
-        
+
         ret = std::move(ptr);
     }
 
     // pair<T1,T2>:
     //
-    
+
     template <typename T1, typename T2, typename CharT, typename Traits>
     void
     read(std::pair<T1,T2> &ret, std::basic_istream<CharT,Traits>&in)
     {
         if (details::consume('(', in)) {
 
-            T1 a = read<T1>(in); 
+            T1 a = read<T1>(in);
             T2 b = read<T2>(in);
 
             if (!details::consume(')', in))
@@ -271,7 +271,7 @@ inline namespace more_read {
         }
         else if (details::consume('[', in)) {
 
-            T1 a = read<T1>(in); details::consume("->", in); 
+            T1 a = read<T1>(in); details::consume("->", in);
             T2 b = read<T2>(in);
 
             if (!details::consume(']', in))
@@ -281,13 +281,13 @@ inline namespace more_read {
         }
         else {
 
-            T1 a = read<T1>(in); details::consume("->", in); 
+            T1 a = read<T1>(in); details::consume("->", in);
             T2 b = read<T2>(in);
 
             ret = std::make_pair(std::move(a), std::move(b));
         }
     }
-    
+
     // std::array<T,N>:
     //
 
@@ -309,13 +309,13 @@ inline namespace more_read {
 
     // std::chrono::duration<Rep, Period>:
     //
-    
+
     template <typename Rep, typename Period, typename CharT, typename Traits>
     void
     read(std::chrono::duration<Rep, Period> &ret, std::basic_istream<CharT,Traits>&in)
     {
         typedef std::chrono::duration<Rep, Period> Duration;
-        
+
         int64_t value; char c; std::string unit;
 
         if (!(in >> value >> c >> unit))
@@ -336,22 +336,22 @@ inline namespace more_read {
         else
             throw std::runtime_error(details::error<std::chrono::duration<Rep, Period>>("parse error"));
     }
-             
+
     // std::chrono::time_point<Clock, Duration>:
     //
-    
+
     template <typename Clock, typename Dur, typename CharT, typename Traits>
     void
     read(std::chrono::time_point<Clock, Dur>& ret, std::basic_istream<CharT,Traits>&in)
     {
         ret = std::chrono::time_point<Clock, Dur>( read<Dur>(in) );
     }
-    
+
     // std::tuple<Ts...>:
     //
 
     template <typename ...Ts, typename CharT, typename Traits>
-    void 
+    void
     read(std::tuple<Ts...> &ret, std::basic_istream<CharT,Traits>&in)
     {
         if (!details::consume('(', in))
@@ -390,7 +390,7 @@ inline namespace more_read {
         static more::variant<Ti...>
         run(std::basic_istream<CharT, Traits> &)
         {
-            throw std::runtime_error(details::error<more::variant<Ti...>>("parse error")); 
+            throw std::runtime_error(details::error<more::variant<Ti...>>("parse error"));
         }
     };
 
@@ -419,17 +419,17 @@ inline namespace more_read {
         enum class pstate { null, raw_string, escaped_char, quoted_string, escaped_char2 };
         auto state = pstate::null;
 
-        auto raw_char = [](traits_type::char_type c) -> bool 
+        auto raw_char = [](traits_type::char_type c) -> bool
         {
             return std::isalnum(c) || traits_type::eq(c, '_') || traits_type::eq(c, '-');
         };
 
-        bool stop = false, quoted = false; 
+        bool stop = false, quoted = false;
 
         while (!stop)
-        {     
+        {
             c = static_cast<traits_type::char_type>(in.peek());
-            
+
             if (c == traits_type::eof())
                 break;
 
@@ -439,7 +439,7 @@ inline namespace more_read {
                 {
                     if (c == '"')       { in.get(); state = pstate::quoted_string; break;}
                     if (raw_char(c))    { in.get(); state = pstate::raw_string; ret.push_back(c); break;}
-                    if (c == '\\')      { in.get(); state = pstate::escaped_char;  break;} 
+                    if (c == '\\')      { in.get(); state = pstate::escaped_char;  break;}
 
                     stop = true;
 
@@ -448,7 +448,7 @@ inline namespace more_read {
             case pstate::raw_string:
                 {
                     if (raw_char(c))    { in.get(); state = pstate::raw_string; ret.push_back(c); break; }
-                    if (c == '\\')      { in.get(); state = pstate::escaped_char; break; } 
+                    if (c == '\\')      { in.get(); state = pstate::escaped_char; break; }
 
                     stop = true;
 
@@ -463,9 +463,9 @@ inline namespace more_read {
             case pstate::quoted_string:
                 {
                     if (c == '"')       { in.get(); state = pstate::quoted_string; stop = true; quoted = true; break;}
-                    if (c == '\\')      { in.get(); state = pstate::escaped_char2; break;} 
+                    if (c == '\\')      { in.get(); state = pstate::escaped_char2; break;}
 
-                    in.get(); ret.push_back(c); 
+                    in.get(); ret.push_back(c);
 
                 } break;
 
@@ -483,10 +483,10 @@ inline namespace more_read {
             throw std::runtime_error(details::error<std::string>("parse error"));
 
     }
-    
+
     // container:
     //
-    
+
     template <typename Tp, typename CharT, typename Traits>
     typename std::enable_if<
         more::traits::is_container<Tp>::value>::type
@@ -500,10 +500,10 @@ inline namespace more_read {
             details::insert(ret, read<typename Tp::value_type>(in));
         }
     }
-    
+
     // generic types supporting extraction operator>>():
     //
-    
+
     template <typename Tp, typename CharT, typename Traits>
     typename std::enable_if<
         !more::traits::is_container<Tp>::value>::type
@@ -512,19 +512,19 @@ inline namespace more_read {
         if (!(in >> ret))
             throw std::runtime_error(details::error<int>("parse error"));
     }
-    
+
     //////////////////////////////////////////////////////////////////////////////////
     //
     // interfaces...
     //
 
     // try_read: work with file and string streams:
-    
+
     template <typename T, typename CharT, typename Traits>
     inline bool try_read(std::basic_istream<CharT,Traits>&in)
     {
         auto p = in.tellg();
-        try 
+        try
         {
             read<T>(in);
             in.clear();
@@ -543,7 +543,7 @@ inline namespace more_read {
 
 
     template <typename T, typename CharT, typename Traits>
-    inline 
+    inline
     void fill(T &ret, std::basic_istream<CharT,Traits>&in)
     {
         auto pos = in.tellg();
@@ -563,7 +563,7 @@ inline namespace more_read {
 
 
     template <typename T, typename CharT, typename Traits>
-    inline 
+    inline
     T read(std::basic_istream<CharT,Traits>&in)
     {
         typename details::decay<T>::type ret {};
@@ -573,7 +573,7 @@ inline namespace more_read {
 
 
     template <typename T>
-    std::pair<T, std::string> 
+    std::pair<T, std::string>
     read(std::string const &ref)
     {
         std::istringstream in(ref);
@@ -583,7 +583,7 @@ inline namespace more_read {
         auto count = static_cast<std::string::size_type>(in.rdbuf()->in_avail());
         if (count == static_cast<std::string::size_type>(-1))
             throw std::runtime_error("read: in_avail");
-        
+
         return std::make_pair(std::move(value), res.substr(res.size()-count, count));
     }
 

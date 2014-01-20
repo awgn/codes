@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -42,7 +42,7 @@ Context(enumap_class_test)
         Assert(static_cast<int>(table::hello), is_equal_to(0));
         Assert(static_cast<int>(table::world), is_equal_to(1));
     }
-    
+
     Test(eval_get_value)
     {
         Assert(table::get<0>(), is_equal_to(std::string("hello")));

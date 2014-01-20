@@ -9,23 +9,23 @@
  */
 
 #ifndef _LOGSTREAMBUF_HPP_
-#define _LOGSTREAMBUF_HPP_ 
+#define _LOGSTREAMBUF_HPP_
 
 #include <iostream>
 
-namespace more { 
+namespace more {
 
     class logstreambuf : public std::streambuf
     {
     public:
 
-        enum { EMERG, ALERT, CRIT, ERR, 
+        enum { EMERG, ALERT, CRIT, ERR,
                WARNING, NOTICE, INFO, DEBUG };
 
         friend std::ostream &priority(std::ostream &out, int n = EMERG)
         {
             logstreambuf * lb = dynamic_cast<logstreambuf *>(out.rdbuf());
-            if(lb) 
+            if(lb)
                 lb->priority(n);
             return out;
         }
@@ -33,7 +33,7 @@ namespace more {
         friend std::ostream &default_priority(std::ostream &out, int n = EMERG)
         {
             logstreambuf * lb = dynamic_cast<logstreambuf *>(out.rdbuf());
-            if(lb) 
+            if(lb)
                 lb->default_priority(n);
             return out;
         }
@@ -57,7 +57,7 @@ namespace more {
             if ( prio() <= m_loglevel) {
                 return m_out->sputn(s,n);
             }
-            return n; 
+            return n;
         }
 
         virtual int_type
@@ -67,17 +67,17 @@ namespace more {
             if (c == '\n')
                 m_priority = -1;
 
-            if ( p <= m_loglevel)  
+            if ( p <= m_loglevel)
                return m_out->sputc(static_cast<char_type>(c));
-             
+
             return c;
         }
 
         int sync()
         {
-            if (prio() <= m_loglevel) 
+            if (prio() <= m_loglevel)
                 return m_out->pubsync();
-            return 0; 
+            return 0;
         }
 
         void priority(int n)
@@ -86,9 +86,9 @@ namespace more {
         void default_priority(int n)
         { m_default_priority = n; }
 
-    private:        
-        
-        int prio() const 
+    private:
+
+        int prio() const
         { return m_priority != -1 ? m_priority : m_default_priority; }
 
         int m_priority;

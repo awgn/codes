@@ -9,7 +9,7 @@
  */
 
 #ifndef _CURRYING_HPP_
-#define _CURRYING_HPP_ 
+#define _CURRYING_HPP_
 
 #include <utility>
 #include <type_traits>
@@ -18,7 +18,7 @@ namespace more {
 
     template <typename C, typename T>
     struct _curry_type
-    {                            
+    {
         template <typename Ti>
         _curry_type(C call, Ti && a)
         : call_(std::move(call))
@@ -32,15 +32,15 @@ namespace more {
         ~_curry_type() = default;
 
         template <typename ... Ti>
-        auto operator()(Ti && ... as) 
+        auto operator()(Ti && ... as)
         -> decltype(std::declval<C>()
-                    (std::forward<T>(std::declval<T>()), 
+                    (std::forward<T>(std::declval<T>()),
                      std::forward<Ti>(std::declval<Ti>())...))
         {
             return call_(std::forward<T>(a_), std::forward<Ti>(as)...);
         }
 
-    private:              
+    private:
 
         C call_;
         T a_;
@@ -49,19 +49,19 @@ namespace more {
 
     /// curry
     ///
-    
-    template <typename C, typename T> 
+
+    template <typename C, typename T>
     _curry_type<C, T>
     curry(C call, T && a)
     {
         return _curry_type<C, T>(std::move(call), std::forward<T>(a));
     }
 
-    template <typename C, typename T, typename ... Ts> 
-    auto curry(C call, T && a, Ts && ... as) 
-    -> decltype(curry(_curry_type<C, T>(std::move(call), std::forward<T>(a)), std::forward<Ts>(as)...)) 
+    template <typename C, typename T, typename ... Ts>
+    auto curry(C call, T && a, Ts && ... as)
+    -> decltype(curry(_curry_type<C, T>(std::move(call), std::forward<T>(a)), std::forward<Ts>(as)...))
     {
-        return curry(curry(std::move(call), std::forward<T>(a)), std::forward<Ts>(as)...); 
+        return curry(curry(std::move(call), std::forward<T>(a)), std::forward<Ts>(as)...);
     }
 
     /// closure
@@ -73,18 +73,18 @@ namespace more {
         typedef typename std::add_const<typename std::remove_reference<T>::type>::type type;
     };
 
-    template <typename C, typename T> 
+    template <typename C, typename T>
     _curry_type<C, typename closure_type<T>::type>
     closure(C call, T && a)
     {
         return _curry_type<C, typename closure_type<T>::type>(call, std::forward<T>(a));
     }
 
-    template <typename C, typename T, typename ... Ts> 
-    auto closure(C call, T && a, Ts && ... as) 
-    -> decltype(closure(_curry_type<C, typename closure_type<T>::type>(call, std::forward<T>(a)), std::forward<Ts>(as)...)) 
+    template <typename C, typename T, typename ... Ts>
+    auto closure(C call, T && a, Ts && ... as)
+    -> decltype(closure(_curry_type<C, typename closure_type<T>::type>(call, std::forward<T>(a)), std::forward<Ts>(as)...))
     {
-        return closure(closure(call, std::forward<T>(a)), std::forward<Ts>(as)...); 
+        return closure(closure(call, std::forward<T>(a)), std::forward<Ts>(as)...);
     }
 
 } // namespace more

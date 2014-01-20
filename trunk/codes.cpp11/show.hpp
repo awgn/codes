@@ -33,7 +33,7 @@
 
 
 
-#define MAKE_SHOW_PAIR(a, b) std::make_pair(std::string(#b), &UNPACK(a)::b)            
+#define MAKE_SHOW_PAIR(a, b) std::make_pair(std::string(#b), &UNPACK(a)::b)
 
 #define MAKE_GENERIC_SHOW(type, ...) make_generic_show<UNPACK(type)>(FOR2_EACH_COMMA(MAKE_SHOW_PAIR, type, __VA_ARGS__))
 
@@ -49,9 +49,9 @@ inline namespace more_show {
 
     // manipulators
     //
-    
+
     template <typename T>
-    struct _hex 
+    struct _hex
     {
         T value;
     };
@@ -63,7 +63,7 @@ inline namespace more_show {
     }
 
     template <typename T>
-    struct _oct 
+    struct _oct
     {
         T value;
     };
@@ -75,7 +75,7 @@ inline namespace more_show {
     }
 
     template <typename T>
-    struct _bin 
+    struct _bin
     {
         T value;
     };
@@ -89,30 +89,30 @@ inline namespace more_show {
     // forward declarations:
     //
 
-    inline std::string 
+    inline std::string
     show(char c);
-    
-    inline std::string 
+
+    inline std::string
     show(bool);
 
-    inline std::string 
+    inline std::string
     show(const char *v);
 
-    inline std::string 
+    inline std::string
     show(std::string const &s);
 
     // numeric like...
-    
-    template <typename T> 
-    inline typename std::enable_if<std::is_arithmetic<T>::value || (std::is_enum<T>::value && std::is_convertible<T,int>::value), std::string>::type 
+
+    template <typename T>
+    inline typename std::enable_if<std::is_arithmetic<T>::value || (std::is_enum<T>::value && std::is_convertible<T,int>::value), std::string>::type
     show(T const &value);
 
     // manipulators...
-   
+
     template <typename T>
     inline typename std::enable_if<std::is_integral<T>::value, std::string>::type
     show(_hex<T> const &value);
-    
+
     template <typename T>
     inline typename std::enable_if<std::is_integral<T>::value, std::string>::type
     show(_oct<T> const &value);
@@ -122,39 +122,39 @@ inline namespace more_show {
     show(_bin<T> const &value);
 
     // pointers...
-   
+
     template <typename T>
-    inline std::string 
+    inline std::string
     show(T const *p);
 
     template <typename T>
-    inline std::string 
+    inline std::string
     show(std::unique_ptr<T> const &);
-    
+
     template <typename T>
-    inline std::string 
+    inline std::string
     show(std::shared_ptr<T> const &);
 
     // pair<>
-    
+
     template <typename U, typename V>
     inline std::string
     show(std::pair<U,V> const &r);
 
     // array...
-    
+
     template <typename T, std::size_t N>
     inline std::string
     show(std::array<T,N> const &a);
 
     // tuple<>
-    
+
     template <typename ...Ts>
     inline std::string
     show(std::tuple<Ts...> const &t);
 
     // chrono types
-   
+
     template <typename Rep, typename Period>
     inline std::string
     show(std::chrono::duration<Rep, Period> const &dur);
@@ -164,7 +164,7 @@ inline namespace more_show {
     show(std::chrono::time_point<Clock, Dur> const &r);
 
     // initializer list
-    
+
     template <typename T>
     inline std::string
     show(std::initializer_list<T> const &);
@@ -174,24 +174,24 @@ inline namespace more_show {
     template <typename Tp, Tp Value>
     inline std::string
     show(std::integral_constant<Tp,Value>);
-    
+
     template <bool Value>
     inline std::string
     show(std::integral_constant<bool,Value>);
 
     // containers
-   
+
     template <typename T>
     inline typename std::enable_if<
     (!std::is_pointer<T>::value) && (
         (more::traits::is_container<T>::value && !std::is_same<typename std::string,T>::value) ||
         (std::rank<T>::value > 0 && !std::is_same<char, typename std::remove_cv<typename std::remove_all_extents<T>::type>::type>::value)),
-    std::string>::type 
+    std::string>::type
     show(const T &v);
 
     namespace details
     {
-        // show_on policy 
+        // show_on policy
         //
 
         template <typename T, int N>
@@ -203,7 +203,7 @@ inline namespace more_show {
                 out += show(std::get< std::tuple_size<T>::value - N>(tupl)) + ' ';
                 show_on<T,N-1>::apply(out,tupl);
             }
-        }; 
+        };
         template <typename T>
         struct show_on<T, 0>
         {
@@ -214,7 +214,7 @@ inline namespace more_show {
 
         // generic_show_on...
         //
-        
+
         template <typename T, typename Tp, int N>
         struct generic_show_on
         {
@@ -224,11 +224,11 @@ inline namespace more_show {
                 auto p = std::get< std::tuple_size<T>::value - N>(tupl);
 
                 out += p.first + " = " +  show (std::bind(p.second, value)());
-                if (N > 1) 
+                if (N > 1)
                     out += ", ";
                 generic_show_on<T, Tp, N-1>::apply(out,tupl, value);
             }
-        }; 
+        };
         template <typename T, typename Tp>
         struct generic_show_on<T, Tp, 0>
         {
@@ -248,7 +248,7 @@ inline namespace more_show {
 
     } // namespace details
 
-    
+
     ///////////////////////////////////////
     // show with additional header/type:
     //
@@ -259,28 +259,28 @@ inline namespace more_show {
     {
         auto hdr = n == nullptr ? "" :
                    n[0] == '\0' ? demangle(typeid(Tp).name()) : n;
-        
+
         return std::move(hdr) + ' ' + show(std::forward<Tp>(type));
     }
 
     ///////////////////////////////////////
-    // show for char 
+    // show for char
 
     inline std::string
     show(char c)
     {
         return std::string(1, c);
     }
-    
+
     ///////////////////////////////////////
-    // show for bool 
+    // show for bool
 
     inline std::string
     show(bool v)
     {
         return v ? "true" : "false";
     }
-    
+
     ///////////////////////////////////////
     // show for const char *
 
@@ -328,7 +328,7 @@ inline namespace more_show {
             out << value.value;
 
         return out.str();
-    }                                               
+    }
 
     /////////////////////////////////////////////
     // show for arithmetic types as oct values...
@@ -344,7 +344,7 @@ inline namespace more_show {
             out << static_cast<uint32_t>(value.value);
         else
             out << value.value;
-        
+
         return out.str();
     }
 
@@ -357,7 +357,7 @@ inline namespace more_show {
     {
         std::ostringstream out;
 
-        std::function<void(T)> binary = [&] (T value) 
+        std::function<void(T)> binary = [&] (T value)
         {
             T rem;
 
@@ -365,9 +365,9 @@ inline namespace more_show {
                 out << value;
                 return;
             }
-            
-            rem = value % 2; 
-            binary(value >> 1);    
+
+            rem = value % 2;
+            binary(value >> 1);
 
             out << rem;
         };
@@ -379,7 +379,7 @@ inline namespace more_show {
     ///////////////////////////////////////
     // show for pointers *
 
-    template <typename T> 
+    template <typename T>
     inline std::string
     show(T const *p)
     {
@@ -387,11 +387,11 @@ inline namespace more_show {
         out << static_cast<const void *>(p);
         return out.str();
     }
-    
+
     ///////////////////////////////////////
     // show for unique_ptr
 
-    template <typename T> 
+    template <typename T>
     inline std::string
     show(std::unique_ptr<T> const &p)
     {
@@ -403,7 +403,7 @@ inline namespace more_show {
     ///////////////////////////////////////
     // show for shared_ptr
 
-    template <typename T> 
+    template <typename T>
     inline std::string
     show(std::shared_ptr<T> const &p)
     {
@@ -435,7 +435,7 @@ inline namespace more_show {
     }
 
     ////////////////////////////////////////////////////////
-    // show for tuple... 
+    // show for tuple...
 
     template <typename ...Ts>
     inline std::string
@@ -444,10 +444,10 @@ inline namespace more_show {
         std::string out("( ");
         details::show_on<std::tuple<Ts...>, sizeof...(Ts)>::apply(out,t);
         return std::move(out) + ')';
-    }                                              
+    }
 
     ////////////////////////////////////////////////////////
-    // show for chrono types... 
+    // show for chrono types...
 
     template <typename Rep, typename Period>
     inline std::string
@@ -460,12 +460,12 @@ inline namespace more_show {
     template <typename Clock, typename Dur>
     inline std::string
     show(std::chrono::time_point<Clock, Dur> const &r)
-    {    
+    {
         return show(r.time_since_epoch());
     }
 
     // initializer list
-    
+
     template <typename T>
     inline std::string
     show(std::initializer_list<T> const &init)
@@ -477,7 +477,7 @@ inline namespace more_show {
         }
         return std::move(out) + '}';
     }
-    
+
     // integral_constant
 
     template <typename Tp, Tp Value>
@@ -506,7 +506,7 @@ inline namespace more_show {
     (!std::is_pointer<T>::value) && (
         (more::traits::is_container<T>::value && !std::is_same<typename std::string,T>::value) ||
         (std::rank<T>::value > 0 && !std::is_same<char, typename std::remove_cv<typename std::remove_all_extents<T>::type>::type>::value)),
-    std::string>::type 
+    std::string>::type
     show(const T &v)
     {
         std::string out("[ ");
@@ -516,10 +516,10 @@ inline namespace more_show {
         }
         return std::move(out) + ']';
     }
-    
+
     //////////////////////////////////////////
     // generic_show for user defined types...
-    
+
     template <typename Tp, typename ...Ps>
     struct generic_show
     {
@@ -532,15 +532,15 @@ inline namespace more_show {
         operator()(Tp const &value)
         {
             auto out = demangle(typeid(Tp).name()) + "{";
-        
-            details::generic_show_on<std::tuple<Ps...>, Tp, sizeof...(Ps)>::apply(out, data_, value); 
 
-            return out + "}"; 
+            details::generic_show_on<std::tuple<Ps...>, Tp, sizeof...(Ps)>::apply(out, data_, value);
+
+            return out + "}";
         }
 
         std::tuple<Ps...> data_;
     };
-    
+
     template <typename Tp, typename ...Ts>
     generic_show<Tp, Ts...>
     make_generic_show(Ts && ... args)

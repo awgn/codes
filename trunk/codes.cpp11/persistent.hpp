@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#pragma once 
+#pragma once
 
 #include <fstream>
 #include <type_traits>
@@ -30,7 +30,7 @@ namespace more {
             if (!*stream_)
             {
                 value_initialize_(name);
-                
+
                 stream_->open(name, std::ios::in|std::ios::out|std::ios::binary);
                 if (!*stream_)
                     throw std::runtime_error("persistent::persistent");
@@ -50,12 +50,12 @@ namespace more {
         {}
 
         persistent(const char *name, Tp const &value)
-        : stream_(new std::fstream(name, std::ios::trunc|std::ios::out|std::ios::binary)) 
+        : stream_(new std::fstream(name, std::ios::trunc|std::ios::out|std::ios::binary))
         , value_(new std::atomic<Tp>(value))
         {
             store_();
         }
-        
+
         persistent(std::string const &name, Tp const &value)
         : persistent(name.c_str(), value)
         {}
@@ -79,7 +79,7 @@ namespace more {
             return *this;
         }
 
-        Tp 
+        Tp
         get() const
         {
             return value_->load();
@@ -94,9 +94,9 @@ namespace more {
             store_();
             return value;
         }
-    
 
-    private:               
+
+    private:
 
         void value_initialize_(const char *name)
         {

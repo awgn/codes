@@ -4,12 +4,12 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
 #ifndef _MORE_IOMANIP_HPP_
-#define _MORE_IOMANIP_HPP_ 
+#define _MORE_IOMANIP_HPP_
 
 #include <string-utils.hpp>  // more
 
@@ -17,7 +17,7 @@
 #include <limits>
 #include <string>
 
-namespace more { 
+namespace more {
 
     // Jusuttis The C++ Standard Library: User-defined manipulators (charter 13)
     //
@@ -34,7 +34,7 @@ namespace more {
         return __in;
     }
 
-    // << spaces(n) 
+    // << spaces(n)
     //
 
     struct _Spaces { int m_n; };
@@ -56,7 +56,7 @@ namespace more {
         return __out;
     }
 
-    // >> basic_token<> 
+    // >> basic_token<>
     //
 
     template<typename CharT, typename Traits, typename Alloc>
@@ -72,7 +72,7 @@ namespace more {
         ~basic_token()
         {}
 
-        friend inline std::basic_istream<CharT,Traits> & 
+        friend inline std::basic_istream<CharT,Traits> &
         operator>>(std::basic_istream<CharT,Traits> &__in, basic_token &rhs)
         {
             std::basic_string<CharT,Traits,Alloc> & __str = rhs;
@@ -85,7 +85,7 @@ namespace more {
             return m_value;
         }
 
-        operator std::basic_string<CharT,Traits,Alloc> &() 
+        operator std::basic_string<CharT,Traits,Alloc> &()
         {
             return m_value;
         }
@@ -105,10 +105,10 @@ namespace more {
     // >> string_token, wstring_token
     //
 
-    typedef basic_token<std::string::value_type, std::string::traits_type, std::string::allocator_type> 
+    typedef basic_token<std::string::value_type, std::string::traits_type, std::string::allocator_type>
         string_token;
 
-    typedef basic_token<std::wstring::value_type, std::wstring::traits_type, std::wstring::allocator_type> 
+    typedef basic_token<std::wstring::value_type, std::wstring::traits_type, std::wstring::allocator_type>
         wstring_token;
 
 
@@ -132,7 +132,7 @@ namespace more {
         : basic_token<CharT,Traits,Alloc>( lf(CharT()), string_utils::escape_enabled )
         {}
 
-        friend inline std::basic_istream<CharT,Traits> & 
+        friend inline std::basic_istream<CharT,Traits> &
         operator>>(std::basic_istream<CharT,Traits> &__in, basic_line &rhs)
         {
             std::basic_string<CharT,Traits,Alloc> & __str = rhs;
@@ -144,10 +144,10 @@ namespace more {
     // >> string_line, wstring_line
     //
 
-    typedef basic_line<std::string::value_type, std::string::traits_type, std::string::allocator_type> 
+    typedef basic_line<std::string::value_type, std::string::traits_type, std::string::allocator_type>
         string_line;
 
-    typedef basic_line<std::wstring::value_type, std::wstring::traits_type, std::wstring::allocator_type> 
+    typedef basic_line<std::wstring::value_type, std::wstring::traits_type, std::wstring::allocator_type>
         wstring_line;
 
 } // namespace more

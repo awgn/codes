@@ -2,7 +2,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -26,7 +26,7 @@ main(int, char *[])
 
                         std::cout << n << std::endl;
                   });
-    
+
     std::for_each(more::second_iterator(m.begin()),
                   more::second_iterator(m.end()),
                   [](std::string & n) {
@@ -38,9 +38,9 @@ main(int, char *[])
 
     v.emplace_back(1, "hello", true);
     v.emplace_back(2, "world", false);
-    
+
     auto it = more::tuple_element_iterator<2>(v.begin());
-    
+
     std::cout << std::boolalpha;
     std::cout << it[0] << std::endl;
     std::cout << it[1] << std::endl;
@@ -72,4 +72,4 @@ main(int, char *[])
 
     return 0;
 }
- 
+

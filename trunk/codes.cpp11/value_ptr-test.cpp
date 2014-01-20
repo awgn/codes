@@ -14,10 +14,10 @@
 #include <yats.hpp>
 using namespace yats;
 
-struct base 
+struct base
 {
-    virtual 
-    base * clone() const = 0; 
+    virtual
+    base * clone() const = 0;
 };
 
 struct derived : public base
@@ -36,7 +36,7 @@ Context(more_value_ptr_test)
     {
         more::value_ptr<int, more::transfer_ptr> b (new int(2));
         more::value_ptr<int, more::transfer_ptr> c;
-        
+
         Assert( static_cast<bool>(b.get()), is_true() );
 
         int * copy = b.get();
@@ -53,7 +53,7 @@ Context(more_value_ptr_test)
         more::value_ptr<int,more::deepcopyable_ptr> x = a;
 
         Assert( *a, is_equal_to(42) );
-        Assert( *x, is_equal_to(42) ); 
+        Assert( *x, is_equal_to(42) );
         Assert( a.get() != x.get(), is_true());
     }
 
@@ -68,10 +68,10 @@ Context(more_value_ptr_test)
         Assert( x.get() != q.get(), is_true());
     }
 }
- 
+
 int
 main(int argc, char *argv[])
 {
     return yats::run(argc, argv);
 }
- 
+

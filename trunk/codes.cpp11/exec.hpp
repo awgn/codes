@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -25,9 +25,9 @@
 #include <set>
 #include <utility>
 #include <functional>
-#include <type_traits>   
-#include <array>         
-#include <memory>        
+#include <type_traits>
+#include <array>
+#include <memory>
 #include <stdexcept>
 #include <cerrno>
 #include <cstring>
@@ -47,7 +47,7 @@ namespace more {
 
     public:
         enum fdnum { STDIN, STDOUT, STDERR };
-        
+
         typedef std::function<int(const char *, char * const[])> exec_type;
         typedef std::pair<enum fdnum, std::reference_wrapper<int> > redirect_type;
 
@@ -60,7 +60,7 @@ namespace more {
         , m_wait(false)
         , m_pid(getpid())
         , m_exec(ex)
-        {             
+        {
             if (!arg.empty()) {
                 std::stringstream tmp(arg);
                 std::copy(std::istream_iterator<std::string>(tmp),
@@ -127,7 +127,7 @@ namespace more {
         }
 
         std::string
-        cmdline() const 
+        cmdline() const
         {
             std::stringstream tmp;
             std::copy(m_arg.begin(), m_arg.end(), std::ostream_iterator<std::string>(tmp," "));
@@ -136,10 +136,10 @@ namespace more {
 
         exec &
         arg(std::string arg)
-        { 
-            m_arg.push_back(std::move(arg)); 
-            return *this; 
-        } 
+        {
+            m_arg.push_back(std::move(arg));
+            return *this;
+        }
 
         // return -1 in case of execve() failure!
         //
@@ -147,28 +147,28 @@ namespace more {
         int operator()(std::function<void()> prolog = std::function<void()>())
         {
             m_wait = true;
-    
+
             // create pipes...
             //
             for(unsigned int i = 0; i < m_redir.size(); i++)
             {
                 int fd = m_redir[i].first;
-                if (::pipe( m_pipe.at(static_cast<unsigned int>(fd)) ) < 0) 
+                if (::pipe( m_pipe.at(static_cast<unsigned int>(fd)) ) < 0)
                     throw std::system_error(errno, std::generic_category());
             }
-            
+
             // rationale: vfork() shares memory between parent and child.
             //            exec_ret is used to vehicle the return value of execve() in case of
             //            error.
 
-            int exec_ret = 0; 
+            int exec_ret = 0;
 
             m_pid = ::vfork();
-            if (m_pid == -1) 
+            if (m_pid == -1)
             {
                 auto errno_ = errno;
                 // close open pipes...
-                // 
+                //
                 for(unsigned int i=0; i < m_redir.size(); i++)
                 {
                     int fd = m_redir[i].first;
@@ -177,7 +177,7 @@ namespace more {
                     m_pipe.at(static_cast<unsigned int>(fd))[0] = 0;
                     m_pipe.at(static_cast<unsigned int>(fd))[1] = 0;
                 }
-                
+
                 throw std::system_error(errno_, std::generic_category());
             }
 
@@ -196,7 +196,7 @@ namespace more {
                     int fd = m_redir[i].first;
                     ::close(m_pipe.at(static_cast<unsigned int>(fd))[!fd]);
                     ::close(fd);
-                    ::dup2(m_pipe.at(static_cast<unsigned int>(fd))[!!fd], fd); 
+                    ::dup2(m_pipe.at(static_cast<unsigned int>(fd))[!!fd], fd);
                 }
 
                 if ( m_run() < 0 ) {
@@ -206,7 +206,7 @@ namespace more {
             }
 
             // parent...
-            
+
             for(unsigned int i = 0; i < m_redir.size(); i++)
             {
                 int fd = m_redir[i].first;
@@ -223,15 +223,15 @@ namespace more {
         }
 
         int kill(int sig)
-        { 
+        {
             if ( ::getpid() == m_pid ) {
                 throw std::runtime_error("exec::kill: (pid unitialized!)");
-            } 
-            
-            if (m_pid > 0) // this kill is not meant to kill the world!
-                return ::kill(m_pid,sig); 
+            }
 
-            return -1; 
+            if (m_pid > 0) // this kill is not meant to kill the world!
+                return ::kill(m_pid,sig);
+
+            return -1;
         }
 
         bool wait()
@@ -245,7 +245,7 @@ namespace more {
                 char buff[64];
                 std::clog << "more::exec: waitpid " << strerror_r(errno, buff, 63) << std::endl;
                 return false;
-            }   
+            }
             return true;
         }
 
@@ -257,14 +257,14 @@ namespace more {
         // is_exited() -> exit_status()
         //
 
-        bool is_exited() const 
+        bool is_exited() const
         { return WIFEXITED(m_status); }
 
         int exit_status() const
-        { 
+        {
             if (!WIFEXITED(m_status))
                 throw std::runtime_error("exec::exit_status: !EXITED");
-            return WEXITSTATUS(m_status); 
+            return WEXITSTATUS(m_status);
         }
 
         // is_signaled() -> term_signal()
@@ -274,10 +274,10 @@ namespace more {
         { return WIFSIGNALED(m_status); }
 
         int term_signal() const
-        { 
+        {
             if (!WIFSIGNALED(m_status))
                 throw std::runtime_error("exec::term_signal: !SIGNALED");
-            return WTERMSIG(m_status); 
+            return WTERMSIG(m_status);
         }
 
         // is_stopped() -> stop_signal()
@@ -287,14 +287,14 @@ namespace more {
         { return WIFSTOPPED(m_status); }
 
         int stop_signal() const
-        { 
-            if(!WIFSTOPPED(m_status)) 
+        {
+            if(!WIFSTOPPED(m_status))
                 throw std::runtime_error("exec::stop_signal: !STOPPED");
-            return WSTOPSIG(m_status); 
+            return WSTOPSIG(m_status);
         }
 
         pid_t
-        pid() const 
+        pid() const
         { return m_pid; }
 
     private:
@@ -311,10 +311,10 @@ namespace more {
         int m_run()
         {
             auto n = m_arg.size();
-            
+
             std::vector<const char *> argv(n+1);
 
-            for(unsigned int i=0; i < n;i++) 
+            for(unsigned int i=0; i < n;i++)
                 argv[i] = m_arg[i].c_str();
 
             if ( m_exec(argv[0], const_cast<char * const *>(argv.data())) == -1 ) {
@@ -330,7 +330,7 @@ namespace more {
     // group of processes
     //
 
-    class exec_group 
+    class exec_group
     {
     public:
         typedef std::set<exec *>::iterator          iterator;
@@ -360,11 +360,11 @@ namespace more {
         const_iterator
         cbegin() const
         { return m_group.begin(); }
-        
+
         const_iterator
         end() const
         { return m_group.end(); }
-        
+
         const_iterator
         cend() const
         { return m_group.end(); }
@@ -405,14 +405,14 @@ namespace more {
                 return nullptr;
 
             auto it = m_group.begin();
-            for(; it != m_group.end(); ++it) 
+            for(; it != m_group.end(); ++it)
             {
                 if ( p == (*it)->pid() ) { // found!
                     (*it)->m_wait = false;
                     (*it)->m_status = status;
                     return *it;
                 }
-            }    
+            }
             return nullptr;
         }
 
@@ -424,4 +424,4 @@ namespace more {
 
 #endif /* _MORE_EXEC_HPP_  */
 
- 
+

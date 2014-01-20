@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------------
 */
 
-#pragma once 
+#pragma once
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -22,10 +22,10 @@
 
 #include <nettypes.hpp>
 
-namespace net { 
+namespace net {
 
     class address
-    { 
+    {
     public:
         address()
         : addr_(), mask_()
@@ -34,7 +34,7 @@ namespace net {
         address(const char *addr, const char *mask)
         : addr_(), mask_()
         {
-            if (inet_pton(AF_INET, addr, &addr_) <= 0) 
+            if (inet_pton(AF_INET, addr, &addr_) <= 0)
                 throw std::runtime_error(std::string("net::address: ").append(addr).append(" invalid address"));
 
             if (inet_pton(AF_INET, mask, &mask_) <= 0)
@@ -64,10 +64,10 @@ namespace net {
         : mask_(prefix2mask(n))
         {
             addr_.s_addr = addr.value;
-        } 
+        }
 
         ~address()
-        {}  
+        {}
 
         const in_addr &
         addr() const
@@ -86,7 +86,7 @@ namespace net {
         {
             return ipv4_t {addr_.s_addr};
         }
-        
+
         ipv4_t
         mask_ip() const
         {
@@ -113,9 +113,9 @@ namespace net {
         static in_addr prefix2mask(size_t n)
         {
             struct in_addr res;
-            res.s_addr =  htonl(~((1ULL << (32-n)) - 1)); 
+            res.s_addr =  htonl(~((1ULL << (32-n)) - 1));
             return res;
-        } 
+        }
 
         static size_t mask2prefix(const in_addr &m)
         {
@@ -128,7 +128,7 @@ namespace net {
     };
 
     // comparisons by means of prefix...
-    // 
+    //
     static inline
     bool operator<(const address &lhs, const address &rhs)
     {
@@ -162,10 +162,10 @@ namespace net {
 
        if (lp < rp)
             return false;
-       
+
        auto mask = net::address::prefix2mask(rp);
        return (lhs.addr().s_addr & mask.s_addr) ==
-               (rhs.addr().s_addr & mask.s_addr);  
+               (rhs.addr().s_addr & mask.s_addr);
     }
 
     template <typename CharT, typename Traits>
@@ -173,7 +173,7 @@ namespace net {
     operator<<(std::basic_ostream<CharT,Traits> &out, const address& other)
     {
         char ip[16];
-        if (inet_ntop(AF_INET, &other.addr(), ip, sizeof(ip)) == nullptr) 
+        if (inet_ntop(AF_INET, &other.addr(), ip, sizeof(ip)) == nullptr)
             throw std::runtime_error("address::operator<<");
 
         if (other.prefix() == 32)
@@ -199,7 +199,7 @@ namespace net {
     operator>>(std::basic_istream<CharT,Traits>& in, address& out)
     {
         struct rollback
-        {   
+        {
             rollback(std::basic_istream<CharT,Traits> &ref)
             : err_(true), ref_(ref), pos_(ref.tellg())
             {}
@@ -209,11 +209,11 @@ namespace net {
                 if (err_) {
 
                     if (!ref_.seekg(pos_))
-                        ref_.setstate(std::ios_base::badbit);         
-                    else 
-                        ref_.setstate(std::ios_base::failbit);         
+                        ref_.setstate(std::ios_base::badbit);
+                    else
+                        ref_.setstate(std::ios_base::failbit);
                 }
-            }    
+            }
 
             bool err_;
             std::basic_istream<CharT,Traits> &ref_;
@@ -235,10 +235,10 @@ namespace net {
 
         auto pos = addr.find('/');
 
-        auto it  = pos == std::string::npos ? std::end(addr) : 
+        auto it  = pos == std::string::npos ? std::end(addr) :
                                               std::next(std::begin(addr), pos);
 
-        in_addr a, m; 
+        in_addr a, m;
 
         std::string addr_str(addr.begin(), it);
 
@@ -253,14 +253,14 @@ namespace net {
             return (out = address(a, 32)), in;
         }
 
-        auto prefix = std::make_pair(0, false); 
+        auto prefix = std::make_pair(0, false);
 
         std::string mask_str(++it, addr.end());
-       
+
         if (inet_pton(AF_INET, mask_str.c_str(), &m) <= 0)
         {
             // numeric mask
-            
+
             prefix.second = true;
             size_t len;
             prefix.first = std::stoul(mask_str, &len);
@@ -270,23 +270,23 @@ namespace net {
 
         return_.err_ = false;
         return (prefix.second ? (out = address(a,prefix.first)): (out = address(a,m))), in;
-    } 
+    }
 
 } // namespace net
 
 
-namespace std { 
+namespace std {
 
     // std::hash specialization for net::address class
     //
-    
+
     template <>
     struct hash<net::address>
     {
-        // Before to insert elements, we must determine (a priori) the minimum prefix admitted 
-        // for the hash table. An utility function will enforce this constraint. 
+        // Before to insert elements, we must determine (a priori) the minimum prefix admitted
+        // for the hash table. An utility function will enforce this constraint.
         //
-        // ie: 
+        // ie:
         // 192.168.0.0/16
         // 192.168.10.0/24  n -> 16.
 
@@ -302,7 +302,7 @@ namespace std {
             return value.addr().s_addr & net::address::prefix2mask(m).s_addr;
         }
 
-        size_t min_;    
+        size_t min_;
     };
 
 } // namespace std

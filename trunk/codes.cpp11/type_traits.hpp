@@ -9,16 +9,16 @@
  */
 
 #ifndef _TYPE_TRAITS_HPP_
-#define _TYPE_TRAITS_HPP_ 
+#define _TYPE_TRAITS_HPP_
 
 #include <iostream>
-#include <type_traits>   
+#include <type_traits>
 #include <utility>
-#include <tuple>         
+#include <tuple>
 #include <vector>
 #include <array>
 
-namespace more 
+namespace more
 {
     namespace traits {
 
@@ -43,7 +43,7 @@ namespace more
     template <typename T>
     struct is_class_or_union : public std::integral_constant<bool, __is_class_or_union_helper<T>::value>
     {};
-    
+
     // has member type helper (using SFINAE... Vandevoorde/Josuttis)
     #define HAS_MEMBER_HELPER(abc) \
     template <typename T>   \
@@ -95,7 +95,7 @@ namespace more
     template <typename T>
     struct has_const_pointer : public std::integral_constant<bool, __has_const_pointer_helper<T>::value>
     {};
-    
+
     template <typename T>
     struct has_reference : public std::integral_constant<bool, __has_reference_helper<T>::value>
     {};
@@ -119,36 +119,36 @@ namespace more
     template <typename T>
     struct has_const_reverse_iterator : public std::integral_constant<bool, __has_const_reverse_iterator_helper<T>::value>
     {};
-    
+
     template <typename T>
     struct has_size_type : public std::integral_constant<bool, __has_size_type_helper<T>::value>
     {};
-    
+
     template <typename T>
     struct has_difference_type : public std::integral_constant<bool, __has_difference_type_helper<T>::value>
     {};
-    
 
-    // is_container 
+
+    // is_container
     //
-    
+
     template <typename T>
-    struct is_container : public std::integral_constant<bool, __has_value_type_helper<T>::value && 
-                                                              __has_reference_helper<T>::value &&  
-                                                              __has_const_reference_helper<T>::value &&  
-                                                              __has_iterator_helper<T>::value && 
-                                                              __has_const_iterator_helper<T>::value && 
-                                                              __has_pointer_helper<T>::value &&  
-                                                              __has_const_pointer_helper<T>::value &&  
-                                                              __has_size_type_helper<T>::value &&  
-                                                              __has_difference_type_helper<T>::value 
+    struct is_container : public std::integral_constant<bool, __has_value_type_helper<T>::value &&
+                                                              __has_reference_helper<T>::value &&
+                                                              __has_const_reference_helper<T>::value &&
+                                                              __has_iterator_helper<T>::value &&
+                                                              __has_const_iterator_helper<T>::value &&
+                                                              __has_pointer_helper<T>::value &&
+                                                              __has_const_pointer_helper<T>::value &&
+                                                              __has_size_type_helper<T>::value &&
+                                                              __has_difference_type_helper<T>::value
                                                                >
     {};
 
 
-    // is_associative_container 
+    // is_associative_container
     //
-    
+
     template <typename T>
     struct is_associative_container : std::integral_constant<bool, is_container<T>::value &&
                                                                    __has_key_type_helper<T>::value &&
@@ -158,7 +158,7 @@ namespace more
 
     // is_vector_like
     //
-    
+
     template <typename C>
     struct __is_vector_like
     {
@@ -184,20 +184,20 @@ namespace more
     template <typename T>
     struct is_vector_like: public std::integral_constant<bool, __is_vector_like<T>::value>
     {};
-    
-    
+
+
     // not_type
     //
-    
-    template <typename Trait, bool V = Trait::value> 
+
+    template <typename Trait, bool V = Trait::value>
     struct not_type : std::false_type {};
 
-    template <typename Trait> 
+    template <typename Trait>
     struct not_type<Trait, false> : std::true_type {};
-    
-    // is_tuple 
+
+    // is_tuple
     //
-    
+
     template <typename T>
     struct is_tuple : public std::integral_constant<bool, false>
     {};
@@ -208,7 +208,7 @@ namespace more
 
     // is_pair
     //
-    
+
     template <typename T>
     struct is_pair : public std::integral_constant<bool, false>
     {};
@@ -219,13 +219,13 @@ namespace more
 
     // has_insertion_operator: operator<<()
     //
-    
+
     template <typename T>
     class __has_insertion_operator_helper : public __sfinae_types
     {
         template <typename C> static __one test(typename std::remove_reference< decltype((std::cout << std::declval<C>())) >::type *);
         template <typename C> static __two test(...);
-    public:    
+    public:
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };
     };
 
@@ -235,13 +235,13 @@ namespace more
 
     // has_extraction_operator: operator>>()
     //
-    
+
     template <typename T>
     class __has_extraction_operator_helper : public __sfinae_types
     {
         template <typename C> static __one test(typename std::remove_reference< decltype((std::cin >> std::declval<C &>())) >::type *);
         template <typename C> static __two test(...);
-    public:    
+    public:
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };
     };
 
@@ -257,7 +257,7 @@ namespace more
     {
         template <typename C> static __one test(typename std::remove_reference< decltype((std::declval<C>()())) >::type *);
         template <typename C> static __two test(...);
-    public:    
+    public:
         enum { value = sizeof(test<T>(0)) == sizeof(__one) };
     };
 
@@ -270,23 +270,23 @@ namespace more
 
     template <typename T, typename ...U>
     struct is_copy_constructing : std::false_type {};
-    
+
     template <typename T, typename U>
     struct is_copy_constructing<T,U> : std::is_same<typename std::decay<T>::type, typename std::decay<U>::type> {};
 
-    // is_not_copy_constructing: trait useful to disable universal constructor when 
+    // is_not_copy_constructing: trait useful to disable universal constructor when
     //                       copy constructing:
     //
-    //  template <typename ...Ts, typename V = std::enable_if<is_not_copy_constructing<ThisClass, Ts...>::value>::type> 
-    //  ThisClass(Ts&& ...args) 
+    //  template <typename ...Ts, typename V = std::enable_if<is_not_copy_constructing<ThisClass, Ts...>::value>::type>
+    //  ThisClass(Ts&& ...args)
     //
-    
+
     template <typename T, typename ...U>
     struct is_not_copy_constructing : not_type<is_copy_constructing<T,U...>> {};
-    
+
 
     } // namespace traits
 
-} // namespace more 
+} // namespace more
 
 #endif /* _TYPE_TRAITS_HPP_ */

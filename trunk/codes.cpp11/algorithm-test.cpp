@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -30,14 +30,14 @@ Context(algorithm_test)
     {
         Assert(more::levenshtein_distance(a.begin(), a.end(), b.begin(), b.end()), is_equal_to(1));
         Assert(more::levenshtein_distance(a.begin(), a.end(), d.begin(), d.end()), is_equal_to(1));
-        Assert(more::levenshtein_distance(a,b), is_equal_to(1)); 
-        Assert(more::levenshtein_distance(a,a), is_equal_to(0)); 
+        Assert(more::levenshtein_distance(a,b), is_equal_to(1));
+        Assert(more::levenshtein_distance(a,a), is_equal_to(0));
     }
 
     Test(levenshtein_distance_custom_predicate)
     {
-        Assert(more::levenshtein_distance(a.begin(), a.end(), c.begin(), c.end(), std::not_equal_to<char>()), is_equal_to(2)); 
-        Assert(more::levenshtein_distance(c.begin(), c.end(), a.begin(), a.end(), std::not_equal_to<char>()), is_equal_to(2)); 
+        Assert(more::levenshtein_distance(a.begin(), a.end(), c.begin(), c.end(), std::not_equal_to<char>()), is_equal_to(2));
+        Assert(more::levenshtein_distance(c.begin(), c.end(), a.begin(), a.end(), std::not_equal_to<char>()), is_equal_to(2));
         Assert(more::levenshtein_distance(a.begin(), a.end(), a.begin(), a.end(), std::not_equal_to<char>()), is_equal_to(0));
     }
 }
@@ -48,4 +48,4 @@ main(int argc, char *argv[])
 {
     return yats::run(argc, argv);
 }
- 
+

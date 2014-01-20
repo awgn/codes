@@ -7,18 +7,18 @@
  * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
- 
+
 #ifndef _THREAD_INTERRUPT_HPP_
-#define _THREAD_INTERRUPT_HPP_ 
+#define _THREAD_INTERRUPT_HPP_
 
 #include <memory>
 #include <thread>
 #include <mutex>
 #include <map>
 
-namespace more { 
+namespace more {
 
-    struct 
+    struct
     thread_interrupt
     {
         typedef std::shared_ptr<volatile bool> request_type;
@@ -29,25 +29,25 @@ namespace more {
         {
             hook()
             : m_req(interrupt_request())
-            {   
+            {
                 interrupt_request_store(std::this_thread::get_id(), m_req);
             }
-            
+
             hook(request_type hook)
             : m_req(hook)
-            {   
+            {
                 interrupt_request_store(std::this_thread::get_id(), m_req);
             }
- 
+
             ~hook()
             {}
-            
+
             bool
             operator()() const
             {
                 return *m_req;
             }
-            
+
             request_type m_req;
         };
 
@@ -55,17 +55,17 @@ namespace more {
         void interrupt(std::thread::id h)
         {
             auto & map_ = thread_interrupt::get_map();
-            std::lock_guard<std::mutex> lock(map_.second);               
+            std::lock_guard<std::mutex> lock(map_.second);
 
             auto it = map_.first.find(h);
             if (it == map_.first.end())
                 throw std::runtime_error("interrupt_request not found");
-            
+
             *(it->second) = true;
             map_.first.erase(it);
         }
- 
-   private:   
+
+   private:
 
         template <typename ...Types>
         friend std::thread
@@ -76,7 +76,7 @@ namespace more {
         {
             return request_type(new bool(false));
         }
- 
+
         static
         void interrupt_request_store(std::thread::id h, request_type p)
         {
@@ -84,7 +84,7 @@ namespace more {
             std::lock_guard<std::mutex> lock(map_.second);
             map_.first.insert(std::make_pair(h,p));
         }
- 
+
         static
         std::pair<map_type, std::mutex> &
         get_map()
@@ -100,7 +100,7 @@ namespace more {
     template <typename ...Types>
     inline std::thread
     make_interruptible_thread(Types&&... args)
-    {    
+    {
         // create an interrupt request
         //
         thread_interrupt::request_type req = thread_interrupt::interrupt_request();
@@ -113,7 +113,7 @@ namespace more {
         //
         thread_interrupt::interrupt_request_store(th.get_id(), req);
 
-        return th; 
+        return th;
     }
 
 } // namespace more

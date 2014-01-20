@@ -16,14 +16,14 @@ namespace my
     inline std::string
     show(test const&  value)
     {
-        return std::to_string(value.value); 
+        return std::to_string(value.value);
     }
 
     template <typename CharT, typename Traits>
-    void 
+    void
     read(test &ret, std::basic_istream<CharT,Traits>&in)
     {
-        if (!(in >> ret.value)) 
+        if (!(in >> ret.value))
             throw std::runtime_error("read<test>: parse error");
     }
 }

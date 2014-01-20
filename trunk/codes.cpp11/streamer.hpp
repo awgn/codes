@@ -25,7 +25,7 @@
 
 namespace more { namespace streamer {
 
-        // printon policy 
+        // printon policy
         //
 
         template <typename CharT, typename Traits, typename T, int N>
@@ -36,7 +36,7 @@ namespace more { namespace streamer {
                 out << std::get< std::tuple_size<T>::value - N>(tupl) << ' ';
                 printon<CharT, Traits, T,N-1>::apply(out,tupl);
             }
-        }; 
+        };
         template <typename CharT, typename Traits, typename T>
         struct printon<CharT, Traits, T,0>
         {
@@ -65,9 +65,9 @@ namespace std {
 
     template <typename CharT, typename Traits, typename T>
     inline typename std::enable_if<
-        (more::traits::is_container<T>::value && 
+        (more::traits::is_container<T>::value &&
             !is_same<typename std::string,T>::value) ||
-        (rank<T>::value > 0 && 
+        (rank<T>::value > 0 &&
             !is_same<char, typename remove_cv<typename remove_all_extents<T>::type>::type>::value),
         std::basic_ostream<CharT,Traits>>::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
@@ -103,7 +103,7 @@ namespace std {
     }
 
     ////////////////////////////////////////////////////////
-    // operator<< for tuple: (enabled if T is a tuple<>)... 
+    // operator<< for tuple: (enabled if T is a tuple<>)...
 
     template <typename CharT, typename Traits, typename T>
     typename std::enable_if< more::traits::is_tuple<T>::value, std::basic_ostream<CharT,Traits> >::type &
@@ -115,15 +115,15 @@ namespace std {
     }
 
     ////////////////////////////////////////////////////////
-    // operator<< for chrono types... 
+    // operator<< for chrono types...
 
     template <typename CharT, typename Traits, typename Tp>
     typename std::enable_if< std::is_same<Tp, std::chrono::nanoseconds>::value ||
-                             std::is_same<Tp, std::chrono::microseconds>::value || 
-                             std::is_same<Tp, std::chrono::milliseconds>::value || 
-                             std::is_same<Tp, std::chrono::seconds>::value || 
-                             std::is_same<Tp, std::chrono::minutes>::value || 
-                             std::is_same<Tp, std::chrono::hours>::value, 
+                             std::is_same<Tp, std::chrono::microseconds>::value ||
+                             std::is_same<Tp, std::chrono::milliseconds>::value ||
+                             std::is_same<Tp, std::chrono::seconds>::value ||
+                             std::is_same<Tp, std::chrono::minutes>::value ||
+                             std::is_same<Tp, std::chrono::hours>::value,
              std::basic_ostream<CharT, Traits>>::type &
     operator<< (std::basic_ostream<CharT, Traits> &out, const Tp &r)
     {

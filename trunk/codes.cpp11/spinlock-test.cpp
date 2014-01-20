@@ -25,20 +25,20 @@ volatile int g = 0;
 
 void thread_producer()
 {
-    for(int i=0; i < 500000; i++) 
+    for(int i=0; i < 500000; i++)
     {
         std::lock_guard<spinlock_type> _s_(lock);
         g++;
-    }    
+    }
 }
 
 void thread_consumer()
 {
-    for(int i=0; i < 500000; i++) 
+    for(int i=0; i < 500000; i++)
     {
         std::lock_guard<spinlock_type> _s_(lock);
-        g--; 
-    }    
+        g--;
+    }
 }
 
 int

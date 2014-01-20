@@ -4,25 +4,25 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
 #ifndef _TYPELIST_HPP_
-#define _TYPELIST_HPP_ 
+#define _TYPELIST_HPP_
 
 // a c++0x typelist implementation...
 //
 
-#include <type_traits>   
+#include <type_traits>
 
-namespace more { namespace type { 
+namespace more { namespace type {
 
     // typelist forward declaration...
     //
     template <typename ...Tp> struct typelist {};
 
-    // length<>::value            
+    // length<>::value
     //
     template <typename Tl> struct length;
     template <typename ...Ti>
@@ -49,7 +49,7 @@ namespace more { namespace type {
     {
         typedef T type;
     };
-    
+
     // append<>::type
     //
     template <typename Tl, typename Tp> struct append;
@@ -67,7 +67,7 @@ namespace more { namespace type {
     {
         typedef typelist<Tp, Ti...> type;
     };
- 
+
     // index_of<>::value
     //
     template <typename Tl, typename T> struct indexof;
@@ -105,13 +105,13 @@ namespace more { namespace type {
     template <typename ...T1, typename ...T2>
     struct is_same<typelist<T1...>, typelist<T2...>>
     {
-        enum { value = false }; 
+        enum { value = false };
     };
 
     template <typename ...Ti>
     struct is_same<typelist<Ti...>, typelist<Ti...>>
     {
-        enum { value = true }; 
+        enum { value = true };
     };
 
     // for_each (unary metafunction)

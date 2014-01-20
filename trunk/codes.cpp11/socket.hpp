@@ -9,9 +9,9 @@
  */
 
 #ifndef _SOCKET_HPP_
-#define _SOCKET_HPP_ 
+#define _SOCKET_HPP_
 
-#include <sys/types.h>       
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <unistd.h>
@@ -27,7 +27,7 @@
 namespace more {
 
     template <int F>
-    class generic_socket  
+    class generic_socket
     {
     public:
 
@@ -38,20 +38,20 @@ namespace more {
         }
 
         generic_socket &
-        operator=(generic_socket&& rhs) noexcept 
+        operator=(generic_socket&& rhs) noexcept
         {
-            if (this != &rhs) 
+            if (this != &rhs)
             {
                 this->close_fd();
                 m_fd = rhs.m_fd;
                 rhs.m_fd = -1;
             }
-            return *this;         
+            return *this;
         }
- 
+
     protected:
 
-        generic_socket(int s = -1) 
+        generic_socket(int s = -1)
         : m_fd(s)
         {}
 
@@ -59,17 +59,17 @@ namespace more {
         {
             this->close_fd();
         }
- 
+
         generic_socket(const generic_socket&) = delete;
         generic_socket& operator=(const generic_socket&) = delete;
 
         generic_socket(__socket_type type, int protocol=0)
         : m_fd(::socket(F, type, protocol))
         {
-            if ( m_fd == -1) 
+            if ( m_fd == -1)
                 throw std::system_error(errno, std::generic_category(), "generic_socket");
         }
-        
+
         template <typename Fun, typename Ptr>
         static size_t
         atomic_io(Fun fun, int fd, Ptr _s, size_t n, int flags)
@@ -97,56 +97,56 @@ namespace more {
 
     public:
 
-        ///////////////////// I/O methods do not throw ///////////////////// 
+        ///////////////////// I/O methods do not throw /////////////////////
 
-        std::ptrdiff_t 
+        std::ptrdiff_t
         send(const_buffer buf, int flags) const
-        { 
-            return ::send(m_fd, buf.addr(), buf.size(), flags); 
+        {
+            return ::send(m_fd, buf.addr(), buf.size(), flags);
         }
 
         template <typename Cont, typename T = typename std::enable_if<traits::is_vector_like<Cont>::value>::type >
         std::ptrdiff_t
         send(const Cont &iov, int flags) const
-        { 
-            const msghdr msg = { nullptr, 0, 
-                                 const_cast<iovec *>(std::addressof(*std::begin(iov))), 
-                                 static_cast<size_t>(std::distance(std::begin(iov), std::end(iov))), 
-                                 nullptr, 0, 0 };    
-            return ::sendmsg(m_fd, &msg, flags); 
+        {
+            const msghdr msg = { nullptr, 0,
+                                 const_cast<iovec *>(std::addressof(*std::begin(iov))),
+                                 static_cast<size_t>(std::distance(std::begin(iov), std::end(iov))),
+                                 nullptr, 0, 0 };
+            return ::sendmsg(m_fd, &msg, flags);
         }
 
-        std::ptrdiff_t 
+        std::ptrdiff_t
         recv(mutable_buffer buf, int flags) const
-        { 
-            return ::recv(m_fd, buf.addr(), buf.size(), flags); 
+        {
+            return ::recv(m_fd, buf.addr(), buf.size(), flags);
         }
 
         template <typename Cont, typename T = typename std::enable_if<traits::is_vector_like<Cont>::value>::type >
         std::ptrdiff_t
         recv(Cont &iov, int flags) const
-        { 
-            msghdr msg = { nullptr, 0, 
-                           std::addressof(*std::begin(iov)), 
-                           static_cast<size_t>(std::distance(std::begin(iov), std::end(iov))), 
-                           nullptr, 0, 0 };    
-            return ::recvmsg(m_fd, &msg, flags); 
+        {
+            msghdr msg = { nullptr, 0,
+                           std::addressof(*std::begin(iov)),
+                           static_cast<size_t>(std::distance(std::begin(iov), std::end(iov))),
+                           nullptr, 0, 0 };
+            return ::recvmsg(m_fd, &msg, flags);
         }
 
-        int 
-        sendto(const_buffer buf, int flags, const sockaddress<F> &to) const 
-        { 
-            return ::sendto(m_fd, buf.addr(), buf.size(), flags, &to.c_addr(), to.len()); 
+        int
+        sendto(const_buffer buf, int flags, const sockaddress<F> &to) const
+        {
+            return ::sendto(m_fd, buf.addr(), buf.size(), flags, &to.c_addr(), to.len());
         }
 
-        std::ptrdiff_t 
+        std::ptrdiff_t
         recvfrom(mutable_buffer buf, int flags, sockaddress<F> &from) const
-        { 
-            return ::recvfrom(m_fd, buf.addr(), buf.size(), flags, &from.c_addr(), &from.len()); 
+        {
+            return ::recvfrom(m_fd, buf.addr(), buf.size(), flags, &from.c_addr(), &from.len());
         }
-        
+
         ////////////////// atomic send/recv
-    
+
         void
         send_atomic(const_buffer buf, int flags) const
         {
@@ -162,12 +162,12 @@ namespace more {
                     buf.size())
                 throw std::system_error(errno, std::generic_category(), "recv_atomic");
         }
-        
-        ////////////////// connect/bind/listen/accept: throw when errors occur with non-blocking socket 
 
-        virtual int 
+        ////////////////// connect/bind/listen/accept: throw when errors occur with non-blocking socket
+
+        virtual int
         connect(const sockaddress<F> &addr)
-        { 
+        {
             if (::connect(m_fd, &addr.c_addr(), addr.len()) < 0)
             {
                 if (errno != EINPROGRESS && errno != EALREADY)
@@ -177,28 +177,28 @@ namespace more {
             return 0;
         }
 
-        virtual void 
+        virtual void
         bind(const sockaddress<F> &addr)
-        { 
+        {
             if (::bind(m_fd, &addr.c_addr(), addr.len()) < 0)
                throw std::system_error(errno, std::generic_category(), "bind");
         }
 
-        void 
-        listen(int backlog) 
-        { 
+        void
+        listen(int backlog)
+        {
             if(::listen(m_fd, backlog) <0)
                throw std::system_error(errno, std::generic_category(), "listen");
         }
 
-        int 
-        accept(sockaddress<F> &addr, generic_socket<F> &remote) 
+        int
+        accept(sockaddress<F> &addr, generic_socket<F> &remote)
         {
             int s = ::accept(m_fd, &addr.c_addr(), &addr.len());
             if (s < 0) {
                 if (errno != EAGAIN && errno != EWOULDBLOCK)
                     throw std::system_error(errno, std::generic_category(), "accept");
-                return -1; 
+                return -1;
             }
 
             remote.close_fd();
@@ -208,43 +208,43 @@ namespace more {
 
         ////////////////// other methods...
 
-        int 
+        int
         getsockname(sockaddress<F> &name) const
-        { 
-            return ::getsockname(m_fd, &name.c_addr(), &name.len()); 
+        {
+            return ::getsockname(m_fd, &name.c_addr(), &name.len());
         }
 
-        int 
+        int
         getpeername(sockaddress<F> &name) const
-        { 
-            return ::getpeername(m_fd, &name.c_addr(), &name.len()); 
+        {
+            return ::getpeername(m_fd, &name.c_addr(), &name.len());
         }
 
-        int 
+        int
         setsockopt(int level, int optname, const void *optval, socklen_t optlen)
-        { 
-            return ::setsockopt(m_fd, level, optname, optval, optlen); 
+        {
+            return ::setsockopt(m_fd, level, optname, optval, optlen);
         }
 
-        int 
+        int
         getsockopt(int level, int optname, void *optval, socklen_t *optlen) const
-        { 
-            return ::getsockopt(m_fd, level, optname, optval, optlen); 
+        {
+            return ::getsockopt(m_fd, level, optname, optval, optlen);
         }
 
-        int 
-        fd() const 
-        { 
-            return m_fd; 
-        }        
+        int
+        fd() const
+        {
+            return m_fd;
+        }
 
         bool
         is_open() const
-        { 
-            return m_fd == -1; 
+        {
+            return m_fd == -1;
         }
 
-        void 
+        void
         close()
         {
             this->close_fd();
@@ -262,7 +262,7 @@ namespace more {
 
         void close_fd()
         {
-            if (m_fd != -1) 
+            if (m_fd != -1)
             {
                 ::close(m_fd);
                 m_fd = -1;
@@ -274,22 +274,22 @@ namespace more {
     // generic socket: PF_INET/PF_INET6...
     //
 
-    template <int F> 
-    struct socket : public generic_socket<F> 
+    template <int F>
+    struct socket : public generic_socket<F>
     {
         socket()
         : generic_socket<F>()
         {}
 
         socket(__socket_type type, int protocol=0)
-        : generic_socket<F>(type,protocol) 
+        : generic_socket<F>(type,protocol)
         {}
 
         socket(socket&& rhs) noexcept
         : generic_socket<F>(std::move(rhs))
         {}
 
-        socket& 
+        socket&
         operator=(socket&& rhs) noexcept
         {
             generic_socket<F>::operator=(std::move(rhs));
@@ -300,8 +300,8 @@ namespace more {
     // PF_UNIX specialization
     //
 
-    template <> 
-    struct socket<PF_UNIX> : public generic_socket<PF_UNIX>   
+    template <>
+    struct socket<PF_UNIX> : public generic_socket<PF_UNIX>
     {
         socket()
         : generic_socket<PF_UNIX>()
@@ -313,7 +313,7 @@ namespace more {
         , m_bound(false)
         {}
 
-        ~socket() 
+        ~socket()
         {
             if (!m_pathname.empty() && m_bound) {
                 ::unlink(m_pathname.c_str());
@@ -324,13 +324,13 @@ namespace more {
         : generic_socket<PF_UNIX>(std::move(rhs))
         {}
 
-        socket& 
+        socket&
         operator=(socket&& rhs) noexcept
         {
             generic_socket<PF_UNIX>::operator=(std::move(rhs));
             return *this;
         }
- 
+
         void bind(const sockaddress<PF_UNIX> &addr)
         {
             if(::bind(this->m_fd, &addr.c_addr(), addr.len())<0)
@@ -356,7 +356,7 @@ namespace more {
         bool m_bound;
     };
 
-} // namespace more 
+} // namespace more
 
 
 #endif /* _SOCKET_HPP_ */

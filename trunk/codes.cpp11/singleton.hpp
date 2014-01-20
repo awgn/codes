@@ -9,18 +9,18 @@
  */
 
 #ifndef _SINGLETON_HPP_
-#define _SINGLETON_HPP_ 
+#define _SINGLETON_HPP_
 
 #include <iostream>
 #include <type_traits>
 
 namespace more
-{    
+{
     struct singleton_type {};
     struct indestructible_singleton_type {};
 
     // base_class:
-                
+
     template <typename T, typename Ty, typename U = typename std::remove_cv<Ty>::type /* for partial specialization */ > class singleton;
 
     struct singleton_base
@@ -61,7 +61,7 @@ namespace more
 
     private:
         singleton_base(const singleton_base&) = delete;                // noncopyable
-        singleton_base &operator=(const singleton_base &) = delete;    // noncopyable  
+        singleton_base &operator=(const singleton_base &) = delete;    // noncopyable
 
     protected:
         singleton_base()
@@ -71,11 +71,11 @@ namespace more
         {}
     };
 
-    
-    ///////////////////////////////////////////////// singleton_type 
+
+    ///////////////////////////////////////////////// singleton_type
 
 
-    template <typename T, typename Ty> 
+    template <typename T, typename Ty>
     class singleton<T, Ty, singleton_type>  : public singleton_base
     {
 #ifdef __clang__
@@ -87,19 +87,19 @@ namespace more
 
     public:
         typedef singleton<T,Ty,singleton_type> base_type;
-        
+
         // instance...
         template <typename ... Arg>
-        static typename singleton_base::add_cv_qualifier<T,Ty>::type& 
+        static typename singleton_base::add_cv_qualifier<T,Ty>::type&
         instance(Arg&& ... arg)
         {
-            static typename singleton_base::add_cv_qualifier<T,Ty>::type one(typename base_type::tag(), 
+            static typename singleton_base::add_cv_qualifier<T,Ty>::type one(typename base_type::tag(),
                                                                              std::forward<Arg>(arg)...);
             return one;
         }
     };
 
-    ///////////////////////////////////////////////// indestructible_singleton_type 
+    ///////////////////////////////////////////////// indestructible_singleton_type
 
     template <typename T, typename Ty>
     class singleton<T, Ty, indestructible_singleton_type> : public singleton_base
@@ -108,7 +108,7 @@ namespace more
         friend T;
 #else
         friend class identity<T>::value_type;
-#endif        
+#endif
         struct tag {};
 
     public:
@@ -116,11 +116,11 @@ namespace more
 
         // instance...
         template <typename ... Arg>
-        static typename singleton_base::add_cv_qualifier<T,Ty>::type& 
+        static typename singleton_base::add_cv_qualifier<T,Ty>::type&
         instance(Arg && ...arg)
         {
-            static typename singleton_base::add_cv_qualifier<T,Ty>::type * one = 
-                new typename singleton_base::add_cv_qualifier<T,Ty>::type(typename base_type::tag(), 
+            static typename singleton_base::add_cv_qualifier<T,Ty>::type * one =
+                new typename singleton_base::add_cv_qualifier<T,Ty>::type(typename base_type::tag(),
                                                                           std::forward<Arg>(arg)...);
             return *one;
         }

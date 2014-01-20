@@ -17,10 +17,10 @@
 using namespace yats;
 
 Context(any_class_test)
-{  
+{
     more::any a(1);
     const more::any b(std::string("hello world!"));
-    
+
     Test(default_constructible)
     {
         more::any c;
@@ -29,7 +29,7 @@ Context(any_class_test)
     Test(copy_constructible)
     {
         more::any copy(a);
-        Assert( more::any_cast<int>(a), is_equal_to( more::any_cast<int>(copy)) ); 
+        Assert( more::any_cast<int>(a), is_equal_to( more::any_cast<int>(copy)) );
     }
 
     Test(empty)
@@ -37,7 +37,7 @@ Context(any_class_test)
         Assert(a.empty(), is_false());
         Assert(more::any().empty(), is_true());
     }
-    
+
     Test(any_cast)
     {
         Assert(more::any_cast<int>(a), is_equal_to(1));
@@ -57,10 +57,10 @@ Context(any_class_test)
 
         out << b_out;
         Assert(out.str(), is_equal_to(std::string("Hello world!")));
-    }    
+    }
 
 }
- 
+
 
 int
 main(int argc, char *argv[])

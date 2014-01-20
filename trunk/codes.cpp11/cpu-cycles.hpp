@@ -1,5 +1,5 @@
 /* $Id$ */
- 
+
 /*
  * ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
@@ -16,17 +16,17 @@
 #error compiler not supported!
 #endif
 
-namespace more {  
-    
+namespace more {
+
     // assembly policies are taken from the linux kernel 2.6/include/arch-.../
     //
- 
-    namespace detail 
+
+    namespace detail
     {
-#if defined(__i386__) && !defined(__LP64__)    
+#if defined(__i386__) && !defined(__LP64__)
             typedef unsigned long long cycles_t;
 
-            static cycles_t get_cycles() 
+            static cycles_t get_cycles()
             {
                 cycles_t val;
                 __asm__ __volatile__("rdtsc" : "=A" (val));
@@ -34,10 +34,10 @@ namespace more {
             }
 #endif
 
-#if defined(__LP64__)    
+#if defined(__LP64__)
             typedef unsigned long long cycles_t;
-        
-            static cycles_t get_cycles() 
+
+            static cycles_t get_cycles()
             {
                 cycles_t val;
                 unsigned long __a,__d;
@@ -53,7 +53,7 @@ namespace more {
             static inline cycles_t get_cycles ()
             {
                 cycles_t val;
-                __asm__ __volatile__ ("mov %o=ar%1" : "=r" (val) : "i" (44));  
+                __asm__ __volatile__ ("mov %o=ar%1" : "=r" (val) : "i" (44));
                 return val;
             }
 #endif
@@ -66,7 +66,7 @@ namespace more {
     {
         typedef detail::cycles_t cycles_type;
 
-        static inline cycles_type 
+        static inline cycles_type
         get_cycles()
         {
             return detail::get_cycles();
@@ -81,13 +81,13 @@ namespace more {
             {}
             return true;
         }
-        
+
         static inline
         bool busywait_for(const cycles_type &d)
         {
             return busywait_until(detail::get_cycles() + d);
         }
-    }; 
+    };
 
 } // namespace more
 

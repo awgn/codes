@@ -11,8 +11,8 @@
 // this classes require cpufreq library (debian package: libcpufreq-dev)
 //
 
-#ifndef _CPUFREQ_HPP_ 
-#define _CPUFREQ_HPP_ 
+#ifndef _CPUFREQ_HPP_
+#define _CPUFREQ_HPP_
 
 #include <cpufreq.h>        // libcpufreq
 
@@ -26,13 +26,13 @@
 
 namespace more {
 
-    class cpufreq 
+    class cpufreq
     {
    public:
 
-        /************************************** 
-                 cpufreq library wrapper 
-         **************************************/       
+        /**************************************
+                 cpufreq library wrapper
+         **************************************/
 
         cpufreq(unsigned int n)
         : m_cpu(n)
@@ -97,54 +97,54 @@ namespace more {
         get_driver() const
         {
             std::shared_ptr<char> d( cpufreq_get_driver(m_cpu), cpufreq_put_driver );
-            return std::string(d.get()); 
+            return std::string(d.get());
         }
 
         /* determine CPUfreq policy currently used
          *
          */
 
-        std::shared_ptr<const cpufreq_policy> 
+        std::shared_ptr<const cpufreq_policy>
         policy() const
         {
             return std::shared_ptr<const cpufreq_policy>(cpufreq_get_policy(m_cpu), cpufreq_put_policy);
-        } 
+        }
 
         /* determine CPUfreq governors currently available
          *
-         * may be modified by modprobe'ing or rmmod'ing other governors. 
+         * may be modified by modprobe'ing or rmmod'ing other governors.
          */
 
         const std::list<std::string>
         available_governors() const
         {
             std::list<std::string> ret;
-            std::shared_ptr<cpufreq_available_governors> 
+            std::shared_ptr<cpufreq_available_governors>
                 gov( cpufreq_get_available_governors(m_cpu), cpufreq_put_available_governors);
 
             for(cpufreq_available_governors * p = gov.get() ;p != nullptr; p=p->next)
                 ret.push_back(p->governor);
-            
-            return ret; 
+
+            return ret;
         }
 
         /* determine CPU frequency states available
          *
          * only present on _some_ ->target() cpufreq drivers. For information purposes
-         * only. 
+         * only.
          */
 
         const std::list<unsigned long>
         available_frequencies() const
         {
             std::list<unsigned long> ret;
-            std::shared_ptr<cpufreq_available_frequencies> 
+            std::shared_ptr<cpufreq_available_frequencies>
                 q ( cpufreq_get_available_frequencies(m_cpu), cpufreq_put_available_frequencies);
             for( cpufreq_available_frequencies * p = q.get() ;p != nullptr; p=p->next)
             {
                 ret.push_back(p->frequency);
             }
-            return ret; 
+            return ret;
         }
 
         /* determine stats for cpufreq subsystem
@@ -163,8 +163,8 @@ namespace more {
         {
             return cpufreq_get_transitions(m_cpu);
         }
-     
-        /* modify a policy by only changing min/max freq or governor 
+
+        /* modify a policy by only changing min/max freq or governor
          *
          * Does not check whether result is what was intended.
          */
@@ -194,15 +194,15 @@ namespace more {
         /* set a specific frequency
          *
          * Does only work if userspace governor can be used and no external
-         * interference (other calls to this function or to set/modify_policy) 
+         * interference (other calls to this function or to set/modify_policy)
          * occurs. Also does not work on ->range() cpufreq drivers.
          */
 
-        void 
+        void
         set_frequency(unsigned long target_frequency)
         {
             if(cpufreq_set_frequency(m_cpu,target_frequency) != 0)
-               throw std::runtime_error("cpufreq_set_frequency"); 
+               throw std::runtime_error("cpufreq_set_frequency");
         }
 
     private:

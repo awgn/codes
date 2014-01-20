@@ -9,7 +9,7 @@
  */
 
 #ifndef _STATIC_ALLOCATOR_HPP_
-#define _STATIC_ALLOCATOR_HPP_ 
+#define _STATIC_ALLOCATOR_HPP_
 
 #include <stdexcept>
 #include <limits>
@@ -19,11 +19,11 @@
 #include <iostream>
 #endif
 
-namespace more { 
+namespace more {
 
     template <typename Tp>
     class static_allocator
-    { 
+    {
     public:
       typedef size_t            size_type;
       typedef std::ptrdiff_t    difference_type;
@@ -48,7 +48,7 @@ namespace more {
         {}
 
     template<typename Tp1>
-        static_allocator(const static_allocator<Tp1>& rhs) throw() 
+        static_allocator(const static_allocator<Tp1>& rhs) throw()
         : m_area(rhs.m_area),
           m_size(rhs.m_size)
         {}
@@ -70,16 +70,16 @@ namespace more {
         allocate(size_type __n, const void * = 0)
         {
             const size_type __s = __n * sizeof(Tp);
-            
+
 #ifndef NDEBUG
             std::cout << "static_allocator<>: this[" << (void *)this << "]->allocate(" << __s << ") bytes..." << std::endl;
 #endif
             if ( __s > m_size )
                 throw std::out_of_range("allocate");
-            
+
             m_size -= __s;
             pointer a = static_cast<Tp*>(m_area);
-            
+
             m_area = reinterpret_cast<void *>( static_cast<char*>(m_area) + __s);
             return a;
         }

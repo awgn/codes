@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -13,52 +13,52 @@
 #include <yats.hpp>
 using namespace yats;
 
-struct base 
+struct base
 {
     virtual ~base() {}
     virtual void hello_world()=0;
 };
 
-////////////////  default constructible classes  //////////////// 
+////////////////  default constructible classes  ////////////////
 
 struct der0  // error
 {
     virtual ~der0() {}
     virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 };
- 
-struct der1 : public base 
+
+struct der1 : public base
 {
-    der1() : base() 
+    der1() : base()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 
     virtual ~der1()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
-    
+
     virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 };
 
-struct der2 : public base 
+struct der2 : public base
 {
-    der2() : base() 
+    der2() : base()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 
     virtual ~der2()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
- 
+
     virtual void hello_world() { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 };
 
-////////////////  1 parameter-constructible classes (up to 5)  //////////////// 
+////////////////  1 parameter-constructible classes (up to 5)  ////////////////
 
-struct der3 : public base 
+struct der3 : public base
 {
-    der3(std::string n) 
-    : base() 
+    der3(std::string n)
+    : base()
     , value(std::move(n))
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 
-    virtual ~der3() 
+    virtual ~der3()
     { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 
     std::string value;
@@ -67,11 +67,11 @@ struct der3 : public base
 };
 
 
-////////////////  global factories: simple and 1-parameter  //////////////// 
+////////////////  global factories: simple and 1-parameter  ////////////////
 
 more::factory<std::string, base> factory;                   // generic factory: for objects default-constructible or for types that accept a variadic number of arguments
 
-namespace 
+namespace
 {
     // automatic hook: by means of the factory_register object
 
@@ -103,17 +103,17 @@ Context(factory_test)
     std::cout << "--- out of scope ---" << std::endl;
 
     factory.unregist("der2");
-    
+
     Assert(factory.is_registered("der1"), is_true());
     Assert(factory.is_registered("der2"), is_false());
     Assert(factory.is_registered("der3"), is_true());
 
     }
 }
- 
+
 int
 main(int argc, char *argv[])
 {
     return yats::run(argc, argv);
 }
- 
+

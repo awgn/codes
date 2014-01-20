@@ -9,7 +9,7 @@
  */
 
 #ifndef _RANGE_ITERATOR_HPP_
-#define _RANGE_ITERATOR_HPP_ 
+#define _RANGE_ITERATOR_HPP_
 
 #include <iterator>
 #include <type_traits>
@@ -21,7 +21,7 @@
 #include <typeinfo>
 
 
-namespace more { 
+namespace more {
 
     template<typename Iter> struct range_const_iterator_adapter;
 
@@ -43,7 +43,7 @@ namespace more {
         {
             if (m_current <  m_begin || (m_current+1) > m_end)
                 throw std::runtime_error("random_access_iterator::m_range_check");
-        }    
+        }
         void m_range_check(std::bidirectional_iterator_tag) const
         {
             if (m_out_of_range || m_current == m_end)
@@ -55,7 +55,7 @@ namespace more {
             if (m_out_of_range || m_current == m_end)
                 throw std::runtime_error("forward_iterator::m_range_check");
         }
-    
+
         void m_track(std::random_access_iterator_tag, bool) const
         { /* nothing to do */ }
 
@@ -105,14 +105,14 @@ namespace more {
         Iter m_begin;
         Iter m_current;
         Iter m_end;
-        
+
         mutable bool m_out_of_range;
     };
 
 
     template<typename Iter>
     struct range_iterator_adapter : protected range_iterator_base<Iter>
-    { 
+    {
         friend struct range_const_iterator_adapter<Iter>;
 
         typedef typename std::iterator_traits<Iter>::iterator_category iterator_category;
@@ -121,7 +121,7 @@ namespace more {
         typedef typename std::iterator_traits<Iter>::pointer           pointer;
         typedef typename std::iterator_traits<Iter>::reference         reference;
 
-        static_assert(!std::is_const<typename std::remove_pointer<pointer>::type>::value, "range_iterator for a const_iterator type"); 
+        static_assert(!std::is_const<typename std::remove_pointer<pointer>::type>::value, "range_iterator for a const_iterator type");
 
         template <typename It>
         range_iterator_adapter(It beg, It end)
@@ -138,7 +138,7 @@ namespace more {
         range_iterator_adapter(const range_iterator_adapter& other)
         : range_iterator_base<Iter>(other.m_begin, other.m_current, other.m_end, other.m_out_of_range)
         {}
-        
+
     private:
         template <typename It>
         range_iterator_adapter(It beg, It cur, It end, bool out)
@@ -154,23 +154,23 @@ namespace more {
         {
             this->m_range_check(iterator_category());
             return * this->m_current;
-        } 
- 
-        pointer 
+        }
+
+        pointer
         operator->() const
         {
             this->m_range_check(iterator_category());
             return this->m_current;
         }
 
-        range_iterator_adapter & 
+        range_iterator_adapter &
         operator++()
-        {   
+        {
             ++this->m_current;
             this->m_track(iterator_category(),true);
             return *this;
         }
-        range_iterator_adapter  
+        range_iterator_adapter
         operator++(int)
         {
             range_iterator_adapter tmp(*this);
@@ -179,10 +179,10 @@ namespace more {
             return tmp;
         }
 
-        friend bool operator==(const range_iterator_adapter &lhs, const range_iterator_adapter &rhs) 
+        friend bool operator==(const range_iterator_adapter &lhs, const range_iterator_adapter &rhs)
         {
             assert(lhs.m_begin == rhs.m_begin); assert(lhs.m_end == rhs.m_end);
-            return lhs.m_current == rhs.m_current; 
+            return lhs.m_current == rhs.m_current;
         }
 
         friend bool operator!=(const range_iterator_adapter &lhs, const range_iterator_adapter &rhs)
@@ -190,9 +190,9 @@ namespace more {
             return !(lhs == rhs);
         }
 
-        range_iterator_adapter& 
-        operator=(const range_iterator_adapter& other)  
-        {  
+        range_iterator_adapter&
+        operator=(const range_iterator_adapter& other)
+        {
             if (this != &other)
             {
                 this->m_begin   = other.m_begin;
@@ -205,14 +205,14 @@ namespace more {
         // bidirectional iterator requirements
         //
 
-        range_iterator_adapter & 
+        range_iterator_adapter &
         operator--()
-        { 
+        {
             --this->m_current;
             this->m_track(iterator_category(),false);
             return *this;
         }
-        range_iterator_adapter  
+        range_iterator_adapter
         operator--(int)
         {
             range_iterator_adapter tmp(*this);
@@ -230,30 +230,30 @@ namespace more {
             return this->m_current[n];
         }
 
-        range_iterator_adapter & 
+        range_iterator_adapter &
         operator+=(ptrdiff_t n)
-        { 
+        {
             this->m_current += n;
             return *this;
         }
         friend const range_iterator_adapter operator+(range_iterator_adapter lhs, int n)
         { return lhs+=n; }
 
-        range_iterator_adapter & 
+        range_iterator_adapter &
         operator-=(ptrdiff_t n)
-        { 
+        {
             this->m_current -= n;
             return *this;
         }
         friend const range_iterator_adapter operator-(range_iterator_adapter lhs, int n)
         { return lhs-=n; }
-        
+
         friend difference_type operator-(const range_iterator_adapter& lhs,
                                          const range_iterator_adapter& rhs)
         {
             assert(lhs.m_begin == rhs.m_begin); assert(lhs.m_end == rhs.m_end);
             return lhs.m_current-rhs.m_current;
-        } 
+        }
 
         friend bool operator<(const range_iterator_adapter& lhs,
                               const range_iterator_adapter& rhs)
@@ -288,7 +288,7 @@ namespace more {
         {
             return range_iterator_adapter(this->m_begin, this->m_end, this->m_end, this->m_out_of_range);
         }
-        
+
         ssize_t
         size() const
         {
@@ -304,7 +304,7 @@ namespace more {
 
     template<typename Iter>
     struct range_const_iterator_adapter : protected range_iterator_base<Iter>
-    { 
+    {
         typedef typename std::iterator_traits<Iter>::iterator_category iterator_category;
         typedef typename std::iterator_traits<Iter>::difference_type   difference_type;
         typedef typename std::iterator_traits<Iter>::value_type        value_type;
@@ -326,10 +326,10 @@ namespace more {
         range_const_iterator_adapter(const range_const_iterator_adapter& other)
         : range_iterator_base<Iter>(other.m_begin, other.m_current, other.m_end, other.m_out_of_range)
         {}
-        
-        /* note: this must be template otherwise it has greater precedence over 
+
+        /* note: this must be template otherwise it has greater precedence over
                  the first template constructor
-          */ 
+          */
         template <typename It>
         range_const_iterator_adapter(const range_iterator_adapter<It>& other)
         : range_iterator_base<Iter>(other.m_begin, other.m_current, other.m_end, other.m_out_of_range)
@@ -350,23 +350,23 @@ namespace more {
         {
             this->m_range_check(iterator_category());
             return * this->m_current;
-        } 
- 
-        const pointer 
+        }
+
+        const pointer
         operator->() const
         {
             this->m_range_check(iterator_category());
             return this->m_current;
         }
 
-        range_const_iterator_adapter & 
+        range_const_iterator_adapter &
         operator++()
-        {   
+        {
             ++this->m_current;
             this->m_track(iterator_category(),true);
             return *this;
         }
-        range_const_iterator_adapter  
+        range_const_iterator_adapter
         operator++(int)
         {
             range_const_iterator_adapter tmp(*this);
@@ -375,10 +375,10 @@ namespace more {
             return tmp;
         }
 
-        friend bool operator==(const range_const_iterator_adapter &lhs, const range_const_iterator_adapter &rhs) 
+        friend bool operator==(const range_const_iterator_adapter &lhs, const range_const_iterator_adapter &rhs)
         {
             assert(lhs.m_begin == rhs.m_begin); assert(lhs.m_end == rhs.m_end);
-            return lhs.m_current == rhs.m_current; 
+            return lhs.m_current == rhs.m_current;
         }
 
         friend bool operator!=(const range_const_iterator_adapter &lhs, const range_const_iterator_adapter &rhs)
@@ -386,9 +386,9 @@ namespace more {
             return !(lhs == rhs);
         }
 
-        range_const_iterator_adapter& 
-        operator=(const range_const_iterator_adapter& other)  
-        {  
+        range_const_iterator_adapter&
+        operator=(const range_const_iterator_adapter& other)
+        {
             if (this != &other)
             {
                 this->m_begin   = other.m_begin;
@@ -401,14 +401,14 @@ namespace more {
         // bidirectional iterator requirements
         //
 
-        range_const_iterator_adapter & 
+        range_const_iterator_adapter &
         operator--()
-        { 
+        {
             --this->m_current;
             this->m_track(iterator_category(),false);
             return *this;
         }
-        range_const_iterator_adapter  
+        range_const_iterator_adapter
         operator--(int)
         {
             range_const_iterator_adapter tmp(*this);
@@ -426,30 +426,30 @@ namespace more {
             return this->m_current[n];
         }
 
-        range_const_iterator_adapter & 
+        range_const_iterator_adapter &
         operator+=(ptrdiff_t n)
-        { 
+        {
             this->m_current += n;
             return *this;
         }
         friend const range_const_iterator_adapter operator+(range_const_iterator_adapter lhs, int n)
         { return lhs+=n; }
 
-        range_const_iterator_adapter & 
+        range_const_iterator_adapter &
         operator-=(ptrdiff_t n)
-        { 
+        {
             this->m_current -= n;
             return *this;
         }
         friend const range_const_iterator_adapter operator-(range_const_iterator_adapter lhs, int n)
         { return lhs-=n; }
-        
+
         friend difference_type operator-(const range_const_iterator_adapter& lhs,
                                          const range_const_iterator_adapter& rhs)
         {
             assert(lhs.m_begin == rhs.m_begin); assert(lhs.m_end == rhs.m_end);
             return lhs.m_current-rhs.m_current;
-        } 
+        }
 
         friend bool operator<(const range_const_iterator_adapter& lhs,
                               const range_const_iterator_adapter& rhs)
@@ -484,7 +484,7 @@ namespace more {
         {
             return range_const_iterator_adapter(this->m_begin, this->m_end, this->m_end, this->m_out_of_range);
         }
-        
+
         ssize_t
         size() const
         {

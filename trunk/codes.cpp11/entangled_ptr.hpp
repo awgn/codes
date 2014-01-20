@@ -9,19 +9,19 @@
  */
 
 #ifndef _ENTANGLED_PTR_HPP_
-#define _ENTANGLED_PTR_HPP_ 
+#define _ENTANGLED_PTR_HPP_
 
 #include <stdexcept>
 #include <vector>
 #include <algorithm>
 
-namespace more { 
+namespace more {
 
     template <typename Tp> class enable_entangled_from_this;
 
     template <typename Tp>
     class entangled_ptr
-    {              
+    {
         entangled_ptr(Tp *p)
         : m_ptr(p)
         {
@@ -36,7 +36,7 @@ namespace more {
         {}
 
         ~entangled_ptr()
-        {   
+        {
             if(m_ptr)
                 m_ptr->m_remove_entangled_for(this);
         }
@@ -68,7 +68,7 @@ namespace more {
         }
 
         entangled_ptr &
-        operator=(entangled_ptr &&rhs) noexcept 
+        operator=(entangled_ptr &&rhs) noexcept
         {
             if(m_ptr)
                 m_ptr->m_remove_entangled_for(this);
@@ -117,7 +117,7 @@ namespace more {
 
     template <typename Tp>
     class enable_entangled_from_this
-    { 
+    {
     public:
         typedef enable_entangled_from_this<Tp> super;
         friend class entangled_ptr<Tp>;
@@ -154,7 +154,7 @@ namespace more {
 
     private:
         std::vector<entangled_ptr<Tp> *> m_ref;
-        
+
         enable_entangled_from_this(const enable_entangled_from_this &) = delete;
         enable_entangled_from_this & operator=(const enable_entangled_from_this &) = delete;
 
@@ -169,7 +169,7 @@ namespace more {
         }
 
         void m_add_entangled_for(entangled_ptr<Tp> *ptr)
-        {                     
+        {
             m_ref.push_back(ptr);
         }
 
@@ -179,11 +179,11 @@ namespace more {
         }
 
         void m_replace_entangled_for(entangled_ptr<Tp> *ptr_old, entangled_ptr<Tp> *ptr_new) noexcept
-        {                                                    
+        {
             std::replace(m_ref.begin(), m_ref.end(), ptr_old, ptr_new);
         }
 
-        size_t 
+        size_t
         m_use_count() const
         {
             return m_ref.size();

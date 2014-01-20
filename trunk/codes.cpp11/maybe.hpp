@@ -9,7 +9,7 @@
  */
 
 #ifndef _MAYBE_HPP_
-#define _MAYBE_HPP_ 
+#define _MAYBE_HPP_
 
 #include <cxxabi.hpp>  // more!
 
@@ -20,60 +20,60 @@
 #include <iostream>
 
 
-namespace details 
+namespace details
 {
     struct Nothing {};
-    
+
     template <typename T1, typename T2>
     struct maybe_helper
     {
         static bool equal(const std::pair<T1, bool>& lhs, const std::pair<T2, bool>& rhs)
-        { 
+        {
             return (lhs.first == rhs.first && lhs.second && rhs.second) ||
                    (!lhs.second && !rhs.second);
-        }    
+        }
         static bool less(const std::pair<T1, bool>& lhs, const std::pair<T2, bool>& rhs)
         {
-           return rhs.second && (!lhs.second || lhs.first < rhs.first); 
-        }    
+           return rhs.second && (!lhs.second || lhs.first < rhs.first);
+        }
     };
     template <typename T1>
     struct maybe_helper<T1, Nothing>
     {
-        static bool equal(const std::pair<T1,bool> &lhs, std::pair<Nothing,bool>) 
-        { 
-            return !lhs.second; 
+        static bool equal(const std::pair<T1,bool> &lhs, std::pair<Nothing,bool>)
+        {
+            return !lhs.second;
         }
-        
-        static bool less(const std::pair<T1,bool>, std::pair<Nothing,bool>) 
-        { 
-            return false; 
+
+        static bool less(const std::pair<T1,bool>, std::pair<Nothing,bool>)
+        {
+            return false;
         }
     };
     template <typename T2>
     struct maybe_helper<Nothing, T2>
     {
         static bool equal(std::pair<Nothing,bool>, const std::pair<T2,bool> &rhs)
-        { 
-            return !rhs.second; 
+        {
+            return !rhs.second;
         }
-        
+
         static bool less(std::pair<Nothing,bool>, const std::pair<T2,bool> &rhs)
-        { 
-            return rhs.second; 
+        {
+            return rhs.second;
         }
     };
     template <>
     struct maybe_helper<Nothing, Nothing>
     {
         static bool equal(const std::pair<Nothing,bool>, const std::pair<Nothing,bool>)
-        { 
-            return true; 
+        {
+            return true;
         }
 
         static bool less(const std::pair<Nothing,bool>, const std::pair<Nothing,bool>)
-        { 
-            return false; 
+        {
+            return false;
         }
     };
 }
@@ -99,13 +99,13 @@ public:
     {
         m_state = false;
         return *this;
-    }    
+    }
 
     template <typename T>
     bool operator==(const Maybe<T> &other) const
     {
-        return details::maybe_helper<Tp,T>::equal(std::make_pair(unsafeJust(), isJust()), 
-                                                  std::make_pair(other.unsafeJust(), other.isJust())); 
+        return details::maybe_helper<Tp,T>::equal(std::make_pair(unsafeJust(), isJust()),
+                                                  std::make_pair(other.unsafeJust(), other.isJust()));
     }
     template <typename T>
     bool operator!=(const Maybe<T> &other) const
@@ -116,9 +116,9 @@ public:
     template <typename T>
     bool operator<(const Maybe<T> &other) const
     {
-        return details::maybe_helper<Tp,T>::less(std::make_pair(unsafeJust(), isJust()), 
-                                                  std::make_pair(other.unsafeJust(), other.isJust())); 
-    }             
+        return details::maybe_helper<Tp,T>::less(std::make_pair(unsafeJust(), isJust()),
+                                                  std::make_pair(other.unsafeJust(), other.isJust()));
+    }
     template <typename T>
     bool operator<=(const Maybe<T> &other) const
     {
@@ -134,10 +134,10 @@ public:
     {
         return other < *this;
     }
-    
+
     explicit operator bool() = delete;
 
-    explicit operator Tp() 
+    explicit operator Tp()
     {
         return fromJust();
     }
@@ -153,7 +153,7 @@ public:
     }
 
     Tp fromJust() const
-    { 
+    {
         if (!m_state)
             throw std::runtime_error("Maybe<" + demangle(typeid(Tp).name()) + ">: Nothing");
         return m_value;
@@ -163,7 +163,7 @@ public:
     {
         return m_state ? m_value : Tp();
     }
-    
+
     template <typename Fn>
     auto fmap(Fn fun) -> decltype(Maybe<decltype(fun(std::declval<Tp>()))>(fun(this->fromJust())));
 
@@ -173,7 +173,7 @@ private:
 };
 
 
-namespace 
+namespace
 {
     Maybe<details::Nothing> Nothing = Maybe<details::Nothing>();
 }
@@ -185,7 +185,7 @@ Maybe<Tp> maybe(Tp b, Fn f, Maybe<Tp> const &a)
 {
     if (a == Nothing)
         return b;
-    else 
+    else
         return Just(f(a.fromJust()));
 }
 
@@ -196,14 +196,14 @@ inline Maybe<typename std::remove_reference<Tp>::type> Just(Tp && value)
     return Maybe<typename std::remove_reference<Tp>::type
                     >(std::forward<Tp>(value));
 }
-    
+
 template <typename Tp>
 template <typename Fn>
 auto
 Maybe<Tp>::fmap(Fn fun) -> decltype(Maybe<decltype(fun(std::declval<Tp>()))>(fun(this->fromJust())))
 {
     if (isNothing())
-        return Nothing; 
+        return Nothing;
     else
         return Just<decltype(fun(std::declval<Tp>()))>(fun(fromJust()));
 }

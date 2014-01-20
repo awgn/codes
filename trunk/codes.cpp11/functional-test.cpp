@@ -4,7 +4,7 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
@@ -40,20 +40,20 @@ Context(functional_tests)
     {
         more::flipflop<int> ff( (std::logical_not<int>()) );
 
-        Assert( ff(1) , is_equal_to(0)); 
-        Assert( ff(1) , is_equal_to(0)); 
-        Assert( ff(0) , is_equal_to(1)); 
-        Assert( ff(1) , is_equal_to(1)); 
-        Assert( ff(1) , is_equal_to(1)); 
-        Assert( ff(0) , is_equal_to(0)); 
-        Assert( ff(1) , is_equal_to(0)); 
-        Assert( ff(1) , is_equal_to(0)); 
+        Assert( ff(1) , is_equal_to(0));
+        Assert( ff(1) , is_equal_to(0));
+        Assert( ff(0) , is_equal_to(1));
+        Assert( ff(1) , is_equal_to(1));
+        Assert( ff(1) , is_equal_to(1));
+        Assert( ff(0) , is_equal_to(0));
+        Assert( ff(1) , is_equal_to(0));
+        Assert( ff(1) , is_equal_to(0));
     }
 
     Test(flipflop2)
     {
-        more::flipflop2<int> ff2( std::bind(std::equal_to<int>(), _1, 0), 
-                                  std::bind(std::equal_to<int>(), _1, 3) );    
+        more::flipflop2<int> ff2( std::bind(std::equal_to<int>(), _1, 0),
+                                  std::bind(std::equal_to<int>(), _1, 3) );
 
         Assert( ff2(-2) , is_equal_to(0));
         Assert( ff2(-1) , is_equal_to(0));
@@ -79,13 +79,13 @@ Context(functional_tests)
     Test(identity)
     {
         Assert( more::identity<int>()(42), is_equal_to(42) );
-    }                                                                    
+    }
 
     Test(select)
     {
-        auto n = std::make_pair(11,42);                  
+        auto n = std::make_pair(11,42);
 
-        auto p1 = more::select1st< std::pair<int,int> >(); 
+        auto p1 = more::select1st< std::pair<int,int> >();
         auto p2 = more::select2nd< std::pair<int,int> >();
 
         Assert( p1(n), is_equal_to(11) );
@@ -111,7 +111,7 @@ Context(functional_tests)
         test(int n)
         : value(n)
         {}
-    
+
         void hello() { std::cout << "Hello World! (" << value << ")" << std::endl; }
     };
 
@@ -127,15 +127,15 @@ Context(functional_tests)
         std::vector<test *> vec = { new test(1), 0, 0, new test(2) };
 #endif
         using namespace std::placeholders;
-        std::for_each(vec.begin(), vec.end(), 
+        std::for_each(vec.begin(), vec.end(),
                   std::bind( more::call_if(std::mem_fn(&test::hello)), _1, _1));
     }
 
 }
- 
+
 int
 main(int argc, char *argv[])
 {
     return yats::run(argc, argv);
 }
- 
+

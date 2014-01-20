@@ -4,11 +4,11 @@
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli 
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
  * ----------------------------------------------------------------------------
  */
 
-#pragma once 
+#pragma once
 
 #include <map>
 #include <string>
@@ -26,10 +26,10 @@
 namespace generic {
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
     struct base_args
-    { 
-        virtual ~base_args() { }; 
+    {
+        virtual ~base_args() { };
     };
 
     template <typename ...Ts>
@@ -46,12 +46,12 @@ namespace generic {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     template <typename Tp>
-    struct base_type 
+    struct base_type
     {
         template <typename Typ, typename CharT, typename Traits>
         friend typename std::basic_ostream<CharT, Traits> &
         operator<<(std::basic_ostream<CharT,Traits>& out, base_type<Typ> const& that);
-    
+
         template <typename Typ, typename CharT, typename Traits>
         friend typename std::basic_istream<CharT, Traits> &
         operator>>(std::basic_istream<CharT,Traits>& in, base_type<Typ>&  that);
@@ -84,7 +84,7 @@ namespace generic {
         std::tuple<Ts...> &
         data_as()
         {
-            if (ctor_.empty())    
+            if (ctor_.empty())
                 throw std::logic_error("object not constructed");
 
             return dynamic_cast<args_pack<Ts...> &>(*args_).value;
@@ -94,9 +94,9 @@ namespace generic {
         std::tuple<Ts...> const &
         data_as() const
         {
-            if (ctor_.empty())    
+            if (ctor_.empty())
                 throw std::logic_error("object not constructed");
-            
+
             return dynamic_cast<args_pack<Ts...> const &>(*args_).value;
         }
     };
@@ -111,7 +111,7 @@ namespace generic {
             throw std::runtime_error(demangle(typeid(Tp).name()) + ": " + that.ctor_ + " unknown constructor");
 
         out << that.ctor_;
-        
+
         it->second->show(that.ctor_, out, that.args_);
 
         return out;
@@ -133,12 +133,12 @@ namespace generic {
         that.type(ctor_);
 
         it->second->read(ctor_, in, that.args_);
-        
+
         that.ctor_ = std::move(ctor_);
 
         return in;
     }
-    
+
     template <typename Tp>
     inline std::string
     show(const base_type<Tp> &opt)
@@ -148,7 +148,7 @@ namespace generic {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
     struct base_visitor
     {
         virtual void read (std::string const &type, std::istream &stream, std::shared_ptr<base_args> &) = 0;
@@ -181,7 +181,7 @@ namespace generic {
         {
             std::ostream &out_;
             std::string const &type_;
-            
+
             show_on(std::string const &type, std::ostream &out)
             : out_(out)
             , type_(type)
@@ -199,7 +199,7 @@ namespace generic {
             auto sp = std::make_shared<args_pack<Ts...>>();
 
             more::tuple_for_each(sp->value, read_on(type, in));
-            
+
             args = std::move(sp);
         }
 
@@ -211,7 +211,7 @@ namespace generic {
 
             more::tuple_for_each(p->value, show_on(type, out));
         }
-        
+
         virtual void check(std::string const &type, std::shared_ptr<base_args> const &args)
         {
             auto p = dynamic_cast<args_pack<Ts...> const *>(args.get());
@@ -221,7 +221,7 @@ namespace generic {
     };
 
 
-} // namespace generic 
+} // namespace generic
 
 
 #define GENERIC_GET_CTOR(x, ...)        x
@@ -234,7 +234,7 @@ namespace generic {
         Tp ret (#name, std::forward<Ts>(args)...);  \
         return ret; \
     }
-    
+
 
 #define GENERIC_TYPE(T, ...) \
     struct T ## _type \
@@ -287,4 +287,4 @@ namespace generic {
         \
     private: \
         type_ctor type_; \
-    }; 
+    };

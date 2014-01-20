@@ -45,9 +45,9 @@ Context(entangled_ptr_tests)
     test y;
     test z;
 
-    more::entangled_ptr<test> p; 
-    more::entangled_ptr<test> q; 
-    more::entangled_ptr<test> w; 
+    more::entangled_ptr<test> p;
+    more::entangled_ptr<test> q;
+    more::entangled_ptr<test> w;
 
     Test(pointer_assignable)
     {
@@ -59,7 +59,7 @@ Context(entangled_ptr_tests)
     {
         Assert(p.get(), is_equal_to(&x));
     }
-        
+
     Test(operator_arrow)
     {
         Assert(p->value, is_equal_to(x.value));

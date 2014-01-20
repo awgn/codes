@@ -18,13 +18,13 @@ using namespace std;
 
 const int max_iter = 10000000;
 
-void 
+void
 thread_routine_boost()
 {
     auto b = chrono::system_clock::now();
 
     long long int sum = 0;
-    for(int i=0; i< max_iter; ++i) 
+    for(int i=0; i< max_iter; ++i)
     {
         sum += boost::lexical_cast<int>("123456");
     }
@@ -35,20 +35,20 @@ thread_routine_boost()
     std::cout << max_iter << " boost::lexical_cast<int>() " << diff.count() << " msec" << std::endl;
 }
 
-void 
+void
 thread_routine_more()
-{    
+{
     auto b = std::chrono::system_clock::now();
 
     long long int sum = 0;
-    for(int i=0; i< max_iter; ++i) 
+    for(int i=0; i< max_iter; ++i)
     {
         sum += more::lexical_cast<int>("123456");
     }
 
     auto e = std::chrono::system_clock::now();
     auto diff = chrono::duration_cast<chrono::milliseconds>(e-b);
-    
+
     std::cout << max_iter << " more::lexical_cast<int>() " << diff.count() << " msec" << std::endl;
 }
 
@@ -76,4 +76,4 @@ main(int, char *[])
 #endif
     return 0;
 }
- 
+
