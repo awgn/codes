@@ -91,7 +91,7 @@ namespace more
             , ticket(0)
             , done  (0)
             {
-                if(!fbuf->open(name, std::ios_base::out|std::ios_base::trunc))
+                if(!fbuf->open(name, std::ios_base::out|std::ios_base::app))
                     throw std::system_error(errno, std::generic_category(), "filebuf: open");        
                 
                 out.rdbuf(fbuf.get());
@@ -158,7 +158,7 @@ namespace more
 
             data_->fbuf.reset(new std::filebuf());
 
-            if (!data_->fbuf->open(filename, mode))
+            if (!data_->fbuf->open(filename, std::ios_base::out | mode))
                 throw std::system_error(errno, std::generic_category(), "filebuf: could not open " + filename);        
 
             data_->fname = std::move(filename);
@@ -303,7 +303,7 @@ namespace more
                 rot = false;
             }
 
-            if (!fb->open(data_->fname, std::ios::out))
+            if (!fb->open(data_->fname, std::ios::out|std:::ios|app))
                 throw std::system_error(errno, std::generic_category(), "filebuf: open");      
 
             if (!rot)
