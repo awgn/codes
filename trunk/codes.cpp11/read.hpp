@@ -321,6 +321,9 @@ inline namespace more_read {
         if (!(in >> value >> c >> unit))
             throw std::runtime_error(details::error<std::chrono::duration<Rep, Period>>("parse error"));
 
+        if (c != '_')
+            throw std::runtime_error(details::error<std::chrono::duration<Rep, Period>>("parse error"));
+
         if (unit.compare("ns") == 0)
             ret = std::chrono::duration_cast<Duration>(std::chrono::nanoseconds(value));
         else if (unit.compare("us") == 0)
