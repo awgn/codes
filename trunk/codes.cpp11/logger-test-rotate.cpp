@@ -13,7 +13,7 @@
 int
 main(int, char *[])
 {
-    more::logger out;
+    more::logger<> out;
 
     out.open("logger.txt");
 

@@ -11,6 +11,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include <string>
 #include <cstring>
 #include <stdexcept>
@@ -144,7 +145,7 @@ namespace more {
         template <typename T>
         T get()
         {
-            auto in = push_(size_of( T{} ));
+            auto in = push_(size_of(T{}));
             T n; decode(reinterpret_cast<void const *>(in), n);
             return n;
         }
@@ -193,7 +194,7 @@ namespace more {
         size_t
         bytes() const
         {
-            return ptr_ - base_;
+            return static_cast<size_t>(ptr_ - base_);
         }
 
         // remaining: bytes
@@ -243,18 +244,18 @@ namespace more {
         intptr_t push_(size_t n)
         {
             auto p = ptr_;
-            if ((p + n) > (base_ + size_))
+            if ((p + static_cast<ptrdiff_t>(n)) > (base_ + static_cast<ptrdiff_t>(size_)))
                 throw std::runtime_error("binary: push overflow");
-            ptr_ += n;
+            ptr_ += static_cast<ptrdiff_t>(n);
             return p;
         }
 
         intptr_t pop_(size_t n)
         {
             auto p = ptr_;
-            if (intptr_t(ptr_ - n) < base_ )
+            if (ptr_ - static_cast<ptrdiff_t>(n) < base_ )
                 throw std::runtime_error("binary: pop underflow");
-            ptr_ -= n;
+            ptr_ -= static_cast<ptrdiff_t>(n);
             return p;
         }
 

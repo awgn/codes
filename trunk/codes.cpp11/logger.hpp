@@ -202,7 +202,7 @@ namespace more
         { }
 
         explicit
-        logger(const char *filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::truc)
+        logger(const char *filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)
         : data_(new data(filename, mode))
         { }
 
