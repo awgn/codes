@@ -201,8 +201,8 @@ namespace more
         { }
 
         explicit
-        logger(const char *filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)
-        : data_(new data(filename, mode))
+        logger(const char *filename, std::ios_base::openmode mode = std::ios_base::out)
+        : data_(new data(filename, mode | std::ios_base::out))
         { }
 
         logger(logger&&) = default;
@@ -216,13 +216,13 @@ namespace more
         }
 
         void
-        open(std::string filename, std::ios_base::openmode mode = std::ios_base::out|std::ios_base::trunc)
+        open(std::string filename, std::ios_base::openmode mode = std::ios_base::out)
         {
             std::lock_guard<Mutex> lock(data_->mutex);
 
             data_->fbuf.reset(new std::filebuf());
 
-            if (!data_->fbuf->open(filename, std::ios_base::out | mode))
+            if (!data_->fbuf->open(filename, mode | std::ios_base::out))
                 throw std::system_error(errno, std::generic_category(), "filebuf: could not open " + filename);
 
             data_->fname = std::move(filename);
@@ -455,6 +455,7 @@ namespace more
 
             lazy_logger(const lazy_logger &) = delete;
             lazy_logger&operator=(const lazy_logger &) = delete;
+            lazy_logger&operator=(lazy_logger &&) = delete;
 
             ~lazy_logger()
             {
@@ -465,14 +466,14 @@ namespace more
                         auto str = std::move(accum_);
                         log_.async([str](std::ostream &o)
                                    {
-                                      o << str;
+                                      o << str << std::flush;
                                    });
                     }
                     else
                     {
                         log_.sync([this](std::ostream &o)
                                   {
-                                      o << accum_;
+                                      o << accum_ << std::flush;
                                   });
                     }
                 }
