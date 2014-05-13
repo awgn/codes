@@ -32,10 +32,9 @@ namespace more
 {
     //////////// std::put_time is missing in g++ up to 4.7.x
 
-
     namespace decorator
     {
-        inline std::string
+        static inline std::string
         put_time(const struct tm *tmb, const char *fmt)
         {
             char buf [64];
@@ -44,7 +43,7 @@ namespace more
             return buf;
         }
 
-        inline std::string
+        static inline std::string
         timestamp()
         {
             auto now_c = std::chrono::system_clock::to_time_t
@@ -56,7 +55,7 @@ namespace more
             return put_time(localtime_r(&now_c, &tm_c), "[%F %T]");
         }
 
-        inline std::string
+        static inline std::string
         thread_id()
         {
             std::ostringstream out;
@@ -67,7 +66,7 @@ namespace more
 
     //////////// rotate_file function
 
-    inline void
+    static inline void
     rotate_file(const std::string &name, int depth)
     {
         auto ext = [](int n) -> std::string
@@ -268,7 +267,7 @@ namespace more
         template <typename Fun>
         void sync(Fun const &fun)
         {
-            sync_(std::make_pair(false, 0), fun);
+            this->sync_(std::make_pair(false, 0), fun);
         }
 
         //// log message asynchronously
@@ -281,7 +280,7 @@ namespace more
                 auto t = data_->ticket++;
                 std::thread([this, fun, t]()
                 {
-                    sync_(std::make_pair(true, t), fun);
+                    this->sync_(std::make_pair(true, t), fun);
 
                 }).detach();
             }
@@ -410,136 +409,126 @@ namespace more
             }
         }
 
-        std::unique_ptr<data>   data_;
+        std::unique_ptr<data> data_;
 
     };
 
-
-    //// more::lazy_logger a temporary stream that logs at its
-    //// descrution point.
 
     namespace
     {
-        struct log_async_t {} log_async = log_async_t {};
-    }
+        //// lazy_logger is a temporary logger that accumulates and logs at its descrution point.
 
-    template <typename Mutex, typename ...Ts>
-    struct lazy_logger
-    {
-        struct stream_on
+        struct log_async_t {} log_async = log_async_t {};
+
+        template <typename Mutex>
+        struct lazy_logger
         {
-            stream_on(std::ostream &out)
-            : out_(out)
+            lazy_logger(logger<Mutex> &log, bool as = false)
+            : accum_ ()
+            , enable_(true)
+            , async_ (as)
+            , log_   (log)
             {}
 
-            template <typename T>
-            void operator()(const T &ref)
+            lazy_logger(lazy_logger && other)
+            : accum_ (std::move(other.accum_))
+            , enable_(true)
+            , async_ (other.async_)
+            , log_   (other.log_)
             {
-                out_ << ref;
+                other.enable_ = false;
             }
 
-            std::ostream &out_;
+            template <typename T>
+            lazy_logger(lazy_logger && log, const T &data)
+            : accum_ ()
+            , enable_(true)
+            , async_ (log.async_)
+            , log_   (log.log_)
+            {
+                std::ostringstream out;
+                out << data;
+
+                accum_ = std::move(log.accum_) + out.str();
+                log.enable_ = false;
+            }
+
+            lazy_logger(const lazy_logger &) = delete;
+            lazy_logger&operator=(const lazy_logger &) = delete;
+
+            ~lazy_logger()
+            {
+                if (enable_)
+                {
+                    if (async_)
+                    {
+                        auto str = std::move(accum_);
+                        log_.async([str](std::ostream &o)
+                                   {
+                                      o << str;
+                                   });
+                    }
+                    else
+                    {
+                        log_.sync([this](std::ostream &o)
+                                  {
+                                      o << accum_;
+                                  });
+                    }
+                }
+            }
+
+            std::string accum_;
+
+            mutable bool enable_;
+            mutable bool async_;
+            logger<Mutex> &log_;
         };
 
-        lazy_logger(logger<Mutex> &l, bool as = false)
-        : refs_  ()
-        , enable_(true)
-        , async_ (as)
-        , log_   (l)
-        {}
+        // manipulator are function template (unresolved function types) which cannot be
+        // deduced by the template machinery
+        //
 
-        lazy_logger(const lazy_logger &other)
-        : refs_  (other.refs_)
-        , enable_(true)
-        , async_ (other.async_)
-        , log_   (other.log_)
+        typedef std::ostream& (manip_t)(std::ostream&);
+
+        // lazy_logger<Ts...> << data
+        //
+
+        template <typename Mut>
+        inline lazy_logger<Mut>
+        operator<<(lazy_logger<Mut> &&l, manip_t & m)
         {
-            other.enable_ = false;
+            return lazy_logger<Mut>(std::move(l), m);
         }
 
-        template <typename ... Tx, typename T>
-        lazy_logger(lazy_logger<Mutex, Tx...> const &log, const T &data)
-        : refs_  (std::tuple_cat(log.refs_, std::tie(data)))
-        , enable_(true)
-        , async_ (log.async_)
-        , log_   (log.log_)
+        template <typename Mut>
+        inline lazy_logger<Mut>
+        operator<<(lazy_logger<Mut> &&l, const log_async_t &)
         {
-            log.enable_ = false;
+            return l.async_ = true, lazy_logger<Mut>(std::move(l));
         }
 
-        ~lazy_logger()
+        template <typename Mut, typename T>
+        inline lazy_logger<Mut>
+        operator<<(lazy_logger<Mut> &&l, const T &data)
         {
-            if (enable_)
-            {
-                if (async_)
-                {
-                    std::ostringstream out;
-                    tuple_for_each(refs_,stream_on(out));
-                    auto const & str = out.str();
-
-                    log_.async([str](std::ostream &o)
-                               {
-                                  o << str;
-                               });
-                }
-                else
-                {
-                    log_.sync([this](std::ostream &o)
-                              {
-                                  tuple_for_each(refs_, stream_on(o));
-                              });
-                }
-            }
+            return lazy_logger<Mut>(std::move(l), data);
         }
 
-        std::tuple<Ts...> refs_;
-        mutable bool enable_;
-        mutable bool async_;
-        logger<Mutex> &log_;
-    };
-
-    // manipulator are function template (unresolved function types) which cannot be
-    // deduced by the template machinery
-    //
-
-    typedef std::ostream& (manip_t)(std::ostream&);
-
-    // lazy_logger<Ts...> << data
-    //
-
-    template <typename Mut, typename ...Ts>
-    inline lazy_logger<Mut, Ts..., manip_t &>
-    operator<<(lazy_logger<Mut, Ts...> const &l, manip_t & m)
-    {
-        return lazy_logger<Mut, Ts..., manip_t &>(l, m);
-    }
-
-    template <typename Mut, typename ...Ts>
-    inline lazy_logger<Mut, Ts...>
-    operator<<(lazy_logger<Mut, Ts...> const &l, const log_async_t &)
-    {
-        return l.async_ = true, lazy_logger<Mut, Ts...>(l);
-    }
-
-    template <typename Mut, typename ...Ts, typename T>
-    inline lazy_logger<Mut, Ts..., const T &>
-    operator<<(lazy_logger<Mut, Ts...> const &l, const T &data)
-    {
-        return lazy_logger<Mut, Ts..., const T &>(l, data);
-    }
+    } // unnamed namespace
 
     // more::logger << data
     //
 
     template <typename Mut>
-    inline lazy_logger<Mut,manip_t &>
+    inline lazy_logger<Mut>
     operator<<(logger<Mut> &l, manip_t &m)
     {
         return lazy_logger<Mut>(l) << m;
     }
 
     template <typename Mut, typename T>
-    inline lazy_logger<Mut,const T &>
+    inline lazy_logger<Mut>
     operator<<(logger<Mut> &l, const T &data)
     {
         return lazy_logger<Mut>(l) << data;
