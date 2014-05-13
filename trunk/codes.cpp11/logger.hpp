@@ -392,8 +392,8 @@ namespace more
 
             try
             {
-                for(auto &fun : data_->headers)
-                    data_->out << fun() << ' ';
+                for(auto &f : data_->headers)
+                    data_->out << f() << ' ';
 
                 fun(data_->out);
             }
