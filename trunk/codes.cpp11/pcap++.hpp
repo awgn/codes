@@ -226,11 +226,6 @@ namespace more { namespace pcap {
     protected:
         friend class pcap_dumper;
 
-        virtual ~pcap_base()
-        {
-            if (m_handle)
-                pcap_close(m_handle);
-        }
 
         pcap_base()
         : m_errbuf()
@@ -256,6 +251,12 @@ namespace more { namespace pcap {
         }
 
     public:
+        virtual ~pcap_base()
+        {
+            if (m_handle)
+                pcap_close(m_handle);
+        }
+
         pcap_base(pcap_base &&other) noexcept
         : m_errbuf()
         , m_handle(std::move(other.m_handle))
