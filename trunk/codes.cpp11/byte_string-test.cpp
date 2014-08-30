@@ -58,7 +58,7 @@ Context(ByteString)
         byte_string<6> y;
         byte_string<4> z;
 
-        AssertNothrow  ( y = x );
+        AssertNoThrow  ( y = x );
         AssertThrow    ( z = x );
 
         Assert(x == y);
