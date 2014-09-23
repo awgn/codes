@@ -436,6 +436,7 @@ namespace more
             , async_ (other.async_)
             , log_   (other.log_)
             {
+                out_.flags(other.out_.flags());
                 other.enable_ = false;
             }
 
@@ -446,7 +447,6 @@ namespace more
             , async_ (other.async_)
             , log_   (other.log_)
             {
-                out_.str("");
                 out_.flags(other.out_.flags());
                 out_ << data;
 
