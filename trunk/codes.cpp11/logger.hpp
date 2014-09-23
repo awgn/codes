@@ -440,17 +440,18 @@ namespace more
             }
 
             template <typename T>
-            lazy_logger(lazy_logger && log, const T &data)
+            lazy_logger(lazy_logger && other, const T &data)
             : accum_ ()
             , enable_(true)
-            , async_ (log.async_)
-            , log_   (log.log_)
+            , async_ (other.async_)
+            , log_   (other.log_)
             {
-                std::ostringstream out;
-                out << data;
+                out_.str("");
+                out_.flags(other.out_.flags());
+                out_ << data;
 
-                accum_ = std::move(log.accum_) + out.str();
-                log.enable_ = false;
+                accum_ = std::move(other.accum_) + out_.str();
+                other.enable_ = false;
             }
 
             lazy_logger(const lazy_logger &) = delete;
@@ -484,6 +485,8 @@ namespace more
             mutable bool enable_;
             mutable bool async_;
             logger<Mutex> &log_;
+
+            std::ostringstream out_;
         };
 
         // manipulator are function template (unresolved function types) which cannot be
