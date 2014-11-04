@@ -126,6 +126,23 @@ namespace more
         std::atomic<std::thread::id> id_;
     };
 
+
+    /////////////////////////   more::null_mutex
+
+    struct null_mutex
+    {
+        void lock()
+        { }
+
+        bool try_lock()
+        {
+            return true;
+        }
+
+        void unlock()
+        { }
+    };
+
     /////////////////////////   more::logger
 
     template <typename Mutex = safe_mutex>
