@@ -263,7 +263,7 @@ namespace more {
         variant(T && arg)
         : type_(-1)
         {
-            set(std::forward<T>(arg));
+            set<typename std::decay<T>::type>(std::forward<T>(arg));
         }
 
         variant(const variant &rhs)   // copy constructor
@@ -353,7 +353,7 @@ namespace more {
         variant &
         operator=(T && arg)
         {
-            set(std::forward<T>(arg));
+            set<typename std::decay<T>::type>(std::forward<T>(arg));
             return *this;
         }
 
@@ -390,8 +390,9 @@ namespace more {
             return *reinterpret_cast<const T *>(&storage_);
         }
 
-        template <typename T>
-        void set(T value)
+
+        template <typename T, typename ...Ti>
+        void set(Ti &&  ... xs)
         {
             constexpr auto t = variant_details::index_of<typename std::decay<T>::type, Ts...>::value;
 
@@ -403,20 +404,18 @@ namespace more {
 
             // move the object to the storage_
 
-            new (&storage_) T(std::move(value));
+            new (&storage_) T(std::forward<Ti>(xs)...);
 
             type_  = t;
         }
 
         bool operator==(variant const &rhs)
         {
-            if (type_ == rhs.type_)
-            {
-                if (type_ == -1)
-                    return true;
+            if (type_ != rhs.type_)
+                return false;
 
-                return variant_details::visitor<Ts...>::apply2(op_equal(), *this, rhs);
-            }
+            if (type_ == rhs.type_)
+                return type_ == -1 ? true : variant_details::visitor<Ts...>::apply2(op_equal(), *this, rhs);
             else
                 return false;
         }

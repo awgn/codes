@@ -10,13 +10,19 @@
 
 #include <logger.hpp>
 
-more::logger<> out;
+// more::logger<> out;
 // more::logger<std::mutex> out;
 // more::logger<std::recursive_mutex> out;
 
 int
 main(int, char *[])
 {
+    more::logger<> source;
+
+    more::logger<> out(std::move(source));
+
+    out.rdbuf(std::cout.rdbuf());
+
     out.decorators({ more::decorator::timestamp, more::decorator::thread_id });
 
     out.async([](std::ostream &)

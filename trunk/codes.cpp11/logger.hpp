@@ -311,25 +311,27 @@ namespace more
     template <typename Mutex = safe_mutex>
     class logger
     {
+        struct logger_data
+        {
+            logger_data() : ticket(0), done(0) { }
+
+            mutable Mutex                 mutex;
+            std::condition_variable_any   cond;
+            std::atomic_ulong             ticket;
+            unsigned long                 done;
+        };
+
     public:
 
         logger()
         : logs_  ()
-        , mutex_ ()
-        , cond_  ()
-        , ticket_(0)
-        , done_  (0)
-        {
-            logs_.push_back(std::unique_ptr<mini_log>(new mini_log(std::cout.rdbuf())));
-        }
+        , data_  (std::unique_ptr<logger_data>(new logger_data))
+        { }
 
         explicit
         logger(std::streambuf *sb)
         : logs_  ()
-        , mutex_ ()
-        , cond_  ()
-        , ticket_(0)
-        , done_  (0)
+        , data_  (std::unique_ptr<logger_data>(new logger_data))
         {
             logs_.push_back(std::unique_ptr<mini_log>(new mini_log(sb)));
         }
@@ -337,10 +339,7 @@ namespace more
         explicit
         logger(const char *filename, std::ios_base::openmode mode = std::ios_base::out)
         : logs_  ()
-        , mutex_ ()
-        , cond_  ()
-        , ticket_(0)
-        , done_  (0)
+        , data_  (std::unique_ptr<logger_data>(new logger_data))
         {
             logs_.push_back(std::unique_ptr<mini_log>(new mini_log(filename, mode)));
         }
@@ -364,7 +363,7 @@ namespace more
         {
             try
             {
-                auto t = ticket_++;
+                auto t = data_->ticket++;
                 std::thread([this, fun, t]()
                 {
                     this->sync_(std::make_pair(true, t), fun);
@@ -387,42 +386,42 @@ namespace more
         void
         open(std::string filename, std::ios_base::openmode mode = std::ios_base::out)
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             logs_.push_back(std::unique_ptr<mini_log>(new mini_log(filename.c_str(), mode)));
         }
 
         void
         open_at(size_t n, std::string filename, std::ios_base::openmode mode = std::ios_base::out)
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             logs_.at(n)->open(filename.c_str(), mode);
         }
 
         std::streambuf *
         rdbuf_at(size_t n) const
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             return logs_.at(n)->rdbuf();
         }
 
         void
         rdbuf(std::streambuf *sb)
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             logs_.push_back(std::unique_ptr<mini_log>(new mini_log(sb)));
         }
 
         void
         rdbuf_at(size_t n, std::streambuf *sb)
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             logs_.at(n)->rdbuf(sb);
         }
 
         void
         close()
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             if (logs_.empty())
                 throw std::logic_error("logger: close");
             logs_.pop_back();
@@ -431,33 +430,33 @@ namespace more
         std::string
         name_at(size_t n) const
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             return logs_.at(n)->name();
         }
 
         size_t
         size_at(size_t n) const
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             return logs_.at(n)->size();
         }
 
         void rotate(int depth = 3, size_t max_size = 0)
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             for(auto &log : logs_)
                 log->rotate(depth, max_size);
         }
 
         void rotate_at(size_t n, int depth = 3, size_t max_size = 0)
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             logs_.at(n)->rotate(depth, max_size);
         }
 
         void decorators(std::initializer_list<std::function<std::string()>> init)
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             for(auto &log : logs_)
                 log->decorators(init);
         }
@@ -465,7 +464,7 @@ namespace more
         void
         decorators_at(size_t n, std::initializer_list<std::function<std::string()>> init)
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
             logs_.at(n)->decorators(init);
         }
 
@@ -474,11 +473,11 @@ namespace more
         template <typename Fun>
         void sync_(std::pair<bool, unsigned long> ticket, Fun const &fun)
         {
-            std::unique_lock<Mutex> lock(mutex_);
+            std::unique_lock<Mutex> lock(data_->mutex);
 
             if (ticket.first)
             {
-                cond_.wait(lock, [&]() { return ticket.second == done_; });
+                data_->cond.wait(lock, [&]() { return ticket.second == data_->done; });
             }
 
             for(auto &log : logs_)
@@ -488,20 +487,15 @@ namespace more
 
             if (ticket.first)
             {
-                done_++;
-                cond_.notify_all();
+                data_->done++;
+                data_->cond.notify_all();
             }
         }
 
         std::vector<std::unique_ptr<mini_log>> logs_;
-
-        mutable Mutex                          mutex_;
-        std::condition_variable_any            cond_;
-
-        std::atomic_ulong                      ticket_;
-        unsigned long                          done_;
-
+        std::unique_ptr<logger_data>           data_;
     };
+
 
     namespace
     {

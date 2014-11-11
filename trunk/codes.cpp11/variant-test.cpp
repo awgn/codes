@@ -20,10 +20,10 @@ Context(variant)
     {
         more::variant<int, std::string> x;
 
-        x.set(std::string("hello"));
+        x.set<std::string>("hello");
         Assert(x.get<std::string>(), is_equal_to(std::string("hello")));
 
-        x.set(42);
+        x.set<int>(42);
         Assert(x.get<int>(), is_equal_to(42));
     }
 
