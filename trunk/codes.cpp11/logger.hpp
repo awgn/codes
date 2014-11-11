@@ -15,6 +15,7 @@
 #include <fstream>
 #include <sstream>
 #include <memory>
+#include <vector>
 
 #include <exception>
 #include <thread>
@@ -26,7 +27,6 @@
 #include <system_error>
 #include <initializer_list>
 
-#include <tuple_ext.hpp>   // !more
 
 namespace more
 {
@@ -145,107 +145,77 @@ namespace more
 
     /////////////////////////   more::logger
 
-    template <typename Mutex = safe_mutex>
-    class logger
+    class mini_log
     {
-        // delegating constructors are missing in g++-4.6.x
-        //
-
-        struct data_base
-        {
-            data_base(std::streambuf *fb)
-            : fname ()
-            , fbuf  ()
-            , out   (fb)
-            , mutex ()
-            , cond  ()
-            , ticket(0)
-            , done  (0)
-            {}
-
-            data_base(const char *name, std::ios_base::openmode mode)
-            : fname (name)
-            , fbuf  (new std::filebuf())
-            , out   (nullptr)
-            , mutex ()
-            , cond  ()
-            , ticket(0)
-            , done  (0)
-            {
-                if(!fbuf->open(name, mode))
-                    throw std::system_error(errno, std::generic_category(), "filebuf: open");
-
-                out.rdbuf(fbuf.get());
-            }
-
-            std::string                     fname;
-            std::unique_ptr<std::filebuf>   fbuf;
-            std::ostream                    out;
-
-            mutable Mutex mutex;
-            std::condition_variable_any cond;
-
-            std::atomic_ulong ticket;
-            unsigned long done;
-
-            std::vector<std::function<std::string()>> headers;
-        };
-
-        struct data : data_base
-        {
-            data()
-            : data_base(std::cout.rdbuf())
-            {}
-
-            data(std::streambuf *fb)
-            : data_base(fb)
-            {}
-
-            data(const char *name, std::ios_base::openmode mode)
-            : data_base(name, mode)
-            {}
-        };
-
     public:
 
-        logger()
-        : data_(new data())
+        mini_log(std::streambuf *pb)
+        : fname_()
+        , fout_ (new std::ostream(pb))
+        , deco_ ()
         { }
 
-        explicit
-        logger(std::streambuf *sb)
-        : data_(new data(sb))
-        { }
+        mini_log(const char *name, std::ios_base::openmode mode)
+        : fname_(name)
+        , fout_ ()
+        , deco_ ()
+        {
+            auto ofs = new std::ofstream(name, mode);
+            if (!*ofs)
+                throw std::runtime_error("logger: could not open " + std::string(name) + " file");
+            fout_ = std::unique_ptr<std::ostream>(ofs);
+        }
 
-        explicit
-        logger(const char *filename, std::ios_base::openmode mode = std::ios_base::out)
-        : data_(new data(filename, mode | std::ios_base::out))
-        { }
+        mini_log(mini_log &&) = default;
+        mini_log& operator=(mini_log &&) = default;
 
-        logger(logger&&) = default;
+        //// specify decorators
 
-        ~logger() = default;
+        void decorators(std::initializer_list<std::function<std::string()>> init)
+        {
+            deco_ = decltype(deco_)(init);
+        }
+
+        //// log message
+
+        template <typename Fun>
+        void sync(Fun const &fun)
+        {
+            try
+            {
+                for(auto & f : deco_)
+                    *fout_ << f() << ' ';
+
+                fun(*fout_);
+            }
+            catch(std::exception &e)
+            {
+                *fout_ << "Exception: " << e.what() << std::endl;
+            }
+        }
+
+        //// get file name
 
         std::string
         name() const
         {
-            return data_->fname;
+            return fname_;
         }
+
+        //// open/reopen log
 
         void
-        open(std::string filename, std::ios_base::openmode mode = std::ios_base::out)
+        open(std::string filename, std::ios_base::openmode mode)
         {
-            std::lock_guard<Mutex> lock(data_->mutex);
+            auto ofs = new std::ofstream(filename, mode | std::ios_base::out);
+            if (!*ofs)
+                throw std::runtime_error("logger: could not open " + std::string(filename) + " file");
 
-            data_->fbuf.reset(new std::filebuf());
-
-            if (!data_->fbuf->open(filename, mode | std::ios_base::out))
-                throw std::system_error(errno, std::generic_category(), "filebuf: could not open " + filename);
-
-            data_->fname = std::move(filename);
-
-            data_->out.rdbuf(data_->fbuf.get());
+            fout_.reset(ofs);
+            fname_ = std::move(filename);
         }
+
+        //// close log
 
         void
         close()
@@ -253,33 +223,133 @@ namespace more
             rdbuf(nullptr);
         }
 
+        //// rdbuf utility functions
+
         void
         rdbuf(std::streambuf *sb)
         {
-            std::lock_guard<Mutex> lock(data_->mutex);
-            data_->fbuf.reset(nullptr);
-            data_->fname.clear();
-            data_->out.rdbuf(sb);
+            fout_.reset(new std::ostream(sb));
+            fname_.clear();
         }
 
         std::streambuf *
         rdbuf() const
         {
-            return data_->out.rdbuf();
+            if (fout_)
+                return fout_->rdbuf();
+            return nullptr;
         }
 
-        void headers(std::initializer_list<std::function<std::string()>> init)
+        //// return the size of the log file
+
+        size_t
+        size() const
         {
-            data_->headers = decltype(data_->headers)(init);
+            return size_();
         }
 
-        template <typename Fun>
-        void add_header(Fun fun)
+        //// rotate the log file
+
+        void rotate(int depth = 3, size_t max_size = 0)
         {
-            data_->headers.emplace_back(fun);
+            if (fname_.empty())
+                return;
+            if (this->size_() > max_size)
+                rotate_(depth);
         }
 
-        //// log message synchronously
+    private:
+
+        size_t
+        size_() const
+        {
+            auto fb = dynamic_cast<std::filebuf *>(fout_->rdbuf());
+            if (fb == nullptr)
+                return 0;
+
+            return static_cast<size_t>(fb->pubseekoff(0, std::ios_base::cur));
+        }
+
+        void
+        rotate_(int depth = 3)
+        {
+            std::filebuf * fb = dynamic_cast<std::filebuf *>(fout_->rdbuf());
+            if (fb == nullptr)
+                return;
+
+            fb->close();
+
+            bool rot = true;
+            try
+            {
+                rotate_file(fname_, depth);
+            }
+            catch(...)
+            {
+                rot = false;
+            }
+
+            if (!fb->open(fname_, std::ios_base::out |std::ios_base::app))
+                throw std::system_error(errno, std::generic_category(), "filebuf: open");
+
+            if (!rot)
+            {
+                sync([=](std::ostream &out)
+                {
+                    out << "rotate: error while rotating files!" << std::endl;
+                });
+            }
+        }
+
+        std::string                                 fname_;
+        std::unique_ptr<std::ostream>               fout_;
+        std::vector<std::function<std::string()>>   deco_;
+    };
+
+
+
+    template <typename Mutex = safe_mutex>
+    class logger
+    {
+    public:
+
+        logger()
+        : logs_  ()
+        , mutex_ ()
+        , cond_  ()
+        , ticket_(0)
+        , done_  (0)
+        {
+            logs_.push_back(std::unique_ptr<mini_log>(new mini_log(std::cout.rdbuf())));
+        }
+
+        explicit
+        logger(std::streambuf *sb)
+        : logs_  ()
+        , mutex_ ()
+        , cond_  ()
+        , ticket_(0)
+        , done_  (0)
+        {
+            logs_.push_back(std::unique_ptr<mini_log>(new mini_log(sb)));
+        }
+
+        explicit
+        logger(const char *filename, std::ios_base::openmode mode = std::ios_base::out)
+        : logs_  ()
+        , mutex_ ()
+        , cond_  ()
+        , ticket_(0)
+        , done_  (0)
+        {
+            logs_.push_back(std::unique_ptr<mini_log>(new mini_log(filename, mode)));
+        }
+
+        logger(logger&&) = default;
+
+        ~logger() = default;
+
+        //// log message asynchronously
 
         template <typename Fun>
         void sync(Fun const &fun)
@@ -294,7 +364,7 @@ namespace more
         {
             try
             {
-                auto t = data_->ticket++;
+                auto t = ticket_++;
                 std::thread([this, fun, t]()
                 {
                     this->sync_(std::make_pair(true, t), fun);
@@ -312,128 +382,130 @@ namespace more
             }
         }
 
-        //// return the size of the log file
+        //// mini logger forwarders...
 
-        size_t
-        size() const
+        void
+        open(std::string filename, std::ios_base::openmode mode = std::ios_base::out)
         {
-            std::lock_guard<Mutex> lock(data_->mutex);
-            return size_();
+            std::unique_lock<Mutex> lock(mutex_);
+            logs_.push_back(std::unique_ptr<mini_log>(new mini_log(filename.c_str(), mode)));
         }
 
-        //// rotate the log file
+        void
+        open_at(size_t n, std::string filename, std::ios_base::openmode mode = std::ios_base::out)
+        {
+            std::unique_lock<Mutex> lock(mutex_);
+            logs_.at(n)->open(filename.c_str(), mode);
+        }
+
+        std::streambuf *
+        rdbuf_at(size_t n) const
+        {
+            std::unique_lock<Mutex> lock(mutex_);
+            return logs_.at(n)->rdbuf();
+        }
+
+        void
+        rdbuf(std::streambuf *sb)
+        {
+            std::unique_lock<Mutex> lock(mutex_);
+            logs_.push_back(std::unique_ptr<mini_log>(new mini_log(sb)));
+        }
+
+        void
+        rdbuf_at(size_t n, std::streambuf *sb)
+        {
+            std::unique_lock<Mutex> lock(mutex_);
+            logs_.at(n)->rdbuf(sb);
+        }
+
+        void
+        close()
+        {
+            std::unique_lock<Mutex> lock(mutex_);
+            if (logs_.empty())
+                throw std::logic_error("logger: close");
+            logs_.pop_back();
+        }
+
+        std::string
+        name_at(size_t n) const
+        {
+            std::unique_lock<Mutex> lock(mutex_);
+            return logs_.at(n)->name();
+        }
+
+        size_t
+        size_at(size_t n) const
+        {
+            std::unique_lock<Mutex> lock(mutex_);
+            return logs_.at(n)->size();
+        }
 
         void rotate(int depth = 3, size_t max_size = 0)
         {
-            std::lock_guard<Mutex> lock(data_->mutex);
-
-            if (data_->fname.empty())
-                return;
-
-            if (size_() > max_size)
-                rotate_(depth);
+            std::unique_lock<Mutex> lock(mutex_);
+            for(auto &log : logs_)
+                log->rotate(depth, max_size);
         }
 
-        //// rotate the log file asynchronously
-
-        void rotate_async(int depth = 3, size_t max_size = 0)
+        void rotate_at(size_t n, int depth = 3, size_t max_size = 0)
         {
-            std::lock_guard<Mutex> lock(data_->mutex);
+            std::unique_lock<Mutex> lock(mutex_);
+            logs_.at(n)->rotate(depth, max_size);
+        }
 
-            if (data_->fname.empty())
-                return;
+        void decorators(std::initializer_list<std::function<std::string()>> init)
+        {
+            std::unique_lock<Mutex> lock(mutex_);
+            for(auto &log : logs_)
+                log->decorators(init);
+        }
 
-            if (size_() > max_size)
-            {
-                std::thread([this, depth]()
-                {
-                    std::lock_guard<Mutex> lock(data_->mutex);
-                    this->rotate_(depth);
-
-                }).detach();
-            }
+        void
+        decorators_at(size_t n, std::initializer_list<std::function<std::string()>> init)
+        {
+            std::unique_lock<Mutex> lock(mutex_);
+            logs_.at(n)->decorators(init);
         }
 
     private:
 
-        size_t
-        size_() const
-        {
-            auto fb = dynamic_cast<std::filebuf *>(data_->out.rdbuf());
-            if (fb == nullptr)
-                return 0;
-
-            return static_cast<size_t>(fb->pubseekoff(0, std::ios_base::cur));
-        }
-
-        void
-        rotate_(int depth = 3)
-        {
-            std::filebuf * fb = dynamic_cast<std::filebuf *>(data_->out.rdbuf());
-            if (fb == nullptr)
-                return;
-
-            fb->close();
-
-            bool rot = true;
-            try
-            {
-                rotate_file(data_->fname, depth);
-            }
-            catch(...)
-            {
-                rot = false;
-            }
-
-            if (!fb->open(data_->fname, std::ios_base::out |std::ios_base::app))
-                throw std::system_error(errno, std::generic_category(), "filebuf: open");
-
-            if (!rot)
-            {
-                sync([=](std::ostream &out)
-                {
-                    out << "rotate: error while rotating files!" << std::endl;
-                });
-            }
-        }
-
         template <typename Fun>
         void sync_(std::pair<bool, unsigned long> ticket, Fun const &fun)
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::unique_lock<Mutex> lock(mutex_);
 
             if (ticket.first)
             {
-                data_->cond.wait(lock, [&]() { return ticket.second == data_->done; });
+                cond_.wait(lock, [&]() { return ticket.second == done_; });
             }
 
-            try
+            for(auto &log : logs_)
             {
-                for(auto &f : data_->headers)
-                    data_->out << f() << ' ';
-
-                fun(data_->out);
-            }
-            catch(std::exception &e)
-            {
-                data_->out << "Exception: " << e.what() << std::endl;
+                log->sync(fun);
             }
 
             if (ticket.first)
             {
-                data_->done++;
-                data_->cond.notify_all();
+                done_++;
+                cond_.notify_all();
             }
         }
 
-        std::unique_ptr<data> data_;
+        std::vector<std::unique_ptr<mini_log>> logs_;
+
+        mutable Mutex                          mutex_;
+        std::condition_variable_any            cond_;
+
+        std::atomic_ulong                      ticket_;
+        unsigned long                          done_;
 
     };
 
-
     namespace
     {
-        //// lazy_logger is a temporary logger that accumulates and logs at its descrution point.
+        //// lazy_logger is a temporary logger that accumulates and log messages at its descrution point.
 
         struct log_async_t {} log_async = log_async_t {};
 
@@ -561,7 +633,6 @@ namespace more
     {
         return lazy_logger<Mut>(l, true);
     }
-
 }
 
 #endif /* _MORE_LOGGER_HPP_ */

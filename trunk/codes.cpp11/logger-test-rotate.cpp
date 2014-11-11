@@ -15,7 +15,7 @@ main(int, char *[])
 {
     more::logger<> out;
 
-    out.open("logger.txt");
+    out.open_at(0, "logger.txt");
 
     for(int i = 0; i < 1000; ++i)
     {
@@ -26,7 +26,7 @@ main(int, char *[])
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-        out.rotate_async(5, 10);
+        out.rotate(5, 10);
     }
 }
 
