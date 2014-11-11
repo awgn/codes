@@ -12,6 +12,7 @@
 #define _STREAMER_HPP_
 
 #include <type_traits.hpp>  // more!
+#include <show.hpp>         // more!
 
 #include <type_traits>
 #include <array>
@@ -23,40 +24,6 @@
 #include <iterator>
 #include <string>
 
-namespace more { namespace streamer {
-
-        // printon policy
-        //
-
-        template <typename CharT, typename Traits, typename T, int N>
-        struct printon
-        {
-            static void apply(std::basic_ostream<CharT,Traits> &out, const T &tupl)
-            {
-                out << std::get< std::tuple_size<T>::value - N>(tupl) << ' ';
-                printon<CharT, Traits, T,N-1>::apply(out,tupl);
-            }
-        };
-        template <typename CharT, typename Traits, typename T>
-        struct printon<CharT, Traits, T,0>
-        {
-            static void apply(std::basic_ostream<CharT, Traits> &, const T &)
-            {}
-        };
-
-        template <typename T>
-        struct _duration_traits;
-            template <> struct _duration_traits<std::chrono::nanoseconds>  { static constexpr const char *str = "_ns"; };
-            template <> struct _duration_traits<std::chrono::microseconds> { static constexpr const char *str = "_us"; };
-            template <> struct _duration_traits<std::chrono::milliseconds> { static constexpr const char *str = "_ms"; };
-            template <> struct _duration_traits<std::chrono::seconds>      { static constexpr const char *str = "_s"; };
-            template <> struct _duration_traits<std::chrono::minutes>      { static constexpr const char *str = "_m"; };
-            template <> struct _duration_traits<std::chrono::hours>        { static constexpr const char *str = "_h"; };
-
-} // namespace streamer
-} // namespace more
-
-
 namespace std {
 
     ///////////////////////////////////////
@@ -67,15 +34,10 @@ namespace std {
     inline typename std::enable_if<
         (more::traits::is_container<T>::value && !is_same<typename std::string,T>::value) ||
         (rank<T>::value > 0 && !is_same<char, typename remove_cv<typename remove_all_extents<T>::type>::type>::value),
-        std::basic_ostream<CharT,Traits>>::type &
+    std::basic_ostream<CharT,Traits>>::type &
     operator<<(std::basic_ostream<CharT,Traits> &out, const T &v)
     {
-        out << "{ ";
-        for(auto const & e : v)
-        {
-            out << e << ' ';
-        }
-        return out << '}';
+        return out << show (v);
     }
 
     //////////////////////////
@@ -83,36 +45,32 @@ namespace std {
 
     template <typename CharT, typename Traits, typename U, typename V>
     inline std::basic_ostream<CharT, Traits> &
-    operator<< (std::basic_ostream<CharT, Traits> &out, const std::pair<U,V> &r)
+    operator<< (std::basic_ostream<CharT, Traits> &out, std::pair<U,V> const &p)
     {
-        return out << '(' << r.first << ',' << r.second << ')';
+        return out << show (p);
     }
 
     ///////////////////////////
     // operator<< for array...
 
     template <typename CharT, typename Traits, typename T, std::size_t N>
-    std::basic_ostream<CharT,Traits> &
-    operator<<(std::basic_ostream<CharT,Traits> &out, const std::array<T,N> &rhs)
+    inline std::basic_ostream<CharT,Traits> &
+    operator<<(std::basic_ostream<CharT,Traits> &out, std::array<T,N> const &a)
     {
-        out << "[ ";
-        more::streamer::printon<CharT, Traits, std::array<T,N>, N>::apply(out,rhs);
-        return out << ']';
+        return out << show (a);
     }
 
-    ///////////////////////////////////////////////////////
-    // operator<< for tuple: (enabled if T is a tuple<>)...
+    //////////////////////////
+    // operator<< for tuple...
 
-    template <typename CharT, typename Traits, typename T>
-    typename std::enable_if< more::traits::is_tuple<T>::value, std::basic_ostream<CharT,Traits> >::type &
-    operator<<(std::basic_ostream<CharT,Traits> &out, const T &rhs)
+    template <typename CharT, typename Traits, typename ...Ts>
+    inline std::basic_ostream<CharT, Traits> &
+    operator<<(std::basic_ostream<CharT,Traits> &out, std::tuple<Ts...> const &t)
     {
-        out << "( ";
-        more::streamer::printon<CharT, Traits, T, std::tuple_size<T>::value>::apply(out,rhs);
-        return out << ')';
+        return out << show (t);
     }
 
-    ////////////////////////////////////////////////////////
+    /////////////////////////////////
     // operator<< for chrono types...
 
     template <typename CharT, typename Traits, typename Tp>
@@ -125,14 +83,14 @@ namespace std {
              std::basic_ostream<CharT, Traits>>::type &
     operator<< (std::basic_ostream<CharT, Traits> &out, const Tp &r)
     {
-        return out << r.count() << more::streamer::_duration_traits<Tp>::str;
+        return out << show (r);
     }
 
     template <typename CharT, typename Traits, typename Clock, typename Dur>
     inline std::basic_ostream<CharT, Traits> &
     operator<< (std::basic_ostream<CharT, Traits> &out, std::chrono::time_point<Clock, Dur> const &r)
     {
-        return out << r.time_since_epoch();
+        return out << show (r);
     }
 
 } // namespace std

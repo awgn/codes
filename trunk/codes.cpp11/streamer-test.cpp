@@ -18,7 +18,9 @@
 int
 main(int, char *[])
 {
-    std::cout << "string                     : " << std::string("hello world") << std::endl;
+    std::cout << "const char *               : " << "hello world!" << std::endl;
+    std::cout << "string                     : " << std::string("hello world!") << std::endl;
+
     std::vector<int> v1;
 
     v1.push_back(0);
@@ -52,6 +54,7 @@ main(int, char *[])
 
     std::cout << "std::tuple<int,double>     : " << std::tuple<int,double>(1,1.1) << std::endl;
     std::cout << "std::array<int,3>          : " << std::array<int,3>() << std::endl;
+    std::cout << "system_clock               : " << std::chrono::system_clock::now() << std::endl;
 
     return 0;
 }
