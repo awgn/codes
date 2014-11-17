@@ -386,7 +386,7 @@ namespace more
         size_t
         open(std::string filename, std::ios_base::openmode mode = std::ios_base::out)
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             logs_.push_back(std::unique_ptr<mini_logger>(new mini_logger(filename.c_str(), mode)));
             return logs_.size() - 1;
         }
@@ -394,21 +394,21 @@ namespace more
         void
         open_at(size_t n, std::string filename, std::ios_base::openmode mode = std::ios_base::out)
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             logs_.at(n)->open(filename.c_str(), mode);
         }
 
         std::streambuf *
         rdbuf_at(size_t n) const
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             return logs_.at(n)->rdbuf();
         }
 
         size_t
         rdbuf(std::streambuf *sb)
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             logs_.push_back(std::unique_ptr<mini_logger>(new mini_logger(sb)));
             return logs_.size() - 1;
         }
@@ -416,14 +416,14 @@ namespace more
         void
         rdbuf_at(size_t n, std::streambuf *sb)
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             logs_.at(n)->rdbuf(sb);
         }
 
         void
         close()
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             if (logs_.empty())
                 throw std::logic_error("logger: close");
             logs_.pop_back();
@@ -432,33 +432,33 @@ namespace more
         std::string
         name_at(size_t n) const
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             return logs_.at(n)->name();
         }
 
         size_t
         size_at(size_t n) const
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             return logs_.at(n)->size();
         }
 
         void rotate(int depth = 3, size_t max_size = 0)
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             for(auto &log : logs_)
                 log->rotate(depth, max_size);
         }
 
         void rotate_at(size_t n, int depth = 3, size_t max_size = 0)
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             logs_.at(n)->rotate(depth, max_size);
         }
 
         void decorators(std::initializer_list<std::function<std::string()>> init)
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             for(auto &log : logs_)
                 log->decorators(init);
         }
@@ -466,7 +466,7 @@ namespace more
         void
         decorators_at(size_t n, std::initializer_list<std::function<std::string()>> init)
         {
-            std::unique_lock<Mutex> lock(data_->mutex);
+            std::lock_guard<Mutex> lock(data_->mutex);
             logs_.at(n)->decorators(init);
         }
 
