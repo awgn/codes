@@ -145,17 +145,17 @@ namespace more
 
     /////////////////////////   more::logger
 
-    class mini_log
+    class mini_logger
     {
     public:
 
-        mini_log(std::streambuf *pb)
+        mini_logger(std::streambuf *pb)
         : fname_()
         , fout_ (new std::ostream(pb))
         , deco_ ()
         { }
 
-        mini_log(const char *name, std::ios_base::openmode mode)
+        mini_logger(const char *name, std::ios_base::openmode mode)
         : fname_(name)
         , fout_ ()
         , deco_ ()
@@ -166,8 +166,8 @@ namespace more
             fout_ = std::unique_ptr<std::ostream>(ofs);
         }
 
-        mini_log(mini_log &&) = default;
-        mini_log& operator=(mini_log &&) = default;
+        mini_logger(mini_logger &&) = default;
+        mini_logger& operator=(mini_logger &&) = default;
 
         //// specify decorators
 
@@ -333,7 +333,7 @@ namespace more
         : logs_  ()
         , data_  (std::unique_ptr<logger_data>(new logger_data))
         {
-            logs_.push_back(std::unique_ptr<mini_log>(new mini_log(sb)));
+            logs_.push_back(std::unique_ptr<mini_logger>(new mini_logger(sb)));
         }
 
         explicit
@@ -341,7 +341,7 @@ namespace more
         : logs_  ()
         , data_  (std::unique_ptr<logger_data>(new logger_data))
         {
-            logs_.push_back(std::unique_ptr<mini_log>(new mini_log(filename, mode)));
+            logs_.push_back(std::unique_ptr<mini_logger>(new mini_logger(filename, mode)));
         }
 
         logger(logger&&) = default;
@@ -383,11 +383,12 @@ namespace more
 
         //// mini logger forwarders...
 
-        void
+        size_t
         open(std::string filename, std::ios_base::openmode mode = std::ios_base::out)
         {
             std::unique_lock<Mutex> lock(data_->mutex);
-            logs_.push_back(std::unique_ptr<mini_log>(new mini_log(filename.c_str(), mode)));
+            logs_.push_back(std::unique_ptr<mini_logger>(new mini_logger(filename.c_str(), mode)));
+            return logs_.size() - 1;
         }
 
         void
@@ -404,11 +405,12 @@ namespace more
             return logs_.at(n)->rdbuf();
         }
 
-        void
+        size_t
         rdbuf(std::streambuf *sb)
         {
             std::unique_lock<Mutex> lock(data_->mutex);
-            logs_.push_back(std::unique_ptr<mini_log>(new mini_log(sb)));
+            logs_.push_back(std::unique_ptr<mini_logger>(new mini_logger(sb)));
+            return logs_.size() - 1;
         }
 
         void
@@ -492,8 +494,8 @@ namespace more
             }
         }
 
-        std::vector<std::unique_ptr<mini_log>> logs_;
-        std::unique_ptr<logger_data>           data_;
+        std::vector<std::unique_ptr<mini_logger>> logs_;
+        std::unique_ptr<logger_data>  data_;
     };
 
 
