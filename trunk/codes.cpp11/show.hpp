@@ -32,10 +32,9 @@
 #include <sstream>
 
 
-
 #define MAKE_SHOW_PAIR(a, b) std::make_pair(std::string(#b), &UNPACK(a)::b)
 
-#define MAKE_GENERIC_SHOW(type, ...) make_generic_show<UNPACK(type)>(FOR2_EACH_COMMA(MAKE_SHOW_PAIR, type, __VA_ARGS__))
+#define MAKE_GENERIC_SHOW(type, ...) make_generic_show<UNPACK(type)>(MORE_FOR_EACH2_COMMA(MAKE_SHOW_PAIR, type, __VA_ARGS__))
 
 #define MAKE_SHOW(type, ...) \
 inline std::string \

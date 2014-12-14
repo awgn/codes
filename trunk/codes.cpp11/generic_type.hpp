@@ -242,7 +242,7 @@ namespace generic {
         static std::map<std::string, std::shared_ptr<generic::base_visitor>> & \
         visitor_map() \
         { \
-            static std::map<std::string, std::shared_ptr<generic::base_visitor>> instance = { FOR_EACH_COMMA(GENERIC_GET_PAIR, __VA_ARGS__) }; \
+            static std::map<std::string, std::shared_ptr<generic::base_visitor>> instance = { MORE_FOR_EACH_COMMA(GENERIC_GET_PAIR, __VA_ARGS__) }; \
             return instance; \
         } \
     }; \
@@ -250,12 +250,12 @@ namespace generic {
     template <typename Tp> \
     struct T ## _ctors \
     {  \
-       FOR_EACH(GENERIC_MAKE_CTOR, __VA_ARGS__) \
+       MORE_FOR_EACH(GENERIC_MAKE_CTOR, __VA_ARGS__) \
        \
     }; \
     struct T : generic::base_type<T ## _type>, T ## _ctors<T> \
     { \
-        enum type_ctor { unknown, FOR_EACH_COMMA(GENERIC_GET_CTOR,__VA_ARGS__) }; \
+        enum type_ctor { unknown, MORE_FOR_EACH_COMMA(GENERIC_GET_CTOR,__VA_ARGS__) }; \
         \
         T() \
         : type_(unknown) \
@@ -277,7 +277,7 @@ namespace generic {
         void \
         type(std::string const &t) \
         { \
-            static std::vector<std::string> xs = { "", FOR_EACH_COMMA(GENERIC_GET_CSTR, __VA_ARGS__) }; \
+            static std::vector<std::string> xs = { "", MORE_FOR_EACH_COMMA(GENERIC_GET_CSTR, __VA_ARGS__) }; \
             auto it = std::find(std::begin(xs), std::end(xs), t); \
             if (it == std::end(xs)) \
                 type_ = unknown; \
