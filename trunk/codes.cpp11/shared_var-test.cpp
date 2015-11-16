@@ -22,7 +22,7 @@ main(int, char *[])
     {
         auto ptr = n.get();
 
-        for(int i = 1; i <= 15; i++)
+        for(int i = 1; i <= 1000; i++)
         {
             auto np = n.safe_put(ptr, i);
             if (np.first)

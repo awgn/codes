@@ -43,7 +43,7 @@ namespace more {
 
 
         /* multiple threads can access to the read-only shared object.
-         * promise: this reference is used for a short period ( < of that of the update frequency ) */
+         * promise: this reference is used for a short period ( < update period * GC ) */
 
         Tp const *
         get() const
@@ -56,44 +56,30 @@ namespace more {
          * called with a reasonably low frequency: the garbage must stay alive
          * for a grace period time */
 
-        template <typename ... Ts>
-        void put(Ts && ... value)
-        {
-            auto nptr = reinterpret_cast<Tp const *>(new Tp(std::move(std::forward<Ts>(value)...)));
-            auto cur  = current_.exchange(nptr, std::memory_order_release);
-            this->collect(cur);
-        }
-
         void put(Tp const * nptr)
         {
             auto cur  = current_.exchange(nptr, std::memory_order_release);
             this->collect(cur);
         }
 
+        template <typename ... Ts>
+        void put(Ts && ... vs)
+        {
+            auto nptr = reinterpret_cast<Tp const *>(new Tp(std::forward<Ts>(vs)...));
+            put(nptr);
+        }
+
+
         /* perform a compare and exchange operation: required when multiple threads attempt to update the shared var.
          * As for put, the garbage must stay alive for a grace period time */
 
         template <typename ... Ts>
         std::pair<bool, Tp const *>
-        safe_put(Tp const *cur, Ts && ...value)
+        safe_put(Tp const *cur, Ts && ...vs)
         {
-            auto nptr = reinterpret_cast<Tp const *>(new Tp(std::move(std::forward<Ts>(value)...)));
-
-            auto ret = current_.compare_exchange_strong(cur, nptr, std::memory_order_release,
-                                                                   std::memory_order_relaxed);
-
-            if (ret)
-            {
-                this->collect(cur);
-                return std::make_pair(true, nptr);
-            }
-            else
-            {
-                delete nptr;
-                return std::make_pair(false, cur);
-            }
+            auto nptr = reinterpret_cast<Tp const *>(new Tp(std::forward<Ts>(vs)...));
+            return safe_put(cur, nptr);
         }
-
 
         std::pair<bool, Tp const *>
         safe_put(Tp const *cur, Tp const *nptr)
@@ -113,6 +99,7 @@ namespace more {
             }
         }
 
+
     private:
 
         void collect(Tp const *ptr)
@@ -120,9 +107,7 @@ namespace more {
             std::lock_guard<std::mutex> lock(mutex_);
             garbage_.emplace_back(ptr);
             if (garbage_.size() > GC)
-            {
                 garbage_.erase(std::begin(garbage_));
-            }
         }
 
         std::atomic<Tp const *> current_;
