@@ -45,12 +45,26 @@ namespace more {
         /* multiple threads can access to the read-only shared object.
          * promise: this reference is used for a short period ( < update period * GC ) */
 
-        Tp const *
+        Tp const &
         get() const
         {
-            return current_.load(std::memory_order_acquire);
+            if (auto r = current_.load(std::memory_order_acquire))
+                return *r;
+            throw std::runtime_error("shared_var::get: not engaged");
         }
 
+        /* consume: a thread can get the object ptr and disengage its value atomically */
+
+        Tp const *
+        consume()
+        {
+            return current_.exchange(nullptr);
+        }
+
+        explicit operator bool() const
+        {
+            return current_.load(std::memory_order_relaxed);
+        }
 
         /* update the value of var: this method is supposed to be
          * called with a reasonably low frequency: the garbage must stay alive
@@ -63,7 +77,7 @@ namespace more {
         }
 
         template <typename ... Ts>
-        void put(Ts && ... vs)
+        void emplace(Ts && ... vs)
         {
             auto nptr = reinterpret_cast<Tp const *>(new Tp(std::forward<Ts>(vs)...));
             put(nptr);
@@ -72,14 +86,6 @@ namespace more {
 
         /* perform a compare and exchange operation: required when multiple threads attempt to update the shared var.
          * As for put, the garbage must stay alive for a grace period time */
-
-        template <typename ... Ts>
-        std::pair<bool, Tp const *>
-        safe_put(Tp const *cur, Ts && ...vs)
-        {
-            auto nptr = reinterpret_cast<Tp const *>(new Tp(std::forward<Ts>(vs)...));
-            return safe_put(cur, nptr);
-        }
 
         std::pair<bool, Tp const *>
         safe_put(Tp const *cur, Tp const *nptr)
@@ -94,11 +100,17 @@ namespace more {
             }
             else
             {
-                delete nptr;
                 return std::make_pair(false, cur);
             }
         }
 
+        template <typename ... Ts>
+        std::pair<bool, Tp const *>
+        safe_emplace(Tp const *cur, Ts && ...vs)
+        {
+            auto nptr = reinterpret_cast<Tp const *>(new Tp(std::forward<Ts>(vs)...));
+            return safe_put(cur, nptr);
+        }
 
     private:
 
