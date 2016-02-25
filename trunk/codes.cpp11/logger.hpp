@@ -84,49 +84,6 @@ namespace more
         }
     }
 
-    /////////////////////////   more::safe_mutex: detect dead-locks at runtime.
-
-    struct safe_mutex
-    {
-        void lock()
-        {
-            if (!mutex_.try_lock())
-            {
-                if (id_.load(std::memory_order_relaxed) == std::this_thread::get_id())
-                    throw std::runtime_error("safe_mutex: deadlock detected");
-                mutex_.lock();
-            }
-            id_.store(std::this_thread::get_id(), std::memory_order_relaxed);
-            return;
-        }
-
-        bool try_lock()
-        {
-            if (!mutex_.try_lock())
-            {
-                if (id_.load(std::memory_order_relaxed) == std::this_thread::get_id())
-                    throw std::runtime_error("safe_mutex: deadlock detected");
-                return false;
-            }
-            else
-            {
-                id_.store(std::this_thread::get_id(), std::memory_order_relaxed);
-                return true;
-            }
-        }
-
-        void unlock()
-        {
-            id_.store(std::thread::id(), std::memory_order_relaxed);
-            mutex_.unlock();
-        }
-
-    private:
-        std::mutex      mutex_;
-        std::atomic<std::thread::id> id_;
-    };
-
-
     /////////////////////////   more::null_mutex
 
     struct null_mutex
@@ -308,7 +265,7 @@ namespace more
 
 
 
-    template <typename Mutex = safe_mutex>
+    template <typename Mutex = std::mutex>
     class logger
     {
         struct logger_data
