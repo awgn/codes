@@ -13,11 +13,11 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
-#include <vector>
+#include <list>
 
 namespace more {
 
-    template <typename Tp, size_t GC = 16>
+    template <typename Tp, size_t GC_SIZE = 16>
     struct shared_var
     {
         shared_var()
@@ -43,7 +43,7 @@ namespace more {
 
 
         /* multiple threads can access to the read-only shared object.
-         * promise: this reference is used for a short period ( < update period * GC ) */
+         * promise: this reference is used for a short period ( < update period * GC_SIZE ) */
 
         Tp const &
         get() const
@@ -51,6 +51,12 @@ namespace more {
             if (auto r = current_.load(std::memory_order_acquire))
                 return *r;
             throw std::runtime_error("shared_var::get: not engaged");
+        }
+
+        Tp const *
+        get_addr() const
+        {
+            return current_.load(std::memory_order_acquire);
         }
 
         /* consume: a thread can get the object ptr and disengage its value atomically */
@@ -116,14 +122,19 @@ namespace more {
 
         void collect(Tp const *ptr)
         {
+            std::list<std::unique_ptr<Tp const>> one, del;
+            one.emplace_back(ptr);
+
             std::lock_guard<std::mutex> lock(mutex_);
-            garbage_.emplace_back(ptr);
-            if (garbage_.size() > GC)
-                garbage_.erase(std::begin(garbage_));
+
+            garbage_.splice(std::end(garbage_), std::move(one));
+            if (garbage_.size() > GC_SIZE) {
+                del.splice(std::end(del), std::move(garbage_), std::begin(garbage_));
+            }
         }
 
         std::atomic<Tp const *> current_;
-        std::vector<std::unique_ptr<Tp const>> garbage_;
+        std::list<std::unique_ptr<Tp const>> garbage_;
         std::mutex mutex_;
     };
 
